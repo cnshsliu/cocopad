@@ -1,12 +1,4 @@
-# KFlow Engine Admin Console
+# COCOPAD - A Collaboration Design Pad
 
-这是工作流引擎的用户控制台，基于Boostrape-Vue进行的前端开发，Canvas绘图基于Konva项目，
-使用Parcel进行打包。
+A Pad for Collaborated drawing, brain storming, design thinking and more
 
-## 运行
-
-npm start
-
-## 确保运行时打包正常
-
-rm -rf .cache; rm -f dist/*; npm start
