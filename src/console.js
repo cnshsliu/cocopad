@@ -1,4 +1,5 @@
 import Konva from "konva";
+import { scroller } from 'vue-scrollto/src/scrollTo';
 // import { TableSimplePlugin } from "bootstrap-vue";
 import iconStartURL from '../assets/start.svg';
 import iconEndURL from '../assets/end.svg';
@@ -15,13 +16,14 @@ import iconArrowURL from '../assets/arrow.svg';
 import iconTipURL from '../assets/tip.svg';
 import iconBlanketURL from '../assets/blanket.svg';
 import iconP8StarURL from '../assets/p8star.svg';
+import iconPinURL from '../assets/pin.svg';
 import uuidv4 from 'uuid/v4';
 import { BIconFolderSymlinkFill } from "bootstrap-vue";
-
 
 let tip_variants = {
     'tip': {
         rotateEnabled: true,
+        shadowEnabled: true,
         rotation: -5,
         size: 100,
         ratio: 1,
@@ -29,6 +31,7 @@ let tip_variants = {
     },
     'blanket': {
         rotateEnabled: false,
+        shadowEnabled: false,
         rotation: 0,
         size: 60,
         ratio: 0.618,
@@ -36,10 +39,19 @@ let tip_variants = {
     },
     'p8star': {
         rotateEnabled: false,
+        shadowEnabled: false,
         rotation: 0,
         size: 60,
         ratio: 1,
         text: ' '
+    },
+    'pin': {
+        rotateEnabled: false,
+        shadowEnabled: true,
+        rotation: 0,
+        size: 20,
+        ratio: 1,
+        text: ''
     },
 }
 var images_urls = {
@@ -56,12 +68,16 @@ var images_urls = {
     tip_tip: iconTipURL,
     tip_blanket: iconBlanketURL,
     tip_p8star: iconP8StarURL,
+    tip_pin: iconPinURL,
 };
 
 let KFK = {};
+KFK.PADDING = 0;
 
-KFK.width = window.innerWidth;
-KFK.height = window.innerHeight;
+// KFK.width = window.innerWidth + KFK.PADDING * 2; KFK.height = window.innerHeight + KFK.PADDING * 2;
+KFK.width = window.innerWidth; KFK.height = window.innerHeight;
+KFK.SCROLL_DELTA_HORI = Math.max(KFK.width * 1, 100);
+KFK.SCROLL_DELTA_VERT = Math.max(KFK.height * 1, 100);
 
 KFK.nodes = [];
 KFK.links = [];
@@ -72,48 +88,11 @@ KFK.pickedNode = null;
 KFK.pickedTip = null;
 KFK.mode = "tpl";
 
-//TODO: 支持PAN
-//TODO: 把TIPS通用化为通用text， 如果是小黄帖就用小黄帖背景，如果是文本框就不用背景（如果为了拖拽，需要一个透明背景，或者必须用一个背框框背景？）
+//TODO: 支持PAN canvas为十倍的大小，或者，自动扩展canvas, 类似draw.io的做法， 每次扩展一个屏幕大小
 //TODO: TIPS可以钉在桌面上，钉住后，不可移动
-//TODO: canvas为十倍的大小，或者，自动扩展canvas, 类似draw.io的做法， 每次扩展一个屏幕大小
 
 
 KFK.tween = null;
-
-KFK.addStar = function addStar(layer, stage, posx, posy) {
-    var scale = Math.random();
-
-    if (!posx)
-        posx = Math.random() * stage.getWidth();
-    if (!posy)
-        posy = Math.random() * stage.getHeight();
-    var star = new Konva.Star({
-        x: posx,
-        y: posy,
-        numPoints: 5,
-        innerRadius: 30,
-        outerRadius: 50,
-        fill: "#89b717",
-        opacity: 0.8,
-        draggable: true,
-        scale: {
-            x: scale,
-            y: scale
-        },
-        rotation: Math.random() * 180,
-        shadowColor: "black",
-        shadowBlur: 10,
-        shadowOffset: {
-            x: 5,
-            y: 5
-        },
-        shadowOpacity: 0.6,
-        // custom attribute
-        startScale: scale
-    });
-
-    layer.add(star);
-};
 
 KFK.stage = new Konva.Stage({
     container: "container",
@@ -153,11 +132,6 @@ KFK.tipLineLayer = new Konva.Layer();
 KFK.dragLineLayer = new Konva.Layer();
 KFK.stage.add(KFK.lineLayer, KFK.dragLineLayer, KFK.layer, KFK.dragLayer, KFK.tipLineLayer);
 
-// for (var n = 0; n < 30; n++) {
-//     KFK.addStar(KFK.layer, KFK.stage);
-// }
-
-
 KFK.stage.on('click', function (e) {
     var node = e.target;
     let withShift = e.shiftKey || e.evt.shiftKey;
@@ -169,7 +143,7 @@ KFK.stage.on('click', function (e) {
     let nodeid = uuidv4();
 
     stage.find('Transformer').destroy();
-    KFK.layer.draw();
+    KFK.layer.batchDraw();
 
     if (KFK.mode === 'tpl') {
         let aNode = new Node(nodeid, 'task', pos.x, pos.y);
@@ -218,7 +192,7 @@ KFK.stage.on("dragstart", function (evt) {
         }
     }
 
-    KFK.stage.draw();
+    KFK.stage.batchDraw();
     let nodeid = node.getAttr('nodeid');
 
     if (KFK.tween) {
@@ -238,8 +212,35 @@ KFK.stage.on("dragstart", function (evt) {
 
 KFK.stage.on("dragmove", function (evt) {
     var node = evt.target;
+    let largeContainer = document.getElementById('large-container');
+    let theContainer = document.getElementById('container');
+    let theScroller = document.getElementById('scroll-container');
+    // console.log(largeContainer.clientWidth);
+    // console.log(largeContainer.offsetWidth);
+    // console.log(`moving...${node.x() + node.background.width() * 0.5} ${KFK.width}  ${largeContainer.clientWidth}`);
+    if (node.x() + node.background.width() * 0.5 > KFK.width) {
+        KFK.width = largeContainer.clientWidth + KFK.SCROLL_DELTA_HORI;
+        KFK.stage.width(KFK.width);
+        largeContainer.style.width = `${KFK.width}px`;
+        theContainer.style.width = `${KFK.width}px`;
+        KFK.stage.batchDraw();
+        theScroller.scrollLeft += node.background.width();
+    } else if (node.x() + node.background.width() * 0.5 > theScroller.clientWidth + theScroller.scrollLeft) {
+        theScroller.scrollLeft += 10;
+    } else if (node.y() + node.background.height() * 0.5 > KFK.height) {
+        console.log('Change height');
+        KFK.height = largeContainer.clientHeight + KFK.SCROLL_DELTA_VERT;
+        KFK.stage.height(KFK.height);
+        largeContainer.style.height = `${KFK.height}px`;
+        theContainer.style.height = `${KFK.height}px`;
+        KFK.stage.batchDraw();
+        theScroller.scrollTop += node.background.height();
+    } else if (node.y() + node.background.height() * 0.5 > theScroller.clientHeight + theScroller.scrollTop) {
+        theScroller.scrollTop += 10;
+    }
 
-    KFK.redrawLinks();
+    //KFK.layer.batchDraw();
+    //KFK.redrawLinks();
 
 });
 
@@ -254,7 +255,8 @@ KFK.stage.on("dragend", function (evt) {
             transformer.moveTo(KFK.layer);
         }
     }
-    KFK.stage.draw();
+    KFK.redrawLinks();
+    KFK.stage.batchDraw();
     node.to({
         duration: 0.5,
         easing: Konva.Easings.ElasticEaseOut,
@@ -264,7 +266,6 @@ KFK.stage.on("dragend", function (evt) {
         shadowOffsetY: 5
     });
 });
-
 KFK.loadImages = function loadimg(sources, callback) {
     let loadedImages = 0;
     let numImages = 0;
@@ -441,6 +442,18 @@ KFK.moveTip = function (e) {
     }
 }
 
+KFK.deleteTip = function (e) {
+    if (KFK.focusOnTip) {
+        KFK.removeTipLink(KFK.focusOnTip.id(), null);
+        KFK.removeTipLink(null, KFK.focusOnTip.id());
+        KFK.stage.find('Transformer').destroy();
+        KFK.focusOnTip.destroy();
+        KFK.layer.batchDraw();
+        KFK.tipLineLayer.batchDraw();
+        KFK.focusOnTip = undefined;
+    }
+}
+
 KFK.createTip = function (node) {
     let background = new Konva.Image({
         image: KFK.images[`tip_${node.type}`],
@@ -448,6 +461,7 @@ KFK.createTip = function (node) {
         y: -(node.size * node.iconscale),
         width: (node.size * node.iconscale) * 2,
         height: (node.size * node.iconscale) * 2 * node.ratio,
+        shadowEnabled: tip_variants[node.type].shadowEnabled,
         shadowColor: "black",
         shadowBlur: 10,
         shadowOffset: {
@@ -702,7 +716,9 @@ KFK.createConnect = function (link) {
 KFK.removeLink = function (from, to) {
     let foundOneDirection = false;
     for (var i = 0; i < KFK.links.length; i++) {
-        if (KFK.links[i].from === from && KFK.links[i].to === to) {
+        if ((from === null && KFK.links[i].to === to) ||
+            (KFK.links[i].from === from && to === null) ||
+            (KFK.links[i].from === from && KFK.links[i].to === to)) {
             let theConn = KFK.findConnect(KFK.links[i].id);
             theConn.destroy();
             KFK.links.splice(i, 1);
@@ -716,7 +732,9 @@ KFK.removeLink = function (from, to) {
 KFK.removeTipLink = function (from, to) {
     let foundOneDirection = false;
     for (var i = 0; i < KFK.tipLinks.length; i++) {
-        if (KFK.tipLinks[i].from === from && KFK.tipLinks[i].to === to) {
+        if ((from === null && KFK.tipLinks[i].to === to) ||
+            (KFK.tipLinks[i].from === from && to === null) ||
+            (KFK.tipLinks[i].from === from && KFK.tipLinks[i].to === to)) {
             let theConn = KFK.findConnect(KFK.tipLinks[i].id);
             theConn.destroy();
             KFK.tipLinks.splice(i, 1);
@@ -811,8 +829,34 @@ KFK.initLogo = function () {
 };
 KFK.loadImages(images_urls, KFK.initLogo);
 
-KFK.setGuiMode = function (mode) {
+KFK.setMode = function (mode) {
     KFK.mode = mode;
+    console.log(`set ${mode} to true`);
+    for (let key in KFK.APP.active) {
+        KFK.APP.active[key] = false;
+    }
+    KFK.APP.active[mode] = true;
+}
+KFK.isActive = function (mode) {
+    console.log(`${KFK.mode} === ${mode}`);
+    return KFK.mode === mode;
 }
 
+KFK.scrollContainer = document.getElementById('scroll-container');
+KFK.repositionStage = function () {
+    var dx = KFK.scrollContainer.scrollLeft - KFK.PADDING;
+    var dy = KFK.scrollContainer.scrollTop - KFK.PADDING;
+    //KFK.stage.container().style.transform = `translate(${dx}px, ${dy}px)`;
+    //KFK.stage.x(-dx);
+    //KFK.stage.y(-dy);
+    //KFK.stage.batchDraw();
+}
+// KFK.scrollContainer.addEventListener('scroll', KFK.repositionStage);
+// KFK.repositionStage();
+
 module.exports = KFK;
+
+
+//TODO RichText
+//TODO Pan
+// Collision to place Pin https://konvajs.org/docs/sandbox/Collision_Detection.html

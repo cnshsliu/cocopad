@@ -9,8 +9,12 @@
 </head>
 
 <body>
-  <div id="container"></div>
-  
+  <div id="scroll-container">
+    <div id="large-container">
+      <div id="container"></div>
+    </div>
+  </div>
+
   <div id='app'>
     <div id="top">
       <b-navbar toggleable="lg" type="light" variant="outline-primary">
@@ -86,7 +90,7 @@
         <b-list-group-item class="d-flex align-items-center" href="#some-link">
           <b-img :src="icons['sub'].src" fluid alt="" scale="2"></b-img>
         </b-list-group-item>
-        <b-list-group-item class="d-flex align-items-center" href="#" @click="setMode('tpl');"active>
+        <b-list-group-item class="d-flex align-items-center" href="#" @click="setMode('tpl');" @active="isActive('tpl')">
           <b-img :src="icons['task'].src" fluid alt="" scale="2"></b-img>
         </b-list-group-item>
         <b-list-group-item class="d-flex align-items-center" href="#">
@@ -95,14 +99,17 @@
         <b-list-group-item class="d-flex align-items-center" href="#foobar" disabled>
           <b-img :src="icons['switch'].src" fluid alt="" scale="2"></b-img>
         </b-list-group-item>
-        <b-list-group-item class="d-flex align-items-center" @click="setMode('tip');">
+        <b-list-group-item class="d-flex align-items-center" @click="setMode('tip');" :active="active['tip']">
           <b-img :src="icons['tip_tip'].src" fluid alt="" scale="2"></b-img>
         </b-list-group-item>
-        <b-list-group-item class="d-flex align-items-center" @click="setMode('blanket');">
+        <b-list-group-item class="d-flex align-items-center" @click="setMode('blanket');"  :active="active['blanket']">
           <b-img :src="icons['tip_blanket'].src" fluid alt="" scale="2"></b-img>
         </b-list-group-item>
-        <b-list-group-item class="d-flex align-items-center" @click="setMode('p8star');">
+        <b-list-group-item class="d-flex align-items-center" @click="setMode('p8star');" :active="active['p8star']">
           <b-img :src="icons['tip_p8star'].src" fluid alt="" scale="2"></b-img>
+        </b-list-group-item>
+        <b-list-group-item class="d-flex align-items-center" @click="setMode('pin');" :active="active['pin']">
+          <b-img :src="icons['tip_pin'].src" fluid alt="" scale="2"></b-img>
         </b-list-group-item>
       </b-list-group>
     </div>

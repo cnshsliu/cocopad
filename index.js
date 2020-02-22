@@ -21,9 +21,9 @@ const app = new Vue({
     showINVITATION: false,
     lockMode: KFK.lockMode,
     icons: KFK.images,
+    active: {'tip': false, 'blanket':false, 'p8star':false, 'pin':false},
   },
 }).$mount("#app");
 KFK.APP = app;
-console.log(KFK.images['sub']);
 
-app.setMode =  KFK.setGuiMode;
+app.setMode =  KFK.setMode;
