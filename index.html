@@ -6,20 +6,20 @@
   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="./my-styles/style.css">
+  <link rel="shortcut icon" href="./favicon.ico" />
 </head>
 
 <body>
-  <div id="scroll-container">
-    <div id="large-container">
-      <div id="container"></div>
-    </div>
+  <div id="scroll-container" style="z-index: 0;">
+      <div id="container2" style="z-index: 0;"></div>
+      <div id="container" style="z-index: 1;"></div>
   </div>
 
   <div id='app'>
     <div id="top">
       <b-navbar toggleable="lg" type="light" variant="outline-primary">
         <b-navbar-brand href="#">
-          <img src="https://placekitten.com/g/45/45" class="d-inline-block align-top" alt="Kitten">
+          <img src="assets/p8star.svg" class="logo d-inline-block align-top" alt="Kitten">
           <span class='lkh'>KFEngine</span>
         </b-navbar-brand>
 
@@ -28,7 +28,6 @@
         <b-collapse id="nav-collapse" is-nav>
           <b-navbar-nav>
             <b-nav-item href="#"></b-nav-item>
-            <b-nav-item href="#" disabled>Disabled</b-nav-item>
             <b-button-group>
               <b-button variant="outline-success" href="javascript:newTpl()">
                 <b-icon icon="document"></b-icon> New
@@ -88,28 +87,28 @@
     <div id="left" class="shadow-lg">
       <b-list-group>
         <b-list-group-item class="d-flex align-items-center" href="#some-link">
-          <b-img :src="icons['sub'].src" fluid alt="" scale="2"></b-img>
+          <b-img :src="images['sub'].src" fluid alt="" scale="2"></b-img>
         </b-list-group-item>
         <b-list-group-item class="d-flex align-items-center" href="#" @click="setMode('tpl');" @active="isActive('tpl')">
-          <b-img :src="icons['task'].src" fluid alt="" scale="2"></b-img>
+          <b-img :src="images['task'].src" fluid alt="" scale="2"></b-img>
         </b-list-group-item>
         <b-list-group-item class="d-flex align-items-center" href="#">
-          <b-img :src="icons['timer'].src" fluid alt="" scale="2"></b-img>
+          <b-img :src="images['timer'].src" fluid alt="" scale="2"></b-img>
         </b-list-group-item>
         <b-list-group-item class="d-flex align-items-center" href="#foobar" disabled>
-          <b-img :src="icons['switch'].src" fluid alt="" scale="2"></b-img>
+          <b-img :src="images['switch'].src" fluid alt="" scale="2"></b-img>
         </b-list-group-item>
         <b-list-group-item class="d-flex align-items-center" @click="setMode('tip');" :active="active['tip']">
-          <b-img :src="icons['tip_tip'].src" fluid alt="" scale="2"></b-img>
+          <b-img :src="images['tip'].src" fluid alt="" scale="2"></b-img>
         </b-list-group-item>
         <b-list-group-item class="d-flex align-items-center" @click="setMode('blanket');"  :active="active['blanket']">
-          <b-img :src="icons['tip_blanket'].src" fluid alt="" scale="2"></b-img>
+          <b-img :src="images['blanket'].src" fluid alt="" scale="2"></b-img>
         </b-list-group-item>
         <b-list-group-item class="d-flex align-items-center" @click="setMode('p8star');" :active="active['p8star']">
-          <b-img :src="icons['tip_p8star'].src" fluid alt="" scale="2"></b-img>
+          <b-img :src="images['p8star'].src" fluid alt="" scale="2"></b-img>
         </b-list-group-item>
         <b-list-group-item class="d-flex align-items-center" @click="setMode('pin');" :active="active['pin']">
-          <b-img :src="icons['tip_pin'].src" fluid alt="" scale="2"></b-img>
+          <b-img :src="images['pin'].src" fluid alt="" scale="2"></b-img>
         </b-list-group-item>
       </b-list-group>
     </div>
