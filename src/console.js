@@ -1,7 +1,7 @@
 import Konva from "konva";
 import assetIcons from '../assets/*.svg';
 import uuidv4 from 'uuid/v4';
-import { BIconFolderSymlinkFill } from "bootstrap-vue";
+import { BIconFolderSymlinkFill, directivesPlugin } from "bootstrap-vue";
 
 let tip_variants = {
     'tip': {
@@ -64,58 +64,53 @@ KFK.mode = "tpl";
 KFK.tween = null;
 
 
-KFK.stage = new Konva.Stage({
-    container: "container",
-    width: KFK._width,
-    height: KFK._height,
-    visible: true,
-});
+//KFK.stage = new Konva.Stage({ container: "container", width: KFK._width, height: KFK._height, visible: true, });
 // KFK.stage.zIndex(100);
 KFK.dragStage = new Konva.Stage({ container: "container2", width: window.innerWidth, height: window.innerHeight });
 // KFK.dragStage.zIndex(200);
-KFK.container = KFK.stage.container(); KFK.container.tabIndex = 1; KFK.container.focus();
+// KFK.container = KFK.stage.container(); KFK.container.tabIndex = 1; KFK.container.focus();
 KFK.dragContainer = KFK.dragStage.container();
 KFK.scrollContainer = document.getElementById('scroll-container');
 KFK.lockMode = false;
-KFK.container.addEventListener('keydown', function (e) {
-    switch (e.keyCode) {
-        case 16:  //Shift
-            KFK.lockMode = true;
-            KFK.APP.lockMode = true;
-    }
-    e.preventDefault();
-});
+// KFK.container.addEventListener('keydown', function (e) {
+//     switch (e.keyCode) {
+//         case 16:  //Shift
+//             KFK.lockMode = true;
+//             KFK.APP.lockMode = true;
+//     }
+//     e.preventDefault();
+// });
 
 
-KFK.container.addEventListener('keyup', function (e) {
-    let preventDefault = false;
-    if (e.keyCode === 16) { //Shift
-        KFK.lockMode = false;
-        KFK.APP.lockMode = false;
-        KFK.pickedNode = null;
-        preventDefault = true;
-    } else if (e.keyCode >= 37 && e.keyCode <= 40) { //Left, Up, Right, Down
-        KFK.moveTip(e);
-        preventDefault = true;
-    } else if (e.keyCode === 46 || e.keyCode === 68) {  //D
-        KFK.deleteTip(e);
-        preventDefault = true;
-    } else if (e.keyCode === 72) { //H
-        // KFK.gotoHome(e);
-        console.log(`${KFK.container.style.zIndex}`);
-        console.log(`${KFK.dragContainer.style.zIndex}`);
-        console.log(`${KFK.scrollContainer.style.zIndex}`);
-        console.log(`normal ${e.keyCode}`);
-        KFK.container.style.zIndex = "1";
-        KFK.scrollContainer.style.zIndex = "1";
-        KFK.dragContainer.style.zIndex = "2";
-        KFK.container.tabIndex = 2
-        KFK.dragContainer.tabIndex = 1;
-        KFK.dragContainer.focus();
-        preventDefault = true;
-    }
-    if (preventDefault) e.preventDefault();
-});
+// KFK.container.addEventListener('keyup', function (e) {
+//     let preventDefault = false;
+//     if (e.keyCode === 16) { //Shift
+//         KFK.lockMode = false;
+//         KFK.APP.lockMode = false;
+//         KFK.pickedNode = null;
+//         preventDefault = true;
+//     } else if (e.keyCode >= 37 && e.keyCode <= 40) { //Left, Up, Right, Down
+//         KFK.moveTip(e);
+//         preventDefault = true;
+//     } else if (e.keyCode === 46 || e.keyCode === 68) {  //D
+//         KFK.deleteTip(e);
+//         preventDefault = true;
+//     } else if (e.keyCode === 72) { //H
+//         // KFK.gotoHome(e);
+//         console.log(`${KFK.container.style.zIndex}`);
+//         console.log(`${KFK.dragContainer.style.zIndex}`);
+//         console.log(`${KFK.scrollContainer.style.zIndex}`);
+//         console.log(`normal ${e.keyCode}`);
+//         KFK.container.style.zIndex = "1";
+//         KFK.scrollContainer.style.zIndex = "1";
+//         KFK.dragContainer.style.zIndex = "2";
+//         KFK.container.tabIndex = 2
+//         KFK.dragContainer.tabIndex = 1;
+//         KFK.dragContainer.focus();
+//         preventDefault = true;
+//     }
+//     if (preventDefault) e.preventDefault();
+// });
 KFK.dragContainer.addEventListener('keyup', function (e) {
     let preventDefault = false;
     if (e.keyCode === 72) { //H
@@ -132,68 +127,69 @@ KFK.dragContainer.addEventListener('keyup', function (e) {
     if (preventDefault) e.preventDefault();
 });
 
-KFK.layer = new Konva.Layer();
-KFK.layer.clip({ x: 0, y: 0, width: window.innerWidth, height: window.innerHeight });
-KFK.stage.add(KFK.layer);
+// KFK.layer = new Konva.Layer();
+// KFK.layer.clip({ x: 0, y: 0, width: window.innerWidth, height: window.innerHeight });
+// KFK.stage.add(KFK.layer);
 
-KFK.gridLayer = new Konva.Layer();
-KFK.dragLayer = new Konva.Layer();
-KFK.dragStage.add(KFK.gridLayer, KFK.dragLayer);
+KFK.gridLayer = new Konva.Layer({ id: 'gridLayer' });
+KFK.dragLayer = new Konva.Layer({ id: 'dragLayer' });
+KFK.layer2 = new Konva.Layer({ id: 'layer2' });
+KFK.dragStage.add(KFK.gridLayer, KFK.dragLayer, KFK.layer2);
 
-KFK.stage.on('click', function (e) {
-    var node = e.target;
-    let withShift = e.shiftKey || e.evt.shiftKey;
-    if (!withShift)
-        KFK.pickedNode = null;
-    var oldScale = KFK.stage.scaleX();
-    let stage = e.target.getStage();
-    let pos = KFK.stage.getPointerPosition();
-    let newPos = {
-        x: pos.x / oldScale - KFK.stage.x() / oldScale,
-        y: pos.y / oldScale - KFK.stage.y() / oldScale
-    }
-    // let nodeid = 'node-' + KFK.nodes.length;
-    let nodeid = uuidv4();
+// KFK.stage.on('click', function (e) {
+//     var node = e.target;
+//     let withShift = e.shiftKey || e.evt.shiftKey;
+//     if (!withShift)
+//         KFK.pickedNode = null;
+//     var oldScale = KFK.stage.scaleX();
+//     let stage = e.target.getStage();
+//     let pos = KFK.stage.getPointerPosition();
+//     let newPos = {
+//         x: pos.x / oldScale - KFK.stage.x() / oldScale,
+//         y: pos.y / oldScale - KFK.stage.y() / oldScale
+//     }
+//     // let nodeid = 'node-' + KFK.nodes.length;
+//     let nodeid = uuidv4();
 
-    stage.find('Transformer').destroy();
-    KFK.layer.batchDraw();
+//     stage.find('Transformer').destroy();
+//     KFK.layer.batchDraw();
 
-    if (KFK.mode === 'tpl') {
-        let aNode = new Node(nodeid, 'task', newPos.x, newPos.y);
-        console.log(`Create node at ${newPos.x}  ${newPos.y}   ${KFK.stage.width()}`);
-        KFK.nodes.push(aNode);
-        var node = KFK.createNode(aNode);
-        KFK.layer.add(node);
-        if (withShift) {
-            if (KFK.pickedNode === null) {
-                KFK.pickedNode = node;
-            } else {
-                KFK.placeConnection(KFK.pickedNode.id(), node.id());
-                KFK.pickedNode = node;
-            }
-        }
-    } else if (tip_variants[KFK.mode]) {
-        if (KFK.focusOnTip) {
-            KFK.focusOnTip = undefined;
-        } else {
-            let aTip = new Tip(nodeid, KFK.mode, newPos.x, newPos.y);
-            KFK.tips.push(aTip);
-            var guiTip = KFK.createTip(aTip);
-            KFK.layer.add(guiTip);
-            if (withShift) {
-                if (KFK.pickedTip === null) {
-                    KFK.pickedTip = guiTip;
-                } else {
-                    KFK.placeTipConnection(KFK.pickedTip.id(), guiTip.id());
-                    KFK.pickedTip = guiTip;
-                }
-            }
-            console.log(`${pos.x}+100  ${KFK.width()}`);
-            KFK.stage.batchDraw();
-        }
-    }
-    //KFK.redrawLinks();
-});
+//     if (KFK.mode === 'tpl') {
+//         let aNode = new Node(nodeid, 'task', newPos.x, newPos.y);
+//         console.log(`Create node at ${newPos.x}  ${newPos.y}   ${KFK.stage.width()}`);
+//         KFK.nodes.push(aNode);
+//         var node = KFK.createNode(aNode);
+//         KFK.layer.add(node);
+//         if (withShift) {
+//             if (KFK.pickedNode === null) {
+//                 KFK.pickedNode = node;
+//             } else {
+//                 KFK.placeConnection(KFK.pickedNode.id(), node.id());
+//                 KFK.pickedNode = node;
+//             }
+//         }
+//     } else if (tip_variants[KFK.mode]) {
+//         if (KFK.focusOnTip) {
+//             KFK.focusOnTip = undefined;
+//         } else {
+//             let aTip = new Tip(nodeid, KFK.mode, newPos.x, newPos.y);
+//             KFK.tips.push(aTip);
+//             var guiTip = KFK.createTip(aTip);
+//             KFK.layer.add(guiTip);
+//             if (withShift) {
+//                 if (KFK.pickedTip === null) {
+//                     KFK.pickedTip = guiTip;
+//                 } else {
+//                     KFK.placeTipConnection(KFK.pickedTip.id(), guiTip.id());
+//                     KFK.pickedTip = guiTip;
+//                 }
+//             }
+//             console.log(`${pos.x}+100  ${KFK.width()}`);
+//             KFK.stage.batchDraw();
+//         }
+//     }
+//     //KFK.redrawLinks();
+// });
 
 KFK.loadImages = function loadimg(callback) {
     let loadedImages = 0;
@@ -293,7 +289,7 @@ KFK.findConnect = function (linkid) {
     return conn;
 };
 
-KFK.createNode = function (node) {
+KFK.createNode2 = function (node) {
     let circle = new Konva.Circle({
         radius: node.size,
         fill: 'white',
@@ -368,6 +364,46 @@ KFK.createNode = function (node) {
 
     return tplNode;
 }
+KFK.createC3 = function () {
+    let c3 = document.createElement('div');
+    c3.style.position = "relative";
+    c3.style.userSelect = "none";
+    c3.style.width = KFK._width + "px";
+    c3.style.height = KFK._height + "px";
+
+    c3.addEventListener('click', function (e) {
+        console.log(`${e.clientX + KFK.scrollContainer.scrollLeft}`);
+        let aNode = new Node(uuidv4(), 'start', e.clientX + KFK.scrollContainer.scrollLeft, e.clientY);
+        KFK.nodes.push(aNode);
+        KFK.createNode(aNode);
+    });
+
+    document.getElementById('container3').appendChild(c3);
+    KFK.C3 = c3;
+
+}
+KFK.createNode = function (node) {
+    var nodeDIV = document.createElement('div');
+    nodeDIV.style.position = 'absolute';
+    nodeDIV.style.top = node.y + 'px';
+    nodeDIV.style.left = node.x + 'px';
+    nodeDIV.style.width = '101px';
+    nodeDIV.style.height = '101px';
+    nodeDIV.style.zIndex = '1';
+    nodeDIV.style.border = 'none';
+    nodeDIV.style.padding = '0px';
+    nodeDIV.style.margin = '0px';
+    nodeDIV.style.overflow = 'hidden';
+    nodeDIV.style.background = 'transparent';
+    nodeDIV.style.outline = 'none';
+    nodeDIV.style.resize = 'none';
+    nodeDIV.style.display = 'block';
+    var image = document.createElement('img');
+    image.src = KFK.images[node.type].src;
+    nodeDIV.appendChild(image);
+
+    KFK.C3.appendChild(nodeDIV);
+}
 
 KFK.moveTip = function (e) {
     let DELTA = 5;
@@ -388,15 +424,15 @@ KFK.moveTip = function (e) {
 }
 
 KFK.deleteTip = function (e) {
-    if (KFK.focusOnTip) {
-        KFK.removeTipLink(KFK.focusOnTip.id(), null);
-        KFK.removeTipLink(null, KFK.focusOnTip.id());
-        KFK.stage.find('Transformer').destroy();
-        KFK.focusOnTip.destroy();
-        KFK.layer.batchDraw();
-        KFK.layer.batchDraw();
-        KFK.focusOnTip = undefined;
-    }
+    // if (KFK.focusOnTip) {
+    //     KFK.removeTipLink(KFK.focusOnTip.id(), null);
+    //     KFK.removeTipLink(null, KFK.focusOnTip.id());
+    //     KFK.stage.find('Transformer').destroy();
+    //     KFK.focusOnTip.destroy();
+    //     KFK.layer.batchDraw();
+    //     KFK.layer.batchDraw();
+    //     KFK.focusOnTip = undefined;
+    // }
 }
 
 KFK.createTip = function (node) {
@@ -714,9 +750,8 @@ KFK.placeNode = function (id, type, x, y) {
     let aNode = new Node(id, type, x, y);
     KFK.nodes.push(aNode);
     let nodeGraph = KFK.createNode(aNode);
-    KFK.layer.add(nodeGraph);
-    KFK.layer.draw();
-    //KFK.redrawLinks();
+    //KFK.layer.add(nodeGraph);
+    //KFK.layer.draw();
     return aNode;
 };
 
@@ -798,6 +833,7 @@ KFK.initLogo = function () {
         tension: 1,
     }));
     KFK.gridLayer.batchDraw();
+    KFK.createC3();
     // KFK.startNode = KFK.placeNode('START', 'start', 120, KFK.height() * 0.25);
     KFK.startNode = KFK.placeNode('START', 'start', 120, 120);
     // KFK.endNode = KFK.placeNode('END', 'end', KFK.width() * 0.5 - 50, KFK.height() * 0.25);
