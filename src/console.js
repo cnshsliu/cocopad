@@ -74,7 +74,7 @@ KFK.stage = new Konva.Stage({
 KFK.dragStage = new Konva.Stage({ container: "container2", width: window.innerWidth, height: window.innerHeight });
 // KFK.dragStage.zIndex(200);
 KFK.container = KFK.stage.container(); KFK.container.tabIndex = 1; KFK.container.focus();
-KFK.dragContainer = KFK.dragStage.container(); 
+KFK.dragContainer = KFK.dragStage.container();
 KFK.scrollContainer = document.getElementById('scroll-container');
 KFK.lockMode = false;
 KFK.container.addEventListener('keydown', function (e) {
@@ -109,7 +109,7 @@ KFK.container.addEventListener('keyup', function (e) {
         KFK.container.style.zIndex = "1";
         KFK.scrollContainer.style.zIndex = "1";
         KFK.dragContainer.style.zIndex = "2";
-        KFK.container.tabIndex =  2
+        KFK.container.tabIndex = 2
         KFK.dragContainer.tabIndex = 1;
         KFK.dragContainer.focus();
         preventDefault = true;
@@ -124,7 +124,7 @@ KFK.dragContainer.addEventListener('keyup', function (e) {
         KFK.container.style.zIndex = "0";
         KFK.scrollContainer.style.zIndex = "0";
         KFK.dragContainer.style.zIndex = "-1";
-        KFK.container.tabIndex =  1
+        KFK.container.tabIndex = 1
         KFK.dragContainer.tabIndex = 2;
         KFK.container.focus();
         preventDefault = true;
@@ -132,7 +132,8 @@ KFK.dragContainer.addEventListener('keyup', function (e) {
     if (preventDefault) e.preventDefault();
 });
 
-KFK.layer = new Konva.Layer({ visible: true });
+KFK.layer = new Konva.Layer();
+KFK.layer.clip({ x: 0, y: 0, width: window.innerWidth, height: window.innerHeight });
 KFK.stage.add(KFK.layer);
 
 KFK.gridLayer = new Konva.Layer();
@@ -194,69 +195,6 @@ KFK.stage.on('click', function (e) {
     //KFK.redrawLinks();
 });
 
-KFK.stage.on("dragstart", function (evt) {
-    var node = evt.target;
-    // moving to another layer will improve dragging performance
-    //减去scroll偏移
-    node.x(node.x() - KFK.scrollContainer.scrollLeft);
-    node.y(node.y() - KFK.scrollContainer.scrollTop);
-    node.moveTo(KFK.dragLayer);
-    let transformer = KFK.stage.find('Transformer');
-    if (transformer && transformer[0]) {
-        let theNode = transformer[0].getNode();
-        let bNode = transformer[0]._node;
-        if (bNode == node) {
-            transformer.moveTo(KFK.dragLayer);
-        }
-    }
-    KFK.dragLayer.batchDraw();
-    KFK.layer.batchDraw();
-    let nodeid = node.getAttr('nodeid');
-
-    // if (KFK.tween) {
-    //     KFK.tween.pause();
-    // }
-    // node.setAttrs({
-    //     shadowOffset: {
-    //         x: 15,
-    //         y: 15
-    //     },
-    //     scale: {
-    //         x: node.getAttr("startScale") * 1.2,
-    //         y: node.getAttr("startScale") * 1.2
-    //     }
-    // });
-});
-
-
-KFK.dragStage.on("dragend", function (evt) {
-    var node = evt.target;
-    //这里有个很有意思的地方：从layer移动node到dragLayer时，node的位置自动变成在dragLayer中屏幕上的位置
-    //因此，当在放回到layer时，只需直接把node在dragLayer的位置加上滚动位移即可
-    node.moveTo(KFK.layer);
-    node.x(node.x() + KFK.scrollContainer.scrollLeft);
-    node.y(node.y() + KFK.scrollContainer.scrollTop);
-    //如果有transformer, 则跟着一起放回layer层
-    let transformer = KFK.stage.find('Transformer');
-    if (transformer && transformer[0]) {
-        let theNode = transformer[0].getNode();
-        let bNode = transformer[0]._node;
-        if (bNode == node) {
-            transformer.moveTo(KFK.layer);
-        }
-    }
-    KFK.layer.batchDraw();
-    KFK.dragLayer.batchDraw();
-    //KFK.redrawLinks();
-    // node.to({
-    //     duration: 0.5,
-    //     easing: Konva.Easings.ElasticEaseOut,
-    //     scaleX: node.getAttr("startScale"),
-    //     scaleY: node.getAttr("startScale"),
-    //     shadowOffsetX: 5,
-    //     shadowOffsetY: 5
-    // });
-});
 KFK.loadImages = function loadimg(callback) {
     let loadedImages = 0;
     let numImages = 0;
@@ -708,7 +646,6 @@ KFK.createTip = function (node) {
         KFK.layer.batchDraw();
     });
 
-
     return oneTIP;
 }
 
@@ -852,6 +789,7 @@ KFK.redrawLinks = function redrawLinks() {
 };
 
 KFK.initLogo = function () {
+
     KFK.gridLayer.add(new Konva.Line({
         x: 100,
         y: 200,
