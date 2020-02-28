@@ -16,10 +16,15 @@ $bv-enable-table-stacked: false;
 @import '~bootstrap/scss/bootstrap';
 @import '~bootstrap-vue/src/index.scss';
 // General style overrides and custom classes
+
 body {
   margin: 0;
 }
 
 .my-widget {
   color: var(--danger);
+}
+
+.favicon {
+  background: url('../favicon.ico');
 }

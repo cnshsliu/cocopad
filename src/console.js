@@ -1,30 +1,13 @@
 import Konva from "konva";
-import { scroller } from 'vue-scrollto/src/scrollTo';
-// import { TableSimplePlugin } from "bootstrap-vue";
-import iconStartURL from '../assets/start.svg';
-import iconEndURL from '../assets/end.svg';
-import iconGroundURL from '../assets/terminate.svg';
-import iconTimerURL from '../assets/timer.svg';
-import iconSwitchURL from '../assets/conditional.svg';
-import iconNotifyURL from '../assets/message.svg';
-import iconAndURL from '../assets/and.svg';
-import iconOrURL from '../assets/or.svg';
-import iconTaskURL from '../assets/task.svg';
-import iconSubURL from '../assets/sub.svg';
-import iconLinkURL from '../assets/link.svg';
-import iconArrowURL from '../assets/arrow.svg';
-import iconTipURL from '../assets/tip.svg';
-import iconBlanketURL from '../assets/blanket.svg';
-import iconP8StarURL from '../assets/p8star.svg';
-import iconPinURL from '../assets/pin.svg';
+import assetIcons from '../assets/*.svg';
 import uuidv4 from 'uuid/v4';
 import { BIconFolderSymlinkFill } from "bootstrap-vue";
 
 let tip_variants = {
     'tip': {
-        rotateEnabled: true,
-        shadowEnabled: true,
-        rotation: -5,
+        rotateEnabled: false,
+        shadowEnabled: false,
+        rotation: 0,
         size: 100,
         ratio: 1,
         text: 'Some text here'
@@ -54,30 +37,16 @@ let tip_variants = {
         text: ''
     },
 }
-var images_urls = {
-    start: iconStartURL,
-    end: iconEndURL,
-    ground: iconGroundURL,
-    timer: iconTimerURL,
-    switch: iconSwitchURL,
-    notify: iconNotifyURL,
-    and: iconAndURL,
-    or: iconOrURL,
-    task: iconTaskURL,
-    sub: iconSubURL,
-    tip_tip: iconTipURL,
-    tip_blanket: iconBlanketURL,
-    tip_p8star: iconP8StarURL,
-    tip_pin: iconPinURL,
-};
 
 let KFK = {};
-KFK.PADDING = 0;
+KFK.scaleBy = 1.01;
+KFK.centerPos = { x: 0, y: 0 };
+KFK.centerPos = { x: 0, y: 0 };
+KFK.startNode = null;
+KFK.endNode = null;
 
-// KFK.width = window.innerWidth + KFK.PADDING * 2; KFK.height = window.innerHeight + KFK.PADDING * 2;
-KFK.width = window.innerWidth; KFK.height = window.innerHeight;
-KFK.SCROLL_DELTA_HORI = Math.max(KFK.width * 1, 100);
-KFK.SCROLL_DELTA_VERT = Math.max(KFK.height * 1, 100);
+// KFK._width = window.innerWidth; KFK._height = window.innerHeight;
+KFK._width = window.innerWidth * 6; KFK._height = window.innerHeight * 6;
 
 KFK.nodes = [];
 KFK.links = [];
@@ -94,51 +63,94 @@ KFK.mode = "tpl";
 
 KFK.tween = null;
 
+
 KFK.stage = new Konva.Stage({
     container: "container",
-    width: KFK.width,
-    height: KFK.height
+    width: KFK._width,
+    height: KFK._height,
+    visible: true,
 });
-KFK.container = KFK.stage.container();
-KFK.container.tabIndex = 1;
-KFK.container.focus();
+// KFK.stage.zIndex(100);
+KFK.dragStage = new Konva.Stage({ container: "container2", width: window.innerWidth, height: window.innerHeight });
+// KFK.dragStage.zIndex(200);
+KFK.container = KFK.stage.container(); KFK.container.tabIndex = 1; KFK.container.focus();
+KFK.dragContainer = KFK.dragStage.container(); 
+KFK.scrollContainer = document.getElementById('scroll-container');
 KFK.lockMode = false;
 KFK.container.addEventListener('keydown', function (e) {
     switch (e.keyCode) {
-        case 16:
+        case 16:  //Shift
             KFK.lockMode = true;
             KFK.APP.lockMode = true;
     }
     e.preventDefault();
 });
 
+
 KFK.container.addEventListener('keyup', function (e) {
-    if (e.keyCode === 16) {
+    let preventDefault = false;
+    if (e.keyCode === 16) { //Shift
         KFK.lockMode = false;
         KFK.APP.lockMode = false;
         KFK.pickedNode = null;
-    } else if (e.keyCode >= 37 && e.keyCode <= 40) {
+        preventDefault = true;
+    } else if (e.keyCode >= 37 && e.keyCode <= 40) { //Left, Up, Right, Down
         KFK.moveTip(e);
-    } else if (e.keyCode === 46 || e.keyCode === 68) {
+        preventDefault = true;
+    } else if (e.keyCode === 46 || e.keyCode === 68) {  //D
         KFK.deleteTip(e);
+        preventDefault = true;
+    } else if (e.keyCode === 72) { //H
+        // KFK.gotoHome(e);
+        console.log(`${KFK.container.style.zIndex}`);
+        console.log(`${KFK.dragContainer.style.zIndex}`);
+        console.log(`${KFK.scrollContainer.style.zIndex}`);
+        console.log(`normal ${e.keyCode}`);
+        KFK.container.style.zIndex = "1";
+        KFK.scrollContainer.style.zIndex = "1";
+        KFK.dragContainer.style.zIndex = "2";
+        KFK.container.tabIndex =  2
+        KFK.dragContainer.tabIndex = 1;
+        KFK.dragContainer.focus();
+        preventDefault = true;
     }
-    e.preventDefault();
+    if (preventDefault) e.preventDefault();
+});
+KFK.dragContainer.addEventListener('keyup', function (e) {
+    let preventDefault = false;
+    if (e.keyCode === 72) { //H
+        console.log(`drag ${e.keyCode}`);
+        // KFK.gotoHome(e);
+        KFK.container.style.zIndex = "0";
+        KFK.scrollContainer.style.zIndex = "0";
+        KFK.dragContainer.style.zIndex = "-1";
+        KFK.container.tabIndex =  1
+        KFK.dragContainer.tabIndex = 2;
+        KFK.container.focus();
+        preventDefault = true;
+    }
+    if (preventDefault) e.preventDefault();
 });
 
-KFK.layer = new Konva.Layer();
+KFK.layer = new Konva.Layer({ visible: true });
+KFK.stage.add(KFK.layer);
+
+KFK.gridLayer = new Konva.Layer();
 KFK.dragLayer = new Konva.Layer();
-KFK.lineLayer = new Konva.Layer();
-KFK.tipLineLayer = new Konva.Layer();
-KFK.dragLineLayer = new Konva.Layer();
-KFK.stage.add(KFK.lineLayer, KFK.dragLineLayer, KFK.layer, KFK.dragLayer, KFK.tipLineLayer);
+KFK.dragStage.add(KFK.gridLayer, KFK.dragLayer);
 
 KFK.stage.on('click', function (e) {
     var node = e.target;
     let withShift = e.shiftKey || e.evt.shiftKey;
     if (!withShift)
         KFK.pickedNode = null;
+    var oldScale = KFK.stage.scaleX();
     let stage = e.target.getStage();
-    let pos = stage.getPointerPosition();
+    let pos = KFK.stage.getPointerPosition();
+    let newPos = {
+        x: pos.x / oldScale - KFK.stage.x() / oldScale,
+        y: pos.y / oldScale - KFK.stage.y() / oldScale
+    }
     // let nodeid = 'node-' + KFK.nodes.length;
     let nodeid = uuidv4();
 
@@ -146,7 +158,8 @@ KFK.stage.on('click', function (e) {
     KFK.layer.batchDraw();
 
     if (KFK.mode === 'tpl') {
-        let aNode = new Node(nodeid, 'task', pos.x, pos.y);
+        let aNode = new Node(nodeid, 'task', newPos.x, newPos.y);
+        console.log(`Create node at ${newPos.x}  ${newPos.y}   ${KFK.stage.width()}`);
         KFK.nodes.push(aNode);
         var node = KFK.createNode(aNode);
         KFK.layer.add(node);
@@ -162,7 +175,7 @@ KFK.stage.on('click', function (e) {
         if (KFK.focusOnTip) {
             KFK.focusOnTip = undefined;
         } else {
-            let aTip = new Tip(nodeid, KFK.mode, pos.x, pos.y);
+            let aTip = new Tip(nodeid, KFK.mode, newPos.x, newPos.y);
             KFK.tips.push(aTip);
             var guiTip = KFK.createTip(aTip);
             KFK.layer.add(guiTip);
@@ -174,14 +187,19 @@ KFK.stage.on('click', function (e) {
                     KFK.pickedTip = guiTip;
                 }
             }
+            console.log(`${pos.x}+100  ${KFK.width()}`);
+            KFK.stage.batchDraw();
         }
     }
-    KFK.redrawLinks();
+    //KFK.redrawLinks();
 });
 
 KFK.stage.on("dragstart", function (evt) {
     var node = evt.target;
     // moving to another layer will improve dragging performance
+    //减去scroll偏移
+    node.x(node.x() - KFK.scrollContainer.scrollLeft);
+    node.y(node.y() - KFK.scrollContainer.scrollTop);
     node.moveTo(KFK.dragLayer);
     let transformer = KFK.stage.find('Transformer');
     if (transformer && transformer[0]) {
@@ -191,62 +209,34 @@ KFK.stage.on("dragstart", function (evt) {
             transformer.moveTo(KFK.dragLayer);
         }
     }
-
-    KFK.stage.batchDraw();
+    KFK.dragLayer.batchDraw();
+    KFK.layer.batchDraw();
     let nodeid = node.getAttr('nodeid');
 
-    if (KFK.tween) {
-        KFK.tween.pause();
-    }
-    node.setAttrs({
-        shadowOffset: {
-            x: 15,
-            y: 15
-        },
-        scale: {
-            x: node.getAttr("startScale") * 1.2,
-            y: node.getAttr("startScale") * 1.2
-        }
-    });
+    // if (KFK.tween) {
+    //     KFK.tween.pause();
+    // }
+    // node.setAttrs({
+    //     shadowOffset: {
+    //         x: 15,
+    //         y: 15
+    //     },
+    //     scale: {
+    //         x: node.getAttr("startScale") * 1.2,
+    //         y: node.getAttr("startScale") * 1.2
+    //     }
+    // });
 });
 
-KFK.stage.on("dragmove", function (evt) {
+
+KFK.dragStage.on("dragend", function (evt) {
     var node = evt.target;
-    let largeContainer = document.getElementById('large-container');
-    let theContainer = document.getElementById('container');
-    let theScroller = document.getElementById('scroll-container');
-    // console.log(largeContainer.clientWidth);
-    // console.log(largeContainer.offsetWidth);
-    // console.log(`moving...${node.x() + node.background.width() * 0.5} ${KFK.width}  ${largeContainer.clientWidth}`);
-    if (node.x() + node.background.width() * 0.5 > KFK.width) {
-        KFK.width = largeContainer.clientWidth + KFK.SCROLL_DELTA_HORI;
-        KFK.stage.width(KFK.width);
-        largeContainer.style.width = `${KFK.width}px`;
-        theContainer.style.width = `${KFK.width}px`;
-        KFK.stage.batchDraw();
-        theScroller.scrollLeft += node.background.width();
-    } else if (node.x() + node.background.width() * 0.5 > theScroller.clientWidth + theScroller.scrollLeft) {
-        theScroller.scrollLeft += 10;
-    } else if (node.y() + node.background.height() * 0.5 > KFK.height) {
-        console.log('Change height');
-        KFK.height = largeContainer.clientHeight + KFK.SCROLL_DELTA_VERT;
-        KFK.stage.height(KFK.height);
-        largeContainer.style.height = `${KFK.height}px`;
-        theContainer.style.height = `${KFK.height}px`;
-        KFK.stage.batchDraw();
-        theScroller.scrollTop += node.background.height();
-    } else if (node.y() + node.background.height() * 0.5 > theScroller.clientHeight + theScroller.scrollTop) {
-        theScroller.scrollTop += 10;
-    }
-
-    //KFK.layer.batchDraw();
-    //KFK.redrawLinks();
-
-});
-
-KFK.stage.on("dragend", function (evt) {
-    var node = evt.target;
+    //这里有个很有意思的地方：从layer移动node到dragLayer时，node的位置自动变成在dragLayer中屏幕上的位置
+    //因此，当在放回到layer时，只需直接把node在dragLayer的位置加上滚动位移即可
     node.moveTo(KFK.layer);
+    node.x(node.x() + KFK.scrollContainer.scrollLeft);
+    node.y(node.y() + KFK.scrollContainer.scrollTop);
+    //如果有transformer, 则跟着一起放回layer层
     let transformer = KFK.stage.find('Transformer');
     if (transformer && transformer[0]) {
         let theNode = transformer[0].getNode();
@@ -255,34 +245,36 @@ KFK.stage.on("dragend", function (evt) {
             transformer.moveTo(KFK.layer);
         }
     }
-    KFK.redrawLinks();
-    KFK.stage.batchDraw();
-    node.to({
-        duration: 0.5,
-        easing: Konva.Easings.ElasticEaseOut,
-        scaleX: node.getAttr("startScale"),
-        scaleY: node.getAttr("startScale"),
-        shadowOffsetX: 5,
-        shadowOffsetY: 5
-    });
+    KFK.layer.batchDraw();
+    KFK.dragLayer.batchDraw();
+    //KFK.redrawLinks();
+    // node.to({
+    //     duration: 0.5,
+    //     easing: Konva.Easings.ElasticEaseOut,
+    //     scaleX: node.getAttr("startScale"),
+    //     scaleY: node.getAttr("startScale"),
+    //     shadowOffsetX: 5,
+    //     shadowOffsetY: 5
+    // });
 });
-KFK.loadImages = function loadimg(sources, callback) {
+KFK.loadImages = function loadimg(callback) {
     let loadedImages = 0;
     let numImages = 0;
-    for (var src in sources) {
+    for (var file in assetIcons) {
         numImages++;
     }
-    for (var src in sources) {
-        KFK.images[src] = new Image();
-        KFK.images[src].onload = function () {
+    for (var file in assetIcons) {
+        KFK.images[file] = new Image();
+        KFK.images[file].onload = function () {
             if (++loadedImages >= numImages) {
                 callback(KFK.images);
             }
         };
-        KFK.images[src].src = sources[src];
+        console.log(`${file}`);
+        KFK.images[file].src = assetIcons[file];
+        console.log(`${file}  -> ${assetIcons[file]}`);
     }
 };
-
 
 class Node {
     constructor(id, type, x, y) {
@@ -315,6 +307,20 @@ class Link {
     }
 }
 
+KFK.gotoHome = function () {
+    // var oldScale = KFK.stage.scaleX();
+    // KFK.stage.scale({ x: 1, y: 1 });
+    // var mousePointTo = { x: window.innerWidth * 0.5, y: window.innerHeight * 0.5 };
+    // var newPos = {
+    //     x: (KFK.stage.width() - window.innerWidth) * 0.5,
+    //     y: (KFK.stage.height() - window.innerHeight) * 0.5,
+    // };
+    // KFK.stage.position(newPos);
+    // KFK.stage.batchDraw();
+
+    // console.log(`${KFK.startNode.x}`);
+};
+
 KFK.getConnectorPoints = function (from, to, rad) {
     const dx = to.x - from.x;
     const dy = to.y - from.y;
@@ -341,9 +347,9 @@ KFK.findNode = function (id) {
 };
 
 KFK.findConnect = function (linkid) {
-    let conn = KFK.lineLayer.findOne('#connect-' + linkid);
+    let conn = KFK.layer.findOne('#connect-' + linkid);
     if (conn === undefined)
-        conn = KFK.tipLineLayer.findOne('#connect-' + linkid);
+        conn = KFK.layer.findOne('#connect-' + linkid);
     if (conn === undefined)
         console.warn(`Connect #connect-${linkid} not exist`);
     return conn;
@@ -364,8 +370,10 @@ KFK.createNode = function (node) {
         shadowOpacity: 0.6,
         draggable: false,
     });
+    console.log(node.type);
     let icon = new Konva.Image({
         image: KFK.images[node.type],
+        // image: icons['and.svg'],
         x: -(node.size * node.iconscale),
         y: -(node.size * node.iconscale),
         width: (node.size * node.iconscale) * 2,
@@ -380,48 +388,47 @@ KFK.createNode = function (node) {
         draggable: false,
     });
 
-    let group = new Konva.Group({
+    let tplNode = new Konva.Group({
         x: node.x,
         y: node.y,
         draggable: true,
         startScale: 1,
         id: node.id,
         dragBoundFunc: function (pos) {
-            // var newY = pos.y < 50 ? 50 : (pos.y > KFK.height-50? KFK.height-50: pos.y);
-            // var newX = pos.x < 50 ? 50 : (pos.x > KFK.width-50? KFK.height-50: pos.y);
             var newX = pos.x < 50 ? 50 : pos.x;
             var newY = pos.y < 100 ? 100 : pos.y;
-            newX = newX > KFK.width - 50 ? KFK.width - 50 : newX;
-            newY = newY > KFK.height - 50 ? KFK.height - 50 : newY;
+            newX = newX > KFK.width() - 50 ? KFK.width() - 50 : newX;
+            newY = newY > KFK.height() - 50 ? KFK.height() - 50 : newY;
             return {
                 x: newX,
                 y: newY
             };
         }
     });
-    group.on('mouseover', function () {
+    tplNode.on('mouseover', function () {
         document.body.style.cursor = 'pointer';
     });
-    group.on('mouseout', function () {
+    tplNode.on('mouseout', function () {
         document.body.style.cursor = 'default';
     });
-    group.on('click', function (e) {
+    tplNode.on('click', function (e) {
         let withShift = e.shiftKey || e.evt.shiftKey;
         e.cancelBubble = true;
 
         if (withShift) {
             if (KFK.pickedNode === null) {
-                KFK.pickedNode = group;
+                KFK.pickedNode = tplNode;
             } else {
-                KFK.placeConnection(KFK.pickedNode.id(), group.id());
-                KFK.pickedNode = group;
+                KFK.placeConnection(KFK.pickedNode.id(), tplNode.id());
+                KFK.pickedNode = tplNode;
             }
         }
     });
 
-    group.add(circle).add(icon);
+    tplNode.add(circle).add(icon);
+    tplNode.background = circle;
 
-    return group;
+    return tplNode;
 }
 
 KFK.moveTip = function (e) {
@@ -449,14 +456,14 @@ KFK.deleteTip = function (e) {
         KFK.stage.find('Transformer').destroy();
         KFK.focusOnTip.destroy();
         KFK.layer.batchDraw();
-        KFK.tipLineLayer.batchDraw();
+        KFK.layer.batchDraw();
         KFK.focusOnTip = undefined;
     }
 }
 
 KFK.createTip = function (node) {
     let background = new Konva.Image({
-        image: KFK.images[`tip_${node.type}`],
+        image: KFK.images[`${node.type}`],
         x: -(node.size * node.iconscale),
         y: -(node.size * node.iconscale),
         width: (node.size * node.iconscale) * 2,
@@ -470,8 +477,11 @@ KFK.createTip = function (node) {
         },
         shadowOpacity: 0.6,
         draggable: false,
+        perfectDrawEnabled: false,
+        name: 'background',
     });
 
+    background.cache();
     var textNode = new Konva.Text({
         text: tip_variants[node.type].text,
         x: -(node.size * node.iconscale - 5),
@@ -479,19 +489,38 @@ KFK.createTip = function (node) {
         fontSize: 20,
         draggable: true,
         width: (node.size * node.iconscale) * 2,
+        height: (node.size * node.iconscale) * 2 * node.ratio,
         draggable: false,
+        name: 'text',
+        listening: false,
     });
+    textNode.cache();
 
     let oneTIP = new Konva.Group({
         x: node.x,
         y: node.y,
+        width: background.width(),
+        height: background.height(),
         draggable: true,
         startScale: 1,
         id: node.id,
+        perfectDrawEnabled: false,
+        dragBoundFunc: function (pos) {
+            var newX = pos.x < 50 ? 50 : pos.x;
+            var newY = pos.y < 100 ? 100 : pos.y;
+            newX = newX > KFK.width() - 50 ? KFK.width() - 50 : newX;
+            newY = newY > KFK.height() - 50 ? KFK.height() - 50 : newY;
+            return {
+                x: newX,
+                y: newY
+            };
+        }
     });
 
     oneTIP.background = background;
     oneTIP.textNode = textNode;
+    oneTIP.width(200);
+    oneTIP.height(200);
     oneTIP.on('mouseover', function (e) {
         document.body.style.cursor = 'pointer';
         if (e.evt.ctrlKey) {
@@ -656,7 +685,6 @@ KFK.createTip = function (node) {
         KFK.layer.batchDraw();
     });
 
-    oneTIP.on('')
     oneTIP.add(background).add(textNode);
     oneTIP.rotation(tip_variants[node.type]['rotation']);
 
@@ -750,8 +778,11 @@ KFK.placeNode = function (id, type, x, y) {
     KFK.nodes.push(aNode);
     let nodeGraph = KFK.createNode(aNode);
     KFK.layer.add(nodeGraph);
-    KFK.redrawLinks();
+    KFK.layer.draw();
+    //KFK.redrawLinks();
+    return aNode;
 };
+
 
 KFK.placeConnection = function (from, to) {
     if (from == to || from == 'END' || to == 'START')
@@ -766,8 +797,8 @@ KFK.placeConnection = function (from, to) {
     let aLink = new Link('link-' + linkId, from, to, '');
     KFK.links.push(aLink);
     let connect = KFK.createConnect(aLink);
-    KFK.lineLayer.add(connect);
-    KFK.redrawLinks();
+    KFK.layer.add(connect);
+    //KFK.redrawLinks();
 };
 
 KFK.placeTipConnection = function (from, to) {
@@ -783,13 +814,13 @@ KFK.placeTipConnection = function (from, to) {
     let aLink = new Link('link-' + linkId, from, to, '');
     KFK.tipLinks.push(aLink);
     let connect = KFK.createConnect(aLink);
-    KFK.tipLineLayer.add(connect);
-    KFK.redrawLinks();
+    KFK.layer.add(connect);
+    //KFK.redrawLinks();
 };
 
 KFK.redrawLinks = function redrawLinks() {
     KFK.links.forEach(link => {
-        var arrow = KFK.lineLayer.findOne('#arrow-' + link.id);
+        var arrow = KFK.layer.findOne('#arrow-' + link.id);
         var fromNode = KFK.findNode(link.from);
         var toNode = KFK.findNode(link.to);
 
@@ -801,7 +832,7 @@ KFK.redrawLinks = function redrawLinks() {
         arrow.points(points);
     });
     KFK.tipLinks.forEach(link => {
-        var arrow = KFK.tipLineLayer.findOne('#arrow-' + link.id);
+        var arrow = KFK.layer.findOne('#arrow-' + link.id);
         var fromNode = KFK.findNode(link.from);
         var toNode = KFK.findNode(link.to);
         var fromPosition = fromNode.position();
@@ -818,16 +849,25 @@ KFK.redrawLinks = function redrawLinks() {
     });
 
     KFK.layer.batchDraw();
-    KFK.lineLayer.batchDraw();
-    KFK.tipLineLayer.batchDraw();
 };
 
 KFK.initLogo = function () {
-    KFK.placeNode('START', 'start', 120, KFK.height * 0.5);
-    KFK.placeNode('END', 'end', KFK.width - 50, KFK.height * 0.5);
-    KFK.placeConnection('START', 'END');
+    KFK.gridLayer.add(new Konva.Line({
+        x: 100,
+        y: 200,
+        points: [73, 70, 340, 23, 450, 60, 500, 20],
+        stroke: 'red',
+        tension: 1,
+    }));
+    KFK.gridLayer.batchDraw();
+    // KFK.startNode = KFK.placeNode('START', 'start', 120, KFK.height() * 0.25);
+    KFK.startNode = KFK.placeNode('START', 'start', 120, 120);
+    // KFK.endNode = KFK.placeNode('END', 'end', KFK.width() * 0.5 - 50, KFK.height() * 0.25);
+    KFK.endNode = KFK.placeNode('END', 'end', 300, 120);
+    //  KFK.placeConnection('START', 'END');
+    // KFK.centerPos = { x: 120 + (KFK.width() - 50 - 120) * 0.5, y: KFK.height() * 0.5 };
 };
-KFK.loadImages(images_urls, KFK.initLogo);
+KFK.loadImages(KFK.initLogo);
 
 KFK.setMode = function (mode) {
     KFK.mode = mode;
@@ -842,21 +882,54 @@ KFK.isActive = function (mode) {
     return KFK.mode === mode;
 }
 
-KFK.scrollContainer = document.getElementById('scroll-container');
-KFK.repositionStage = function () {
-    var dx = KFK.scrollContainer.scrollLeft - KFK.PADDING;
-    var dy = KFK.scrollContainer.scrollTop - KFK.PADDING;
-    //KFK.stage.container().style.transform = `translate(${dx}px, ${dy}px)`;
-    //KFK.stage.x(-dx);
-    //KFK.stage.y(-dy);
-    //KFK.stage.batchDraw();
+KFK.width = function (w) {
+    if (w) {
+        KFK._width = w;
+        KFK.stage.width(w);
+    }
+    return KFK._width;
+};
+KFK.height = function (h) {
+    if (h) {
+        KFK._height = h;
+        KFK.stage.height(h);
+    }
+    return KFK._height;
+};
+
+KFK.size = function (w, h) {
+    KFK.width(w);
+    KFK.height(h);
+};
+
+
+KFK.inViewPort = function (r1) {
+    return !(
+        r1.x > window.innerWidth + KFK.scrollContainer.scrollLeft ||
+        r1.x + r1.width < KFK.scrollContainer.scrollLeft ||
+        r1.y > window.innerHeight + KFK.scrollContainer.scrollTop ||
+        r1.y + r1.height < KFK.scrollContainer.scrollTop);
 }
-// KFK.scrollContainer.addEventListener('scroll', KFK.repositionStage);
-// KFK.repositionStage();
+
+//TODO: 可以不要了？
+KFK.setVisible = function () {
+    //layer上已经不做拖动操作，如果改变visible, 必须执行batchDraw才能看到变化
+    //这样导致性能极低。 既然layer上已经不做拖动操作，可以不改变node的visible状态
+    console.log(KFK.layer.children.length);
+    for (let i = 0; i < KFK.layer.children.length; i++) {
+        let v = KFK.inViewPort(KFK.layer.children[i].getClientRect());
+        KFK.layer.children[i].visible(v);
+        // KFK.layer.batchDraw();
+        console.log(v);
+    }
+};
+
+//KFK.scrollContainer.addEventListener('scroll', KFK.setVisible);
 
 module.exports = KFK;
 
 
-//TODO RichText
-//TODO Pan
-// Collision to place Pin https://konvajs.org/docs/sandbox/Collision_Detection.html
+//TODO: Zoom in / Zoom out
+//TODO: use Collision detection method to place Pin https://konvajs.org/docs/sandbox/Collision_Detection.html
+//TODO: RichText
+//TODO: Free Drawing
