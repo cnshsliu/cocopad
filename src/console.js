@@ -1,8 +1,30 @@
 import Konva from "konva";
 import assetIcons from '../assets/*.svg';
 import uuidv4 from 'uuid/v4';
+import "./importjquery";
+import "jquery-ui-dist/jquery-ui.js";
 import { BIconFolderSymlinkFill, directivesPlugin } from "bootstrap-vue";
 
+let config = {
+    node: {
+        start: {
+            width: 40,
+            height: 40,
+        },
+        end: {
+            width: 40,
+            height: 40,
+        },
+        text: {
+            width: 120,
+            height: 20,
+        },
+        pin: {
+            width: 40,
+            height: 40,
+        }
+    }
+}
 let tip_variants = {
     'tip': {
         rotateEnabled: false,
@@ -44,11 +66,14 @@ KFK.centerPos = { x: 0, y: 0 };
 KFK.centerPos = { x: 0, y: 0 };
 KFK.startNode = null;
 KFK.endNode = null;
+KFK.lastClickOnNode = Date.now();
 
 // KFK._width = window.innerWidth; KFK._height = window.innerHeight;
 KFK._width = window.innerWidth * 6; KFK._height = window.innerHeight * 6;
 
 KFK.nodes = [];
+KFK.defaultNodeWidth = 40;
+KFK.defaultNodeHeight = 40;
 KFK.links = [];
 KFK.tipLinks = [];
 KFK.tips = [];
@@ -56,6 +81,7 @@ KFK.images = {};
 KFK.pickedNode = null;
 KFK.pickedTip = null;
 KFK.mode = "tpl";
+KFK.editting = false;
 
 //TODO: 支持PAN canvas为十倍的大小，或者，自动扩展canvas, 类似draw.io的做法， 每次扩展一个屏幕大小
 //TODO: TIPS可以钉在桌面上，钉住后，不可移动
@@ -69,9 +95,11 @@ KFK.tween = null;
 KFK.dragStage = new Konva.Stage({ container: "container2", width: window.innerWidth, height: window.innerHeight });
 // KFK.dragStage.zIndex(200);
 // KFK.container = KFK.stage.container(); KFK.container.tabIndex = 1; KFK.container.focus();
+KFK.container = document.getElementById('container3'); KFK.container.tabIndex = 1; KFK.container.focus();
 KFK.dragContainer = KFK.dragStage.container();
 KFK.scrollContainer = document.getElementById('scroll-container');
 KFK.lockMode = false;
+KFK.selectedNode = null;
 // KFK.container.addEventListener('keydown', function (e) {
 //     switch (e.keyCode) {
 //         case 16:  //Shift
@@ -197,6 +225,7 @@ KFK.loadImages = function loadimg(callback) {
     for (var file in assetIcons) {
         numImages++;
     }
+    console.log(assetIcons);
     for (var file in assetIcons) {
         KFK.images[file] = new Image();
         KFK.images[file].onload = function () {
@@ -214,7 +243,8 @@ class Node {
     constructor(id, type, x, y) {
         this.id = id;
         this.type = type;
-        this.size = 20;
+        this.width = config.node[type].width;
+        this.height = config.node[type].height;
         this.iconscale = 0.8;
         this.x = x;
         this.y = y;
@@ -372,23 +402,211 @@ KFK.createC3 = function () {
     c3.style.height = KFK._height + "px";
 
     c3.addEventListener('click', function (e) {
-        console.log(`${e.clientX + KFK.scrollContainer.scrollLeft}`);
-        let aNode = new Node(uuidv4(), 'start', e.clientX + KFK.scrollContainer.scrollLeft, e.clientY);
-        KFK.nodes.push(aNode);
-        KFK.createNode(aNode);
+        console.log("j = " + KFK.editting);
+        if (!KFK.editting) {
+            let aNode = new Node(
+                uuidv4(),
+                KFK.mode,
+                e.clientX + KFK.scrollContainer.scrollLeft,
+                e.clientY + KFK.scrollContainer.scrollTop
+            );
+            KFK.nodes.push(aNode);
+            KFK.createNode(aNode);
+        }
+        e.preventDefault();
+    });
+
+    let preventDefault = false;
+    document.getElementById('container3').addEventListener('keyup', function (e) {
+        let preventDefault = false;
+        console.log(e.keyCode);
+        if (e.keyCode === 16) { //Shift
+            KFK.lockMode = false;
+            KFK.APP.lockMode = false;
+            KFK.pickedNode = null;
+            preventDefault = true;
+        } else if (e.keyCode >= 37 && e.keyCode <= 40) { //Left, Up, Right, Down
+            // KFK.moveTip(e);
+            preventDefault = true;
+        } else if (e.keyCode === 46 || e.keyCode === 68) {  //D
+            // KFK.deleteTip(e);
+            preventDefault = true;
+        } else if (e.keCode === 27) { // ESC
+            if (KFK.selectedNode) {
+                KFK.selectedNode.style.background = "transparent";
+                KFK.selectedNode = null;
+            }
+
+        }
+        if (preventDefault) e.preventDefault();
     });
 
     document.getElementById('container3').appendChild(c3);
     KFK.C3 = c3;
 
+    console.log(`scroll offset left: ${document.getElementById('scroll-container').offsetLeft} top: ${document.getElementById('scroll-container').offsetTop}`);
+    console.log(`conta2 offset left: ${document.getElementById('container2').offsetLeft} top: ${document.getElementById('container2').offsetTop}`);
+    console.log(`conta3 offset left: ${document.getElementById('container3').offsetLeft} top: ${document.getElementById('container3').offsetTop}`);
+    console.log(`ccccc3 offset left: ${KFK.C3.offsetLeft} top: ${KFK.C3.offsetTop}`);
+
+    KFK.C3.addEventListener('mousemove', function (e) {
+        console.log(`${e.clientX} ${e.clientY}`);
+    })
 }
+
+function px(v) {
+    if (typeof v === 'string') {
+        if (v.endsWith('px')) {
+            return v;
+        } else {
+            return v + "px";
+        }
+    } else {
+        return v + "px";
+    }
+}
+
+function unpx(v) {
+    if (typeof v === 'string' && v.endsWith('px')) {
+        return v.substr(0, v.length - 2);
+    }
+}
+
+function ltPos(node) {
+    return {
+        x: node.x - node.width * 0.5,
+        y: node.y - node.height * 0.5
+    };
+}
+
+function editTextNode(textnode, theDIV) {
+    KFK.editting = true;
+    theDIV.editting = true;
+
+    textnode.editting = true;
+    console.log(`edit textnode ${textnode.innerText}`);
+    let oldText = textnode.innerText;
+    textnode.style.visibility = "hidden";
+    theDIV.style.background = "transparent";
+    var textPosition = { x: unpx(textnode.style.left), y: unpx(textnode.style.top) };
+    var areaPosition = { x: unpx(theDIV.style.left), y: unpx(theDIV.style.top) };
+    var textarea = document.createElement('input');
+    document.body.appendChild(textarea);
+    textarea.value = oldText;
+    console.log(`Textarea value is ${oldText}`);
+    textarea.style.position = 'absolute';
+    textarea.style.top = areaPosition.y + 'px';
+    textarea.style.left = areaPosition.x + 'px';
+    textarea.style.width = theDIV.style.width;
+    textarea.style.height = theDIV.style.height;
+    textarea.style.fontSize = textnode.style.fontSize;
+    textarea.style.borderColor = '#000';
+    textarea.style.borderWidth = '1px';
+    textarea.style.padding = '0px';
+    textarea.style.margin = '0px';
+    textarea.style.overflow = 'hidden';
+    textarea.style.background = 'none';
+    textarea.style.outline = 'none';
+    textarea.style.resize = 'none';
+    textarea.style.transformOrigin = 'left top';
+
+    // reset height
+    textarea.style.height = 'auto';
+
+    textarea.focus();
+
+    function removeTextarea() {
+        textarea.parentNode.removeChild(textarea);
+        window.removeEventListener('click', handleOutsideClick);
+        textnode.style.visibility = "visible";
+        KFK.editting = false;
+        textnode.editting = false;
+        theDIV.editting = false;
+    }
+
+    function setTextareaWidth(newWidth) {
+        if (!newWidth) {
+            // set width for placeholder
+            newWidth = unpx(textnode.style.width);
+        }
+        // some extra fixes on different browsers
+        var isSafari = /^((?!chrome|android).)*safari/i.test(
+            navigator.userAgent
+        );
+        var isFirefox =
+            navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+        if (isSafari || isFirefox) {
+            newWidth = Math.ceil(newWidth);
+        }
+
+        var isEdge =
+            document.documentMode || /Edge/.test(navigator.userAgent);
+        if (isEdge) {
+            newWidth += 1;
+        }
+        textarea.style.width = newWidth + 'px';
+    }
+
+    textarea.addEventListener('keydown', function (e) {
+        // hide on enter
+        // but don't hide on shift + enter
+        if (e.keyCode === 13 && !e.shiftKey) {
+            textnode.innerText = textarea.value;
+            removeTextarea();
+        }
+        // on esc do not set value back to node
+        if (e.keyCode === 27) {
+            removeTextarea();
+        }
+    });
+
+    function handleOutsideClick(e) {
+        if (e.target !== textarea) {
+            textnode.innerText = textarea.value;
+            removeTextarea();
+        }
+    }
+    setTimeout(() => {
+        window.addEventListener('click', handleOutsideClick);
+    });
+}
+
+
+//TODO: parent offset
 KFK.createNode = function (node) {
+
+    var nodeObj = null;
+    if (["start", "end", "pin"].indexOf(node.type) >= 0) {
+        nodeObj = document.createElement('img');
+        nodeObj.src = KFK.images[node.type].src;
+        nodeObj.edittable = false;
+    } else if (node.type === "text") {
+        nodeObj = document.createElement('span');
+        nodeObj.style.fontSize = "18px";
+        nodeObj.innerText = "Some text here";
+        nodeObj.edittable = true;
+    }
+    if (!nodeObj) {
+        console.log(`${node.type} is not supported`);
+    }
+    nodeObj.style.width = px(node.width);
+    nodeObj.style.height = px(node.height);
+
+
+
     var nodeDIV = document.createElement('div');
+    nodeDIV.id = node.id;
+    nodeDIV.type = node.type;
     nodeDIV.style.position = 'absolute';
-    nodeDIV.style.top = node.y + 'px';
-    nodeDIV.style.left = node.x + 'px';
-    nodeDIV.style.width = '101px';
-    nodeDIV.style.height = '101px';
+    nodeDIV.style.top = px(ltPos(node).y);
+    nodeDIV.style.left = px(ltPos(node).x);
+    nodeDIV.style.width = px(node.width);
+    nodeDIV.style.height = px(node.height);
+    nodeDIV.style.width = "fit-content";
+    nodeDIV.style.height = "fit-content";
+    // if (node.type === "text") {
+    //     nodeDIV.setAttribute("draggable", "true");
+    // }
     nodeDIV.style.zIndex = '1';
     nodeDIV.style.border = 'none';
     nodeDIV.style.padding = '0px';
@@ -396,14 +614,72 @@ KFK.createNode = function (node) {
     nodeDIV.style.overflow = 'hidden';
     nodeDIV.style.background = 'transparent';
     nodeDIV.style.outline = 'none';
-    nodeDIV.style.resize = 'none';
+    // nodeDIV.style.resize = 'none';
     nodeDIV.style.display = 'block';
-    var image = document.createElement('img');
-    image.src = KFK.images[node.type].src;
-    nodeDIV.appendChild(image);
+    //click时，切换selected状态
+    nodeDIV.addEventListener('click', function (e) {
+        let now = Date.now();
+        if (now - KFK.lastClickOnNode < 500) {
+            console.log("here");
+            //dble click
+            e.stopImmediatePropagation();
+            if (nodeObj.edittable)
+                editTextNode(nodeObj, nodeDIV);
+        } else {
+            if (KFK.selectedNode === nodeDIV) {
+                KFK.selectedNode.style.background = 'transparent';
+                KFK.selectedNode = null;
+            } else {
+                if (KFK.selectedNode === null) {
+                    KFK.selectedNode = nodeDIV;
+                    nodeDIV.style.background = 'red';
+                } else {
+                    KFK.selectedNode.style.background = 'transparent';
+                    KFK.selectedNode = nodeDIV;
+                    nodeDIV.style.background = 'red';
+                }
+            }
+        }
+        KFK.lastClickOnNode = now;
+        e.stopPropagation();
+    });
+
+
+    nodeDIV.appendChild(nodeObj);
 
     KFK.C3.appendChild(nodeDIV);
+
+    console.log(`make ${node.id} draggable`);
+    $(`#${node.id}`).draggable({ scroll: true });
+
+    nodeDIV.addEventListener('dragend', function (e) {
+        console.log('dragend');
+        nodeDIV.style.left = px(KFK.scroll_posX(e.clientX) - nodeDIV.clientWidth * 0.5);
+        nodeDIV.style.top = px(KFK.scroll_posY(e.clientY) - nodeDIV.clientHeight * 0.5);
+        nodeObj.style.left = nodeDIV.style.left;
+        nodeObj.style.top = nodeDIV.style.top;
+        console.log(`client: ${e.clientX} ${e.clientY} style: ${nodeDIV.style.left}, ${nodeDIV.style.top} finalLT: ${nodeDIV.clientLeft} ${nodeDIV.clientTop} `);
+        console.log(`client: ${e.clientX} ${e.clientY} style: ${nodeObj.style.left}, ${nodeObj.style.top} finalLT: ${nodeObj.clientLeft} ${nodeObj.clientTop} `);
+        e.stopImmediatePropagation();
+    });
+    nodeObj.addEventListener('mouseover', function (e) {
+        document.body.style.cursor = 'pointer';
+    });
+    nodeObj.addEventListener('mouseout', function () {
+        document.body.style.cursor = 'default';
+    });
+    console.log(`${node.id} offset left: ${nodeDIV.offsetLeft} top: ${nodeDIV.offsetTop}`);
+    console.log(`${node.id} positi left: ${nodeDIV.style.left} top: ${nodeDIV.style.top}`);
+    console.log(`${node.id} sizeee width: ${nodeDIV.style.width} top: ${nodeDIV.style.height}`);
+    console.log(`${node.id} nodeps left: ${node.x} top: ${node.y}`);
 }
+
+KFK.scroll_posX = function (x) {
+    return x + KFK.scrollContainer.scrollLeft;
+};
+KFK.scroll_posY = function (y) {
+    return y + KFK.scrollContainer.scrollTop;
+};
 
 KFK.moveTip = function (e) {
     let DELTA = 5;
@@ -747,7 +1023,7 @@ KFK.removeTipLink = function (from, to) {
 };
 
 KFK.placeNode = function (id, type, x, y) {
-    let aNode = new Node(id, type, x, y);
+    let aNode = new Node(id, type, x + KFK.scrollContainer.scrollLeft, y + KFK.scrollContainer.scrollTop);
     KFK.nodes.push(aNode);
     let nodeGraph = KFK.createNode(aNode);
     //KFK.layer.add(nodeGraph);
@@ -823,7 +1099,7 @@ KFK.redrawLinks = function redrawLinks() {
     KFK.layer.batchDraw();
 };
 
-KFK.initLogo = function () {
+KFK.init = function () {
 
     KFK.gridLayer.add(new Konva.Line({
         x: 100,
@@ -841,7 +1117,7 @@ KFK.initLogo = function () {
     //  KFK.placeConnection('START', 'END');
     // KFK.centerPos = { x: 120 + (KFK.width() - 50 - 120) * 0.5, y: KFK.height() * 0.5 };
 };
-KFK.loadImages(KFK.initLogo);
+KFK.loadImages(KFK.init);
 
 KFK.setMode = function (mode) {
     KFK.mode = mode;

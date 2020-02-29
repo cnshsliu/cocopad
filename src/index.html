@@ -5,22 +5,22 @@
   <title>Konva demo</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="stylesheet" href="./my-styles/style.css">
+  <link rel="stylesheet" href="../my-styles/style.css">
   <link rel="shortcut icon" href="./favicon.ico" />
 </head>
 
 <body>
   <div id="scroll-container" style="z-index: 0;">
-      <div id="container2" style="z-index: 0;"></div>
-      <div id="container3" style="z-index: 1;"></div>
+    <div id="container2" style="z-index: 0;"></div>
+    <div id="container3" style="z-index: 1;"></div>
   </div>
 
   <div id='app'>
     <div id="top">
       <b-navbar toggleable="lg" type="light" variant="outline-primary">
         <b-navbar-brand href="#">
-          <img src="assets/p8star.svg" class="logo d-inline-block align-top" alt="Kitten">
-          <span class='lkh'>KFEngine</span>
+          <img src="../assets/p8star.svg" class="logo d-inline-block align-top" alt="Kitten">
+          <span class='lkh' id="greeting">KFEngine</span>
         </b-navbar-brand>
 
         <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
@@ -89,7 +89,8 @@
         <b-list-group-item class="d-flex align-items-center" href="#some-link">
           <b-img :src="images['sub'].src" fluid alt="" scale="2"></b-img>
         </b-list-group-item>
-        <b-list-group-item class="d-flex align-items-center" href="#" @click="setMode('tpl');" @active="isActive('tpl')">
+        <b-list-group-item class="d-flex align-items-center" href="#" @click="setMode('tpl');"
+          @active="isActive('tpl')">
           <b-img :src="images['task'].src" fluid alt="" scale="2"></b-img>
         </b-list-group-item>
         <b-list-group-item class="d-flex align-items-center" href="#">
@@ -101,7 +102,7 @@
         <b-list-group-item class="d-flex align-items-center" @click="setMode('tip');" :active="active['tip']">
           <b-img :src="images['tip'].src" fluid alt="" scale="2"></b-img>
         </b-list-group-item>
-        <b-list-group-item class="d-flex align-items-center" @click="setMode('blanket');"  :active="active['blanket']">
+        <b-list-group-item class="d-flex align-items-center" @click="setMode('blanket');" :active="active['blanket']">
           <b-img :src="images['blanket'].src" fluid alt="" scale="2"></b-img>
         </b-list-group-item>
         <b-list-group-item class="d-flex align-items-center" @click="setMode('p8star');" :active="active['p8star']">
@@ -109,6 +110,9 @@
         </b-list-group-item>
         <b-list-group-item class="d-flex align-items-center" @click="setMode('pin');" :active="active['pin']">
           <b-img :src="images['pin'].src" fluid alt="" scale="2"></b-img>
+        </b-list-group-item>
+        <b-list-group-item class="d-flex align-items-center" @click="setMode('text');" :active="active['text']">
+          <b-img :src="images['text'].src" fluid alt="" scale="2"></b-img>
         </b-list-group-item>
       </b-list-group>
     </div>
