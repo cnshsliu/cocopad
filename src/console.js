@@ -19,6 +19,10 @@ let config = {
             width: 120,
             height: 20,
         },
+        yellowtip: {
+            width: 200,
+            height: 200,
+        },
         pin: {
             width: 40,
             height: 40,
@@ -402,22 +406,26 @@ KFK.createC3 = function () {
     c3.style.height = KFK._height + "px";
 
     c3.addEventListener('click', function (e) {
-        console.log("j = " + KFK.editting);
         if (!KFK.editting) {
-            let aNode = new Node(
-                uuidv4(),
-                KFK.mode,
-                e.clientX + KFK.scrollContainer.scrollLeft,
-                e.clientY + KFK.scrollContainer.scrollTop
-            );
-            KFK.nodes.push(aNode);
-            KFK.createNode(aNode);
+            if (KFK.selectedNode) {
+                KFK.toggleShadow(KFK.selectedNode, false);
+                KFK.selectedNode = null;
+            } else {
+                let aNode = new Node(
+                    uuidv4(),
+                    KFK.mode,
+                    e.clientX + KFK.scrollContainer.scrollLeft,
+                    e.clientY + KFK.scrollContainer.scrollTop
+                );
+                KFK.nodes.push(aNode);
+                KFK.createNode(aNode);
+            }
         }
         e.preventDefault();
     });
 
     let preventDefault = false;
-    document.getElementById('container3').addEventListener('keyup', function (e) {
+    $('#container3').keydown(function (e) {
         let preventDefault = false;
         console.log(e.keyCode);
         if (e.keyCode === 16) { //Shift
@@ -426,10 +434,11 @@ KFK.createC3 = function () {
             KFK.pickedNode = null;
             preventDefault = true;
         } else if (e.keyCode >= 37 && e.keyCode <= 40) { //Left, Up, Right, Down
-            // KFK.moveTip(e);
+            if (KFK.selectedNode)
+                KFK.moveNode(e);
             preventDefault = true;
         } else if (e.keyCode === 46 || e.keyCode === 68) {  //D
-            // KFK.deleteTip(e);
+            KFK.deleteNode(e);
             preventDefault = true;
         } else if (e.keCode === 27) { // ESC
             if (KFK.selectedNode) {
@@ -438,7 +447,10 @@ KFK.createC3 = function () {
             }
 
         }
-        if (preventDefault) e.preventDefault();
+        if (preventDefault) {
+            e.stopPropagation();
+            e.preventDefault();
+        }
     });
 
     document.getElementById('container3').appendChild(c3);
@@ -449,9 +461,9 @@ KFK.createC3 = function () {
     console.log(`conta3 offset left: ${document.getElementById('container3').offsetLeft} top: ${document.getElementById('container3').offsetTop}`);
     console.log(`ccccc3 offset left: ${KFK.C3.offsetLeft} top: ${KFK.C3.offsetTop}`);
 
-    KFK.C3.addEventListener('mousemove', function (e) {
-        console.log(`${e.clientX} ${e.clientY}`);
-    })
+    // KFK.C3.addEventListener('mousemove', function (e) {
+    //     console.log(`${e.clientX} ${e.clientY}`);
+    // })
 }
 
 function px(v) {
@@ -482,21 +494,28 @@ function ltPos(node) {
 function editTextNode(textnode, theDIV) {
     KFK.editting = true;
     theDIV.editting = true;
-
     textnode.editting = true;
     console.log(`edit textnode ${textnode.innerText}`);
     let oldText = textnode.innerText;
     textnode.style.visibility = "hidden";
-    theDIV.style.background = "transparent";
-    var textPosition = { x: unpx(textnode.style.left), y: unpx(textnode.style.top) };
+    // theDIV.style.background = "transparent";
     var areaPosition = { x: unpx(theDIV.style.left), y: unpx(theDIV.style.top) };
-    var textarea = document.createElement('input');
-    document.body.appendChild(textarea);
+    var textarea = null;
+    if (theDIV.type === "text")
+        textarea = document.createElement('input');
+    else {
+        textarea = document.createElement('textarea');
+        $(textarea).css("word-wrap", "break-word");
+        $(textarea).css("word-break", "break-all");
+        $(textarea).css("text-wrap", "unrestricted");
+    }
+    textarea.style.zIndex = "999";
+    KFK.C3.appendChild(textarea);
     textarea.value = oldText;
-    console.log(`Textarea value is ${oldText}`);
     textarea.style.position = 'absolute';
     textarea.style.top = areaPosition.y + 'px';
     textarea.style.left = areaPosition.x + 'px';
+    console.log(`${textarea.style.top} ${textarea.style.left}`);
     textarea.style.width = theDIV.style.width;
     textarea.style.height = theDIV.style.height;
     textarea.style.fontSize = textnode.style.fontSize;
@@ -510,13 +529,10 @@ function editTextNode(textnode, theDIV) {
     textarea.style.resize = 'none';
     textarea.style.transformOrigin = 'left top';
 
-    // reset height
-    textarea.style.height = 'auto';
-
     textarea.focus();
 
     function removeTextarea() {
-        textarea.parentNode.removeChild(textarea);
+        $(textarea).remove();
         window.removeEventListener('click', handleOutsideClick);
         textnode.style.visibility = "visible";
         KFK.editting = false;
@@ -571,28 +587,51 @@ function editTextNode(textnode, theDIV) {
     });
 }
 
+KFK.toggleShadow = function (theDIV, selected) {
+    if (theDIV.type !== 'yellowtip') {
+        if (selected) {
+            // theDIV.style.background = "red";
+            $(theDIV).css("box-shadow", "inset 0px 0px 10px 2px #608EFF");
+        } else {
+            // theDIV.style.background = "transparent";
+            $(theDIV).css("box-shadow", "");
+        }
+    } else {
+        if (selected) {
+            $(theDIV).css("box-shadow", "20px 20px 18px -18px #608EFF");
+        } else {
+            $(theDIV).css("box-shadow", "20px 20px 18px -18px #888888");
+        }
+    }
+}
 
 //TODO: parent offset
 KFK.createNode = function (node) {
-
+    let textPadding = 2;
     var nodeObj = null;
     if (["start", "end", "pin"].indexOf(node.type) >= 0) {
         nodeObj = document.createElement('img');
         nodeObj.src = KFK.images[node.type].src;
         nodeObj.edittable = false;
+        nodeObj.style.width = px(node.width); nodeObj.style.height = px(node.height);
     } else if (node.type === "text") {
         nodeObj = document.createElement('span');
         nodeObj.style.fontSize = "18px";
         nodeObj.innerText = "Some text here";
         nodeObj.edittable = true;
+        nodeObj.style.width = px(node.width - textPadding * 2); nodeObj.style.height = px(node.height - textPadding * 2);
+        nodeObj.style.left = px(2); nodeObj.style.top = px(2);
+    } else if (node.type === "yellowtip") {
+        nodeObj = document.createElement('span');
+        nodeObj.style.fontSize = "18px";
+        nodeObj.innerText = "Multiple line text";
+        nodeObj.edittable = true;
+        nodeObj.style.width = px(node.width - textPadding * 2); nodeObj.style.height = px(node.height - textPadding * 2);
+        nodeObj.style.left = px(2); nodeObj.style.top = px(2);
     }
     if (!nodeObj) {
         console.log(`${node.type} is not supported`);
     }
-    nodeObj.style.width = px(node.width);
-    nodeObj.style.height = px(node.height);
-
-
 
     var nodeDIV = document.createElement('div');
     nodeDIV.id = node.id;
@@ -602,14 +641,15 @@ KFK.createNode = function (node) {
     nodeDIV.style.left = px(ltPos(node).x);
     nodeDIV.style.width = px(node.width);
     nodeDIV.style.height = px(node.height);
-    nodeDIV.style.width = "fit-content";
-    nodeDIV.style.height = "fit-content";
-    // if (node.type === "text") {
-    //     nodeDIV.setAttribute("draggable", "true");
-    // }
+    if (node.type === "text") {
+        nodeDIV.style.width = "fit-content";
+        nodeDIV.style.height = "fit-content";
+    }
     nodeDIV.style.zIndex = '1';
     nodeDIV.style.border = 'none';
     nodeDIV.style.padding = '0px';
+    if (nodeDIV.type === 'text' || nodeDIV.type === 'yellowtip')
+        nodeDIV.style.padding = `${textPadding}px`;
     nodeDIV.style.margin = '0px';
     nodeDIV.style.overflow = 'hidden';
     nodeDIV.style.background = 'transparent';
@@ -617,61 +657,46 @@ KFK.createNode = function (node) {
     // nodeDIV.style.resize = 'none';
     nodeDIV.style.display = 'block';
     //click时，切换selected状态
-    nodeDIV.addEventListener('click', function (e) {
+    if (node.type === 'yellowtip') {
+        $(nodeDIV).css("background-image", `url(${KFK.images['yellowtip'].src})`);
+        $(nodeDIV).css("background-repeat", 'no-repeat');
+        $(nodeDIV).css("background-size", '100% 100%');
+        $(nodeDIV).css("box-shadow", "20px 20px 18px -18px #888888");
+    }
+
+    nodeDIV.appendChild(nodeObj);
+    KFK.C3.appendChild(nodeDIV);
+
+    let jqNodeDIV = $(nodeDIV);
+    jqNodeDIV.draggable({ scroll: true });
+
+    jqNodeDIV.hover(
+        () => { $(document.body).css('cursor', 'pointer'); },
+        () => { $(document.body).css('cursor', 'default'); }
+    );
+    jqNodeDIV.click((e) => {
         let now = Date.now();
-        if (now - KFK.lastClickOnNode < 500) {
-            console.log("here");
-            //dble click
-            e.stopImmediatePropagation();
-            if (nodeObj.edittable)
-                editTextNode(nodeObj, nodeDIV);
+        if (KFK.selectedNode === nodeDIV) {
+            KFK.toggleShadow(KFK.selectedNode, false);
+            KFK.selectedNode = null;
         } else {
-            if (KFK.selectedNode === nodeDIV) {
-                KFK.selectedNode.style.background = 'transparent';
-                KFK.selectedNode = null;
+            if (KFK.selectedNode === null) {
+                KFK.selectedNode = nodeDIV;
+                KFK.toggleShadow(KFK.selectedNode, true);
             } else {
-                if (KFK.selectedNode === null) {
-                    KFK.selectedNode = nodeDIV;
-                    nodeDIV.style.background = 'red';
-                } else {
-                    KFK.selectedNode.style.background = 'transparent';
-                    KFK.selectedNode = nodeDIV;
-                    nodeDIV.style.background = 'red';
-                }
+                KFK.toggleShadow(KFK.selectedNode, false);
+                KFK.selectedNode = nodeDIV;
+                KFK.toggleShadow(KFK.selectedNode, true);
             }
         }
         KFK.lastClickOnNode = now;
         e.stopPropagation();
     });
-
-
-    nodeDIV.appendChild(nodeObj);
-
-    KFK.C3.appendChild(nodeDIV);
-
-    console.log(`make ${node.id} draggable`);
-    $(`#${node.id}`).draggable({ scroll: true });
-
-    nodeDIV.addEventListener('dragend', function (e) {
-        console.log('dragend');
-        nodeDIV.style.left = px(KFK.scroll_posX(e.clientX) - nodeDIV.clientWidth * 0.5);
-        nodeDIV.style.top = px(KFK.scroll_posY(e.clientY) - nodeDIV.clientHeight * 0.5);
-        nodeObj.style.left = nodeDIV.style.left;
-        nodeObj.style.top = nodeDIV.style.top;
-        console.log(`client: ${e.clientX} ${e.clientY} style: ${nodeDIV.style.left}, ${nodeDIV.style.top} finalLT: ${nodeDIV.clientLeft} ${nodeDIV.clientTop} `);
-        console.log(`client: ${e.clientX} ${e.clientY} style: ${nodeObj.style.left}, ${nodeObj.style.top} finalLT: ${nodeObj.clientLeft} ${nodeObj.clientTop} `);
-        e.stopImmediatePropagation();
+    jqNodeDIV.dblclick(function (e) {
+        console.log("double click now");
+        if (nodeObj.edittable)
+            editTextNode(nodeObj, nodeDIV);
     });
-    nodeObj.addEventListener('mouseover', function (e) {
-        document.body.style.cursor = 'pointer';
-    });
-    nodeObj.addEventListener('mouseout', function () {
-        document.body.style.cursor = 'default';
-    });
-    console.log(`${node.id} offset left: ${nodeDIV.offsetLeft} top: ${nodeDIV.offsetTop}`);
-    console.log(`${node.id} positi left: ${nodeDIV.style.left} top: ${nodeDIV.style.top}`);
-    console.log(`${node.id} sizeee width: ${nodeDIV.style.width} top: ${nodeDIV.style.height}`);
-    console.log(`${node.id} nodeps left: ${node.x} top: ${node.y}`);
 }
 
 KFK.scroll_posX = function (x) {
@@ -681,34 +706,30 @@ KFK.scroll_posY = function (y) {
     return y + KFK.scrollContainer.scrollTop;
 };
 
-KFK.moveTip = function (e) {
+KFK.moveNode = function (e) {
     let DELTA = 5;
     if (e.shiftKey && e.ctrlKey) DELTA = 20;
     else if (e.shiftKey) DELTA = 1;
 
-    if (KFK.focusOnTip) {
+    if (KFK.selectedNode) {
         if (e.keyCode === 37)
-            KFK.focusOnTip.x(KFK.focusOnTip.x() - DELTA);
+            KFK.selectedNode.style.left = px(unpx(KFK.selectedNode.style.left) - DELTA);
         else if (e.keyCode === 38)
-            KFK.focusOnTip.y(KFK.focusOnTip.y() - DELTA);
+            KFK.selectedNode.style.top = px(unpx(KFK.selectedNode.style.top) - DELTA);
         else if (e.keyCode === 39)
-            KFK.focusOnTip.x(KFK.focusOnTip.x() + DELTA);
+            KFK.selectedNode.style.left = px(unpx(KFK.selectedNode.style.left) + DELTA);
         else if (e.keyCode === 40)
-            KFK.focusOnTip.y(KFK.focusOnTip.y() + DELTA);
-        KFK.layer.batchDraw();
+            KFK.selectedNode.style.top = px(unpx(KFK.selectedNode.style.top) + DELTA);
     }
+    e.stopImmediatePropagation();
+    e.stopPropagation();
 }
 
-KFK.deleteTip = function (e) {
-    // if (KFK.focusOnTip) {
-    //     KFK.removeTipLink(KFK.focusOnTip.id(), null);
-    //     KFK.removeTipLink(null, KFK.focusOnTip.id());
-    //     KFK.stage.find('Transformer').destroy();
-    //     KFK.focusOnTip.destroy();
-    //     KFK.layer.batchDraw();
-    //     KFK.layer.batchDraw();
-    //     KFK.focusOnTip = undefined;
-    // }
+KFK.deleteNode = function (e) {
+    if (KFK.selectedNode) {
+        $(KFK.selectedNode).remove();
+        KFK.selectedNode = null;
+    }
 }
 
 KFK.createTip = function (node) {
