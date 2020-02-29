@@ -7,7 +7,7 @@
     {
       "type": "chrome",
       "request": "launch",
-      "name": "Launch Chrome against localhost",
+      "name": "Chrome",
       "url": "http://localhost:1234",
       "runtimeArgs": ["--auto-open-devtools-for-tabs"],
       "webRoot": "${workspaceFolder}",

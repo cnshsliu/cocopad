@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import { BootstrapVue, IconsPlugin, ListGroupPlugin } from 'bootstrap-vue';
-import "./scss/custom.scss";
-import KFK from '/src/console';
+import "../scss/custom.scss";
+import KFK from './console';
 
 Vue.use(BootstrapVue);
 Vue.use(IconsPlugin);
