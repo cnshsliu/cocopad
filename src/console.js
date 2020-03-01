@@ -15,6 +15,10 @@ let config = {
             width: 40,
             height: 40,
         },
+        tpl: {
+            width: 40,
+            height: 40,
+        },
         text: {
             width: 120,
             height: 20,
@@ -22,6 +26,7 @@ let config = {
         yellowtip: {
             width: 200,
             height: 200,
+            resizable: true,
         },
         pin: {
             width: 40,
@@ -71,6 +76,8 @@ KFK.centerPos = { x: 0, y: 0 };
 KFK.startNode = null;
 KFK.endNode = null;
 KFK.lastClickOnNode = Date.now();
+KFK.lineDragging = false;
+KFK.afterDragging = false;
 
 // KFK._width = window.innerWidth; KFK._height = window.innerHeight;
 KFK._width = window.innerWidth * 6; KFK._height = window.innerHeight * 6;
@@ -86,6 +93,7 @@ KFK.pickedNode = null;
 KFK.pickedTip = null;
 KFK.mode = "tpl";
 KFK.editting = false;
+KFK.linkPos = [];
 
 //TODO: 支持PAN canvas为十倍的大小，或者，自动扩展canvas, 类似draw.io的做法， 每次扩展一个屏幕大小
 //TODO: TIPS可以钉在桌面上，钉住后，不可移动
@@ -247,6 +255,7 @@ class Node {
     constructor(id, type, x, y) {
         this.id = id;
         this.type = type;
+        console.log(type);
         this.width = config.node[type].width;
         this.height = config.node[type].height;
         this.iconscale = 0.8;
@@ -398,6 +407,77 @@ KFK.createNode2 = function (node) {
 
     return tplNode;
 }
+
+KFK.yarkLinkPoint = function (x, y) {
+    if (KFK.lineDragging) return;
+    console.log(`LINE at ${x}, ${y}`);
+    KFK.linkPos.push({
+        type: 'point',
+        center: { x: x, y: y },
+        points: [{ x: x, y: y }]
+    });
+    KFK.procLink();
+};
+
+KFK.yarkLinkNode = function (theDIV) {
+    if (KFK.lineDragging) return;
+    let pos = {
+        type: 'box',
+        center: {
+            x: unpx(theDIV.style.left) + unpx(theDIV.style.width) * 0.5,
+            y: unpx(theDIV.style.top) + unpx(theDIV.style.height) * 0.5
+        },
+        points: [
+            {
+                x: unpx(theDIV.style.left),
+                y: unpx(theDIV.style.top) + unpx(theDIV.style.height) * 0.5
+            },
+            {
+                x: unpx(theDIV.style.left) + unpx(theDIV.style.width) * 0.5,
+                y: unpx(theDIV.style.top)
+            },
+            {
+                x: unpx(theDIV.style.left) + unpx(theDIV.style.width),
+                y: unpx(theDIV.style.top) + unpx(theDIV.style.height) * 0.5
+            },
+            {
+                x: unpx(theDIV.style.left) + unpx(theDIV.style.width) * 0.5,
+                y: unpx(theDIV.style.top) + unpx(theDIV.style.height)
+            }]
+    };
+    KFK.linkPos.push(pos);
+    KFK.procLink();
+};
+KFK.procLink = function () {
+    if (KFK.linkPos.length < 2) return;
+    let fromPoint = null;
+    let toPoint = null;
+    let selectedFromIndex = 0;
+    let selectedToIndex = 0;
+    let shortestDistance = KFK.distance(KFK.linkPos[0].points[0], KFK.linkPos[1].points[0]);
+    for (let i = 0; i < KFK.linkPos[0].points.length; i++) {
+        fromPoint = KFK.linkPos[0].points[i];
+        for (let j = 0; j < KFK.linkPos[1].points.length; j++) {
+            toPoint = KFK.linkPos[1].points[j];
+            let tmp = KFK.distance(fromPoint, toPoint);
+            if (tmp < shortestDistance) {
+                shortestDistance = tmp;
+                selectedFromIndex = i;
+                selectedToIndex = j;
+            }
+        }
+    }
+    KFK.drawLine(
+        KFK.linkPos[0].points[selectedFromIndex].x,
+        KFK.linkPos[0].points[selectedFromIndex].y,
+        KFK.linkPos[1].points[selectedToIndex].x,
+        KFK.linkPos[1].points[selectedToIndex].y,
+    );
+    KFK.linkPos.splice(0, 2);
+};
+KFK.distance = function (p1, p2) {
+    return Math.sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
+}
 KFK.createC3 = function () {
     let c3 = document.createElement('div');
     c3.style.position = "relative";
@@ -406,11 +486,22 @@ KFK.createC3 = function () {
     c3.style.height = KFK._height + "px";
 
     c3.addEventListener('click', function (e) {
-        if (!KFK.editting) {
-            if (KFK.selectedNode) {
-                KFK.toggleShadow(KFK.selectedNode, false);
-                KFK.selectedNode = null;
-            } else {
+        if (KFK.editting) return;
+        if (KFK.mode === 'line') {
+            if (KFK.afterDragging === false)
+                KFK.yarkLinkPoint(
+                    e.clientX + KFK.scrollContainer.scrollLeft,
+                    e.clientY + KFK.scrollContainer.scrollTop
+                );
+            else
+                KFK.afterDragging = false;
+            return;
+        }
+        if (KFK.selectedNode) {
+            KFK.toggleShadow(KFK.selectedNode, false);
+            KFK.selectedNode = null;
+        } else {
+            if (config.node[KFK.mode]) {
                 let aNode = new Node(
                     uuidv4(),
                     KFK.mode,
@@ -418,9 +509,16 @@ KFK.createC3 = function () {
                     e.clientY + KFK.scrollContainer.scrollTop
                 );
                 KFK.nodes.push(aNode);
+                console.log("Before createNode");
                 KFK.createNode(aNode);
+            } else {
+                console.log(`${KFK.mode} is not supported`);
+                if (KFK.mode === "line") {
+                    KFK.drawLine(100, 100, 300, 300);
+                }
             }
         }
+
         e.preventDefault();
     });
 
@@ -451,6 +549,8 @@ KFK.createC3 = function () {
             e.stopPropagation();
             e.preventDefault();
         }
+
+
     });
 
     document.getElementById('container3').appendChild(c3);
@@ -464,7 +564,104 @@ KFK.createC3 = function () {
     // KFK.C3.addEventListener('mousemove', function (e) {
     //     console.log(`${e.clientX} ${e.clientY}`);
     // })
+    // let soloDIV = document.createElement('textarea');
+    // $(soloDIV).resizable();
+    // KFK.C3.appendChild(soloDIV);
 }
+
+KFK.drawLine = function (x1, y1, x2, y2) {
+    console.log('draw line now');
+    let p1 = { x: x1, y: y1 };
+    let p2 = { x: x2, y: y2 };
+    //始终从左边向右边看
+    // if(p1.x > p2.x){
+    //     let tmp = p1;
+    //     p1 = p2;
+    //     p2 = tmp;
+    // }
+    let theLine = document.createElement('div');
+    theLine.style.position = "absolute";
+    theLine.style.width = px(KFK.distance(p1, p2));
+    theLine.style.height = px(4);
+    theLine.style.background = 'blue';
+
+    theLine.style.border = 'none';
+    theLine.style.padding = '0px';
+    theLine.style.margin = '0px';
+    theLine.style.overflow = 'hidden';
+    theLine.style.outline = 'none';
+    theLine.style.display = 'block';
+
+    let rotation = KFK.getDegree(p1, p2);
+    var transform = '';
+    transform += 'rotateZ(' + rotation + 'deg)';
+    // transform += 'translateY(-' + px + 'px)';
+    theLine.style.left = px(x1);
+    theLine.style.top = px(y1);
+
+    theLine.style.transform = transform;
+    theLine.style.transformOrigin = "top left";
+    KFK.C3.appendChild(theLine);
+    $(theLine).draggable({
+        start: () => {
+            console.log('Start linedragging...')
+            KFK.linkPos = [];
+            KFK.lineDragging = true;
+        },
+        drag: () => {
+            KFK.lineDragging = true;
+        },
+        stop: () => {
+            console.log('Stop linedragging...')
+            KFK.linkPos = [];
+            KFK.lineDragging = false;
+            KFK.afterDragging = true;
+        }
+    });
+    $(theLine).resizable({ handles: "se" });
+    $(theLine).hover(
+        () => { $(document.body).css('cursor', 'pointer'); },
+        () => { $(document.body).css('cursor', 'default'); }
+    );
+}
+
+KFK.getDegree = function (p1, p2) {
+    let deg = 0;
+    if (p2.x === p1.x) {
+        if (p2.y === p1.y) {
+            deg = 0;
+        } else if (p2.y < p1.y) {
+            deg = -90;
+        } else if (p2.y > p1.y) {
+            deg = 90;
+        }
+
+    } else if (p2.y === p1.y) {
+        if (p2.x < p1.x) {
+            deg = 180;
+        } else {
+            deg = 0;
+        }
+    } else {
+        deg = Math.atan((p2.y - p1.y) / (p2.x - p1.x)) / Math.PI * 180;
+        if (p2.x < p1.x) {
+            deg += 180;
+        }
+    }
+
+
+    console.log(deg);
+    return deg;
+}
+
+KFK.getDegree({ x: 100, y: 100 }, { x: 200, y: 100 });
+KFK.getDegree({ x: 100, y: 100 }, { x: 200, y: 200 });
+KFK.getDegree({ x: 100, y: 100 }, { x: 100, y: 200 });
+KFK.getDegree({ x: 100, y: 100 }, { x: 0, y: 200 });
+KFK.getDegree({ x: 100, y: 100 }, { x: 0, y: 100 });
+KFK.getDegree({ x: 100, y: 100 }, { x: 0, y: 0 });
+KFK.getDegree({ x: 100, y: 100 }, { x: 100, y: 0 });
+KFK.getDegree({ x: 100, y: 100 }, { x: 200, y: 0 });
 
 function px(v) {
     if (typeof v === 'string') {
@@ -631,6 +828,7 @@ KFK.createNode = function (node) {
     }
     if (!nodeObj) {
         console.log(`${node.type} is not supported`);
+        return;
     }
 
     var nodeDIV = document.createElement('div');
@@ -662,6 +860,7 @@ KFK.createNode = function (node) {
         $(nodeDIV).css("background-repeat", 'no-repeat');
         $(nodeDIV).css("background-size", '100% 100%');
         $(nodeDIV).css("box-shadow", "20px 20px 18px -18px #888888");
+        $(nodeDIV).resizable();
     }
 
     nodeDIV.appendChild(nodeObj);
@@ -675,6 +874,13 @@ KFK.createNode = function (node) {
         () => { $(document.body).css('cursor', 'default'); }
     );
     jqNodeDIV.click((e) => {
+        if (KFK.mode === 'line') {
+            if (KFK.afterDragging === false)
+                KFK.yarkLinkNode(nodeDIV);
+            else
+                KFK.afterDragging = true;
+            return;
+        }
         let now = Date.now();
         if (KFK.selectedNode === nodeDIV) {
             KFK.toggleShadow(KFK.selectedNode, false);
@@ -692,6 +898,7 @@ KFK.createNode = function (node) {
         KFK.lastClickOnNode = now;
         e.stopPropagation();
     });
+
     jqNodeDIV.dblclick(function (e) {
         console.log("double click now");
         if (nodeObj.edittable)
@@ -1201,6 +1408,5 @@ module.exports = KFK;
 
 
 //TODO: Zoom in / Zoom out
-//TODO: use Collision detection method to place Pin https://konvajs.org/docs/sandbox/Collision_Detection.html
 //TODO: RichText
 //TODO: Free Drawing

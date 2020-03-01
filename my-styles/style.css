@@ -54,3 +54,9 @@ body {
     top: 0;
     left: 0;
 }
+#liukehong1{
+    background: red;
+}
+.ui-resizable-se {
+    bottom: 17px;
+}
