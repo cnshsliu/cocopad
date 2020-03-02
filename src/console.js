@@ -172,9 +172,7 @@ KFK.dragContainer.addEventListener('keyup', function (e) {
 // KFK.stage.add(KFK.layer);
 
 KFK.gridLayer = new Konva.Layer({ id: 'gridLayer' });
-KFK.dragLayer = new Konva.Layer({ id: 'dragLayer' });
-KFK.layer2 = new Konva.Layer({ id: 'layer2' });
-KFK.dragStage.add(KFK.gridLayer, KFK.dragLayer, KFK.layer2);
+KFK.dragStage.add(KFK.gridLayer);
 
 // KFK.stage.on('click', function (e) {
 //     var node = e.target;
@@ -408,24 +406,30 @@ KFK.createNode2 = function (node) {
     return tplNode;
 }
 
-KFK.yarkLinkPoint = function (x, y) {
+KFK.yarkLinkPoint = function (x, y, shiftKey) {
     if (KFK.lineDragging) return;
-    console.log(`LINE at ${x}, ${y}`);
+    console.log(`yark Link Point at ${x}, ${y}`);
     KFK.linkPos.push({
         type: 'point',
         center: { x: x, y: y },
         points: [{ x: x, y: y }]
     });
-    KFK.procLink();
+    KFK.procLink(shiftKey);
 };
 
-KFK.yarkLinkNode = function (theDIV) {
+KFK.yarkLinkNode = function (theDIV, shiftKey) {
+    console.log(`left:${theDIV.style.left} top: ${theDIV.style.top} width: ${theDIV.style.width} height: ${theDIV.style.height}`);
+    let divLeft = unpx(theDIV.style.left);
+    let divTop = unpx(theDIV.style.top);
+    let divWidth = unpx(theDIV.style.width);
+    let divHeight = unpx(theDIV.style.height);
+    console.log(`left:${divLeft} top: ${divTop} width: ${divWidth} height: ${divHeight}`);
     if (KFK.lineDragging) return;
     let pos = {
         type: 'box',
         center: {
-            x: unpx(theDIV.style.left) + unpx(theDIV.style.width) * 0.5,
-            y: unpx(theDIV.style.top) + unpx(theDIV.style.height) * 0.5
+            x: divLeft + divWidth * 0.5,
+            y: divTop + divHeight * 0.5
         },
         points: [
             {
@@ -445,10 +449,12 @@ KFK.yarkLinkNode = function (theDIV) {
                 y: unpx(theDIV.style.top) + unpx(theDIV.style.height)
             }]
     };
+    console.log(`yark link node `);
+    console.log(pos);
     KFK.linkPos.push(pos);
-    KFK.procLink();
+    KFK.procLink(shiftKey);
 };
-KFK.procLink = function () {
+KFK.procLink = function (shiftKey) {
     if (KFK.linkPos.length < 2) return;
     let fromPoint = null;
     let toPoint = null;
@@ -473,17 +479,35 @@ KFK.procLink = function () {
         KFK.linkPos[1].points[selectedToIndex].x,
         KFK.linkPos[1].points[selectedToIndex].y,
     );
-    KFK.linkPos.splice(0, 2);
+    if (!shiftKey)
+        KFK.linkPos.splice(0, 2);
+    else {
+        KFK.linkPos[0] = KFK.linkPos[1];
+        KFK.linkPos.splice(1, 1);
+    }
 };
 KFK.distance = function (p1, p2) {
     return Math.sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
 }
 KFK.createC3 = function () {
     let c3 = document.createElement('div');
+    c3.setAttribute("id", "C3");
     c3.style.position = "relative";
     c3.style.userSelect = "none";
+    c3.style.left = px(0);
+    c3.style.top = px(-KFK._height);
     c3.style.width = KFK._width + "px";
     c3.style.height = KFK._height + "px";
+
+    let c3Stages = document.createElement('div');
+    c3Stages.setAttribute("id", "C3Stages");
+    c3Stages.style.position = "relative";
+    c3Stages.style.userSelect = "none";
+    c3Stages.style.left = px(0);
+    c3Stages.style.top = px(0);
+    c3Stages.style.width = px(KFK._width);
+    c3Stages.style.height = px(KFK._height);
+    document.getElementById('container3').appendChild(c3Stages);
 
     c3.addEventListener('click', function (e) {
         if (KFK.editting) return;
@@ -491,7 +515,8 @@ KFK.createC3 = function () {
             if (KFK.afterDragging === false)
                 KFK.yarkLinkPoint(
                     e.clientX + KFK.scrollContainer.scrollLeft,
-                    e.clientY + KFK.scrollContainer.scrollTop
+                    e.clientY + KFK.scrollContainer.scrollTop,
+                    e.shiftKey
                 );
             else
                 KFK.afterDragging = false;
@@ -500,25 +525,28 @@ KFK.createC3 = function () {
         if (KFK.selectedNode) {
             KFK.toggleShadow(KFK.selectedNode, false);
             KFK.selectedNode = null;
+            // } else {
+        }
+        if (config.node[KFK.mode]) {
+            let aNode = new Node(
+                uuidv4(),
+                KFK.mode,
+                e.clientX + KFK.scrollContainer.scrollLeft,
+                e.clientY + KFK.scrollContainer.scrollTop
+            );
+            KFK.nodes.push(aNode);
+            console.log("Before createNode");
+            KFK.createNode(aNode);
         } else {
-            if (config.node[KFK.mode]) {
-                let aNode = new Node(
-                    uuidv4(),
-                    KFK.mode,
-                    e.clientX + KFK.scrollContainer.scrollLeft,
-                    e.clientY + KFK.scrollContainer.scrollTop
-                );
-                KFK.nodes.push(aNode);
-                console.log("Before createNode");
-                KFK.createNode(aNode);
-            } else {
-                console.log(`${KFK.mode} is not supported`);
-                if (KFK.mode === "line") {
-                    KFK.drawLine(100, 100, 300, 300);
-                }
+            console.log(`${KFK.mode} is not supported`);
+            if (KFK.mode === "line") {
+                KFK.drawLine(100, 100, 300, 300);
             }
         }
+        // }
 
+        e.stopImmediatePropagation();
+        e.stopPropagation();
         e.preventDefault();
     });
 
@@ -556,11 +584,6 @@ KFK.createC3 = function () {
     document.getElementById('container3').appendChild(c3);
     KFK.C3 = c3;
 
-    console.log(`scroll offset left: ${document.getElementById('scroll-container').offsetLeft} top: ${document.getElementById('scroll-container').offsetTop}`);
-    console.log(`conta2 offset left: ${document.getElementById('container2').offsetLeft} top: ${document.getElementById('container2').offsetTop}`);
-    console.log(`conta3 offset left: ${document.getElementById('container3').offsetLeft} top: ${document.getElementById('container3').offsetTop}`);
-    console.log(`ccccc3 offset left: ${KFK.C3.offsetLeft} top: ${KFK.C3.offsetTop}`);
-
     // KFK.C3.addEventListener('mousemove', function (e) {
     //     console.log(`${e.clientX} ${e.clientY}`);
     // })
@@ -570,60 +593,34 @@ KFK.createC3 = function () {
 }
 
 KFK.drawLine = function (x1, y1, x2, y2) {
-    console.log('draw line now');
+    console.log(`draw line now ${x1} ${y1} - ${x2} ${y2}`);
     let p1 = { x: x1, y: y1 };
     let p2 = { x: x2, y: y2 };
-    //始终从左边向右边看
-    // if(p1.x > p2.x){
-    //     let tmp = p1;
-    //     p1 = p2;
-    //     p2 = tmp;
-    // }
-    let theLine = document.createElement('div');
-    theLine.style.position = "absolute";
-    theLine.style.width = px(KFK.distance(p1, p2));
-    theLine.style.height = px(4);
-    theLine.style.background = 'blue';
-
-    theLine.style.border = 'none';
-    theLine.style.padding = '0px';
-    theLine.style.margin = '0px';
-    theLine.style.overflow = 'hidden';
-    theLine.style.outline = 'none';
-    theLine.style.display = 'block';
-
-    let rotation = KFK.getDegree(p1, p2);
-    var transform = '';
-    transform += 'rotateZ(' + rotation + 'deg)';
-    // transform += 'translateY(-' + px + 'px)';
-    theLine.style.left = px(x1);
-    theLine.style.top = px(y1);
-
-    theLine.style.transform = transform;
-    theLine.style.transformOrigin = "top left";
-    KFK.C3.appendChild(theLine);
-    $(theLine).draggable({
-        start: () => {
-            console.log('Start linedragging...')
-            KFK.linkPos = [];
-            KFK.lineDragging = true;
-        },
-        drag: () => {
-            KFK.lineDragging = true;
-        },
-        stop: () => {
-            console.log('Stop linedragging...')
-            KFK.linkPos = [];
-            KFK.lineDragging = false;
-            KFK.afterDragging = true;
-        }
-    });
-    $(theLine).resizable({ handles: "se" });
-    $(theLine).hover(
-        () => { $(document.body).css('cursor', 'pointer'); },
-        () => { $(document.body).css('cursor', 'default'); }
-    );
+    let rect = {
+        x: Math.min(p1.x, p2.x),
+        y: Math.min(p1.y, p2.y),
+        width: Math.max(Math.abs(p1.x - p2.x), 1),
+        height: Math.max(Math.abs(p1.y - p2.y), 1),
+    }
+    let points = [x1 - rect.x, y1 - rect.y, x2 - rect.x, y2 - rect.y];
+    let divid = `div_${uuidv4()}`;
+    let div = document.createElement("div");
+    $(div).attr("id", divid);
+    div.style.position = "absolute";
+    div.style.left = px(rect.x);
+    div.style.top = px(rect.y);
+    div.style.width = px(rect.width);
+    div.style.height = px(rect.height);
+    document.getElementById('C3Stages').appendChild(div);
+    let stage = new Konva.Stage({ container: divid, x: 0, y: 0, width: rect.width, height: rect.height });
+    let layer = new Konva.Layer();
+    let line = new Konva.Line({ points: points, stroke: 'red', tension: 1 });
+    layer.add(line);
+    stage.add(layer);
+    layer.batchDraw();
+    // layer.add(line); layer.batchDraw();
 }
+
 
 KFK.getDegree = function (p1, p2) {
     let deg = 0;
@@ -677,7 +674,7 @@ function px(v) {
 
 function unpx(v) {
     if (typeof v === 'string' && v.endsWith('px')) {
-        return v.substr(0, v.length - 2);
+        return parseInt(v.substr(0, v.length - 2));
     }
 }
 
@@ -874,13 +871,8 @@ KFK.createNode = function (node) {
         () => { $(document.body).css('cursor', 'default'); }
     );
     jqNodeDIV.click((e) => {
-        if (KFK.mode === 'line') {
-            if (KFK.afterDragging === false)
-                KFK.yarkLinkNode(nodeDIV);
-            else
-                KFK.afterDragging = true;
-            return;
-        }
+        console.log(nodeDIV.style.left);
+        console.log(`${KFK.mode} ${KFK.afterDragging} `);
         let now = Date.now();
         if (KFK.selectedNode === nodeDIV) {
             KFK.toggleShadow(KFK.selectedNode, false);
@@ -894,6 +886,14 @@ KFK.createNode = function (node) {
                 KFK.selectedNode = nodeDIV;
                 KFK.toggleShadow(KFK.selectedNode, true);
             }
+        }
+        if (KFK.mode === 'line') {
+            if (KFK.afterDragging === false) {
+                KFK.yarkLinkNode(nodeDIV, e.shiftKey);
+            } else
+                KFK.afterDragging = true;
+            e.stopImmediatePropagation();
+            return;
         }
         KFK.lastClickOnNode = now;
         e.stopPropagation();
@@ -1344,16 +1344,24 @@ KFK.init = function () {
     KFK.endNode = KFK.placeNode('END', 'end', 300, 120);
     //  KFK.placeConnection('START', 'END');
     // KFK.centerPos = { x: 120 + (KFK.width() - 50 - 120) * 0.5, y: KFK.height() * 0.5 };
+
+    KFK.drawLine(200, 200, 500, 200);
+    KFK.drawLine(200, 200, 200, 500);
+    KFK.drawLine(500, 200, 500, 500);
+    KFK.drawLine(200, 500, 500, 500);
 };
 KFK.loadImages(KFK.init);
 
 KFK.setMode = function (mode) {
     KFK.mode = mode;
-    console.log(`set ${mode} to true`);
+    console.log(`Set mode to ${mode}`);
     for (let key in KFK.APP.active) {
         KFK.APP.active[key] = false;
     }
-    KFK.APP.active[mode] = true;
+    if (KFK.APP.active[mode] == undefined)
+        console.warn(`APP.active.${mode} does not exist`);
+    else
+        KFK.APP.active[mode] = true;
 }
 KFK.isActive = function (mode) {
     console.log(`${KFK.mode} === ${mode}`);

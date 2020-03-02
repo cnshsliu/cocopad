@@ -18,7 +18,7 @@ const app = new Vue({
     showINVITATION: false,
     lockMode: KFK.lockMode,
     images: KFK.images,
-    active: {'tip': false, 'blanket':false, 'p8star':false, 'pin':false, 'text':false, 'yellowtip':false},
+    active: {'tip': false, 'blanket':false, 'p8star':false, 'pin':false, 'text':false, 'yellowtip':false, 'line':false},
   },
 }).$mount("#app");
 KFK.APP = app;
