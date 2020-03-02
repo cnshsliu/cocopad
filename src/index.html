@@ -10,14 +10,14 @@
 </head>
 
 <body>
-  <div id="scroll-container" style="z-index: 0;">
-    <div id="container2" style="z-index: 0;"></div>
-    <div id="container3" style="z-index: 1;">
+  <div id="containerbkg"></div>
+  <div id="scroll-container">
+    <div id="containermain">
     </div>
   </div>
 
   <div id='app'>
-    <div id="top">
+    <div id="top" style="z-index: 999;">
       <b-navbar toggleable="lg" type="light" variant="outline-primary">
         <b-navbar-brand href="#">
           <img src="../assets/p8star.svg" class="logo d-inline-block align-top" alt="Kitten">
@@ -85,7 +85,7 @@
         </b-collapse>
       </b-navbar>
     </div>
-    <div id="left" class="shadow-lg">
+    <div id="left" class="shadow-lg" style="z-index: 999;">
       <b-list-group>
         <b-list-group-item class="d-flex align-items-center" href="#some-link">
           <b-img :src="images['sub'].src" fluid alt="" scale="2"></b-img>

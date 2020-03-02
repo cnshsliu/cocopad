@@ -44,15 +44,19 @@ body {
     overflow: auto;
     margin: 0px;
     border: 0px solid grey;
+    position: absolute;
+    left: 0px;
+    top: 0px;
 }
 
-#container2{
+#containerbkg{
     width: 100%;
-    height: 100%;
+    height: 100vh;
     overflow: hidden; 
     position: absolute;
-    top: 0;
-    left: 0;
+    top: 0px;
+    left: 0px;
+    z-index: -10;
 }
 #liukehong1{
     background: red;

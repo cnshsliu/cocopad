@@ -3,6 +3,7 @@ import assetIcons from '../assets/*.svg';
 import uuidv4 from 'uuid/v4';
 import "./importjquery";
 import "jquery-ui-dist/jquery-ui.js";
+import './test.html';
 import { BIconFolderSymlinkFill, directivesPlugin } from "bootstrap-vue";
 
 let config = {
@@ -104,10 +105,10 @@ KFK.tween = null;
 
 //KFK.stage = new Konva.Stage({ container: "container", width: KFK._width, height: KFK._height, visible: true, });
 // KFK.stage.zIndex(100);
-KFK.dragStage = new Konva.Stage({ container: "container2", width: window.innerWidth, height: window.innerHeight });
+KFK.dragStage = new Konva.Stage({ container: "containerbkg", width: window.innerWidth, height: window.innerHeight });
 // KFK.dragStage.zIndex(200);
 // KFK.container = KFK.stage.container(); KFK.container.tabIndex = 1; KFK.container.focus();
-KFK.container = document.getElementById('container3'); KFK.container.tabIndex = 1; KFK.container.focus();
+KFK.container = document.getElementById('containermain'); KFK.container.tabIndex = 1; KFK.container.focus();
 KFK.dragContainer = KFK.dragStage.container();
 KFK.scrollContainer = document.getElementById('scroll-container');
 KFK.lockMode = false;
@@ -492,22 +493,24 @@ KFK.distance = function (p1, p2) {
 KFK.createC3 = function () {
     let c3 = document.createElement('div');
     c3.setAttribute("id", "C3");
-    c3.style.position = "relative";
+    c3.style.position = "absolute";
     c3.style.userSelect = "none";
     c3.style.left = px(0);
-    c3.style.top = px(-KFK._height);
+    c3.style.top = px(0);
     c3.style.width = KFK._width + "px";
     c3.style.height = KFK._height + "px";
+    c3.style.zIndex = "9";
 
-    let c3Stages = document.createElement('div');
-    c3Stages.setAttribute("id", "C3Stages");
-    c3Stages.style.position = "relative";
-    c3Stages.style.userSelect = "none";
-    c3Stages.style.left = px(0);
-    c3Stages.style.top = px(0);
-    c3Stages.style.width = px(KFK._width);
-    c3Stages.style.height = px(KFK._height);
-    document.getElementById('container3').appendChild(c3Stages);
+    // let c3Stages = document.createElement('div');
+    // c3Stages.setAttribute("id", "C3Stages");
+    // c3Stages.style.position = "relative";
+    // c3Stages.style.userSelect = "none";
+    // c3Stages.style.left = px(0);
+    // c3Stages.style.top = px(0);
+    // // c3Stages.style.top = px(-KFK._height);
+    // c3Stages.style.width = px(KFK._width);
+    // c3Stages.style.height = px(KFK._height);
+    // c3Stages.style.zIndex = "10";
 
     c3.addEventListener('click', function (e) {
         if (KFK.editting) return;
@@ -551,7 +554,7 @@ KFK.createC3 = function () {
     });
 
     let preventDefault = false;
-    $('#container3').keydown(function (e) {
+    $('#containermain').keydown(function (e) {
         let preventDefault = false;
         console.log(e.keyCode);
         if (e.keyCode === 16) { //Shift
@@ -580,8 +583,9 @@ KFK.createC3 = function () {
 
 
     });
+    // document.getElementById('containermain').appendChild(c3Stages);
+    document.getElementById('containermain').appendChild(c3);
 
-    document.getElementById('container3').appendChild(c3);
     KFK.C3 = c3;
 
     // KFK.C3.addEventListener('mousemove', function (e) {
@@ -604,20 +608,65 @@ KFK.drawLine = function (x1, y1, x2, y2) {
     }
     let points = [x1 - rect.x, y1 - rect.y, x2 - rect.x, y2 - rect.y];
     let divid = `div_${uuidv4()}`;
-    let div = document.createElement("div");
-    $(div).attr("id", divid);
-    div.style.position = "absolute";
-    div.style.left = px(rect.x);
-    div.style.top = px(rect.y);
-    div.style.width = px(rect.width);
-    div.style.height = px(rect.height);
-    document.getElementById('C3Stages').appendChild(div);
+    let lineDIV = document.createElement("div");
+    $(lineDIV).attr("id", divid);
+    lineDIV.style.position = "absolute";
+    lineDIV.style.background = '#CCFFCC';
+    lineDIV.style.left = px(rect.x);
+    lineDIV.style.top = px(rect.y);
+    lineDIV.style.width = px(rect.width);
+    lineDIV.style.height = px(rect.height);
+    document.getElementById('C3').appendChild(lineDIV);
     let stage = new Konva.Stage({ container: divid, x: 0, y: 0, width: rect.width, height: rect.height });
     let layer = new Konva.Layer();
     let line = new Konva.Line({ points: points, stroke: 'red', tension: 1 });
     layer.add(line);
     stage.add(layer);
     layer.batchDraw();
+
+    $(lineDIV).draggable({
+        start: () => {
+            console.log('Start linedragging...')
+            KFK.linkPos = [];
+            KFK.lineDragging = true;
+        },
+        drag: () => {
+            KFK.lineDragging = true;
+        },
+        stop: () => {
+            console.log('Stop linedragging...')
+            KFK.linkPos = [];
+            KFK.lineDragging = false;
+            KFK.afterDragging = true;
+        }
+    });
+    $(lineDIV).resizable({
+        handles: "se", autoHide: true, ghost: false,
+        minHeight: 1,
+        minWidth: 1,
+        start: function(event, ui){
+            console.log("start resizing...");
+        },
+        resize: function (event, ui) {
+            // line.points([0, 0, 100, 100]);
+            //TODO: change line length and width
+            layer.batchDraw();
+            // $("#resizable-16").text("top = " + ui.position.top +
+            //     ", left = " + ui.position.left +
+            //     ", width = " + ui.size.width +
+            //     ", height = " + ui.size.height);
+        }
+    });
+    $(lineDIV).hover(
+        () => {
+            $(document.body).css('cursor', 'pointer');
+            // $(lineDIV).resizable("option", "disabled", false);
+        },
+        () => {
+            $(document.body).css('cursor', 'default');
+            // $(lineDIV).resizable("option", "disabled", true);
+        }
+    );
     // layer.add(line); layer.batchDraw();
 }
 
