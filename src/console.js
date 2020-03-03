@@ -29,6 +29,9 @@ let config = {
             height: 200,
             resizable: true,
         },
+        textblock: {
+            width: 200, height: 100, resizable: true, background: '#49FFAC', minWidth: 1, minHeight: 1
+        },
         pin: {
             width: 40,
             height: 40,
@@ -77,8 +80,7 @@ KFK.centerPos = { x: 0, y: 0 };
 KFK.startNode = null;
 KFK.endNode = null;
 KFK.lastClickOnNode = Date.now();
-KFK.lineDragging = false;
-KFK.afterDragging = false;
+KFK.hoverDIV = null;
 
 // KFK._width = window.innerWidth; KFK._height = window.innerHeight;
 KFK._width = window.innerWidth * 6; KFK._height = window.innerHeight * 6;
@@ -94,7 +96,13 @@ KFK.pickedNode = null;
 KFK.pickedTip = null;
 KFK.mode = "tpl";
 KFK.editting = false;
+KFK.resizing = false;
+KFK.dragging = false;
+KFK.lineDragging = false;
+KFK.afterDragging = false;
+KFK.afterResizing = false;
 KFK.linkPos = [];
+KFK.toggleMode = false;
 
 //TODO: 支持PAN canvas为十倍的大小，或者，自动扩展canvas, 类似draw.io的做法， 每次扩展一个屏幕大小
 //TODO: TIPS可以钉在桌面上，钉住后，不可移动
@@ -123,112 +131,9 @@ KFK.selectedNode = null;
 // });
 
 
-// KFK.container.addEventListener('keyup', function (e) {
-//     let preventDefault = false;
-//     if (e.keyCode === 16) { //Shift
-//         KFK.lockMode = false;
-//         KFK.APP.lockMode = false;
-//         KFK.pickedNode = null;
-//         preventDefault = true;
-//     } else if (e.keyCode >= 37 && e.keyCode <= 40) { //Left, Up, Right, Down
-//         KFK.moveTip(e);
-//         preventDefault = true;
-//     } else if (e.keyCode === 46 || e.keyCode === 68) {  //D
-//         KFK.deleteTip(e);
-//         preventDefault = true;
-//     } else if (e.keyCode === 72) { //H
-//         // KFK.gotoHome(e);
-//         console.log(`${KFK.container.style.zIndex}`);
-//         console.log(`${KFK.dragContainer.style.zIndex}`);
-//         console.log(`${KFK.scrollContainer.style.zIndex}`);
-//         console.log(`normal ${e.keyCode}`);
-//         KFK.container.style.zIndex = "1";
-//         KFK.scrollContainer.style.zIndex = "1";
-//         KFK.dragContainer.style.zIndex = "2";
-//         KFK.container.tabIndex = 2
-//         KFK.dragContainer.tabIndex = 1;
-//         KFK.dragContainer.focus();
-//         preventDefault = true;
-//     }
-//     if (preventDefault) e.preventDefault();
-// });
-KFK.dragContainer.addEventListener('keyup', function (e) {
-    let preventDefault = false;
-    if (e.keyCode === 72) { //H
-        console.log(`drag ${e.keyCode}`);
-        // KFK.gotoHome(e);
-        KFK.container.style.zIndex = "0";
-        KFK.scrollContainer.style.zIndex = "0";
-        KFK.dragContainer.style.zIndex = "-1";
-        KFK.container.tabIndex = 1
-        KFK.dragContainer.tabIndex = 2;
-        KFK.container.focus();
-        preventDefault = true;
-    }
-    if (preventDefault) e.preventDefault();
-});
-
-// KFK.layer = new Konva.Layer();
-// KFK.layer.clip({ x: 0, y: 0, width: window.innerWidth, height: window.innerHeight });
-// KFK.stage.add(KFK.layer);
-
 KFK.gridLayer = new Konva.Layer({ id: 'gridLayer' });
 KFK.dragStage.add(KFK.gridLayer);
 
-// KFK.stage.on('click', function (e) {
-//     var node = e.target;
-//     let withShift = e.shiftKey || e.evt.shiftKey;
-//     if (!withShift)
-//         KFK.pickedNode = null;
-//     var oldScale = KFK.stage.scaleX();
-//     let stage = e.target.getStage();
-//     let pos = KFK.stage.getPointerPosition();
-//     let newPos = {
-//         x: pos.x / oldScale - KFK.stage.x() / oldScale,
-//         y: pos.y / oldScale - KFK.stage.y() / oldScale
-//     }
-//     // let nodeid = 'node-' + KFK.nodes.length;
-//     let nodeid = uuidv4();
-
-//     stage.find('Transformer').destroy();
-//     KFK.layer.batchDraw();
-
-//     if (KFK.mode === 'tpl') {
-//         let aNode = new Node(nodeid, 'task', newPos.x, newPos.y);
-//         console.log(`Create node at ${newPos.x}  ${newPos.y}   ${KFK.stage.width()}`);
-//         KFK.nodes.push(aNode);
-//         var node = KFK.createNode(aNode);
-//         KFK.layer.add(node);
-//         if (withShift) {
-//             if (KFK.pickedNode === null) {
-//                 KFK.pickedNode = node;
-//             } else {
-//                 KFK.placeConnection(KFK.pickedNode.id(), node.id());
-//                 KFK.pickedNode = node;
-//             }
-//         }
-//     } else if (tip_variants[KFK.mode]) {
-//         if (KFK.focusOnTip) {
-//             KFK.focusOnTip = undefined;
-//         } else {
-//             let aTip = new Tip(nodeid, KFK.mode, newPos.x, newPos.y);
-//             KFK.tips.push(aTip);
-//             var guiTip = KFK.createTip(aTip);
-//             KFK.layer.add(guiTip);
-//             if (withShift) {
-//                 if (KFK.pickedTip === null) {
-//                     KFK.pickedTip = guiTip;
-//                 } else {
-//                     KFK.placeTipConnection(KFK.pickedTip.id(), guiTip.id());
-//                     KFK.pickedTip = guiTip;
-//                 }
-//             }
-//             console.log(`${pos.x}+100  ${KFK.width()}`);
-//             KFK.stage.batchDraw();
-//         }
-//     }
-//     //KFK.redrawLinks();
-// });
 
 KFK.loadImages = function loadimg(callback) {
     let loadedImages = 0;
@@ -331,85 +236,20 @@ KFK.findConnect = function (linkid) {
     return conn;
 };
 
-KFK.createNode2 = function (node) {
-    let circle = new Konva.Circle({
-        radius: node.size,
-        fill: 'white',
-        stroke: 'black',
-        strokeWidth: 1,
-        shadowColor: "black",
-        shadowBlur: 10,
-        shadowOffset: {
-            x: 5,
-            y: 5
-        },
-        shadowOpacity: 0.6,
-        draggable: false,
-    });
-    console.log(node.type);
-    let icon = new Konva.Image({
-        image: KFK.images[node.type],
-        // image: icons['and.svg'],
-        x: -(node.size * node.iconscale),
-        y: -(node.size * node.iconscale),
-        width: (node.size * node.iconscale) * 2,
-        height: (node.size * node.iconscale) * 2,
-        shadowColor: "black",
-        shadowBlur: 10,
-        shadowOffset: {
-            x: 5,
-            y: 5
-        },
-        shadowOpacity: 0.6,
-        draggable: false,
-    });
-
-    let tplNode = new Konva.Group({
-        x: node.x,
-        y: node.y,
-        draggable: true,
-        startScale: 1,
-        id: node.id,
-        dragBoundFunc: function (pos) {
-            var newX = pos.x < 50 ? 50 : pos.x;
-            var newY = pos.y < 100 ? 100 : pos.y;
-            newX = newX > KFK.width() - 50 ? KFK.width() - 50 : newX;
-            newY = newY > KFK.height() - 50 ? KFK.height() - 50 : newY;
-            return {
-                x: newX,
-                y: newY
-            };
-        }
-    });
-    tplNode.on('mouseover', function () {
-        document.body.style.cursor = 'pointer';
-    });
-    tplNode.on('mouseout', function () {
-        document.body.style.cursor = 'default';
-    });
-    tplNode.on('click', function (e) {
-        let withShift = e.shiftKey || e.evt.shiftKey;
-        e.cancelBubble = true;
-
-        if (withShift) {
-            if (KFK.pickedNode === null) {
-                KFK.pickedNode = tplNode;
-            } else {
-                KFK.placeConnection(KFK.pickedNode.id(), tplNode.id());
-                KFK.pickedNode = tplNode;
-            }
-        }
-    });
-
-    tplNode.add(circle).add(icon);
-    tplNode.background = circle;
-
-    return tplNode;
-}
 
 KFK.yarkLinkPoint = function (x, y, shiftKey) {
     if (KFK.lineDragging) return;
     console.log(`yark Link Point at ${x}, ${y}`);
+    if (KFK.linkPos.length === 1) {
+        //按下option键，切换toggleMode
+        if (KFK.toggleMode) {
+            if (Math.abs(x - KFK.linkPos[0].center.x) <
+                Math.abs(y - KFK.linkPos[0].center.y))
+                   x = KFK.linkPos[0].center.x;
+            else
+                   y = KFK.linkPos[0].center.y;
+        }
+    }
     KFK.linkPos.push({
         type: 'point',
         center: { x: x, y: y },
@@ -427,6 +267,7 @@ KFK.yarkLinkNode = function (theDIV, shiftKey) {
     console.log(`left:${divLeft} top: ${divTop} width: ${divWidth} height: ${divHeight}`);
     if (KFK.lineDragging) return;
     let pos = {
+        div: theDIV,
         type: 'box',
         center: {
             x: divLeft + divWidth * 0.5,
@@ -455,6 +296,7 @@ KFK.yarkLinkNode = function (theDIV, shiftKey) {
     KFK.linkPos.push(pos);
     KFK.procLink(shiftKey);
 };
+
 KFK.procLink = function (shiftKey) {
     if (KFK.linkPos.length < 2) return;
     let fromPoint = null;
@@ -474,12 +316,29 @@ KFK.procLink = function (shiftKey) {
             }
         }
     }
-    KFK.drawLine(
+    let lineDIV = KFK.drawLine(
         KFK.linkPos[0].points[selectedFromIndex].x,
         KFK.linkPos[0].points[selectedFromIndex].y,
         KFK.linkPos[1].points[selectedToIndex].x,
         KFK.linkPos[1].points[selectedToIndex].y,
     );
+    //这四个属性都是有的
+    lineDIV.setAttribute('fx', KFK.linkPos[0].points[selectedFromIndex].x);
+    lineDIV.setAttribute('fy', KFK.linkPos[0].points[selectedFromIndex].y);
+    lineDIV.setAttribute('tx', KFK.linkPos[1].points[selectedToIndex].x);
+    lineDIV.setAttribute('ty', KFK.linkPos[1].points[selectedToIndex].y);
+    //在连接到nodeDIV时，再加两个属性
+    if (KFK.linkPos[0].type === 'box') {
+        lineDIV.setAttribute('fdiv', KFK.linkPos[0].div.getAttribute('id'));
+    }
+    if (KFK.linkPos[1].type === 'box') {
+        lineDIV.setAttribute('tdiv', KFK.linkPos[1].div.getAttribute('id'));
+    }
+    //有一端连在nodeDIV上，则，不允许拖动和改变大小
+    if (KFK.linkPos[0].type === 'box' || KFK.linkPos[1].type === 'box') {
+        $(lineDIV).draggable('disable');
+        $(lineDIV).resizable('disable');
+    }
     if (!shiftKey)
         KFK.linkPos.splice(0, 2);
     else {
@@ -487,6 +346,7 @@ KFK.procLink = function (shiftKey) {
         KFK.linkPos.splice(1, 1);
     }
 };
+
 KFK.distance = function (p1, p2) {
     return Math.sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
 }
@@ -512,17 +372,22 @@ KFK.createC3 = function () {
     // c3Stages.style.height = px(KFK._height);
     // c3Stages.style.zIndex = "10";
 
-    c3.addEventListener('click', function (e) {
-        if (KFK.editting) return;
+    $(c3).on('click', function (e) {
+        if (KFK.editting || KFK.resizing || KFK.dragging) return;
+        if (KFK.afterDragging === true) {
+            KFK.afterDragging = false;
+            return;
+        }
+        if (KFK.afterResizing === true) {
+            KFK.afterResizing = false;
+            return;
+        }
         if (KFK.mode === 'line') {
-            if (KFK.afterDragging === false)
-                KFK.yarkLinkPoint(
-                    e.clientX + KFK.scrollContainer.scrollLeft,
-                    e.clientY + KFK.scrollContainer.scrollTop,
-                    e.shiftKey
-                );
-            else
-                KFK.afterDragging = false;
+            KFK.yarkLinkPoint(
+                e.clientX + KFK.scrollContainer.scrollLeft,
+                e.clientY + KFK.scrollContainer.scrollTop,
+                e.shiftKey
+            );
             return;
         }
         if (KFK.selectedNode) {
@@ -554,7 +419,7 @@ KFK.createC3 = function () {
     });
 
     let preventDefault = false;
-    $('#containermain').keydown(function (e) {
+    $('#containermain').keyup(function (e) {
         let preventDefault = false;
         console.log(e.keyCode);
         if (e.keyCode === 16) { //Shift
@@ -562,12 +427,21 @@ KFK.createC3 = function () {
             KFK.APP.lockMode = false;
             KFK.pickedNode = null;
             preventDefault = true;
+            if (KFK.linkPos.length === 1) {
+                KFK.linkPos = [];
+            }
+            //按下option键，切换toggleMode
+            //TODO: toggleMode显示提示
+            //TODO: 切换时同时切换显示工具栏图标
+        } else if (e.keyCode === 18) { //Option
+            KFK.toggleMode = !KFK.toggleMode;
         } else if (e.keyCode >= 37 && e.keyCode <= 40) { //Left, Up, Right, Down
             if (KFK.selectedNode)
                 KFK.moveNode(e);
             preventDefault = true;
         } else if (e.keyCode === 46 || e.keyCode === 68) {  //D
-            KFK.deleteNode(e);
+            // KFK.deleteNode(e);
+            KFK.deleteHoverDiv(e);
             preventDefault = true;
         } else if (e.keCode === 27) { // ESC
             if (KFK.selectedNode) {
@@ -596,37 +470,42 @@ KFK.createC3 = function () {
     // KFK.C3.appendChild(soloDIV);
 }
 
-KFK.drawLine = function (x1, y1, x2, y2) {
+KFK.drawLine = function (x1, y1, x2, y2, strokeColor, strokeWidth) {
     console.log(`draw line now ${x1} ${y1} - ${x2} ${y2}`);
+    strokeColor = strokeColor ? strokeColor : 'blue';
+    strokeWidth = strokeWidth ? strokeWidth : 1;
     let p1 = { x: x1, y: y1 };
     let p2 = { x: x2, y: y2 };
     let rect = {
         x: Math.min(p1.x, p2.x),
         y: Math.min(p1.y, p2.y),
-        width: Math.max(Math.abs(p1.x - p2.x), 1),
-        height: Math.max(Math.abs(p1.y - p2.y), 1),
+        width: Math.max(Math.abs(p1.x - p2.x), strokeWidth),
+        height: Math.max(Math.abs(p1.y - p2.y), strokeWidth),
     }
     let points = [x1 - rect.x, y1 - rect.y, x2 - rect.x, y2 - rect.y];
     let divid = `div_${uuidv4()}`;
     let lineDIV = document.createElement("div");
     $(lineDIV).attr("id", divid);
     lineDIV.style.position = "absolute";
-    lineDIV.style.background = '#CCFFCC';
+    // lineDIV.style.background = '#CCFFCC';
     lineDIV.style.left = px(rect.x);
     lineDIV.style.top = px(rect.y);
     lineDIV.style.width = px(rect.width);
     lineDIV.style.height = px(rect.height);
     document.getElementById('C3').appendChild(lineDIV);
-    let stage = new Konva.Stage({ container: divid, x: 0, y: 0, width: rect.width, height: rect.height });
-    let layer = new Konva.Layer();
-    let line = new Konva.Line({ points: points, stroke: 'red', tension: 1 });
-    layer.add(line);
-    stage.add(layer);
-    layer.batchDraw();
+    let lineStage = new Konva.Stage({ container: divid, x: 0, y: 0, width: rect.width, height: rect.height });
+    let lineLayer = new Konva.Layer();
+    let theLine = new Konva.Line({ points: points, stroke: strokeColor, strokeWidth: strokeWidth, tension: 1, scale: { x: 1, y: 1 } });
+    console.log(`rect.width ${rect.width} rect.height ${rect.height}, line strokWidth: ${strokeWidth} `);
+    lineLayer.add(theLine);
+    lineStage.add(lineLayer);
+    lineLayer.batchDraw();
+    $(lineDIV).addClass('kfkline');
 
     $(lineDIV).draggable({
         start: () => {
             console.log('Start linedragging...')
+            KFK.dragging = true;
             KFK.linkPos = [];
             KFK.lineDragging = true;
         },
@@ -636,38 +515,131 @@ KFK.drawLine = function (x1, y1, x2, y2) {
         stop: () => {
             console.log('Stop linedragging...')
             KFK.linkPos = [];
+            KFK.dragging = false;
             KFK.lineDragging = false;
             KFK.afterDragging = true;
-        }
+        },
     });
+    lineDIV.dynamicRect = {};
     $(lineDIV).resizable({
         handles: "se", autoHide: true, ghost: false,
         minHeight: 1,
         minWidth: 1,
-        start: function(event, ui){
+        start: function (event, ui) {
             console.log("start resizing...");
+            KFK.resizing = true;
+            lineDIV.dynamicRect = {
+                x: unpx(lineDIV.style.left),
+                y: unpx(lineDIV.style.top),
+                width: unpx(lineDIV.style.width),
+                height: unpx(lineDIV.style.height),
+            }
+            let newRect = {
+                x: ui.position.left,
+                y: ui.position.top,
+                width: ui.size.width,
+                height: ui.size.height
+            };
+            let lineFrom = { x: theLine.points()[0], y: theLine.points()[1] };
+            let lineTo = { x: theLine.points()[2], y: theLine.points()[3] };
+            if (lineFrom.x === 0 && lineFrom.y === 0) {
+                theLine.lineFromAt = "lt";
+            } else if (lineFrom.x === 0 && lineFrom.y === lineDIV.dynamicRect.height) {
+                theLine.lineFromAt = "lb";
+            } else if (lineFrom.x === lineDIV.dynamicRect.width && lineFrom.y === 0) {
+                theLine.lineFromAt = "rt";
+            } else if (lineFrom.x === lineDIV.dynamicRect.width && lineFrom.y === lineDIV.dynamicRect.height) {
+                theLine.lineFromAt = "rb";
+            }
+            if (lineTo.x === 0 && lineTo.y === 0) {
+                theLine.lineToAt = "lt";
+            } else if (lineTo.x === 0 && lineTo.y === lineDIV.dynamicRect.height) {
+                theLine.lineToAt = "lb";
+            } else if (lineTo.x === lineDIV.dynamicRect.width && lineTo.y === 0) {
+                theLine.lineToAt = "rt";
+            } else if (lineTo.x === lineDIV.dynamicRect.width && lineTo.y === lineDIV.dynamicRect.height) {
+                theLine.lineToAt = "rb";
+            }
+            console.log(`${theLine.lineFromAt} --- ${theLine.lineToAt}`);
         },
         resize: function (event, ui) {
-            // line.points([0, 0, 100, 100]);
-            //TODO: change line length and width
-            layer.batchDraw();
+            //Rest DIV size
+            $(lineDIV).find('.konvajs-content')[0].style.width = lineDIV.style.width;
+            $(lineDIV).find('.konvajs-content')[0].style.height = lineDIV.style.height;
+            $(lineDIV).find('.konvajs-content').find('canvas')[0].style.width = lineDIV.style.width;
+            $(lineDIV).find('.konvajs-content').find('canvas')[0].style.height = lineDIV.style.height;
+            function calcArea(rect) {
+                return rect.width * rect.height;
+            }
+            let newRect = {
+                x: ui.position.left,
+                y: ui.position.top,
+                width: ui.size.width,
+                height: ui.size.height
+            };
+            let p1 = {}; let p2 = {};
+            switch (theLine.lineFromAt) {
+                case "lt":
+                    p1 = { x: 0, y: 0 };
+                    break;
+                case "lb":
+                    p1 = { x: 0, y: newRect.height };
+                    break;
+                case "rt":
+                    p1 = { x: newRect.width, y: 0 };
+                    break;
+                case "rb":
+                    p1 = { x: newRect.width, y: newRect.height };
+                    break;
+            }
+            switch (theLine.lineToAt) {
+                case "lt":
+                    p2 = { x: 0, y: 0 };
+                    break;
+                case "lb":
+                    p2 = { x: 0, y: newRect.height };
+                    break;
+                case "rt":
+                    p2 = { x: newRect.width, y: 0 };
+                    break;
+                case "rb":
+                    p2 = { x: newRect.width, y: newRect.height };
+                    break;
+            }
+            theLine.points([p1.x, p1.y, p2.x, p2.y]);
+            console.log(`div Rect: x:${unpx(lineDIV.style.left)} y:${unpx(lineDIV.style.top)} w:${unpx(lineDIV.style.width)} h:${unpx(lineDIV.style.height)}`);
+            console.log(`new Rect: x:${newRect.x} y:${newRect.y} w:${newRect.width} h:${newRect.height}`);
+            console.log(`new line: ${p1.x},${p1.y} --- ${p2.x},${p2.y}`);
+            lineLayer.batchDraw();
+            console.log(`realline: ${theLine.points()[0]},${theLine.points()[1]} --- ${theLine.points()[2]},${theLine.points()[3]}`)
+
             // $("#resizable-16").text("top = " + ui.position.top +
             //     ", left = " + ui.position.left +
             //     ", width = " + ui.size.width +
             //     ", height = " + ui.size.height);
+        },
+        stop: () => {
+            KFK.resizing = false;
+            KFK.afterResizing = true;
         }
     });
     $(lineDIV).hover(
         () => {
             $(document.body).css('cursor', 'pointer');
+            if (!(lineDIV.getAttribute('fdiv') || lineDIV.getAttribute('tdiv')))
+                lineDIV.style.background = "#CCFFCC";
+            KFK.hoverDIV = lineDIV;
             // $(lineDIV).resizable("option", "disabled", false);
         },
         () => {
             $(document.body).css('cursor', 'default');
+            lineDIV.style.background = "";
+            KFK.hoverDIV = null;
             // $(lineDIV).resizable("option", "disabled", true);
         }
     );
-    // layer.add(line); layer.batchDraw();
+
+    return lineDIV;
 }
 
 
@@ -871,6 +843,13 @@ KFK.createNode = function (node) {
         nodeObj.edittable = true;
         nodeObj.style.width = px(node.width - textPadding * 2); nodeObj.style.height = px(node.height - textPadding * 2);
         nodeObj.style.left = px(2); nodeObj.style.top = px(2);
+    } else if (node.type === "textblock") {
+        nodeObj = document.createElement('span');
+        nodeObj.style.fontSize = "18px";
+        nodeObj.innerText = "";
+        nodeObj.edittable = true;
+        nodeObj.style.width = px(node.width - textPadding * 2); nodeObj.style.height = px(node.height - textPadding * 2);
+        nodeObj.style.left = px(2); nodeObj.style.top = px(2);
     }
     if (!nodeObj) {
         console.log(`${node.type} is not supported`);
@@ -892,11 +871,15 @@ KFK.createNode = function (node) {
     nodeDIV.style.zIndex = '1';
     nodeDIV.style.border = 'none';
     nodeDIV.style.padding = '0px';
-    if (nodeDIV.type === 'text' || nodeDIV.type === 'yellowtip')
+    if (nodeDIV.type === 'text' || nodeDIV.type === 'yellowtip' || nodeDIV.type === 'textblock')
         nodeDIV.style.padding = `${textPadding}px`;
     nodeDIV.style.margin = '0px';
     nodeDIV.style.overflow = 'hidden';
-    nodeDIV.style.background = 'transparent';
+    if (config.node[node.type].background) {
+        nodeDIV.style.background = config.node[node.type].background;
+    } else {
+        nodeDIV.style.background = 'transparent';
+    }
     nodeDIV.style.outline = 'none';
     // nodeDIV.style.resize = 'none';
     nodeDIV.style.display = 'block';
@@ -906,18 +889,84 @@ KFK.createNode = function (node) {
         $(nodeDIV).css("background-repeat", 'no-repeat');
         $(nodeDIV).css("background-size", '100% 100%');
         $(nodeDIV).css("box-shadow", "20px 20px 18px -18px #888888");
-        $(nodeDIV).resizable();
+    }
+    if (config.node[node.type].resizable) {
+        $(nodeDIV).resizable({
+            autoHide: true,
+            start: () => { KFK.resizing = true; },
+            resize: () => { },
+            stop: () => { KFK.resizing = false; KFK.afterResizing = true; }
+        });
+    }
+    if (config.node[node.type].minWidth) {
+        $(nodeDIV).resizable("option", "minWidth", config.node[node.type].minWidth);
+    }
+    if (config.node[node.type].minHeight) {
+        $(nodeDIV).resizable("option", "minHeight", config.node[node.type].minHeight);
     }
 
     nodeDIV.appendChild(nodeObj);
     KFK.C3.appendChild(nodeDIV);
 
     let jqNodeDIV = $(nodeDIV);
-    jqNodeDIV.draggable({ scroll: true });
+    jqNodeDIV.addClass('kfknode');
+    jqNodeDIV.draggable({
+        scroll: true,
+        start: () => {
+            console.log('Start node dragging...')
+            KFK.dragging = true;
+        },
+        drag: () => {
+        },
+        stop: () => {
+            console.log('Stop node dragging...')
+            console.log(KFK.C3);
+            KFK.dragging = false;
+            KFK.afterDragging = true;
+            //循环找kfkline，找到所有line
+            $(KFK.C3).find('.kfkline').each((index, aLineDiv) => {
+                //如果从当前node开始连接
+                if (aLineDiv.getAttribute('fdiv') && aLineDiv.getAttribute('fdiv') === nodeDIV.getAttribute('id')) {
+                    console.log(`line ${index} link from this node`);
+                    KFK.linkPos = [];
+                    //如果结束点也是一个nodediv
+                    if (aLineDiv.getAttribute('tdiv')) {
+                        KFK.yarkLinkNode(nodeDIV);
+                        let divFilter = `#${aLineDiv.getAttribute('tdiv')}`;
+                        KFK.yarkLinkNode($(divFilter)[0]);
+                    } else { //如果结束点是一个 point
+                        KFK.yarkLinkNode(nodeDIV);
+                        KFK.yarkLinkPoint(aLineDiv.getAttribute('tx'), aLineDiv.getAttribute('ty'));
+                    }
+                    $(aLineDiv).remove();
+                } else if (aLineDiv.getAttribute('tdiv') && aLineDiv.getAttribute('tdiv') === nodeDIV.getAttribute('id')) {
+                    console.log(`line ${index} link to this node`);
+                    KFK.linkPos = [];
+                    if (aLineDiv.getAttribute('fdiv')) {
+                        let divFilter = `#${aLineDiv.getAttribute('fdiv')}`;
+                        KFK.yarkLinkNode($(divFilter)[0]);
+                        KFK.yarkLinkNode(nodeDIV);
+                    } else {
+                        KFK.yarkLinkPoint(aLineDiv.getAttribute('fx'), aLineDiv.getAttribute('fy'));
+                        KFK.yarkLinkNode(nodeDIV);
+                    }
+                    $(aLineDiv).remove();
+                }
+            })
+        },
+    });
 
     jqNodeDIV.hover(
-        () => { $(document.body).css('cursor', 'pointer'); },
-        () => { $(document.body).css('cursor', 'default'); }
+        () => {
+            $(document.body).css('cursor', 'pointer');
+            KFK.hoverDIV = nodeDIV;
+            KFK.toggleShadow(KFK.hoverDIV, true);
+        },
+        () => {
+            $(document.body).css('cursor', 'default');
+            KFK.toggleShadow(KFK.hoverDIV, false);
+            KFK.hoverDIV = null;
+        }
     );
     jqNodeDIV.click((e) => {
         console.log(nodeDIV.style.left);
@@ -981,261 +1030,19 @@ KFK.moveNode = function (e) {
     e.stopPropagation();
 }
 
+KFK.deleteHoverDiv = function (e) {
+    if (KFK.hoverDIV) {
+        $(KFK.hoverDIV).remove();
+        KFK.hoverDIV = null;
+    }
+}
+
+
 KFK.deleteNode = function (e) {
     if (KFK.selectedNode) {
         $(KFK.selectedNode).remove();
         KFK.selectedNode = null;
     }
-}
-
-KFK.createTip = function (node) {
-    let background = new Konva.Image({
-        image: KFK.images[`${node.type}`],
-        x: -(node.size * node.iconscale),
-        y: -(node.size * node.iconscale),
-        width: (node.size * node.iconscale) * 2,
-        height: (node.size * node.iconscale) * 2 * node.ratio,
-        shadowEnabled: tip_variants[node.type].shadowEnabled,
-        shadowColor: "black",
-        shadowBlur: 10,
-        shadowOffset: {
-            x: 5,
-            y: 5
-        },
-        shadowOpacity: 0.6,
-        draggable: false,
-        perfectDrawEnabled: false,
-        name: 'background',
-    });
-
-    background.cache();
-    var textNode = new Konva.Text({
-        text: tip_variants[node.type].text,
-        x: -(node.size * node.iconscale - 5),
-        y: -(node.size * node.iconscale - 5),
-        fontSize: 20,
-        draggable: true,
-        width: (node.size * node.iconscale) * 2,
-        height: (node.size * node.iconscale) * 2 * node.ratio,
-        draggable: false,
-        name: 'text',
-        listening: false,
-    });
-    textNode.cache();
-
-    let oneTIP = new Konva.Group({
-        x: node.x,
-        y: node.y,
-        width: background.width(),
-        height: background.height(),
-        draggable: true,
-        startScale: 1,
-        id: node.id,
-        perfectDrawEnabled: false,
-        dragBoundFunc: function (pos) {
-            var newX = pos.x < 50 ? 50 : pos.x;
-            var newY = pos.y < 100 ? 100 : pos.y;
-            newX = newX > KFK.width() - 50 ? KFK.width() - 50 : newX;
-            newY = newY > KFK.height() - 50 ? KFK.height() - 50 : newY;
-            return {
-                x: newX,
-                y: newY
-            };
-        }
-    });
-
-    oneTIP.background = background;
-    oneTIP.textNode = textNode;
-    oneTIP.width(200);
-    oneTIP.height(200);
-    oneTIP.on('mouseover', function (e) {
-        document.body.style.cursor = 'pointer';
-        if (e.evt.ctrlKey) {
-
-        }
-    });
-    oneTIP.on('mouseout', function () {
-        document.body.style.cursor = 'default';
-    });
-    oneTIP.on('dblclick', (e) => {
-        e.cancelBubble = true;
-        textNode.hide();
-        oneTIP.tr.hide();
-        var textPosition = textNode.absolutePosition();
-        var stageBox = KFK.stage.container().getBoundingClientRect();
-        var areaPosition = {
-            x: stageBox.left + textPosition.x,
-            y: stageBox.top + textPosition.y
-        };
-        var textarea = document.createElement('textarea');
-        document.body.appendChild(textarea);
-        textarea.value = textNode.text();
-        textarea.style.position = 'absolute';
-        textarea.style.top = areaPosition.y + 'px';
-        textarea.style.left = areaPosition.x + 'px';
-        textarea.style.width = textNode.width() - textNode.padding() * 2 + 'px';
-        textarea.style.height =
-            textNode.height() - textNode.padding() * 2 + 5 + 'px';
-        textarea.style.fontSize = textNode.fontSize() + 'px';
-        textarea.style.border = 'none';
-        textarea.style.padding = '0px';
-        textarea.style.margin = '0px';
-        textarea.style.overflow = 'hidden';
-        textarea.style.background = 'none';
-        textarea.style.outline = 'none';
-        textarea.style.resize = 'none';
-        textarea.style.lineHeight = textNode.lineHeight();
-        textarea.style.fontFamily = textNode.fontFamily();
-        textarea.style.transformOrigin = 'left top';
-        textarea.style.textAlign = textNode.align();
-        textarea.style.color = textNode.fill();
-        let rotation = textNode.rotation();
-        var transform = '';
-        if (rotation) {
-            transform += 'rotateZ(' + rotation + 'deg)';
-        }
-        var px = 0;
-        // also we need to slightly move textarea on firefox
-        // because it jumps a bit
-        var isFirefox =
-            navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-        if (isFirefox) {
-            px += 2 + Math.round(textNode.fontSize() / 20);
-        }
-        transform += 'translateY(-' + px + 'px)';
-
-        textarea.style.transform = transform;
-
-        // reset height
-        textarea.style.height = 'auto';
-        // after browsers resized it we can set actual value
-        textarea.style.height = textarea.scrollHeight + 3 + 'px';
-
-        textarea.focus();
-
-        function removeTextarea() {
-            textarea.parentNode.removeChild(textarea);
-            window.removeEventListener('click', handleOutsideClick);
-            textNode.show();
-            oneTIP.tr.show();
-            try { oneTIP.tr.forceUpdate(); } catch (e) { }
-            KFK.layer.batchDraw();
-        }
-
-        function setTextareaWidth(newWidth) {
-            if (!newWidth) {
-                // set width for placeholder
-                newWidth = textNode.placeholder.length * textNode.fontSize();
-            }
-            // some extra fixes on different browsers
-            var isSafari = /^((?!chrome|android).)*safari/i.test(
-                navigator.userAgent
-            );
-            var isFirefox =
-                navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-            if (isSafari || isFirefox) {
-                newWidth = Math.ceil(newWidth);
-            }
-
-            var isEdge =
-                document.documentMode || /Edge/.test(navigator.userAgent);
-            if (isEdge) {
-                newWidth += 1;
-            }
-            textarea.style.width = newWidth + 'px';
-        }
-
-        textarea.addEventListener('keydown', function (e) {
-            // hide on enter
-            // but don't hide on shift + enter
-            if (e.keyCode === 13 && !e.shiftKey) {
-                textNode.text(textarea.value);
-                removeTextarea();
-            }
-            // on esc do not set value back to node
-            if (e.keyCode === 27) {
-                removeTextarea();
-            }
-        });
-
-        textarea.addEventListener('keydown', function (e) {
-            let scale = textNode.getAbsoluteScale().x;
-            setTextareaWidth(textNode.width() * scale);
-            textarea.style.height = 'auto';
-            textarea.style.height =
-                textarea.scrollHeight + textNode.fontSize() + 'px';
-        });
-
-        function handleOutsideClick(e) {
-            if (e.target !== textarea) {
-                textNode.text(textarea.value);
-                removeTextarea();
-                KFK.focusOnTip = undefined;
-            }
-        }
-        setTimeout(() => {
-            window.addEventListener('click', handleOutsideClick);
-        });
-
-    });
-
-    oneTIP.on('click', function (e) {
-        KFK.focusOnTip = oneTIP;
-        let withShift = e.shiftKey || e.evt.shiftKey;
-        oneTIP.moveToTop();
-        e.cancelBubble = true;
-
-        KFK.stage.find('Transformer').destroy();
-        var tr = new Konva.Transformer({
-            // node: oneTIP,
-            // enabledAnchors: ['middle-left', 'middle-right'],
-            // set minimum width of text
-            rotateEnabled: tip_variants[node.type]['rotateEnabled'],
-            boundBoxFunc: function (oldBox, newBox) {
-                newBox.width = Math.max(30, newBox.width);
-                return newBox;
-            }
-        });
-        KFK.layer.add(tr);
-        tr.attachTo(oneTIP);
-        oneTIP.tr = tr;
-
-
-        if (withShift) {
-            if (KFK.pickedTip === null) {
-                KFK.pickedTip = oneTIP;
-            } else {
-                KFK.placeTipConnection(KFK.pickedTip.id(), oneTIP.id());
-                KFK.pickedTip = oneTIP;
-            }
-        }
-        KFK.layer.batchDraw();
-    });
-
-    oneTIP.add(background).add(textNode);
-    oneTIP.rotation(tip_variants[node.type]['rotation']);
-
-    oneTIP.on('transform', function () {
-        // reset scale, so only with is changing by transformer
-        background.setAttrs({
-            width: background.width() * oneTIP.scaleX(),
-            height: background.height() * oneTIP.scaleY(),
-            scaleX: 1
-        });
-        textNode.setAttrs({
-            width: textNode.width() * oneTIP.scaleX(),
-            height: textNode.height() * oneTIP.scaleY(),
-            scaleX: 1
-        });
-        oneTIP.setAttrs({
-            width: background.width() * oneTIP.scaleX(),
-            height: background.height() * oneTIP.scaleY(),
-            scaleX: 1
-        });
-        KFK.layer.batchDraw();
-    });
-
-    return oneTIP;
 }
 
 KFK.createConnect = function (link) {
@@ -1308,74 +1115,6 @@ KFK.placeNode = function (id, type, x, y) {
     return aNode;
 };
 
-
-KFK.placeConnection = function (from, to) {
-    if (from == to || from == 'END' || to == 'START')
-        return;
-    if (typeof from !== 'string' || typeof to !== 'string') {
-        console.error(`linkTogether with node ID (a string) pls`);
-        return;
-    }
-    if (!KFK.removeLink(from, to))
-        KFK.removeLink(to, from);
-    let linkId = uuidv4();
-    let aLink = new Link('link-' + linkId, from, to, '');
-    KFK.links.push(aLink);
-    let connect = KFK.createConnect(aLink);
-    KFK.layer.add(connect);
-    //KFK.redrawLinks();
-};
-
-KFK.placeTipConnection = function (from, to) {
-    if (from == to)
-        return;
-    if (typeof from !== 'string' || typeof to !== 'string') {
-        console.error(`linkTogether with node ID (a string) pls`);
-        return;
-    }
-    if (!KFK.removeTipLink(from, to))
-        KFK.removeTipLink(to, from);
-    let linkId = uuidv4();
-    let aLink = new Link('link-' + linkId, from, to, '');
-    KFK.tipLinks.push(aLink);
-    let connect = KFK.createConnect(aLink);
-    KFK.layer.add(connect);
-    //KFK.redrawLinks();
-};
-
-KFK.redrawLinks = function redrawLinks() {
-    KFK.links.forEach(link => {
-        var arrow = KFK.layer.findOne('#arrow-' + link.id);
-        var fromNode = KFK.findNode(link.from);
-        var toNode = KFK.findNode(link.to);
-
-        const points = KFK.getConnectorPoints(
-            fromNode.position(),
-            toNode.position(),
-            20,
-        );
-        arrow.points(points);
-    });
-    KFK.tipLinks.forEach(link => {
-        var arrow = KFK.layer.findOne('#arrow-' + link.id);
-        var fromNode = KFK.findNode(link.from);
-        var toNode = KFK.findNode(link.to);
-        var fromPosition = fromNode.position();
-        var toPosition = toNode.position();
-
-        const points = KFK.getConnectorPoints(
-            fromPosition,
-            toPosition,
-            0
-        );
-        arrow.stroke('red');
-        arrow.fill('red');
-        arrow.points(points);
-    });
-
-    KFK.layer.batchDraw();
-};
-
 KFK.init = function () {
 
     KFK.gridLayer.add(new Konva.Line({
@@ -1391,13 +1130,13 @@ KFK.init = function () {
     KFK.startNode = KFK.placeNode('START', 'start', 120, 120);
     // KFK.endNode = KFK.placeNode('END', 'end', KFK.width() * 0.5 - 50, KFK.height() * 0.25);
     KFK.endNode = KFK.placeNode('END', 'end', 300, 120);
-    //  KFK.placeConnection('START', 'END');
     // KFK.centerPos = { x: 120 + (KFK.width() - 50 - 120) * 0.5, y: KFK.height() * 0.5 };
 
     KFK.drawLine(200, 200, 500, 200);
     KFK.drawLine(200, 200, 200, 500);
     KFK.drawLine(500, 200, 500, 500);
     KFK.drawLine(200, 500, 500, 500);
+    KFK.drawLine(200, 200, 500, 500);
 };
 KFK.loadImages(KFK.init);
 
@@ -1412,8 +1151,8 @@ KFK.setMode = function (mode) {
     else
         KFK.APP.active[mode] = true;
 }
+//用在index.js中的boostrapevue
 KFK.isActive = function (mode) {
-    console.log(`${KFK.mode} === ${mode}`);
     return KFK.mode === mode;
 }
 
@@ -1438,32 +1177,15 @@ KFK.size = function (w, h) {
 };
 
 
-KFK.inViewPort = function (r1) {
-    return !(
-        r1.x > window.innerWidth + KFK.scrollContainer.scrollLeft ||
-        r1.x + r1.width < KFK.scrollContainer.scrollLeft ||
-        r1.y > window.innerHeight + KFK.scrollContainer.scrollTop ||
-        r1.y + r1.height < KFK.scrollContainer.scrollTop);
-}
-
-//TODO: 可以不要了？
-KFK.setVisible = function () {
-    //layer上已经不做拖动操作，如果改变visible, 必须执行batchDraw才能看到变化
-    //这样导致性能极低。 既然layer上已经不做拖动操作，可以不改变node的visible状态
-    console.log(KFK.layer.children.length);
-    for (let i = 0; i < KFK.layer.children.length; i++) {
-        let v = KFK.inViewPort(KFK.layer.children[i].getClientRect());
-        KFK.layer.children[i].visible(v);
-        // KFK.layer.batchDraw();
-        console.log(v);
-    }
-};
-
-//KFK.scrollContainer.addEventListener('scroll', KFK.setVisible);
 
 module.exports = KFK;
 
 
 //TODO: Zoom in / Zoom out
 //TODO: RichText
+//TODO: Font 选择窗
+//TODO: 颜色，对齐选择
 //TODO: Free Drawing
+//TODO: hover then Copy & Paste
+//TODO: paste images
+//TODO: draw an multiple angles
