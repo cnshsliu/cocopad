@@ -10,6 +10,7 @@
       "name": "Chrome",
       "url": "http://localhost:1234",
       "runtimeArgs": ["--auto-open-devtools-for-tabs"],
+      "sourceMaps": true,
       "webRoot": "${workspaceFolder}",
       "breakOnLoad": false,
       "sourceMapPathOverrides": {
