@@ -81,6 +81,9 @@ KFK.startNode = null;
 KFK.endNode = null;
 KFK.lastClickOnNode = Date.now();
 KFK.hoverDIV = null;
+KFK.inited = false;
+KFK.divInClipboard = undefined;
+KFK.insertAfterDIV = undefined;
 
 // KFK._width = window.innerWidth; KFK._height = window.innerHeight;
 KFK._width = window.innerWidth * 6; KFK._height = window.innerHeight * 6;
@@ -103,32 +106,26 @@ KFK.afterDragging = false;
 KFK.afterResizing = false;
 KFK.linkPos = [];
 KFK.toggleMode = false;
-
-//TODO: 支持PAN canvas为十倍的大小，或者，自动扩展canvas, 类似draw.io的做法， 每次扩展一个屏幕大小
-//TODO: TIPS可以钉在桌面上，钉住后，不可移动
-
-
 KFK.tween = null;
 
 
-//KFK.stage = new Konva.Stage({ container: "container", width: KFK._width, height: KFK._height, visible: true, });
-// KFK.stage.zIndex(100);
 KFK.dragStage = new Konva.Stage({ container: "containerbkg", width: window.innerWidth, height: window.innerHeight });
-// KFK.dragStage.zIndex(200);
-// KFK.container = KFK.stage.container(); KFK.container.tabIndex = 1; KFK.container.focus();
-KFK.container = document.getElementById('containermain'); KFK.container.tabIndex = 1; KFK.container.focus();
+KFK.focusOnMainContainer = () => {
+    KFK.container = document.getElementById('containermain'); KFK.container.tabIndex = 1; KFK.container.focus();
+}
+KFK.focusOnMainContainer();
 KFK.dragContainer = KFK.dragStage.container();
 KFK.scrollContainer = document.getElementById('scroll-container');
 KFK.lockMode = false;
 KFK.selectedNode = null;
-// KFK.container.addEventListener('keydown', function (e) {
-//     switch (e.keyCode) {
-//         case 16:  //Shift
-//             KFK.lockMode = true;
-//             KFK.APP.lockMode = true;
-//     }
-//     e.preventDefault();
-// });
+KFK.container.addEventListener('keydown', function (e) {
+    switch (e.keyCode) {
+        case 16:  //Shift
+            KFK.lockMode = true;
+            KFK.APP.lockMode = true;
+    }
+    // e.preventDefault();
+});
 
 
 KFK.gridLayer = new Konva.Layer({ id: 'gridLayer' });
@@ -146,13 +143,16 @@ KFK.loadImages = function loadimg(callback) {
         KFK.images[file] = new Image();
         KFK.images[file].onload = function () {
             if (++loadedImages >= numImages) {
-                callback(KFK.images);
+                if (KFK.inited === false)
+                    callback(KFK.images);
             }
         };
         console.log(`${file}`);
         KFK.images[file].src = assetIcons[file];
         console.log(`${file}  -> ${assetIcons[file]}`);
     }
+
+    KFK.images['toggle_line'].src = KFK.images['line'].src;
 };
 
 class Node {
@@ -245,9 +245,9 @@ KFK.yarkLinkPoint = function (x, y, shiftKey) {
         if (KFK.toggleMode) {
             if (Math.abs(x - KFK.linkPos[0].center.x) <
                 Math.abs(y - KFK.linkPos[0].center.y))
-                   x = KFK.linkPos[0].center.x;
+                x = KFK.linkPos[0].center.x;
             else
-                   y = KFK.linkPos[0].center.y;
+                y = KFK.linkPos[0].center.y;
         }
     }
     KFK.linkPos.push({
@@ -419,7 +419,7 @@ KFK.createC3 = function () {
     });
 
     let preventDefault = false;
-    $('#containermain').keyup(function (e) {
+    $('#containermain').keydown(function (e) {
         let preventDefault = false;
         console.log(e.keyCode);
         if (e.keyCode === 16) { //Shift
@@ -430,18 +430,26 @@ KFK.createC3 = function () {
             if (KFK.linkPos.length === 1) {
                 KFK.linkPos = [];
             }
-            //按下option键，切换toggleMode
-            //TODO: toggleMode显示提示
-            //TODO: 切换时同时切换显示工具栏图标
         } else if (e.keyCode === 18) { //Option
+            //按下option键，切换toggleMode
             KFK.toggleMode = !KFK.toggleMode;
+            if(KFK.mode === 'line'){
+                KFK.APP.toggle('line',  KFK.toggleMode);
+            }
+            e.stopImmediatePropagation();
         } else if (e.keyCode >= 37 && e.keyCode <= 40) { //Left, Up, Right, Down
             if (KFK.selectedNode)
                 KFK.moveNode(e);
             preventDefault = true;
-        } else if (e.keyCode === 46 || e.keyCode === 68) {  //D
+        } else if (e.keyCode === 46 || e.keyCode === 68) {  // key D
             // KFK.deleteNode(e);
             KFK.deleteHoverDiv(e);
+            preventDefault = true;
+        } else if (e.keyCode === 67 && e.metaKey){
+            KFK.copyHoverDiv(e);
+            preventDefault = true;
+        } else if (e.keyCode === 86 && e.metaKey){
+            KFK.pasteHoverDiv(e);
             preventDefault = true;
         } else if (e.keCode === 27) { // ESC
             if (KFK.selectedNode) {
@@ -451,6 +459,7 @@ KFK.createC3 = function () {
 
         }
         if (preventDefault) {
+            e.stopImmediatePropagation();
             e.stopPropagation();
             e.preventDefault();
         }
@@ -890,6 +899,10 @@ KFK.createNode = function (node) {
         $(nodeDIV).css("background-size", '100% 100%');
         $(nodeDIV).css("box-shadow", "20px 20px 18px -18px #888888");
     }
+    nodeDIV.setAttribute('nodetype', node.type);
+    nodeDIV.setAttribute('edittable', nodeObj.edittable);
+    //TODO: 把依赖本地变量的，以属性形式放到node里，根据属性值来处理
+    //TODO: 这些event处理方法，放到一个function里，这样，后面在copy paste时直接调用这些方法，即可让paste的node具有同样的功能
     if (config.node[node.type].resizable) {
         $(nodeDIV).resizable({
             autoHide: true,
@@ -1036,6 +1049,23 @@ KFK.deleteHoverDiv = function (e) {
         KFK.hoverDIV = null;
     }
 }
+KFK.copyHoverDiv = function (e) {
+    if (KFK.hoverDIV) {
+        KFK.divInClipboard = $(KFK.hoverDIV).clone();
+        KFK.divInClipboard.prop('id', uuidv4());
+        KFK.divInClipboard[0].style.left = px(unpx(KFK.divInClipboard[0].style.left) + 40);
+        KFK.divInClipboard[0].style.top = px(unpx(KFK.divInClipboard[0].style.top) + 40);
+        //TODO: add event listener
+        KFK.insertAfterDIV = KFK.hoverDIV
+    }
+}
+KFK.pasteHoverDiv = function (e) {
+    console.log('paste');
+    if (KFK.divInClipboard && KFK.insertAfterDIV){
+        console.log(KFK.divInClipboard);
+        $(KFK.insertAfterDIV).after(KFK.divInClipboard);
+    }
+}
 
 
 KFK.deleteNode = function (e) {
@@ -1116,7 +1146,10 @@ KFK.placeNode = function (id, type, x, y) {
 };
 
 KFK.init = function () {
-
+    if (KFK.inited === true) {
+        console.error('KFK.init was called more than once, maybe loadImages error');
+        return;
+    }
     KFK.gridLayer.add(new Konva.Line({
         x: 100,
         y: 200,
@@ -1137,6 +1170,10 @@ KFK.init = function () {
     KFK.drawLine(500, 200, 500, 500);
     KFK.drawLine(200, 500, 500, 500);
     KFK.drawLine(200, 200, 500, 500);
+
+    KFK.focusOnMainContainer();
+
+    KFK.inited = true;
 };
 KFK.loadImages(KFK.init);
 
@@ -1150,6 +1187,8 @@ KFK.setMode = function (mode) {
         console.warn(`APP.active.${mode} does not exist`);
     else
         KFK.APP.active[mode] = true;
+    
+    KFK.focusOnMainContainer();
 }
 //用在index.js中的boostrapevue
 KFK.isActive = function (mode) {
@@ -1189,3 +1228,4 @@ module.exports = KFK;
 //TODO: hover then Copy & Paste
 //TODO: paste images
 //TODO: draw an multiple angles
+//TODO: drag a textnode and drop into another
