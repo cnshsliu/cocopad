@@ -83,7 +83,6 @@ KFK.lastClickOnNode = Date.now();
 KFK.hoverDIV = null;
 KFK.inited = false;
 KFK.divInClipboard = undefined;
-KFK.insertAfterDIV = undefined;
 
 // KFK._width = window.innerWidth; KFK._height = window.innerHeight;
 KFK._width = window.innerWidth * 6; KFK._height = window.innerHeight * 6;
@@ -110,8 +109,11 @@ KFK.tween = null;
 
 
 KFK.dragStage = new Konva.Stage({ container: "containerbkg", width: window.innerWidth, height: window.innerHeight });
+KFK.container = document.getElementById('containermain'); KFK.container.tabIndex = 1;
+KFK.container.style.width = KFK._width + "px";
+KFK.container.style.height = KFK._height + "px";
 KFK.focusOnMainContainer = () => {
-    KFK.container = document.getElementById('containermain'); KFK.container.tabIndex = 1; KFK.container.focus();
+    KFK.container.focus();
 }
 KFK.focusOnMainContainer();
 KFK.dragContainer = KFK.dragStage.container();
@@ -127,9 +129,19 @@ KFK.container.addEventListener('keydown', function (e) {
     // e.preventDefault();
 });
 
+KFK.currentMousePos = { x: -1, y: -1 };
+$(document).mousemove(function (event) {
+    KFK.currentMousePos.x = event.pageX;
+    KFK.currentMousePos.y = event.pageY;
+});
+
 
 KFK.gridLayer = new Konva.Layer({ id: 'gridLayer' });
 KFK.dragStage.add(KFK.gridLayer);
+
+function el(jq) {
+    return jq[0];
+}
 
 
 KFK.loadImages = function loadimg(callback) {
@@ -156,12 +168,12 @@ KFK.loadImages = function loadimg(callback) {
 };
 
 class Node {
-    constructor(id, type, x, y) {
+    constructor(id, type, x, y, w, h) {
         this.id = id;
         this.type = type;
         console.log(type);
-        this.width = config.node[type].width;
-        this.height = config.node[type].height;
+        this.width = w?w:config.node[type].width;
+        this.height = h?h:config.node[type].height;
         this.iconscale = 0.8;
         this.x = x;
         this.y = y;
@@ -338,6 +350,7 @@ KFK.procLink = function (shiftKey) {
     if (KFK.linkPos[0].type === 'box' || KFK.linkPos[1].type === 'box') {
         $(lineDIV).draggable('disable');
         $(lineDIV).resizable('disable');
+        // $(lineDIV).unbind('mouseenter mouseleave');
     }
     if (!shiftKey)
         KFK.linkPos.splice(0, 2);
@@ -373,14 +386,18 @@ KFK.createC3 = function () {
     // c3Stages.style.zIndex = "10";
 
     $(c3).on('click', function (e) {
-        if (KFK.editting || KFK.resizing || KFK.dragging) return;
+        if (KFK.editting || KFK.resizing || KFK.dragging) {
+            console.log(`ignore click because editting: ${KFK.editting}, resizing: ${KFK.resizing}, dragging: ${KFK.dragging}`);
+            return;
+        }
+        //TODO: 原来的return导致在resizing后，后续的第一个点击不起作用，现在去掉了return好像也没问题，考虑把afterDragging和afterResizing取消掉
         if (KFK.afterDragging === true) {
             KFK.afterDragging = false;
-            return;
+            // return;
         }
         if (KFK.afterResizing === true) {
             KFK.afterResizing = false;
-            return;
+            // return;
         }
         if (KFK.mode === 'line') {
             KFK.yarkLinkPoint(
@@ -403,7 +420,6 @@ KFK.createC3 = function () {
                 e.clientY + KFK.scrollContainer.scrollTop
             );
             KFK.nodes.push(aNode);
-            console.log("Before createNode");
             KFK.createNode(aNode);
         } else {
             console.log(`${KFK.mode} is not supported`);
@@ -421,7 +437,7 @@ KFK.createC3 = function () {
     let preventDefault = false;
     $('#containermain').keydown(function (e) {
         let preventDefault = false;
-        console.log(e.keyCode);
+        console.log(`keydown = ${e.keyCode}`);
         if (e.keyCode === 16) { //Shift
             KFK.lockMode = false;
             KFK.APP.lockMode = false;
@@ -433,30 +449,26 @@ KFK.createC3 = function () {
         } else if (e.keyCode === 18) { //Option
             //按下option键，切换toggleMode
             KFK.toggleMode = !KFK.toggleMode;
-            if(KFK.mode === 'line'){
-                KFK.APP.toggle('line',  KFK.toggleMode);
+            if (KFK.mode === 'line') {
+                KFK.APP.toggle('line', KFK.toggleMode);
             }
-            e.stopImmediatePropagation();
         } else if (e.keyCode >= 37 && e.keyCode <= 40) { //Left, Up, Right, Down
             if (KFK.selectedNode)
                 KFK.moveNode(e);
-            preventDefault = true;
         } else if (e.keyCode === 46 || e.keyCode === 68) {  // key D
             // KFK.deleteNode(e);
             KFK.deleteHoverDiv(e);
-            preventDefault = true;
-        } else if (e.keyCode === 67 && e.metaKey){
+        } else if (e.keyCode === 67 && e.metaKey) {  //Meta-C
+            console.log('meta c');
             KFK.copyHoverDiv(e);
-            preventDefault = true;
-        } else if (e.keyCode === 86 && e.metaKey){
+        } else if (e.keyCode === 86 && e.metaKey) { //Meta-D
+            console.log('meta d')
             KFK.pasteHoverDiv(e);
-            preventDefault = true;
         } else if (e.keCode === 27) { // ESC
             if (KFK.selectedNode) {
                 KFK.selectedNode.style.background = "transparent";
                 KFK.selectedNode = null;
             }
-
         }
         if (preventDefault) {
             e.stopImmediatePropagation();
@@ -466,17 +478,10 @@ KFK.createC3 = function () {
 
 
     });
-    // document.getElementById('containermain').appendChild(c3Stages);
     document.getElementById('containermain').appendChild(c3);
 
     KFK.C3 = c3;
 
-    // KFK.C3.addEventListener('mousemove', function (e) {
-    //     console.log(`${e.clientX} ${e.clientY}`);
-    // })
-    // let soloDIV = document.createElement('textarea');
-    // $(soloDIV).resizable();
-    // KFK.C3.appendChild(soloDIV);
 }
 
 KFK.drawLine = function (x1, y1, x2, y2, strokeColor, strokeWidth) {
@@ -502,16 +507,26 @@ KFK.drawLine = function (x1, y1, x2, y2, strokeColor, strokeWidth) {
     lineDIV.style.width = px(rect.width);
     lineDIV.style.height = px(rect.height);
     document.getElementById('C3').appendChild(lineDIV);
-    let lineStage = new Konva.Stage({ container: divid, x: 0, y: 0, width: rect.width, height: rect.height });
+
+    let jqLineDIV = $(lineDIV);
+    jqLineDIV.attr('strokeColor', strokeColor);
+    jqLineDIV.attr('strokeWidth', strokeWidth);
+    jqLineDIV.attr('x1', x1);
+    jqLineDIV.attr('y1', y1);
+    jqLineDIV.attr('x2', x2);
+    jqLineDIV.attr('y2', y2);
+
+    let lineStage = new Konva.Stage({ container: jqLineDIV.attr("id"), x: 0, y: 0, width: rect.width, height: rect.height });
     let lineLayer = new Konva.Layer();
     let theLine = new Konva.Line({ points: points, stroke: strokeColor, strokeWidth: strokeWidth, tension: 1, scale: { x: 1, y: 1 } });
     console.log(`rect.width ${rect.width} rect.height ${rect.height}, line strokWidth: ${strokeWidth} `);
     lineLayer.add(theLine);
     lineStage.add(lineLayer);
     lineLayer.batchDraw();
-    $(lineDIV).addClass('kfkline');
 
-    $(lineDIV).draggable({
+    jqLineDIV.addClass('kfkline');
+
+    jqLineDIV.draggable({
         start: () => {
             console.log('Start linedragging...')
             KFK.dragging = true;
@@ -529,19 +544,19 @@ KFK.drawLine = function (x1, y1, x2, y2, strokeColor, strokeWidth) {
             KFK.afterDragging = true;
         },
     });
-    lineDIV.dynamicRect = {};
-    $(lineDIV).resizable({
+    let dynamicRect = {};
+    jqLineDIV.resizable({
         handles: "se", autoHide: true, ghost: false,
         minHeight: 1,
         minWidth: 1,
         start: function (event, ui) {
             console.log("start resizing...");
             KFK.resizing = true;
-            lineDIV.dynamicRect = {
-                x: unpx(lineDIV.style.left),
-                y: unpx(lineDIV.style.top),
-                width: unpx(lineDIV.style.width),
-                height: unpx(lineDIV.style.height),
+            dynamicRect = {
+                x: unpx(el(jqLineDIV).style.left),
+                y: unpx(el(jqLineDIV).style.top),
+                width: unpx(el(jqLineDIV).style.width),
+                height: unpx(el(jqLineDIV).style.height),
             }
             let newRect = {
                 x: ui.position.left,
@@ -553,30 +568,28 @@ KFK.drawLine = function (x1, y1, x2, y2, strokeColor, strokeWidth) {
             let lineTo = { x: theLine.points()[2], y: theLine.points()[3] };
             if (lineFrom.x === 0 && lineFrom.y === 0) {
                 theLine.lineFromAt = "lt";
-            } else if (lineFrom.x === 0 && lineFrom.y === lineDIV.dynamicRect.height) {
+            } else if (lineFrom.x === 0 && lineFrom.y === dynamicRect.height) {
                 theLine.lineFromAt = "lb";
-            } else if (lineFrom.x === lineDIV.dynamicRect.width && lineFrom.y === 0) {
+            } else if (lineFrom.x === dynamicRect.width && lineFrom.y === 0) {
                 theLine.lineFromAt = "rt";
-            } else if (lineFrom.x === lineDIV.dynamicRect.width && lineFrom.y === lineDIV.dynamicRect.height) {
+            } else if (lineFrom.x === dynamicRect.width && lineFrom.y === dynamicRect.height) {
                 theLine.lineFromAt = "rb";
             }
             if (lineTo.x === 0 && lineTo.y === 0) {
                 theLine.lineToAt = "lt";
-            } else if (lineTo.x === 0 && lineTo.y === lineDIV.dynamicRect.height) {
+            } else if (lineTo.x === 0 && lineTo.y === dynamicRect.height) {
                 theLine.lineToAt = "lb";
-            } else if (lineTo.x === lineDIV.dynamicRect.width && lineTo.y === 0) {
+            } else if (lineTo.x === dynamicRect.width && lineTo.y === 0) {
                 theLine.lineToAt = "rt";
-            } else if (lineTo.x === lineDIV.dynamicRect.width && lineTo.y === lineDIV.dynamicRect.height) {
+            } else if (lineTo.x === dynamicRect.width && lineTo.y === dynamicRect.height) {
                 theLine.lineToAt = "rb";
             }
             console.log(`${theLine.lineFromAt} --- ${theLine.lineToAt}`);
         },
         resize: function (event, ui) {
             //Rest DIV size
-            $(lineDIV).find('.konvajs-content')[0].style.width = lineDIV.style.width;
-            $(lineDIV).find('.konvajs-content')[0].style.height = lineDIV.style.height;
-            $(lineDIV).find('.konvajs-content').find('canvas')[0].style.width = lineDIV.style.width;
-            $(lineDIV).find('.konvajs-content').find('canvas')[0].style.height = lineDIV.style.height;
+            lineStage.width(unpx(el(jqLineDIV).style.width));
+            lineStage.height(unpx(el(jqLineDIV).style.height));
             function calcArea(rect) {
                 return rect.width * rect.height;
             }
@@ -615,12 +628,17 @@ KFK.drawLine = function (x1, y1, x2, y2, strokeColor, strokeWidth) {
                     p2 = { x: newRect.width, y: newRect.height };
                     break;
             }
+            //TODO: try 删掉layer, 再新建layer, 再划线，看可否解决显示不准确的问题
             theLine.points([p1.x, p1.y, p2.x, p2.y]);
-            console.log(`div Rect: x:${unpx(lineDIV.style.left)} y:${unpx(lineDIV.style.top)} w:${unpx(lineDIV.style.width)} h:${unpx(lineDIV.style.height)}`);
+            console.log(`div Rect: x:${unpx(el(jqLineDIV).style.left)} y:${unpx(el(jqLineDIV).style.top)} w:${unpx(el(jqLineDIV).style.width)} h:${unpx(el(jqLineDIV).style.height)}`);
             console.log(`new Rect: x:${newRect.x} y:${newRect.y} w:${newRect.width} h:${newRect.height}`);
             console.log(`new line: ${p1.x},${p1.y} --- ${p2.x},${p2.y}`);
             lineLayer.batchDraw();
             console.log(`realline: ${theLine.points()[0]},${theLine.points()[1]} --- ${theLine.points()[2]},${theLine.points()[3]}`)
+            jqLineDIV.attr('x1', p1.x);
+            jqLineDIV.attr('y1', p1.y);
+            jqLineDIV.attr('x2', p2.x);
+            jqLineDIV.attr('y2', p2.y);
 
             // $("#resizable-16").text("top = " + ui.position.top +
             //     ", left = " + ui.position.left +
@@ -632,22 +650,32 @@ KFK.drawLine = function (x1, y1, x2, y2, strokeColor, strokeWidth) {
             KFK.afterResizing = true;
         }
     });
-    $(lineDIV).hover(
+    jqLineDIV.hover(
         () => {
             $(document.body).css('cursor', 'pointer');
-            if (!(lineDIV.getAttribute('fdiv') || lineDIV.getAttribute('tdiv')))
-                lineDIV.style.background = "#CCFFCC";
-            KFK.hoverDIV = lineDIV;
-            // $(lineDIV).resizable("option", "disabled", false);
+            if (!(jqLineDIV.attr('fdiv') || jqLineDIV.attr('tdiv')))
+                el(jqLineDIV).style.background = "#CCFFCC";
+            // theLine.shadowColor('#33FF33');
+            // theLine.shadowEnabled(true);
+            // theLine.shadowOffset({ x: 2, y: 2 });
+            theLine.dash([10, 2, 5, 2]);
+            theLine.dashEnabled(true);
+            lineLayer.batchDraw();
+            KFK.hoverDIV = el(jqLineDIV);
         },
         () => {
             $(document.body).css('cursor', 'default');
-            lineDIV.style.background = "";
+            if (!(jqLineDIV.attr('fdiv') || jqLineDIV.attr('tdiv')))
+                el(jqLineDIV).style.background = "";
+            // theLine.shadowColor('#33FF33');
+            // theLine.shadowEnabled(false);
+            // theLine.shadowOffset({ x: 2, y: 2 });
+            theLine.dash([10, 20, 5, 20]);
+            theLine.dashEnabled(false);
+            lineLayer.batchDraw();
             KFK.hoverDIV = null;
-            // $(lineDIV).resizable("option", "disabled", true);
         }
     );
-
     return lineDIV;
 }
 
@@ -762,6 +790,7 @@ function editTextNode(textnode, theDIV) {
         KFK.editting = false;
         textnode.editting = false;
         theDIV.editting = false;
+        KFK.focusOnMainContainer();
     }
 
     function setTextareaWidth(newWidth) {
@@ -843,21 +872,24 @@ KFK.createNode = function (node) {
         nodeObj.style.fontSize = "18px";
         nodeObj.innerText = "Some text here";
         nodeObj.edittable = true;
-        nodeObj.style.width = px(node.width - textPadding * 2); nodeObj.style.height = px(node.height - textPadding * 2);
+        nodeObj.style.width = px(node.width - textPadding * 2); 
+        nodeObj.style.height = px(node.height - textPadding * 2);
         nodeObj.style.left = px(2); nodeObj.style.top = px(2);
     } else if (node.type === "yellowtip") {
         nodeObj = document.createElement('span');
         nodeObj.style.fontSize = "18px";
         nodeObj.innerText = "Multiple line text";
         nodeObj.edittable = true;
-        nodeObj.style.width = px(node.width - textPadding * 2); nodeObj.style.height = px(node.height - textPadding * 2);
+        nodeObj.style.width = px(node.width - textPadding * 2); 
+        nodeObj.style.height = px(node.height - textPadding * 2);
         nodeObj.style.left = px(2); nodeObj.style.top = px(2);
     } else if (node.type === "textblock") {
         nodeObj = document.createElement('span');
         nodeObj.style.fontSize = "18px";
         nodeObj.innerText = "";
         nodeObj.edittable = true;
-        nodeObj.style.width = px(node.width - textPadding * 2); nodeObj.style.height = px(node.height - textPadding * 2);
+        nodeObj.style.width = px(node.width - textPadding * 2); 
+        nodeObj.style.height = px(node.height - textPadding * 2);
         nodeObj.style.left = px(2); nodeObj.style.top = px(2);
     }
     if (!nodeObj) {
@@ -867,7 +899,6 @@ KFK.createNode = function (node) {
 
     var nodeDIV = document.createElement('div');
     nodeDIV.id = node.id;
-    nodeDIV.type = node.type;
     nodeDIV.style.position = 'absolute';
     nodeDIV.style.top = px(ltPos(node).y);
     nodeDIV.style.left = px(ltPos(node).x);
@@ -880,7 +911,7 @@ KFK.createNode = function (node) {
     nodeDIV.style.zIndex = '1';
     nodeDIV.style.border = 'none';
     nodeDIV.style.padding = '0px';
-    if (nodeDIV.type === 'text' || nodeDIV.type === 'yellowtip' || nodeDIV.type === 'textblock')
+    if (node.type === 'text' || node.type === 'yellowtip' || node.type === 'textblock')
         nodeDIV.style.padding = `${textPadding}px`;
     nodeDIV.style.margin = '0px';
     nodeDIV.style.overflow = 'hidden';
@@ -899,30 +930,55 @@ KFK.createNode = function (node) {
         $(nodeDIV).css("background-size", '100% 100%');
         $(nodeDIV).css("box-shadow", "20px 20px 18px -18px #888888");
     }
-    nodeDIV.setAttribute('nodetype', node.type);
-    nodeDIV.setAttribute('edittable', nodeObj.edittable);
-    //TODO: 把依赖本地变量的，以属性形式放到node里，根据属性值来处理
-    //TODO: 这些event处理方法，放到一个function里，这样，后面在copy paste时直接调用这些方法，即可让paste的node具有同样的功能
-    if (config.node[node.type].resizable) {
-        $(nodeDIV).resizable({
-            autoHide: true,
-            start: () => { KFK.resizing = true; },
-            resize: () => { },
-            stop: () => { KFK.resizing = false; KFK.afterResizing = true; }
-        });
-    }
-    if (config.node[node.type].minWidth) {
-        $(nodeDIV).resizable("option", "minWidth", config.node[node.type].minWidth);
-    }
-    if (config.node[node.type].minHeight) {
-        $(nodeDIV).resizable("option", "minHeight", config.node[node.type].minHeight);
-    }
 
+    nodeObj.setAttribute("id", 'innerobj_' + node.id);
+    // nodeDIV.attr('w', node.width);
+    // nodeDIV.attr('h', node.height);
     nodeDIV.appendChild(nodeObj);
     KFK.C3.appendChild(nodeDIV);
 
     let jqNodeDIV = $(nodeDIV);
+    jqNodeDIV.attr('nodetype', node.type);
+    jqNodeDIV.attr('edittable', nodeObj.edittable);
+    KFK.setNodeEventHandler(jqNodeDIV);
+
+    return nodeDIV;
+}
+
+function getBoolean(value) {
+    switch (value) {
+        case true:
+        case "true":
+        case 1:
+        case "1":
+        case "on":
+        case "yes":
+            return true;
+        default:
+            return false;
+    }
+}
+
+KFK.setNodeEventHandler = function (jqNodeDIV) {
+    //TODO: 把依赖本地变量的，以属性形式放到node里，根据属性值来处理
+    //TODO: 这些event处理方法，放到一个function里，这样，后面在copy paste时直接调用这些方法，即可让paste的node具有同样的功能
     jqNodeDIV.addClass('kfknode');
+    let jqNodeType = jqNodeDIV.attr('nodetype');
+    if (config.node[jqNodeType].resizable) {
+        jqNodeDIV.resizable({
+            autoHide: true,
+            start: () => { KFK.resizing = true; },
+            resize: () => {
+             },
+            stop: () => { KFK.resizing = false; KFK.afterResizing = true; }
+        });
+    }
+    if (config.node[jqNodeType].minWidth) {
+        jqNodeDIV.resizable("option", "minWidth", config.node[jqNodeType].minWidth);
+    }
+    if (config.node[jqNodeType].minHeight) {
+        jqNodeDIV.resizable("option", "minHeight", config.node[jqNodeType].minHeight);
+    }
     jqNodeDIV.draggable({
         scroll: true,
         start: () => {
@@ -932,36 +988,34 @@ KFK.createNode = function (node) {
         drag: () => {
         },
         stop: () => {
-            console.log('Stop node dragging...')
-            console.log(KFK.C3);
             KFK.dragging = false;
             KFK.afterDragging = true;
             //循环找kfkline，找到所有line
             $(KFK.C3).find('.kfkline').each((index, aLineDiv) => {
                 //如果从当前node开始连接
-                if (aLineDiv.getAttribute('fdiv') && aLineDiv.getAttribute('fdiv') === nodeDIV.getAttribute('id')) {
+                if (aLineDiv.getAttribute('fdiv') && aLineDiv.getAttribute('fdiv') === jqNodeDIV.attr('id')) {
                     console.log(`line ${index} link from this node`);
                     KFK.linkPos = [];
                     //如果结束点也是一个nodediv
                     if (aLineDiv.getAttribute('tdiv')) {
-                        KFK.yarkLinkNode(nodeDIV);
+                        KFK.yarkLinkNode(el(jqNodeDIV));
                         let divFilter = `#${aLineDiv.getAttribute('tdiv')}`;
                         KFK.yarkLinkNode($(divFilter)[0]);
                     } else { //如果结束点是一个 point
-                        KFK.yarkLinkNode(nodeDIV);
+                        KFK.yarkLinkNode(el(jqNodeDIV));
                         KFK.yarkLinkPoint(aLineDiv.getAttribute('tx'), aLineDiv.getAttribute('ty'));
                     }
                     $(aLineDiv).remove();
-                } else if (aLineDiv.getAttribute('tdiv') && aLineDiv.getAttribute('tdiv') === nodeDIV.getAttribute('id')) {
+                } else if (aLineDiv.getAttribute('tdiv') && aLineDiv.getAttribute('tdiv') === jqNodeDIV.attr('id')) {
                     console.log(`line ${index} link to this node`);
                     KFK.linkPos = [];
                     if (aLineDiv.getAttribute('fdiv')) {
                         let divFilter = `#${aLineDiv.getAttribute('fdiv')}`;
                         KFK.yarkLinkNode($(divFilter)[0]);
-                        KFK.yarkLinkNode(nodeDIV);
+                        KFK.yarkLinkNode(el(jqNodeDIV));
                     } else {
                         KFK.yarkLinkPoint(aLineDiv.getAttribute('fx'), aLineDiv.getAttribute('fy'));
-                        KFK.yarkLinkNode(nodeDIV);
+                        KFK.yarkLinkNode(el(jqNodeDIV));
                     }
                     $(aLineDiv).remove();
                 }
@@ -972,7 +1026,7 @@ KFK.createNode = function (node) {
     jqNodeDIV.hover(
         () => {
             $(document.body).css('cursor', 'pointer');
-            KFK.hoverDIV = nodeDIV;
+            KFK.hoverDIV = el(jqNodeDIV);
             KFK.toggleShadow(KFK.hoverDIV, true);
         },
         () => {
@@ -982,25 +1036,23 @@ KFK.createNode = function (node) {
         }
     );
     jqNodeDIV.click((e) => {
-        console.log(nodeDIV.style.left);
-        console.log(`${KFK.mode} ${KFK.afterDragging} `);
         let now = Date.now();
-        if (KFK.selectedNode === nodeDIV) {
+        if (KFK.selectedNode === el(jqNodeDIV)) {
             KFK.toggleShadow(KFK.selectedNode, false);
             KFK.selectedNode = null;
         } else {
             if (KFK.selectedNode === null) {
-                KFK.selectedNode = nodeDIV;
+                KFK.selectedNode = el(jqNodeDIV);
                 KFK.toggleShadow(KFK.selectedNode, true);
             } else {
                 KFK.toggleShadow(KFK.selectedNode, false);
-                KFK.selectedNode = nodeDIV;
+                KFK.selectedNode = el(jqNodeDIV);
                 KFK.toggleShadow(KFK.selectedNode, true);
             }
         }
         if (KFK.mode === 'line') {
             if (KFK.afterDragging === false) {
-                KFK.yarkLinkNode(nodeDIV, e.shiftKey);
+                KFK.yarkLinkNode(el(jqNodeDIV), e.shiftKey);
             } else
                 KFK.afterDragging = true;
             e.stopImmediatePropagation();
@@ -1010,10 +1062,16 @@ KFK.createNode = function (node) {
         e.stopPropagation();
     });
 
+
+
     jqNodeDIV.dblclick(function (e) {
         console.log("double click now");
-        if (nodeObj.edittable)
-            editTextNode(nodeObj, nodeDIV);
+        console.log(jqNodeDIV.attr('edittable'));
+        if (getBoolean(jqNodeDIV.attr('edittable'))) {
+            let theObj = el($(`#innerobj_${jqNodeDIV.attr("id")}`));
+            console.log(theObj);
+            editTextNode(theObj, el(jqNodeDIV));
+        }
     });
 }
 
@@ -1041,39 +1099,85 @@ KFK.moveNode = function (e) {
     }
     e.stopImmediatePropagation();
     e.stopPropagation();
-}
+};
 
 KFK.deleteHoverDiv = function (e) {
     if (KFK.hoverDIV) {
+        $(KFK.C3).find('.kfkline').each((index, aLineDiv) => {
+            //如果从当前node开始连接
+            if (
+                aLineDiv.getAttribute('fdiv') === KFK.hoverDIV.getAttribute('id') ||
+                aLineDiv.getAttribute('tdiv') === KFK.hoverDIV.getAttribute('id')
+            ) {
+                $(aLineDiv).remove();
+            }
+        })
         $(KFK.hoverDIV).remove();
         KFK.hoverDIV = null;
     }
-}
+};
+
 KFK.copyHoverDiv = function (e) {
     if (KFK.hoverDIV) {
-        KFK.divInClipboard = $(KFK.hoverDIV).clone();
-        KFK.divInClipboard.prop('id', uuidv4());
-        KFK.divInClipboard[0].style.left = px(unpx(KFK.divInClipboard[0].style.left) + 40);
-        KFK.divInClipboard[0].style.top = px(unpx(KFK.divInClipboard[0].style.top) + 40);
-        //TODO: add event listener
-        KFK.insertAfterDIV = KFK.hoverDIV
+        KFK.divToCopy = KFK.hoverDIV;
+        console.log(KFK.divToCopy);
     }
-}
-KFK.pasteHoverDiv = function (e) {
-    console.log('paste');
-    if (KFK.divInClipboard && KFK.insertAfterDIV){
-        console.log(KFK.divInClipboard);
-        $(KFK.insertAfterDIV).after(KFK.divInClipboard);
-    }
-}
+};
 
+//TODO: undo redo by using display=hidden or block?
+KFK.pasteHoverDiv = function (e) {
+    if (KFK.divToCopy) {
+        if ($(KFK.divToCopy).hasClass('kfknode')) {
+            let aNode = new Node(
+                uuidv4(),
+                KFK.divToCopy.getAttribute("nodetype"),
+                KFK.currentMousePos.x + KFK.scrollContainer.scrollLeft,
+                KFK.currentMousePos.y + KFK.scrollContainer.scrollTop,
+                unpx(KFK.divToCopy.style.width),
+                unpx(KFK.divToCopy.style.height),
+            );
+            KFK.nodes.push(aNode);
+            let newNode = KFK.createNode(aNode);
+            KFK.setText($(newNode), KFK.getText($(KFK.divToCopy)));
+        } else if ($(KFK.divToCopy).hasClass('kfkline')) {
+            let x1 = parseInt($(KFK.divToCopy).attr('x1'));
+            let y1 = parseInt($(KFK.divToCopy).attr('y1'));
+            let x2 = parseInt($(KFK.divToCopy).attr('x2'));
+            let y2 = parseInt($(KFK.divToCopy).attr('y2'));
+            let cx = (x1 + x2) * 0.5;
+            let cy = (y1 + y2) * 0.5;
+            let ncx = KFK.currentMousePos.x;
+            let ncy = KFK.currentMousePos.y;
+            let deltax = ncx - cx;
+            let deltay = ncy - cy;
+            KFK.drawLine(
+                x1 + deltax + KFK.scrollContainer.scrollLeft,
+                y1 + deltay + KFK.scrollContainer.scrollTop,
+                x2 + deltax + KFK.scrollContainer.scrollLeft,
+                y2 + deltay + KFK.scrollContainer.scrollTop,
+                $(KFK.divToCopy).attr('strokeColor'),
+                parseInt($(KFK.divToCopy).attr('strokeWidth')),
+            );
+        }
+    }
+};
+
+KFK.getText = function (jqdiv) {
+    let text_filter = "#innerobj_" + jqdiv.attr("id");
+    return jqdiv.find(text_filter).text();
+};
+
+KFK.setText = function (jqdiv, text) {
+    let text_filter = "#innerobj_" + jqdiv.attr("id");
+    return jqdiv.find(text_filter).text(text);
+};
 
 KFK.deleteNode = function (e) {
     if (KFK.selectedNode) {
         $(KFK.selectedNode).remove();
         KFK.selectedNode = null;
     }
-}
+};
 
 KFK.createConnect = function (link) {
     let arrow = new Konva.Arrow({
@@ -1101,7 +1205,7 @@ KFK.createConnect = function (link) {
     // connect.add(arrow).add(label);
     connect.add(arrow);
     return connect;
-}
+};
 
 
 KFK.removeLink = function (from, to) {
@@ -1187,7 +1291,7 @@ KFK.setMode = function (mode) {
         console.warn(`APP.active.${mode} does not exist`);
     else
         KFK.APP.active[mode] = true;
-    
+
     KFK.focusOnMainContainer();
 }
 //用在index.js中的boostrapevue
