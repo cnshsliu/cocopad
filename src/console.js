@@ -478,48 +478,53 @@ KFK.createC3 = function () {
             console.log('meta d')
             KFK.pasteHoverDiv(e);
         } else if (e.keyCode === 84 && KFK.hoverDIV) { // key T
-            console.log("goto top");
-            let topIndex = 0;
+            let myZI = KFK.getZIndex(KFK.hoverDIV);
+            let count = 0;
             $(KFK.C3).find('.kfknode').each((index, aNodeDIV) => {
-                let tmp = KFK.getZIndex(KFK.hoverDIV);
-                topIndex = tmp > topIndex ? tmp : topIndex;
+                count += 1;
+                let tmp = KFK.getZIndex(aNodeDIV);
+                if (tmp > myZI) {
+                    KFK.setZIndex(aNodeDIV, tmp - 1);
+                }
             });
-            console.log(`top index: ${topIndex}`);
-            KFK.setZIndex(KFK.hoverDIV, topIndex + 1);
+            KFK.setZIndex(KFK.hoverDIV, count);
         } else if (e.keyCode === 66 && KFK.hoverDIV) { // key B
-            console.log("goto bottom");
-            let bottomIndex = 99999;
+            let myZI = KFK.getZIndex(KFK.hoverDIV);
+            let count = 0;
             $(KFK.C3).find('.kfknode').each((index, aNodeDIV) => {
-                let tmp = KFK.getZIndex(KFK.hoverDIV);
-                bottomIndex = tmp < bottomIndex ? tmp : bottomIndex;
+                count += 1;
+                let tmp = KFK.getZIndex(aNodeDIV);
+                if (tmp < myZI) {
+                    KFK.setZIndex(aNodeDIV, tmp + 1);
+                }
             });
-            console.log(`bottom index: ${bottomIndex}`);
-            KFK.setZIndex(KFK.hoverDIV, bottomIndex - 1);
+            KFK.setZIndex(KFK.hoverDIV, 1);
         } else if (e.keyCode === 72) { // key H
-            if ($(KFK.hoverDIV).hasClass('kfknode')) {
-                // let topIndex = 0;
-                // $(KFK.C3).find('.kfknode').each((index, aNodeDIV) => {
-                //     let tmp = KFK.getZIndex(KFK.hoverDIV);
-                //     topIndex = tmp > topIndex ? tmp : topIndex;
-                // });
-                // console.log(`topIndex = ${topIndex}`);
-                let zz = KFK.getZIndex(KFK.hoverDIV);
-                console.log(`zz = ${zz}`);
-                // if (zz != topIndex) {
-                    KFK.setZIndex(KFK.hoverDIV, zz +1 );
-                // }
+            let myZI = KFK.getZIndex(KFK.hoverDIV);
+            let count = 0;
+            let allnodes = $(KFK.C3).find('.kfknode');
+            if (myZI < allnodes.length) {
+                allnodes.each((index, aNodeDIV) => {
+                    count += 1;
+                    let tmp = KFK.getZIndex(aNodeDIV);
+                    if (tmp === myZI + 1) {
+                        KFK.setZIndex(aNodeDIV, myZI);
+                    }
+                });
+                KFK.setZIndex(KFK.hoverDIV, myZI + 1);
             }
         } else if (e.keyCode === 76) { // key L
-            if ($(KFK.hoverDIV).hasClass('kfknode')) {
-                // let bottomIndex = 99999;
-                // $(KFK.C3).find('.kfknode').each((index, aNodeDIV) => {
-                //     let tmp = KFK.getZIndex(KFK.hoverDIV);
-                //     bottomIndex = tmp < bottomIndex ? tmp : bottomIndex;
-                // });
-                let zz = KFK.getZIndex(KFK.hoverDIV);
-                // if (zz != bottomIndex) {
-                    KFK.setZIndex(KFK.hoverDIV, zz - 1);
-                // }
+            let myZI = KFK.getZIndex(KFK.hoverDIV);
+            if (myZI > 1) {
+                let count = 0;
+                $(KFK.C3).find('.kfknode').each((index, aNodeDIV) => {
+                    count += 1;
+                    let tmp = KFK.getZIndex(aNodeDIV);
+                    if (tmp === myZI - 1) {
+                        KFK.setZIndex(aNodeDIV, myZI);
+                    }
+                });
+                KFK.setZIndex(KFK.hoverDIV, myZI - 1);
             }
         } else if (e.keCode === 27) { // ESC
             if (KFK.selectedNode) {
@@ -915,9 +920,15 @@ KFK.toggleShadow = function (theDIV, selected) {
     }
 }
 
+KFK.getKFKNodeNumber = function () {
+    let nodes = $(KFK.C3).find('.kfknode');
+    return nodes.length;
+}
+
 //TODO: parent offset
 KFK.createNode = function (node) {
     let textPadding = 2;
+    let nodeCount = KFK.getKFKNodeNumber();
     var nodeObj = null;
     if (["start", "end", "pin"].indexOf(node.type) >= 0) {
         nodeObj = document.createElement('img');
@@ -965,7 +976,8 @@ KFK.createNode = function (node) {
         nodeDIV.style.width = "fit-content";
         nodeDIV.style.height = "fit-content";
     }
-    nodeDIV.style.zIndex = '1';
+    nodeDIV.style.zIndex = `${nodeCount + 1}`;
+    console.log(`CREATE NODE AT ${nodeCount+1}`);
     nodeDIV.style.border = 'none';
     nodeDIV.style.padding = '0px';
     if (node.type === 'text' || node.type === 'yellowtip' || node.type === 'textblock')
