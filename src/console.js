@@ -172,8 +172,8 @@ class Node {
         this.id = id;
         this.type = type;
         console.log(type);
-        this.width = w?w:config.node[type].width;
-        this.height = h?h:config.node[type].height;
+        this.width = w ? w : config.node[type].width;
+        this.height = h ? h : config.node[type].height;
         this.iconscale = 0.8;
         this.x = x;
         this.y = y;
@@ -363,6 +363,19 @@ KFK.procLink = function (shiftKey) {
 KFK.distance = function (p1, p2) {
     return Math.sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
 }
+
+//TODO: debug here
+KFK.getZIndex = function (div) {
+    let zz = parseInt(div.style.zIndex);
+    zz = (isNaN(zz) ? 0 : zz);
+    return zz;
+};
+KFK.setZIndex = function (div, zz) {
+    div.style.zIndex = zz;
+};
+
+
+
 KFK.createC3 = function () {
     let c3 = document.createElement('div');
     c3.setAttribute("id", "C3");
@@ -464,6 +477,50 @@ KFK.createC3 = function () {
         } else if (e.keyCode === 86 && e.metaKey) { //Meta-D
             console.log('meta d')
             KFK.pasteHoverDiv(e);
+        } else if (e.keyCode === 84 && KFK.hoverDIV) { // key T
+            console.log("goto top");
+            let topIndex = 0;
+            $(KFK.C3).find('.kfknode').each((index, aNodeDIV) => {
+                let tmp = KFK.getZIndex(KFK.hoverDIV);
+                topIndex = tmp > topIndex ? tmp : topIndex;
+            });
+            console.log(`top index: ${topIndex}`);
+            KFK.setZIndex(KFK.hoverDIV, topIndex + 1);
+        } else if (e.keyCode === 66 && KFK.hoverDIV) { // key B
+            console.log("goto bottom");
+            let bottomIndex = 99999;
+            $(KFK.C3).find('.kfknode').each((index, aNodeDIV) => {
+                let tmp = KFK.getZIndex(KFK.hoverDIV);
+                bottomIndex = tmp < bottomIndex ? tmp : bottomIndex;
+            });
+            console.log(`bottom index: ${bottomIndex}`);
+            KFK.setZIndex(KFK.hoverDIV, bottomIndex - 1);
+        } else if (e.keyCode === 72) { // key H
+            if ($(KFK.hoverDIV).hasClass('kfknode')) {
+                // let topIndex = 0;
+                // $(KFK.C3).find('.kfknode').each((index, aNodeDIV) => {
+                //     let tmp = KFK.getZIndex(KFK.hoverDIV);
+                //     topIndex = tmp > topIndex ? tmp : topIndex;
+                // });
+                // console.log(`topIndex = ${topIndex}`);
+                let zz = KFK.getZIndex(KFK.hoverDIV);
+                console.log(`zz = ${zz}`);
+                // if (zz != topIndex) {
+                    KFK.setZIndex(KFK.hoverDIV, zz +1 );
+                // }
+            }
+        } else if (e.keyCode === 76) { // key L
+            if ($(KFK.hoverDIV).hasClass('kfknode')) {
+                // let bottomIndex = 99999;
+                // $(KFK.C3).find('.kfknode').each((index, aNodeDIV) => {
+                //     let tmp = KFK.getZIndex(KFK.hoverDIV);
+                //     bottomIndex = tmp < bottomIndex ? tmp : bottomIndex;
+                // });
+                let zz = KFK.getZIndex(KFK.hoverDIV);
+                // if (zz != bottomIndex) {
+                    KFK.setZIndex(KFK.hoverDIV, zz - 1);
+                // }
+            }
         } else if (e.keCode === 27) { // ESC
             if (KFK.selectedNode) {
                 KFK.selectedNode.style.background = "transparent";
@@ -872,7 +929,7 @@ KFK.createNode = function (node) {
         nodeObj.style.fontSize = "18px";
         nodeObj.innerText = "Some text here";
         nodeObj.edittable = true;
-        nodeObj.style.width = px(node.width - textPadding * 2); 
+        nodeObj.style.width = px(node.width - textPadding * 2);
         nodeObj.style.height = px(node.height - textPadding * 2);
         nodeObj.style.left = px(2); nodeObj.style.top = px(2);
     } else if (node.type === "yellowtip") {
@@ -880,7 +937,7 @@ KFK.createNode = function (node) {
         nodeObj.style.fontSize = "18px";
         nodeObj.innerText = "Multiple line text";
         nodeObj.edittable = true;
-        nodeObj.style.width = px(node.width - textPadding * 2); 
+        nodeObj.style.width = px(node.width - textPadding * 2);
         nodeObj.style.height = px(node.height - textPadding * 2);
         nodeObj.style.left = px(2); nodeObj.style.top = px(2);
     } else if (node.type === "textblock") {
@@ -888,7 +945,7 @@ KFK.createNode = function (node) {
         nodeObj.style.fontSize = "18px";
         nodeObj.innerText = "";
         nodeObj.edittable = true;
-        nodeObj.style.width = px(node.width - textPadding * 2); 
+        nodeObj.style.width = px(node.width - textPadding * 2);
         nodeObj.style.height = px(node.height - textPadding * 2);
         nodeObj.style.left = px(2); nodeObj.style.top = px(2);
     }
@@ -969,7 +1026,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
             autoHide: true,
             start: () => { KFK.resizing = true; },
             resize: () => {
-             },
+            },
             stop: () => { KFK.resizing = false; KFK.afterResizing = true; }
         });
     }
@@ -1333,3 +1390,5 @@ module.exports = KFK;
 //TODO: paste images
 //TODO: draw an multiple angles
 //TODO: drag a textnode and drop into another
+//TODO: z-index move up and down
+//TODO: align 
