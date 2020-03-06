@@ -64,3 +64,9 @@ body {
 .ui-resizable-se {
     bottom: 17px;
 }
+.ui-state-hover {
+    color: blueviolet;
+}
+.ui-state-active {
+    color: blueviolet;
+}

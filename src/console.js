@@ -28,9 +28,12 @@ let config = {
             width: 200,
             height: 200,
             resizable: true,
+            droppable: true,
         },
         textblock: {
-            width: 200, height: 100, resizable: true, background: '#49FFAC', minWidth: 1, minHeight: 1
+            width: 200, height: 100, resizable: true,
+            background: '#49FFAC', minWidth: 1, minHeight: 1,
+            droppable: true,
         },
         pin: {
             width: 40,
@@ -106,6 +109,8 @@ KFK.afterResizing = false;
 KFK.linkPos = [];
 KFK.toggleMode = false;
 KFK.tween = null;
+KFK.ctrlDown = false;
+KFK.originZIndex = 1;
 
 
 KFK.dragStage = new Konva.Stage({ container: "containerbkg", width: window.innerWidth, height: window.innerHeight });
@@ -120,14 +125,7 @@ KFK.dragContainer = KFK.dragStage.container();
 KFK.scrollContainer = document.getElementById('scroll-container');
 KFK.lockMode = false;
 KFK.selectedNode = null;
-KFK.container.addEventListener('keydown', function (e) {
-    switch (e.keyCode) {
-        case 16:  //Shift
-            KFK.lockMode = true;
-            KFK.APP.lockMode = true;
-    }
-    // e.preventDefault();
-});
+
 
 KFK.currentMousePos = { x: -1, y: -1 };
 $(document).mousemove(function (event) {
@@ -364,7 +362,6 @@ KFK.distance = function (p1, p2) {
     return Math.sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
 }
 
-//TODO: debug here
 KFK.getZIndex = function (div) {
     let zz = parseInt(div.style.zIndex);
     zz = (isNaN(zz) ? 0 : zz);
@@ -374,7 +371,14 @@ KFK.setZIndex = function (div, zz) {
     div.style.zIndex = zz;
 };
 
-
+KFK.undo = () => {
+    console.log("Unimplemented");
+    //很复杂，对于dragging, resizing, 如何恢复，都是问题
+    //留以后处理
+}
+KFK.redo = () => {
+    console.log("Unimplemented");
+}
 
 KFK.createC3 = function () {
     let c3 = document.createElement('div');
@@ -450,15 +454,18 @@ KFK.createC3 = function () {
     let preventDefault = false;
     $('#containermain').keydown(function (e) {
         let preventDefault = false;
+        if (KFK.editting) return;
         console.log(`keydown = ${e.keyCode}`);
         if (e.keyCode === 16) { //Shift
-            KFK.lockMode = false;
-            KFK.APP.lockMode = false;
+            KFK.lockMode = KFK.lockMode ? false : true;
+            KFK.APP.lockMode = KFK.lockMode;
             KFK.pickedNode = null;
             preventDefault = true;
             if (KFK.linkPos.length === 1) {
                 KFK.linkPos = [];
             }
+        } else if (e.keyCode === 17) { //Ctrl
+            KFK.ctrlDown = true;
         } else if (e.keyCode === 18) { //Option
             //按下option键，切换toggleMode
             KFK.toggleMode = !KFK.toggleMode;
@@ -469,14 +476,17 @@ KFK.createC3 = function () {
             if (KFK.selectedNode)
                 KFK.moveNode(e);
         } else if (e.keyCode === 46 || e.keyCode === 68) {  // key D
-            // KFK.deleteNode(e);
             KFK.deleteHoverDiv(e);
         } else if (e.keyCode === 67 && e.metaKey) {  //Meta-C
-            console.log('meta c');
             KFK.copyHoverDiv(e);
-        } else if (e.keyCode === 86 && e.metaKey) { //Meta-D
-            console.log('meta d')
+        } else if (e.keyCode === 86 && e.metaKey) { //Meta-V
             KFK.pasteHoverDiv(e);
+        } else if (e.keyCode === 90 && e.metaKey) { //Meta-Z
+            if (e.shiftKey) {
+                KFK.redo();
+            } else {
+                KFK.undo();
+            }
         } else if (e.keyCode === 84 && KFK.hoverDIV) { // key T
             let myZI = KFK.getZIndex(KFK.hoverDIV);
             let count = 0;
@@ -499,7 +509,7 @@ KFK.createC3 = function () {
                 }
             });
             KFK.setZIndex(KFK.hoverDIV, 1);
-        } else if (e.keyCode === 72) { // key H
+        } else if (e.keyCode === 72 && KFK.hoverDIV) { // key H
             let myZI = KFK.getZIndex(KFK.hoverDIV);
             let count = 0;
             let allnodes = $(KFK.C3).find('.kfknode');
@@ -513,7 +523,7 @@ KFK.createC3 = function () {
                 });
                 KFK.setZIndex(KFK.hoverDIV, myZI + 1);
             }
-        } else if (e.keyCode === 76) { // key L
+        } else if (e.keyCode === 76 && KFK.hoverDIV) { // key L
             let myZI = KFK.getZIndex(KFK.hoverDIV);
             if (myZI > 1) {
                 let count = 0;
@@ -526,19 +536,17 @@ KFK.createC3 = function () {
                 });
                 KFK.setZIndex(KFK.hoverDIV, myZI - 1);
             }
-        } else if (e.keCode === 27) { // ESC
-            if (KFK.selectedNode) {
-                KFK.selectedNode.style.background = "transparent";
-                KFK.selectedNode = null;
-            }
         }
         if (preventDefault) {
             e.stopImmediatePropagation();
             e.stopPropagation();
             e.preventDefault();
         }
-
-
+    });
+    $('#containermain').keyup(function (e) {
+        if (e.keyCode === 17) { //Ctrl
+            KFK.ctrlDown = false;
+        }
     });
     document.getElementById('containermain').appendChild(c3);
 
@@ -690,7 +698,6 @@ KFK.drawLine = function (x1, y1, x2, y2, strokeColor, strokeWidth) {
                     p2 = { x: newRect.width, y: newRect.height };
                     break;
             }
-            //TODO: try 删掉layer, 再新建layer, 再划线，看可否解决显示不准确的问题
             theLine.points([p1.x, p1.y, p2.x, p2.y]);
             console.log(`div Rect: x:${unpx(el(jqLineDIV).style.left)} y:${unpx(el(jqLineDIV).style.top)} w:${unpx(el(jqLineDIV).style.width)} h:${unpx(el(jqLineDIV).style.height)}`);
             console.log(`new Rect: x:${newRect.x} y:${newRect.y} w:${newRect.width} h:${newRect.height}`);
@@ -925,7 +932,6 @@ KFK.getKFKNodeNumber = function () {
     return nodes.length;
 }
 
-//TODO: parent offset
 KFK.createNode = function (node) {
     let textPadding = 2;
     let nodeCount = KFK.getKFKNodeNumber();
@@ -977,7 +983,7 @@ KFK.createNode = function (node) {
         nodeDIV.style.height = "fit-content";
     }
     nodeDIV.style.zIndex = `${nodeCount + 1}`;
-    console.log(`CREATE NODE AT ${nodeCount+1}`);
+    console.log(`CREATE NODE AT ${nodeCount + 1}`);
     nodeDIV.style.border = 'none';
     nodeDIV.style.padding = '0px';
     if (node.type === 'text' || node.type === 'yellowtip' || node.type === 'textblock')
@@ -1029,8 +1035,6 @@ function getBoolean(value) {
 }
 
 KFK.setNodeEventHandler = function (jqNodeDIV) {
-    //TODO: 把依赖本地变量的，以属性形式放到node里，根据属性值来处理
-    //TODO: 这些event处理方法，放到一个function里，这样，后面在copy paste时直接调用这些方法，即可让paste的node具有同样的功能
     jqNodeDIV.addClass('kfknode');
     let jqNodeType = jqNodeDIV.attr('nodetype');
     if (config.node[jqNodeType].resizable) {
@@ -1052,6 +1056,8 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
         scroll: true,
         start: () => {
             console.log('Start node dragging...')
+            KFK.originZIndex = KFK.getZIndex(el(jqNodeDIV));
+            el(jqNodeDIV).style.zIndex = "99999";
             KFK.dragging = true;
         },
         drag: () => {
@@ -1059,6 +1065,8 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
         stop: () => {
             KFK.dragging = false;
             KFK.afterDragging = true;
+            el(jqNodeDIV).style.zIndex = KFK.originZIndex;
+            KFK.originZIndex = 1;
             //循环找kfkline，找到所有line
             $(KFK.C3).find('.kfkline').each((index, aLineDiv) => {
                 //如果从当前node开始连接
@@ -1091,6 +1099,40 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
             })
         },
     });
+    //TODO: resort zindex after delete node
+    if (config.node[jqNodeType].droppable) {
+        console.log(`${jqNodeType} is droppable`);
+        jqNodeDIV.droppable({
+            activeClass: "ui-state-hover",
+            hoverClass: "ui-state-active",
+            accept: ".kfknode",
+            drop: (event, ui) => {
+                console.log(`dropped, locMode = ${KFK.lockMode}`);
+                //lockMode时可以Marge
+                if (KFK.lockMode === false)
+                    return;
+                let parent_node_type = jqNodeDIV.attr('nodetype');
+                let child_node_type = ui.draggable.attr('nodetype');
+                //同种类型可以merge
+                if (parent_node_type === child_node_type) {
+                    let innerObj = $(`#innerobj_${jqNodeDIV.attr("id")}`);
+                    let oldText = innerObj.html();
+                    let newText = oldText + "<BR> " + ui.draggable.html();
+                    let elBig = el(jqNodeDIV);
+                    let elSmall = el(ui.draggable);
+                    if (
+                        unpx(elSmall.style.left) > unpx(elBig.style.left) &&
+                        unpx(elSmall.style.top) > unpx(elBig.style.top) &&
+                        unpx(elSmall.style.left) + unpx(elSmall.style.width) < unpx(elBig.style.left) + unpx(elBig.style.width) &&
+                        unpx(elSmall.style.top) + unpx(elSmall.style.height) < unpx(elBig.style.top) + unpx(elBig.style.height)
+                    ) {
+                        innerObj.html(newText);
+                        KFK.deleteNode(el(ui.draggable));
+                    }
+                }
+            }
+        });
+    }
 
     jqNodeDIV.hover(
         () => {
@@ -1170,18 +1212,32 @@ KFK.moveNode = function (e) {
     e.stopPropagation();
 };
 
+KFK.deleteNode = function (nodeDIV) {
+    $(KFK.C3).find('.kfkline').each((index, aLineDiv) => {
+        //如果从当前node开始连接
+        if (
+            aLineDiv.getAttribute('fdiv') === nodeDIV.getAttribute('id') ||
+            aLineDiv.getAttribute('tdiv') === nodeDIV.getAttribute('id')
+        ) {
+            $(aLineDiv).remove();
+        }
+    });
+    let myZI = KFK.getZIndex(nodeDIV);
+    let count = 0;
+    let allnodes = $(KFK.C3).find('.kfknode');
+    allnodes.each((index, aDIV) => {
+        count += 1;
+        let tmp = KFK.getZIndex(aDIV);
+        if (tmp > myZI) {
+            KFK.setZIndex(aDIV, tmp - 1);
+        }
+    });
+    $(nodeDIV).remove();
+};
+
 KFK.deleteHoverDiv = function (e) {
     if (KFK.hoverDIV) {
-        $(KFK.C3).find('.kfkline').each((index, aLineDiv) => {
-            //如果从当前node开始连接
-            if (
-                aLineDiv.getAttribute('fdiv') === KFK.hoverDIV.getAttribute('id') ||
-                aLineDiv.getAttribute('tdiv') === KFK.hoverDIV.getAttribute('id')
-            ) {
-                $(aLineDiv).remove();
-            }
-        })
-        $(KFK.hoverDIV).remove();
+        KFK.deleteNode(KFK.hoverDIV);
         KFK.hoverDIV = null;
     }
 };
@@ -1193,7 +1249,6 @@ KFK.copyHoverDiv = function (e) {
     }
 };
 
-//TODO: undo redo by using display=hidden or block?
 KFK.pasteHoverDiv = function (e) {
     if (KFK.divToCopy) {
         if ($(KFK.divToCopy).hasClass('kfknode')) {
@@ -1239,13 +1294,6 @@ KFK.getText = function (jqdiv) {
 KFK.setText = function (jqdiv, text) {
     let text_filter = "#innerobj_" + jqdiv.attr("id");
     return jqdiv.find(text_filter).text(text);
-};
-
-KFK.deleteNode = function (e) {
-    if (KFK.selectedNode) {
-        $(KFK.selectedNode).remove();
-        KFK.selectedNode = null;
-    }
 };
 
 KFK.createConnect = function (link) {
@@ -1394,13 +1442,10 @@ module.exports = KFK;
 
 
 //TODO: Zoom in / Zoom out
-//TODO: RichText
+//TODO: RichText with QuilJS
 //TODO: Font 选择窗
 //TODO: 颜色，对齐选择
 //TODO: Free Drawing
-//TODO: hover then Copy & Paste
 //TODO: paste images
 //TODO: draw an multiple angles
 //TODO: drag a textnode and drop into another
-//TODO: z-index move up and down
-//TODO: align 
