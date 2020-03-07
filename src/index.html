@@ -85,7 +85,7 @@
         </b-collapse>
       </b-navbar>
     </div>
-    <div id="left" class="shadow-lg" style="z-index: 999;">
+    <div id="left" style="z-index: 999;">
       <b-list-group>
         <b-list-group-item class="d-flex align-items-center" href="#some-link">
           <b-img :src="images['sub'].src" fluid alt="" scale="2"></b-img>
@@ -119,8 +119,7 @@
           :active="active['yellowtip']">
           <b-img :src="images['yellowtip'].src" fluid alt="" scale="2"></b-img>
         </b-list-group-item>
-        <b-list-group-item class="d-flex align-items-center" @click="setMode('line');"
-          :active="active['line']">
+        <b-list-group-item class="d-flex align-items-center" @click="setMode('line');" :active="active['line']">
           <!-- neither v-if or conditional statement in :src works, have to set id and change element attributee -->
           <b-img :src="images['line'].src" fluid alt="" scale="2" id='tool_line'></b-img>
         </b-list-group-item>
@@ -129,6 +128,29 @@
           <b-img :src="images['textblock'].src" fluid alt="" scale="2"></b-img>
         </b-list-group-item>
       </b-list-group>
+    </div>
+    <div id="right">
+      <b-tabs content-class="mt-3" justified>
+        <b-tab title="Style" active>
+          <p>I'm the first tab</p>
+        </b-tab>
+        <b-tab title="Text">
+          <p>I'm the second tab</p>
+        </b-tab>
+        <b-tab title="Arrange">
+          <p>I'm the tab with the very, very long title</p>
+        </b-tab>
+      </b-tabs>
+    </div>
+    <div id="rtcontrol">
+      <b-button-group>
+        <b-button id="toggle_all" class="toggle" variant="outline-success" href="javascript:newTpl()">
+          <b-icon icon="document"></b-icon>
+        </b-button>
+        <b-button id="toggle-right" class="toggle" variant="outline-success">
+          <b-icon icon="cloud-download"></b-icon>
+        </b-button>
+      </b-button-group>
     </div>
   </div>
   <script src="./index.js"></script>
