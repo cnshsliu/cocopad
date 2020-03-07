@@ -1,8 +1,9 @@
 .lkh {
     font-size: large;
 }
-html{
-    overscroll-behavior-x: none; 
+
+html {
+    overscroll-behavior-x: none;
 }
 
 body {
@@ -26,8 +27,32 @@ body {
     top: 100px;
     left: 5px;
     width: 70px;
+    height: calc(100vh - 200px);
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
-.logo{
+
+#right {
+    padding: 5px;
+    background: #FFFFFF;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    position: absolute;
+    top: 100px;
+    left: calc(100vw - 245px);
+    width: 240px;
+    height: calc(100vh - 200px);
+    z-index: 99999;
+    border: 1px solid rgba(0,0, 0, 0.2);
+    border-radius: 5px;
+}
+
+#rtcontrol{
+    position: absolute;
+    top: 5px;
+    left: calc(100vw - 95px);
+    z-index: 99999;
+}
+
+.logo {
     width: 24px;
     height: 24px;
 }
@@ -49,24 +74,28 @@ body {
     top: 0px;
 }
 
-#containerbkg{
+#containerbkg {
     width: 100%;
     height: 100vh;
-    overflow: hidden; 
+    overflow: hidden;
     position: absolute;
     top: 0px;
     left: 0px;
     z-index: -10;
 }
-#liukehong1{
+
+#liukehong1 {
     background: red;
 }
+
 .ui-resizable-se {
     bottom: 17px;
 }
+
 .ui-state-hover {
     color: blueviolet;
 }
+
 .ui-state-active {
     color: blueviolet;
 }
