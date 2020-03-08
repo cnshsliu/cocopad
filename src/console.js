@@ -200,6 +200,25 @@ class Node {
         this.x = x;
         this.y = y;
         this.attach = attach;
+        if (KFK.APP.model.snap) {
+            let tmpLeft = this.x - this.width * 0.5;
+            let tmpTop = this.y - this.height * 0.5;
+            let newLeft = tmpLeft;
+            let newTop = tmpTop;
+            if (tmpLeft % KFK.APP.model.gridWidth < KFK.APP.model.gridWidth * 0.5) {
+                newLeft = Math.floor(tmpLeft / KFK.APP.model.gridWidth) * KFK.APP.model.gridWidth;
+            } else {
+                newLeft = (Math.floor(tmpLeft / KFK.APP.model.gridWidth) + 1) * KFK.APP.model.gridWidth;
+            }
+            if (tmpTop % KFK.APP.model.gridWidth < KFK.APP.model.gridWidth * 0.5) {
+                newTop = Math.floor(tmpTop / KFK.APP.model.gridWidth) * KFK.APP.model.gridWidth;
+            } else {
+                newTop = (Math.floor(tmpTop / KFK.APP.model.gridWidth) + 1) * KFK.APP.model.gridWidth;
+            }
+
+            this.x += newLeft - tmpLeft;
+            this.y += newTop - tmpTop;
+        }
     }
 }
 
@@ -400,7 +419,16 @@ KFK.selectNone = function () {
         KFK.toggleShadow(tmp, false);
     });
     KFK.selectedNodes.clear();
+    KFK.selectNodesChanged();
 };
+KFK.selectNodesChanged = function () {
+    KFK.APP.setData('show', 'arrange_multi_nodes', KFK.selectedNodes.length > 1);
+    KFK.APP.setData('show', 'shape_property', KFK.selectedNodes.length > 0);
+    if (KFK.selectedNodes.length > 1) {
+        KFK.APP.setData('model', 'rightTabIndex', 2);
+    }
+};
+//TODO: 多选LINES, 如何处理？
 
 KFK.undo = () => {
     console.log("Unimplemented");
@@ -438,6 +466,10 @@ KFK.createC3 = function () {
             console.log(`ignore click because editting: ${KFK.editting}, resizing: ${KFK.resizing}, dragging: ${KFK.dragging}`);
             return;
         }
+        if (KFK.selectedNodes.length > 0) {
+            KFK.selectNone();
+            return;
+        }
         //TODO: 原来的return导致在resizing后，后续的第一个点击不起作用，现在去掉了return好像也没问题，考虑把afterDragging和afterResizing取消掉
         if (KFK.afterDragging === true) {
             KFK.afterDragging = false;
@@ -445,7 +477,7 @@ KFK.createC3 = function () {
         }
         if (KFK.afterResizing === true) {
             KFK.afterResizing = false;
-            // return;
+            return;
         }
         if (KFK.mode === 'line') {
             KFK.yarkLinkPoint(
@@ -455,7 +487,6 @@ KFK.createC3 = function () {
             );
             return;
         }
-        KFK.selectNone();
         if (config.node[KFK.mode]) {
             KFK.placeNode(
                 myuid(), KFK.mode,
@@ -840,6 +871,8 @@ function editTextNode(textnode, theDIV) {
         // on esc do not set value back to node
         if (e.keyCode === 27) {
             removeTextarea();
+            e.stopImmediatePropagation();
+            e.stopPropagation();
         }
     });
 
@@ -858,9 +891,9 @@ KFK.toggleShadow = function (theDIV, selected) {
     let divType = theDIV.getAttribute("nodetype");
     if (divType === 'yellowtip') {
         if (selected) {
-            $(theDIV).css("box-shadow", "20px 20px 18px -18px #608EFF");
+            $(theDIV).css("box-shadow", "20px 20px 10px -18px #608EFF");
         } else {
-            $(theDIV).css("box-shadow", "20px 20px 18px -18px #888888");
+            $(theDIV).css("box-shadow", "20px 20px 20px -18px #888888");
         }
     } else if (divType === 'image') {
         if (selected) {
@@ -996,6 +1029,7 @@ function getBoolean(value) {
 
 KFK.setNodeEventHandler = function (jqNodeDIV) {
     jqNodeDIV.addClass('kfknode');
+    let nodeDIV = el(jqNodeDIV);
     let jqNodeType = jqNodeDIV.attr('nodetype');
     if (config.node[jqNodeType].resizable) {
         jqNodeDIV.resizable({
@@ -1004,6 +1038,24 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
             resize: () => {
             },
             stop: () => {
+                if (KFK.APP.model.snap) {
+                    let tmpRight = KFK.nodeRight(nodeDIV);
+                    let tmpBottom = KFK.nodeBottom(nodeDIV);
+                    let newRight = tmpRight;
+                    let newBottom = tmpBottom;
+                    if (tmpRight % KFK.APP.model.gridWidth < KFK.APP.model.gridWidth * 0.5) {
+                        newRight = Math.floor(tmpRight / KFK.APP.model.gridWidth) * KFK.APP.model.gridWidth;
+                    } else {
+                        newRight = (Math.floor(tmpRight / KFK.APP.model.gridWidth) + 1) * KFK.APP.model.gridWidth;
+                    }
+                    if (tmpBottom % KFK.APP.model.gridWidth < KFK.APP.model.gridWidth * 0.5) {
+                        newBottom = Math.floor(tmpBottom / KFK.APP.model.gridWidth) * KFK.APP.model.gridWidth;
+                    } else {
+                        newBottom = (Math.floor(tmpBottom / KFK.APP.model.gridWidth) + 1) * KFK.APP.model.gridWidth;
+                    }
+                    nodeDIV.style.width = px(KFK.nodeWidth(nodeDIV) + (newRight - tmpRight));
+                    nodeDIV.style.height = px(KFK.nodeHeight(nodeDIV) + (newBottom - tmpBottom));
+                }
                 if (jqNodeType === 'image') {
                     console.log("Resize inner image");
                     let imageId = `#innerobj_${jqNodeDIV.attr('id')}`;
@@ -1032,10 +1084,29 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
         },
         stop: () => {
             KFK.dragging = false;
+            if (KFK.APP.model.snap) {
+                let tmpLeft = KFK.nodeLeft(el(jqNodeDIV));
+                let tmpTop = KFK.nodeTop(el(jqNodeDIV));
+                let newLeft = tmpLeft;
+                let newTop = tmpTop;
+                if (tmpLeft % KFK.APP.model.gridWidth < KFK.APP.model.gridWidth * 0.5) {
+                    newLeft = Math.floor(tmpLeft / KFK.APP.model.gridWidth) * KFK.APP.model.gridWidth;
+                } else {
+                    newLeft = (Math.floor(tmpLeft / KFK.APP.model.gridWidth) + 1) * KFK.APP.model.gridWidth;
+                }
+                if (tmpTop % KFK.APP.model.gridWidth < KFK.APP.model.gridWidth * 0.5) {
+                    newTop = Math.floor(tmpTop / KFK.APP.model.gridWidth) * KFK.APP.model.gridWidth;
+                } else {
+                    newTop = (Math.floor(tmpTop / KFK.APP.model.gridWidth) + 1) * KFK.APP.model.gridWidth;
+                }
+                el(jqNodeDIV).style.left = px(newLeft);
+                el(jqNodeDIV).style.top = px(newTop);
+            }
+
             KFK.afterDragging = true;
             el(jqNodeDIV).style.zIndex = KFK.originZIndex;
             KFK.originZIndex = 1;
-            //循环找kfkline，找到所有line
+            //节点移动后，对连接到节点上的连接线重新划线
             $(KFK.C3).find('.kfkline').each((index, aLineDiv) => {
                 //如果从当前node开始连接
                 if (aLineDiv.getAttribute('fdiv') && aLineDiv.getAttribute('fdiv') === jqNodeDIV.attr('id')) {
@@ -1142,6 +1213,8 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
             e.stopImmediatePropagation();
             return;
         }
+
+        KFK.selectNodesChanged();
         KFK.lastClickOnNode = now;
         e.stopPropagation();
     });
@@ -1157,6 +1230,173 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
             editTextNode(theObj, el(jqNodeDIV));
         }
     });
+}
+
+KFK.nodeLeft = function (aNode) { return $(aNode).position().left; };
+KFK.nodeCenter = function (aNode) { return KFK.nodeLeft(aNode) + KFK.nodeWidth(aNode) * 0.5; };
+KFK.nodeRight = function (aNode) { return KFK.nodeLeft(aNode) + KFK.nodeWidth(aNode); };
+KFK.nodeTop = function (aNode) { return $(aNode).position().top; };
+KFK.nodeMiddle = function (aNode) { return KFK.nodeTop(aNode) + KFK.nodeHeight(aNode) * 0.5; };
+KFK.nodeBottom = function (aNode) { return KFK.nodeTop(aNode) + KFK.nodeHeight(aNode); };
+KFK.nodeWidth = function (aNode) { return $(aNode).width(); };
+KFK.nodeHeight = function (aNode) { return $(aNode).height(); };
+
+KFK.alignNodes = function (direction) {
+    if (KFK.selectedNodes.length < 2) return;
+    console.log(`Align ${direction}`);
+    switch (direction) {
+        case 'left':
+            let left = KFK.nodeLeft(KFK.selectedNodes[0]);
+            KFK.selectedNodes.forEach((aNode) => {
+                let tmp = KFK.nodeLeft(aNode);
+                left = (tmp < left) ? tmp : left;
+            });
+            KFK.selectedNodes.forEach((aNode) => {
+                aNode.style.left = px(left);
+            });
+            break;
+        case 'center':
+            let centerX = KFK.nodeLeft(KFK.selectedNodes[0]) + KFK.nodeWidth(KFK.selectedNodes[0]) * 0.5;
+            KFK.selectedNodes.forEach((aNode) => {
+                aNode.style.left = px(centerX - KFK.nodeWidth(aNode) * 0.5);
+            });
+            break;
+        case 'right':
+            let right = KFK.nodeRight(KFK.selectedNodes[0]);
+            KFK.selectedNodes.forEach((aNode) => {
+                let tmp = KFK.nodeRight(aNode);
+                right = (tmp > right) ? tmp : right;
+            });
+            KFK.selectedNodes.forEach((aNode) => {
+                aNode.style.left = px(right - KFK.nodeWidth(aNode));
+            });
+            break;
+        case 'top':
+            let top = KFK.nodeTop(KFK.selectedNodes[0]);
+            KFK.selectedNodes.forEach((aNode) => {
+                let tmp = KFK.nodeTop(aNode);
+                top = (tmp < top) ? tmp : top;
+            });
+            KFK.selectedNodes.forEach((aNode) => {
+                aNode.style.top = px(top);
+            });
+            break;
+        case 'middle':
+            let centerY = KFK.nodeTop(KFK.selectedNodes[0]) + KFK.nodeHeight(KFK.selectedNodes[0]) * 0.5;
+            KFK.selectedNodes.forEach((aNode) => {
+                aNode.style.top = px(centerY - KFK.nodeHeight(aNode) * 0.5);
+            });
+            break;
+        case 'bottom':
+            let bottom = KFK.nodeBottom(KFK.selectedNodes[0]);
+            KFK.selectedNodes.forEach((aNode) => {
+                let tmp = KFK.nodeBottom(aNode);
+                bottom = (tmp > bottom) ? tmp : bottom;
+            });
+            KFK.selectedNodes.forEach((aNode) => {
+                aNode.style.top = px(bottom - KFK.nodeHeight(aNode));
+            });
+            break;
+        case 'hori':
+            let nodeLeftMost = KFK.selectedNodes[0];
+            let totalWidth = 0;
+            let leftMost = KFK.nodeLeft(KFK.selectedNodes[0]);
+            //找到最左边的node及其left位置， leftMost
+            KFK.selectedNodes.forEach((aNode) => {
+                totalWidth += KFK.nodeWidth(aNode);
+                let tmp = KFK.nodeLeft(aNode);
+                if (tmp < leftMost) {
+                    nodeLeftMost = aNode;
+                    leftMost = tmp;
+                }
+            });
+            //找到最右边的node及其右侧边位置， rightMost
+            let nodeAtRightMost = KFK.selectedNodes[0];
+            let rightMost = KFK.nodeRight(KFK.selectedNodes[0]);
+            KFK.selectedNodes.forEach((aNode) => {
+                let tmp = KFK.nodeRight(aNode);
+                if (tmp > rightMost) {
+                    nodeAtRightMost = aNode;
+                    rightMost = tmp;
+                }
+            });
+            //计算中间的space
+            let availableWidth = rightMost - leftMost;
+            let space_hori = (availableWidth - totalWidth) / (KFK.selectedNodes.length - 1);
+            console.log(`leftMost = ${leftMost} rightMost = ${rightMost}  space_hori=${space_hori}`);
+            let tmpHoriArr = [];
+            KFK.selectedNodes.forEach((aNode) => {
+                tmpHoriArr.push(aNode);
+            })
+            tmpHoriArr.splice(tmpHoriArr.indexOf(nodeLeftMost), 1);
+            //把除nodeLeftMos之外节点的中间X放入数组
+            let centerArr = tmpHoriArr.map((aNode) => {
+                return KFK.nodeCenter(aNode);
+            });
+            console.log(`centerArr  ${JSON.stringify(centerArr)}`);
+            let posX = KFK.nodeRight(nodeLeftMost);
+            while (centerArr.length > 0) {
+                //找到剩余Node中最靠右边的一个
+                let min = Math.min.apply(null, centerArr);
+                let index = centerArr.indexOf(min);
+                let newLeft = posX + space_hori;
+                console.log(`move index ${index} left from ${KFK.nodeLeft(tmpHoriArr[index])} to ${newLeft}`);
+                //重设其位置
+                tmpHoriArr[index].style.left = px(newLeft);
+
+                //为下一个节点准备基准点
+                posX = newLeft + KFK.nodeWidth(tmpHoriArr[index]);
+                centerArr.splice(index, 1);
+                tmpHoriArr.splice(index, 1);
+            }
+            break;
+        case 'vert':
+            let nodeTopMost = KFK.selectedNodes[0];
+            let totalHeight = 0;
+            let topMost = KFK.nodeTop(KFK.selectedNodes[0]);
+            KFK.selectedNodes.forEach((aNode) => {
+                totalHeight += KFK.nodeHeight(aNode);
+                let tmp = KFK.nodeTop(aNode);
+                if (tmp < topMost) {
+                    nodeTopMost = aNode;
+                    topMost = tmp;
+                }
+            });
+            let nodeAtBottomMost = KFK.selectedNodes[0];
+            let bottomMost = KFK.nodeBottom(KFK.selectedNodes[0]);
+            KFK.selectedNodes.forEach((aNode) => {
+                let tmp = KFK.nodeBottom(aNode);
+                if (tmp > bottomMost) {
+                    nodeAtBottomMost = aNode;
+                    bottomMost = tmp;
+                }
+            });
+            let availableHeight = bottomMost - topMost;
+            let space_vert = (availableHeight - totalHeight) / (KFK.selectedNodes.length - 1);
+            console.log(`topMost = ${topMost} bottomMost = ${bottomMost}  space_vert=${space_vert}`);
+            let tmpVertArr = [];
+            KFK.selectedNodes.forEach((aNode) => {
+                tmpVertArr.push(aNode);
+            })
+            tmpVertArr.splice(tmpVertArr.indexOf(nodeTopMost), 1);
+            let middleArr = tmpVertArr.map((aNode) => {
+                return KFK.nodeMiddle(aNode);
+            });
+            console.log(`middleArr  ${JSON.stringify(middleArr)}`);
+            let posY = KFK.nodeBottom(nodeTopMost);
+            while (middleArr.length > 0) {
+                let min = Math.min.apply(null, middleArr);
+                let index = middleArr.indexOf(min);
+                let newTop = posY + space_vert;
+                console.log(`move index ${index} top from ${KFK.nodeTop(tmpVertArr[index])} to ${newTop}`);
+                tmpVertArr[index].style.top = px(newTop);
+
+                posY = newTop + KFK.nodeHeight(tmpVertArr[index]);
+                middleArr.splice(index, 1);
+                tmpVertArr.splice(index, 1);
+            }
+            break;
+    }
 }
 
 KFK.scroll_posX = function (x) {
@@ -1352,22 +1592,42 @@ KFK.scrollY = function (y) {
     return y + KFK.scrollContainer.scrollTop;
 }
 
+KFK.showGridChanged = function (checked) {
+    KFK.gridLayer.visible(checked);
+};
+
 KFK.init = function () {
     if (KFK.inited === true) {
         console.error('KFK.init was called more than once, maybe loadImages error');
         return;
     }
-    KFK.gridLayer.add(new Konva.Line({
-        x: 100,
-        y: 200,
-        points: [73, 70, 340, 23, 450, 60, 500, 20],
-        stroke: 'red',
-        tension: 1,
-    }));
+    let step = KFK.APP.model.gridWidth;
+    for (let i = 0; i < 1000; i++) {
+        KFK.gridLayer.add(new Konva.Line({
+            points: [(i + 1) * step, 0, (i + 1) * step, KFK._height],
+            stroke: '#E1FCF9',
+            strokeWidth: 1,
+        }));
+        if ((i + 1) * step > KFK._width) {
+            console.log(`break at ${i}`);
+            break;
+        }
+    }
+    for (let i = 0; i < 1000; i++) {
+        KFK.gridLayer.add(new Konva.Line({
+            points: [0, (i + 1) * step, KFK._width, (i + 1) * step],
+            stroke: '#E1FCF9',
+            strokeWidth: 1,
+        }));
+        if ((i + 1) * step > KFK._height) {
+            break;
+        }
+    }
     KFK.gridLayer.batchDraw();
     KFK.createC3();
     KFK.startNode = KFK.placeNode('START', 'start', KFK.scrollX(120), KFK.scrollY(120));
     KFK.endNode = KFK.placeNode('END', 'end', KFK.scrollX(300), KFK.scrollY(120));
+    KFK.endNode2 = KFK.placeNode('END2', 'end', KFK.scrollX(400), KFK.scrollY(120));
     // KFK.centerPos = { x: 120 + (KFK.width() - 50 - 120) * 0.5, y: KFK.height() * 0.5 };
 
     KFK.drawLine(200, 200, 500, 200);
@@ -1449,6 +1709,8 @@ KFK.addContainerMainEventHander = function () {
             }
         } else if (e.keyCode === 27) { //ESC
             KFK.selectNone();
+            if (!KFK.editting)
+                KFK.setMode('pointer');
         } else if (e.keyCode >= 37 && e.keyCode <= 40) { //Left, Up, Right, Down
             if (KFK.selectedNodes.length > 0)
                 KFK.moveNode(e);
@@ -1529,7 +1791,7 @@ KFK.addContainerMainEventHander = function () {
 };
 
 KFK.toggleRightPanel = function (flag) {
-    $('#right').toggle("slide", {duration: 200,  direction: "right" });
+    $('#right').toggle("slide", { duration: 200, direction: "right" });
 };
 
 KFK.dataURLtoFile = function (dataurl, filename) {
@@ -1638,3 +1900,5 @@ module.exports = KFK;
 // OSS路径名使用 tenant_id/doc_id/pic_name.png
 // 一开始生成文档的ID， 然后的OSS图片的目录使用这个ID， 最后保存时，检查真正剩余的图片，并与OSS中的对应，没有用到的从OSS中删除掉
 //TODO: double click line to add text label
+//TODO: when one point picked, draw ghost line while mouse moving
+//TODO: bug to fix: delete link between two nodes, then adding links between them again does not work.
