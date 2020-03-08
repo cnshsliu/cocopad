@@ -85,26 +85,10 @@
         </b-collapse>
       </b-navbar>
     </div>
-    <div id="left" style="z-index: 999;">
+    <div id="left" class="bg-white" style="z-index: 999;">
       <b-list-group>
-        <b-list-group-item class="d-flex align-items-center" href="#some-link">
-          <b-img :src="images['sub'].src" fluid alt="" scale="2"></b-img>
-        </b-list-group-item>
-        <b-list-group-item class="d-flex align-items-center" href="#" @click="setMode('tpl');"
-          @active="isActive('tpl')">
-          <b-img :src="images['task'].src" fluid alt="" scale="2"></b-img>
-        </b-list-group-item>
-        <b-list-group-item class="d-flex align-items-center" href="#">
-          <b-img :src="images['timer'].src" fluid alt="" scale="2"></b-img>
-        </b-list-group-item>
-        <b-list-group-item class="d-flex align-items-center" href="#foobar" disabled>
-          <b-img :src="images['switch'].src" fluid alt="" scale="2"></b-img>
-        </b-list-group-item>
-        <b-list-group-item class="d-flex align-items-center" @click="setMode('tip');" :active="active['tip']">
-          <b-img :src="images['tip'].src" fluid alt="" scale="2"></b-img>
-        </b-list-group-item>
-        <b-list-group-item class="d-flex align-items-center" @click="setMode('blanket');" :active="active['blanket']">
-          <b-img :src="images['blanket'].src" fluid alt="" scale="2"></b-img>
+        <b-list-group-item class="d-flex align-items-center" @click="setMode('pointer');" :active="active['pointer']">
+          <b-img :src="images['pointer'].src" fluid alt="" scale="2"></b-img>
         </b-list-group-item>
         <b-list-group-item class="d-flex align-items-center" @click="setMode('p8star');" :active="active['p8star']">
           <b-img :src="images['p8star'].src" fluid alt="" scale="2"></b-img>
@@ -130,25 +114,58 @@
       </b-list-group>
     </div>
     <div id="right">
-      <b-tabs content-class="mt-3" justified>
-        <b-tab title="Style" active>
+      <b-tabs v-if="show.shape_property" v-model="model.rightTabIndex" content-class="mt-3" justified>
+        <b-tab title="格式">
           <p>I'm the first tab</p>
         </b-tab>
-        <b-tab title="Text">
+        <b-tab title="文本">
           <p>I'm the second tab</p>
         </b-tab>
-        <b-tab title="Arrange">
-          <p>I'm the tab with the very, very long title</p>
+        <b-tab title="排列">
+          <b-button-toolbar v-show="show.arrange_multi_nodes" key-nav class="w-100 justify-content-md-center">
+            <b-button-group class="d-flex w-100">
+              <b-button variant="light" title="对齐左侧" class="flex-fill p-0" @click="KfkAlign('left')"><img
+                  src="../assets/align_left.svg" class="toolbar"></b-button>
+              <b-button variant="light" title="对齐垂直中线" class="flex-fill p-0" @click="KfkAlign('center')"><img
+                  src="../assets/align_center.svg" class="toolbar"></b-button>
+              <b-button variant="light" title="对齐右侧" class="flex-fill p-0" @click="KfkAlign('right')"><img
+                  src="../assets/align_right.svg" class="toolbar"></b-button>
+              <b-button variant="light" title="对齐顶部" class="flex-fill p-0" @click="KfkAlign('top')"><img
+                  src="../assets/align_top.svg" class="toolbar"></b-button>
+              <b-button variant="light" title="对齐水平中线" class="flex-fill p-0" @click="KfkAlign('middle')"><img
+                  src="../assets/align_middle.svg" class="toolbar"></b-button>
+              <b-button variant="light" title="对齐底部" class="flex-fill p-0" @click="KfkAlign('bottom')"><img
+                  src="../assets/align_bottom.svg" class="toolbar"></b-button>
+            </b-button-group>
+          </b-button-toolbar>
+          <b-button-toolbar v-show="show.arrange_multi_nodes" key-nav class="w-100 justify-content-md-center">
+            <b-button-group class="d-flex w-100">
+              <b-button variant="light" class="flex-fill" title="横向均匀分布" @click="KfkAlign('hori')"><img
+                  src="../assets/align_hori.svg" class="toolbar"></b-button>
+              <b-button variant="light" class="flex-fill" title="纵向均匀分布" @click="KfkAlign('vert')"><img
+                  src="../assets/align_vert.svg" class="toolbar"></b-button>
+            </b-button-group>
+          </b-button-toolbar>
+        </b-tab>
+      </b-tabs>
+      <b-tabs v-else content-class="mt-3" justified>
+        <b-tab title="COCOPAD" active>
+          <p>欢迎使用</p>
+          <b-checkbox id="cb-showgrid" v-model="model.showGrid" name="cb-showgrid" switch @change="showGridChanged">显示网格线
+          </b-checkbox>
+          <b-checkbox v-model="model.snap" switch @change="snapChanged">对齐到网格
+          </b-checkbox>
+        </b-tab>
         </b-tab>
       </b-tabs>
     </div>
     <div id="rtcontrol">
       <b-button-group>
-        <b-button id="toggle_all" class="toggle" variant="outline-success" href="javascript:newTpl()">
-          <b-icon icon="document"></b-icon>
+        <b-button id="toggle_all" variant="outline-success" href="javascript:newTpl()">
+          <b-icon icon="arrows-fullscreen"></b-icon>
         </b-button>
-        <b-button id="toggle-right" class="toggle" variant="outline-success">
-          <b-icon icon="cloud-download"></b-icon>
+        <b-button id="toggle-right" variant="outline-success">
+          <b-icon icon="layout-sidebar-reverse"></b-icon>
         </b-button>
       </b-button-group>
     </div>
