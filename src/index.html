@@ -88,28 +88,27 @@
     <div id="left" class="bg-white" style="z-index: 999;">
       <b-list-group>
         <b-list-group-item class="d-flex align-items-center" @click="setMode('pointer');" :active="active['pointer']">
-          <b-img :src="images['pointer'].src" fluid alt="" scale="2"></b-img>
+          <b-img :src="images['pointer'].src" fluid alt="" scale="2" class="cocotool"></b-img>
         </b-list-group-item>
         <b-list-group-item class="d-flex align-items-center" @click="setMode('p8star');" :active="active['p8star']">
-          <b-img :src="images['p8star'].src" fluid alt="" scale="2"></b-img>
+          <b-img :src="images['p8star'].src" fluid alt="" scale="2" class="cocotool"></b-img>
         </b-list-group-item>
         <b-list-group-item class="d-flex align-items-center" @click="setMode('pin');" :active="active['pin']">
-          <b-img :src="images['pin'].src" fluid alt="" scale="2"></b-img>
+          <b-img :src="images['pin'].src" fluid alt="" scale="2" class="cocotool"></b-img>
         </b-list-group-item>
         <b-list-group-item class="d-flex align-items-center" @click="setMode('text');" :active="active['text']">
-          <b-img :src="images['text'].src" fluid alt="" scale="2"></b-img>
+          <b-img :src="images['text'].src" fluid alt="" scale="2" class="cocotool"></b-img>
         </b-list-group-item>
         <b-list-group-item class="d-flex align-items-center" @click="setMode('yellowtip');"
           :active="active['yellowtip']">
-          <b-img :src="images['yellowtip'].src" fluid alt="" scale="2"></b-img>
+          <b-img :src="images['yellowtip'].src" fluid alt="" scale="2" class="cocotool"></b-img>
         </b-list-group-item>
         <b-list-group-item class="d-flex align-items-center" @click="setMode('line');" :active="active['line']">
-          <!-- neither v-if or conditional statement in :src works, have to set id and change element attributee -->
-          <b-img :src="images['line'].src" fluid alt="" scale="2" id='tool_line'></b-img>
+          <b-img :src="images['line'].src" fluid alt="" scale="2" class="cocotool" id='tool_line'></b-img>
         </b-list-group-item>
         <b-list-group-item class="d-flex align-items-center" @click="setMode('textblock');"
           :active="active['textblock']">
-          <b-img :src="images['textblock'].src" fluid alt="" scale="2"></b-img>
+          <b-img :src="images['textblock'].src" fluid alt="" scale="2" class="cocotool"></b-img>
         </b-list-group-item>
       </b-list-group>
     </div>
@@ -155,6 +154,10 @@
           </b-checkbox>
           <b-checkbox v-model="model.snap" switch @change="snapChanged">对齐到网格
           </b-checkbox>
+          <p> </p>
+          <p>添加部件的方式</p>
+          <b-checkbox v-model="model.dragToCreate" switch @change="dragToCreateChanged">{{model.dragToCreate?"拖动部件到白板":"点击白板"}}
+          </b-checkbox>
         </b-tab>
         </b-tab>
       </b-tabs>
@@ -169,6 +172,10 @@
         </b-button>
       </b-button-group>
     </div>
+    <div id="modeIndicator" style="position:absolute; top: 0px; left: 0px; display: none; ">
+      <img id="modeIndicatorImg" src="../assets/pointer.svg" style='width: 18px; height: 18px;'/>
+    </div>
+    <img id="linetransformer" src="../assets/linetransformer.svg" style="position: absolute; top:0px; left:0px; width: 20px; height: 20px; z-index: 9999; display: none;"/>
   </div>
   <script src="./index.js"></script>
 </body>

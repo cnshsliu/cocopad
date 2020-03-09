@@ -45,6 +45,11 @@ body {
     border-radius: 5px;
 }
 
+.toolbar{
+    width: 16px;
+    height: 16px;
+}
+
 #rtcontrol{
     position: absolute;
     top: 5px;
@@ -98,4 +103,11 @@ body {
 
 .ui-state-active {
     color: blueviolet;
+}
+
+.selected{
+    box-shadow: inset 0px 0px 10px 2px #FF8E8F;
+}
+.hover{
+    box-shadow: inset 0px 0px 5px 2px #8E8EFF;
 }

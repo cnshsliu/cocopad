@@ -18,7 +18,6 @@ const app = new Vue({
     showINVITATION: false,
     lockMode: KFK.lockMode,
     images: KFK.images,
-    toggle: { line: false, },
     active: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false },
     show: {
       'arrange_multi_nodes': false,
@@ -30,36 +29,35 @@ const app = new Vue({
       snap: true,
       oldSnap: true,
       showGrid: true,
+      dragToCreate: true,
+      lineToggleMode: false,
     }
+  },
+  methods: {
+    setData(data, key, value) {
+      this.$set(this[data], key, value);
+      if(key === 'lineToggleMode')
+        $('#tool_line').attr('src', this.model.lineToggleMode ? app.images['hvline'].src : app.images['line'].src);
+    },
+
+    setMode(mode){
+      KFK.setMode(mode);
+    },
+    KfkAlign(direction) {
+      KFK.alignNodes(direction);
+    },
+    showGridChanged(checked) {
+      console.log(`showGrid ${checked}`);
+      if (!checked) { app.setData('model', 'oldSnap', app.model.snap); app.setData('model', 'snap', false); }
+      else { app.setData('model', 'snap', app.model.oldSnap); }
+      KFK.showGridChanged(checked);
+    },
+    snapChanged(checked) {
+      console.log(`snap ${checked}`);
+    },
+    dragToCreateChanged(checked){
+      console.log(`dragToCreate ${checked}`);
+    },
   },
 }).$mount("#app");
 KFK.APP = app;
-app.setData = function (data, key, value) {
-  this.$set(this[data], key, value);
-};
-app.KfkAlign = function (direction) {
-  KFK.alignNodes(direction);
-}
-app.toggle = function (key, value) {
-  this.$set(this.toggle, key, value);
-  if (key === 'line') {
-    $('#tool_line').attr('src', this.toggle.line ? app.images['hvline'].src : app.images['line'].src);
-  }
-};
-app.showGridChanged = function (checked) {
-  console.log(`showGrid ${checked}`);
-  if (!checked) {
-    app.setData('model', 'oldSnap', app.model.snap);
-    app.setData('model', 'snap', false);
-  }
-  else {
-    app.setData('model', 'snap', app.model.oldSnap);
-  }
-  KFK.showGridChanged(checked);
-}
-
-app.snapChanged = function (checked) {
-  console.log(`snap ${checked}`);
-}
-
-app.setMode = KFK.setMode;
