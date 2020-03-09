@@ -31,6 +31,7 @@ const app = new Vue({
       showGrid: true,
       dragToCreate: true,
       lineToggleMode: false,
+      msg: 'hello',
     }
   },
   methods: {
@@ -48,8 +49,8 @@ const app = new Vue({
     },
     showGridChanged(checked) {
       console.log(`showGrid ${checked}`);
-      if (!checked) { app.setData('model', 'oldSnap', app.model.snap); app.setData('model', 'snap', false); }
-      else { app.setData('model', 'snap', app.model.oldSnap); }
+      // if (!checked) { app.setData('model', 'oldSnap', app.model.snap); app.setData('model', 'snap', false); }
+      // else { app.setData('model', 'snap', app.model.oldSnap); }
       KFK.showGridChanged(checked);
     },
     snapChanged(checked) {
