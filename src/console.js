@@ -175,11 +175,19 @@ KFK.duringKuangXuan = false;
 
 KFK.currentMousePos = { x: -1, y: -1 };
 $('#C3').mousedown((event) => {
-
+    if (KFK.mode === 'pointer') {
+        KFK.mouseIsDown = true;
+        KFK.dragToSelectFrom = { x: KFK.scrollX(event.clientX), y: KFK.scrollY(event.clientY) };
+    }
 });
 $('#C3').mouseup((event) => {
     if (KFK.mode === 'pointer') {
-
+        KFK.mouseIsDown = false;
+        KFK.dragToSelectTo = { x: KFK.scrollX(event.clientX), y: KFK.scrollY(event.clientY) };
+        if (KFK.duringKuangXuan) {
+            KFK.endKuangXuan(KFK.dragToSelectFrom, KFK.dragToSelectTo);
+            KFK.duringKuangXuan = false;
+        }
     }
 });
 $(document).mousemove(function (event) {
@@ -550,7 +558,6 @@ KFK.initC3 = function () {
     //click c3
     $(c3).on('click', function (e) {
         console.log('click on C3');
-
         if (KFK.editting || KFK.resizing || KFK.dragging) {
             console.log(`ignore click because editting: ${KFK.editting}, resizing: ${KFK.resizing}, dragging: ${KFK.dragging}`);
             return;
@@ -573,26 +580,14 @@ KFK.initC3 = function () {
             );
             return;
         }
+        console.log("before placeNode...");
         if (config.node[KFK.mode]) {
+            console.log("now placeNode...");
             KFK.placeNode(
                 myuid(), KFK.mode,
                 KFK.scrollX(e.clientX),
                 KFK.scrollY(e.clientY)
             );
-        } else if (KFK.mode === 'pointer') {
-            if (KFK.mouseIsDown === false) {
-                KFK.mouseIsDown = true;
-                KFK.dragToSelectFrom = { x: KFK.scrollX(event.clientX), y: KFK.scrollY(event.clientY) };
-                console.log('start kuangxuan');
-            } else {
-                KFK.mouseIsDown = false;
-                console.log('end kuangxuan');
-                KFK.dragToSelectTo = { x: KFK.scrollX(event.clientX), y: KFK.scrollY(event.clientY) };
-                if (KFK.duringKuangXuan) {
-                    KFK.endKuangXuan(KFK.dragToSelectFrom, KFK.dragToSelectTo);
-                    KFK.duringKuangXuan = false;
-                }
-            }
         } else {
             console.log(`${KFK.mode} is not supported`);
             if (KFK.mode === "line") {
@@ -714,6 +709,7 @@ KFK.endKuangXuan = function (pt1, pt2) {
     while (KFK.selectedDIVs.length > 0) {
         KFK.deselectNode(KFK.selectedDIVs[0], KFK.selectedLINs[0])
     }
+    //为防止混乱，框选只对node div有效果
     $(KFK.C3).find('.kfknode').each((index, div) => {
         console.log(index);
         let divRect = KFK.nodeRect(div);
@@ -951,15 +947,25 @@ KFK.drawLine = function (x1, y1, x2, y2, strokeColor, strokeWidth) {
         },
     });
 
+    //防止点在线上，以后，画出框选框
+    jqLineDIV.mousedown((e) => {
+        console.log('mousedown on lineDIV');
+        e.stopImmediatePropagation();
+        e.stopPropagation();
+    });
     //click line
     jqLineDIV.click((e) => {
         console.log('click on line DIV');
-        KFK.afterDragging = false;
-        KFK.afterResizing = false;
-        let selDIV = lineDIV;
-        let selLine = theLine;
-        KFK.onClickDIV(e, selDIV, selLine);
-        KFK.selectedDIVsChanged();
+        if (!lineDIV.getAttribute('fdiv') && !lineDIV.getAttribute('tdiv')) {
+            KFK.afterDragging = false;
+            KFK.afterResizing = false;
+            let selDIV = lineDIV;
+            let selLine = theLine;
+            KFK.onClickDIV(e, selDIV, selLine);
+            KFK.selectedDIVsChanged();
+        }else{
+            console.log('link line is unselectable');
+        }
     });
     let dynamicRect = {};
 
@@ -1292,6 +1298,8 @@ KFK.reArrangeLinks = function (jqNodeDIV) {
                 KFK.yarkLinkNode(el(jqNodeDIV));
                 KFK.yarkLinkPoint(aLineDiv.getAttribute('tx'), aLineDiv.getAttribute('ty'));
             }
+            //老的link line不用从selectedDIVs中删除
+            //因为link line不放入selectedDIVs
             $(aLineDiv).remove();
         } else if (aLineDiv.getAttribute('tdiv') && aLineDiv.getAttribute('tdiv') === jqNodeDIV.attr('id')) {
             console.log(`line ${index} link to this node`);
@@ -1304,6 +1312,8 @@ KFK.reArrangeLinks = function (jqNodeDIV) {
                 KFK.yarkLinkPoint(aLineDiv.getAttribute('fx'), aLineDiv.getAttribute('fy'));
                 KFK.yarkLinkNode(el(jqNodeDIV));
             }
+            //老的link line不用从selectedDIVs中删除
+            //因为link line不放入selectedDIVs
             $(aLineDiv).remove();
         }
     });
@@ -1361,6 +1371,8 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
         scroll: true,
         start: (event, ui) => {
             console.log('Start node dragging...')
+            event.stopImmediatePropagation();
+            event.stopPropagation();
             KFK.originZIndex = KFK.getZIndex(el(jqNodeDIV));
             el(jqNodeDIV).style.zIndex = "99999";
             KFK.dragging = true;
@@ -1469,6 +1481,13 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
             KFK.hoverDIV = null;
         }
     );
+
+    //防止点在节点上，以后，画出框选框
+    jqNodeDIV.mousedown((e) => {
+        console.log('mousedown on nodeDIV');
+        e.stopImmediatePropagation();
+        e.stopPropagation();
+    });
     //click node
     jqNodeDIV.click((e) => {
         console.log('click on nodeDIV');
@@ -1737,13 +1756,14 @@ KFK.moveNodeByArrowKey = function (e) {
 };
 
 KFK.deleteNode = function (nodeDIV) {
-    $(KFK.C3).find('.kfkline').each((index, aLineDiv) => {
+    $(KFK.C3).find('.kfkline').each((index, aLinkDiv) => {
         //如果从当前node开始连接
         if (
-            aLineDiv.getAttribute('fdiv') === nodeDIV.getAttribute('id') ||
-            aLineDiv.getAttribute('tdiv') === nodeDIV.getAttribute('id')
+            aLinkDiv.getAttribute('fdiv') === nodeDIV.getAttribute('id') ||
+            aLinkDiv.getAttribute('tdiv') === nodeDIV.getAttribute('id')
         ) {
-            $(aLineDiv).remove();
+            //link div不会放入selectedDIVs, 因此也不用去从中删除
+            $(aLinkDiv).remove();
         }
     });
     let myZI = KFK.getZIndex(nodeDIV);
@@ -1771,6 +1791,12 @@ KFK.deleteNode = function (nodeDIV) {
         } catch (err) {
             console.error(err);
         }
+    }
+    //这里是需要处理的，
+    let nodeIndex = KFK.selectedDIVs.indexOf(nodeDIV);
+    if(nodeIndex >=0){
+        KFK.selectedDIVs.splice(nodeIndex, 1);
+        KFK.selectedLINs.splice(nodeIndex, 1);
     }
     $(nodeDIV).remove();
 };
@@ -2386,14 +2412,13 @@ $('#scroll-container').scroll(() => {
 module.exports = KFK;
 
 
-//TODO: drag to select multiple divs
+//TODO: 清理OSS图片
+// OSS路径名使用 tenant_id/doc_id/pic_name.png
+// 一开始生成文档的ID， 然后的OSS图片的目录使用这个ID， 最后保存时，检查真正剩余的图片，并与OSS中的对应，没有用到的从OSS中删除掉
+//TODO: 添加DIV，可配置radius, 背景色，边框色等
 //TODO: Zoom in / Zoom out
 //TODO: RichText with QuilJS
 //TODO: Font  颜色
 //TODO: Free Drawing
 //TODO: draw an multiple angles
-//TODO: 清理OSS图片
-// OSS路径名使用 tenant_id/doc_id/pic_name.png
-// 一开始生成文档的ID， 然后的OSS图片的目录使用这个ID， 最后保存时，检查真正剩余的图片，并与OSS中的对应，没有用到的从OSS中删除掉
 //TODO: double click on line to add text label
-//TODO: background color: hide canvas layer, add another layer below canvas layer, set color of the layer at the bottom
