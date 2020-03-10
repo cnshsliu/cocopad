@@ -32,16 +32,20 @@ const app = new Vue({
       dragToCreate: true,
       lineToggleMode: false,
       msg: 'hello',
+      padbkgcolor: [
+        '#C2FFFB', '#D0C8E8', '#FEE8E7', '#E8DFC8', '#B9FFA6',
+        '#C2D3FF', '#C8D1E8', '#E8EFFE', '#E8EFFE', '#E8EFFE'
+      ],
     }
   },
   methods: {
     setData(data, key, value) {
       this.$set(this[data], key, value);
-      if(key === 'lineToggleMode')
+      if (key === 'lineToggleMode')
         $('#tool_line').attr('src', this.model.lineToggleMode ? app.images['hvline'].src : app.images['line'].src);
     },
 
-    setMode(mode){
+    setMode(mode) {
       KFK.setMode(mode);
     },
     KfkAlign(direction) {
@@ -56,9 +60,14 @@ const app = new Vue({
     snapChanged(checked) {
       console.log(`snap ${checked}`);
     },
-    dragToCreateChanged(checked){
+    dragToCreateChanged(checked) {
       console.log(`dragToCreate ${checked}`);
     },
+    setBGto(color){
+      console.log('Set BG to ' + color);
+      this.setData('model', 'msg', color);
+      $('#containerbkg')[0].style.backgroundColor = color;
+    }
   },
 }).$mount("#app");
 KFK.APP = app;

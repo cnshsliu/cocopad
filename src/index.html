@@ -13,6 +13,10 @@
   <div id="containerbkg"></div>
   <div id="scroll-container">
     <div id="containermain">
+      <div id="C3">
+        <div id="boundingrect" class="boundingrect"></div>
+        <div id="selectingrect" class="selectingrect"></div>
+      </div>
     </div>
   </div>
 
@@ -150,14 +154,21 @@
       <b-tabs v-else content-class="mt-3" justified>
         <b-tab title="COCOPAD" active>
           <p>欢迎使用</p>
-          <b-checkbox id="cb-showgrid" v-model="model.showGrid" name="cb-showgrid" switch @change="showGridChanged">显示网格线
+          <b-checkbox id="cb-showgrid" v-model="model.showGrid" name="cb-showgrid" switch @change="showGridChanged">
+            显示网格线
           </b-checkbox>
           <b-checkbox v-model="model.snap" switch @change="snapChanged">对齐到网格
           </b-checkbox>
           <p> </p>
-          <p>添加部件的方式</p>
-          <b-checkbox v-model="model.dragToCreate" switch @change="dragToCreateChanged">{{model.dragToCreate?"拖动部件到白板":"点击白板"}}
-          </b-checkbox>
+          <p>背景颜色</p>
+          <b-container class="mt-3">
+          <b-row>
+            <b-col style='background-color: #C2FFFB'><b-btn class="btn btn-outline-primary sharp" @click="setBGto('#C2FFFB')" ></b-btn></b-col>
+            <b-col style='background-color: #D0C8E8'><b-btn class="btn btn-outline-primary sharp" @click="setBGto('#D0C8E8')"></b-btn></b-col>
+            <b-col style='background-color: #FEE8E7'><b-btn class="btn btn-outline-primary sharp" @click="setBGto('#FEE8E7')"></b-btn></b-col>
+            <b-col style='background-color: #E8DFC8'><b-btn class="btn btn-outline-primary sharp" @click="setBGto('#E8DFC8')"></b-btn></b-col>
+          </b-row>
+          </b-container>
         </b-tab>
         </b-tab>
       </b-tabs>
@@ -173,9 +184,10 @@
       </b-button-group>
     </div>
     <div id="modeIndicator" style="position:absolute; top: 0px; left: 0px; display: none; ">
-      <img id="modeIndicatorImg" src="../assets/pointer.svg" style='width: 18px; height: 18px;'/>
+      <img id="modeIndicatorImg" src="../assets/pointer.svg" style='width: 18px; height: 18px;' />
     </div>
-    <img id="linetransformer" src="../assets/linetransformer.svg" style="position: absolute; top:0px; left:0px; width: 20px; height: 20px; z-index: 9999; display: none;"/>
+    <img id="linetransformer" src="../assets/linetransformer.svg"
+      style="position: absolute; top:0px; left:0px; width: 20px; height: 20px; z-index: 9999; display: none;" />
     <div id="MSG" class="msgarea">{{model.msg}}</div>
   </div>
   <script src="./index.js"></script>

@@ -119,3 +119,39 @@ body {
     bottom: 0px;
     left: 0px;
 }
+.cocopadbg{
+    background: red;
+}
+.btn.btn-outline-primary.sharp
+{
+    background-color: #C2FFFB !important;
+    border-color: #C2FFFB !important;
+}
+.boundingrect{
+    z-index: -1;
+    border-radius: 20px;
+    background-color: rgba(0,0,0,0.2);
+    border-color: red;
+    border-width: 0px;
+    border-style: dotted;
+    position: absolute;
+    left: 300px;
+    top: 300px;
+    width: 300px;
+    height: 300px;
+    display: none;
+}
+.selectingrect{
+    z-index: -1;
+    border-radius: 00px;
+    background-color: transparent;
+    border-color: red;
+    border-width: 1px;
+    border-style: dotted;
+    position: absolute;
+    left: 300px;
+    top: 300px;
+    width: 300px;
+    height: 300px;
+    display: none;
+}
