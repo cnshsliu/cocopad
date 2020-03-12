@@ -16,6 +16,8 @@ $bv-enable-table-stacked: false;
 @import '~bootstrap/scss/bootstrap';
 @import '~bootstrap-vue/src/index.scss';
 @import "../node_modules/jquery-ui-dist/jquery-ui.css";
+@import "../node_modules/spectrum-colorpicker2/dist/spectrum.min.css";
+@import "../fontpicker-jquery-plugin/dist/jquery.fontpicker.min.css";
 // General style overrides and custom classes
 
 body {

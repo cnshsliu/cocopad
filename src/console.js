@@ -9,9 +9,11 @@ import assetIcons from '../assets/*.svg';
 import OSS from 'ossnolookup';
 import "./importjquery";
 import "jquery-ui-dist/jquery-ui.js";
+import "spectrum-colorpicker2/dist/spectrum.min";
+import "../fontpicker-jquery-plugin/dist/jquery.fontpicker.min";
+// import iro from '@jaames/iro';
 import { BIconFolderSymlinkFill, directivesPlugin, BIconKanbanFill } from "bootstrap-vue";
 import { REPL_MODE_SLOPPY } from "repl";
-
 function myuid() {
     return suuid.generate();
 }
@@ -31,6 +33,15 @@ Array.prototype.remove = function () {
 
 
 let config = {
+    tenant: {
+        id: 'lucas',
+    },
+    doc: {
+        id: '0000',
+    },
+    vault: {
+        bucket: 'vts',
+    },
     ui: {
         boundingrect_padding: 10,
     },
@@ -67,6 +78,7 @@ let config = {
             background: '#49FFAC', minWidth: 1, minHeight: 1,
             droppable: true,
             edittable: true,
+            customshape: true,
         },
         pin: {
             width: 40,
@@ -74,46 +86,14 @@ let config = {
         }
     }
 }
-let tip_variants = {
-    'tip': {
-        rotateEnabled: false,
-        shadowEnabled: false,
-        rotation: 0,
-        size: 100,
-        ratio: 1,
-        text: 'Some text here'
-    },
-    'blanket': {
-        rotateEnabled: false,
-        shadowEnabled: false,
-        rotation: 0,
-        size: 60,
-        ratio: 0.618,
-        text: 'Some text here'
-    },
-    'p8star': {
-        rotateEnabled: false,
-        shadowEnabled: false,
-        rotation: 0,
-        size: 60,
-        ratio: 1,
-        text: ' '
-    },
-    'pin': {
-        rotateEnabled: false,
-        shadowEnabled: true,
-        rotation: 0,
-        size: 20,
-        ratio: 1,
-        text: ''
-    },
-}
-
+let doc = {
+    bgcolor: '#FFFFFF',
+};
 const OSSClient = new OSS({
     region: 'oss-cn-hangzhou',
     accessKeyId: '0fKFa2tFodMQQETJ',
     accessKeySecret: 'xpilgsl4KQbfnFDZkRMy0Dp1KuoW8A',
-    bucket: 'vts'
+    bucket: config.vault.bucket,
 });
 let KFK = {};
 KFK.scaleBy = 1.01;
@@ -121,7 +101,7 @@ KFK.centerPos = { x: 0, y: 0 };
 KFK.centerPos = { x: 0, y: 0 };
 KFK.startNode = null;
 KFK.endNode = null;
-KFK.lastClickOnNode = Date.now();
+KFK.lastFocusOnNode = null;
 KFK.hoverDIV = null;
 KFK.hoverLineDIV = null;
 KFK.inited = false;
@@ -210,7 +190,6 @@ $(document).mousemove(function (event) {
 
     if (KFK.mode === 'line') {
         if (KFK.linkPos.length === 1) {
-            console.log('click next please');
             KFK.lineTemping = true;
             KFK.APP.setData('model', 'msg', 'click next please');
             let tmpPoint = { x: KFK.scrollX(KFK.currentMousePos.x), y: KFK.scrollY(KFK.currentMousePos.y) };
@@ -259,7 +238,6 @@ KFK.loadImages = function loadimg(callback) {
     for (var file in assetIcons) {
         numImages++;
     }
-    console.log(assetIcons);
     for (var file in assetIcons) {
         KFK.images[file] = new Image();
         KFK.images[file].onload = function () {
@@ -268,9 +246,7 @@ KFK.loadImages = function loadimg(callback) {
                     callback(KFK.images);
             }
         };
-        console.log(`${file}`);
         KFK.images[file].src = assetIcons[file];
-        console.log(`${file}  -> ${assetIcons[file]}`);
     }
 
     KFK.images['toggle_line'].src = KFK.images['line'].src;
@@ -280,7 +256,6 @@ class Node {
     constructor(id, type, x, y, w, h, attach) {
         this.id = id;
         this.type = type;
-        console.log(type);
         this.width = w ? w : config.node[type].width;
         this.height = h ? h : config.node[type].height;
         this.iconscale = 0.8;
@@ -309,17 +284,6 @@ class Node {
     }
 }
 
-class Tip {
-    constructor(id, type, x, y) {
-        this.id = id;
-        this.type = type;
-        this.size = tip_variants[type]["size"];
-        this.ratio = tip_variants[type]["ratio"];
-        this.iconscale = 1;
-        this.x = x;
-        this.y = y;
-    }
-}
 class Link {
     constructor(id, fromId, toId, route) {
         this.id = id;
@@ -341,6 +305,42 @@ KFK.gotoHome = function () {
     // KFK.stage.batchDraw();
 
     // console.log(`${KFK.startNode.x}`);
+};
+
+KFK.onFocusOnNode = function (nodeDIV) {
+    KFK.lastFocusOnNode = nodeDIV;
+    let nodeType = 'unknown';
+    if (nodeDIV != null) {
+        nodeType = $(nodeDIV).attr('nodetype');
+    }
+    KFK.APP.setData('show', 'shape_property', nodeDIV != null);
+    KFK.APP.setData('show', 'text_property', nodeDIV != null && getBoolean(config.node[nodeType].edittable));
+    KFK.APP.setData('show', 'customshape', nodeDIV != null && getBoolean(config.node[nodeType].customshape));
+    KFK.APP.setData('show', 'customyellowtip', nodeDIV != null && (nodeType === 'yellowtip'));
+    if (nodeDIV != null && getBoolean(config.node[nodeType].customshape)) {
+        let nodeBgColor = $(nodeDIV).css("background-color");
+        let nodeBorderColor = $(nodeDIV).css("border-color")
+        let nodeBorderWidth = unpx($(nodeDIV).css("border-width"));
+        let nodeBorderRadius = unpx($(nodeDIV).css("border-radius"));
+        $('#shapeBgColor').spectrum("set", nodeBgColor);
+        $('#shapeBorderColor').spectrum("set", nodeBorderColor);
+        $('#spinner_border_width').spinner("value", nodeBorderWidth);
+        $('#spinner_border_radius').spinner("value", nodeBorderRadius);
+    }
+
+    if (nodeDIV != null && getBoolean(config.node[nodeType].edittable)) {
+        let fontFamily = $(nodeDIV).css('font-family');
+        let fontSize = $(nodeDIV).css('font-size');
+        let fontColor = $(nodeDIV).css('color');
+        let textAlign = $(nodeDIV).css('text-align');
+        $('#fontColor').spectrum("set", fontColor);
+    }
+
+    KFK.log(JSON.stringify(KFK.APP.show));
+};
+
+KFK.log = function (msg) {
+    KFK.APP.setData('model', 'msg', msg);
 };
 
 KFK.getConnectorPoints = function (from, to, rad) {
@@ -380,7 +380,6 @@ KFK.findConnect = function (linkid) {
 
 KFK.yarkLinkPoint = function (x, y, shiftKey) {
     if (KFK.lineDragging) return;
-    console.log(`yark Link Point at ${x}, ${y}`);
     if (KFK.linkPos.length === 1) {
         //按下option键，切换toggleMode
         if (KFK.toggleMode) {
@@ -400,12 +399,10 @@ KFK.yarkLinkPoint = function (x, y, shiftKey) {
 };
 
 KFK.yarkLinkNode = function (theDIV, shiftKey) {
-    console.log(`left:${theDIV.style.left} top: ${theDIV.style.top} width: ${theDIV.style.width} height: ${theDIV.style.height}`);
     let divLeft = unpx(theDIV.style.left);
     let divTop = unpx(theDIV.style.top);
     let divWidth = unpx(theDIV.style.width);
     let divHeight = unpx(theDIV.style.height);
-    console.log(`left:${divLeft} top: ${divTop} width: ${divWidth} height: ${divHeight}`);
     if (KFK.lineDragging) return;
     let pos = {
         div: theDIV,
@@ -438,10 +435,9 @@ KFK.yarkLinkNode = function (theDIV, shiftKey) {
 
 KFK.procLink = function (shiftKey) {
     if (KFK.linkPos.length < 2) {
-        console.log(`linkPos has ${KFK.linkPos.length} points, don't draw line`);
+        // console.log(`linkPos has ${KFK.linkPos.length} points, don't draw line`);
         return;
     } else {
-        console.log(`linkPos has ${KFK.linkPos.length} points, draw`);
         if (KFK.tmpLineDIV) {
             $(KFK.tmpLineDIV).remove();
             KFK.tmpLineDIV = undefined;
@@ -508,14 +504,13 @@ KFK.setZIndex = function (div, zz) {
     div.style.zIndex = zz;
 };
 KFK.selectNone = function () {
-    console.log(`node number: ${KFK.selectedDIVs.length}`)
-    console.log(`line number: ${KFK.selectedLINs.length}`)
     while (KFK.selectedDIVs.length > 0) {
         KFK.deselectNode(KFK.selectedDIVs[0], KFK.selectedLINs[0]);
     }
     KFK.selectedDIVs.clear();
     KFK.selectedLINs.clear();
     KFK.selectedDIVsChanged();
+    KFK.onFocusOnNode(null);
 };
 KFK.selectedDIVsChanged = function () {
     KFK.APP.setData('show', 'arrange_multi_nodes', KFK.selectedDIVs.length > 1);
@@ -557,9 +552,10 @@ KFK.initC3 = function () {
 
     //click c3
     $(c3).on('click', function (e) {
-        console.log('click on C3');
+        KFK.onFocusOnNode(null);
+        KFK.APP.setData('show', 'custom_shape', false);
         if (KFK.editting || KFK.resizing || KFK.dragging) {
-            console.log(`ignore click because editting: ${KFK.editting}, resizing: ${KFK.resizing}, dragging: ${KFK.dragging}`);
+            // console.log(`ignore click because editting: ${KFK.editting}, resizing: ${KFK.resizing}, dragging: ${KFK.dragging}`);
             return;
         }
 
@@ -569,7 +565,6 @@ KFK.initC3 = function () {
         }
         if (KFK.afterResizing === true) {
             KFK.afterResizing = false;
-            console.log(`Return cauze afterResizing`);
             return;
         }
         if (KFK.mode === 'line') {
@@ -580,10 +575,9 @@ KFK.initC3 = function () {
             );
             return;
         }
-        console.log("before placeNode...");
         if (config.node[KFK.mode]) {
-            console.log("now placeNode...");
             KFK.placeNode(
+                e.shiftKey,
                 myuid(), KFK.mode,
                 KFK.scrollX(e.clientX),
                 KFK.scrollY(e.clientY)
@@ -711,10 +705,7 @@ KFK.endKuangXuan = function (pt1, pt2) {
     }
     //为防止混乱，框选只对node div有效果
     $(KFK.C3).find('.kfknode').each((index, div) => {
-        console.log(index);
         let divRect = KFK.nodeRect(div);
-        console.log(rect);
-        console.log(divRect);
         if (rect.left < divRect.right &&
             rect.right > divRect.left &&
             rect.top < divRect.bottom &&
@@ -737,10 +728,9 @@ KFK.deselectNode = function (theDIV, theLine) {
     KFK.reArrangeBoundingRect();
 };
 
-KFK.onClickDIV = function (e, selDIV, selLine) {
+KFK.procNodeInArrayOfSelected = function (selDIV, selLine, shiftKey) {
     let exist = KFK.selectedDIVs.indexOf(selDIV);
-    console.log(`exist = ${exist}`);
-    if (e.shiftKey) {
+    if (shiftKey) {
         if (exist >= 0) {
             KFK.deselectNode(KFK.selectedDIVs[exist], KFK.selectedLINs[exist]);
         } else {
@@ -773,13 +763,11 @@ KFK.drawLine = function (x1, y1, x2, y2, strokeColor, strokeWidth) {
     strokeWidth = strokeWidth ? strokeWidth : 3;
     let p1 = { x: x1, y: y1 };
     let p2 = { x: x2, y: y2 };
-    // console.log(JSON.stringify(p1) + "    " + JSON.stringify(p2));
     if (KFK.APP.model.snap) {
         p1 = KFK.getNearGridPoint(p1.x, p1.y);
         p2 = KFK.getNearGridPoint(p2.x, p2.y);
         x1 = p1.x; y1 = p1.y; x2 = p2.x; y2 = p2.y;
     }
-    console.log(JSON.stringify(p1) + "    " + JSON.stringify(p2));
 
     let rect = {
         x: Math.min(p1.x, p2.x),
@@ -818,8 +806,6 @@ KFK.drawLine = function (x1, y1, x2, y2, strokeColor, strokeWidth) {
     });
     theLine.id(lineid);
 
-    // console.log(`rect.width ${rect.width} rect.height ${rect.height}, line strokWidth: ${strokeWidth} `);
-    console.log(JSON.stringify(theLine));
     lineLayer.add(theLine);
     lineStage.add(lineLayer);
     lineLayer.batchDraw();
@@ -851,7 +837,6 @@ KFK.drawLine = function (x1, y1, x2, y2, strokeColor, strokeWidth) {
             } else if (!lineDIV.getAttribute('tdiv') && mouseNear(KFK.scrollToScreen(KFK.lineTwoEnds.to), KFK.currentMousePos)) {
                 $('#linetransformer').show();
                 KFK.tobeTransformLineDIV = lineDIV;
-                console.log("tobe move end of " + KFK.tobeTransformLineDIV.getAttribute("id"));
                 KFK.moveLinePoint = 'to';
                 KFK.moveLineMoverTo(KFK.scrollToScreen(KFK.lineTwoEnds.to));
             } else {
@@ -893,7 +878,6 @@ KFK.drawLine = function (x1, y1, x2, y2, strokeColor, strokeWidth) {
 
     jqLineDIV.draggable({
         start: () => {
-            console.log('Start linedragging...')
             $('#linetransformer').hide();
             KFK.dragging = true;
             KFK.linkPos = [];
@@ -908,7 +892,6 @@ KFK.drawLine = function (x1, y1, x2, y2, strokeColor, strokeWidth) {
         },
         //drag line
         stop: (event, ui) => {
-            console.log('Stop linedragging...')
             KFK.linkPos = [];
             KFK.dragging = false;
             KFK.lineDragging = false;
@@ -949,21 +932,21 @@ KFK.drawLine = function (x1, y1, x2, y2, strokeColor, strokeWidth) {
 
     //防止点在线上，以后，画出框选框
     jqLineDIV.mousedown((e) => {
-        console.log('mousedown on lineDIV');
         e.stopImmediatePropagation();
         e.stopPropagation();
     });
     //click line
     jqLineDIV.click((e) => {
-        console.log('click on line DIV');
+        KFK.onFocusOnNode(null);
+        KFK.APP.setData('show', 'custom_shape', false);
         if (!lineDIV.getAttribute('fdiv') && !lineDIV.getAttribute('tdiv')) {
             KFK.afterDragging = false;
             KFK.afterResizing = false;
             let selDIV = lineDIV;
             let selLine = theLine;
-            KFK.onClickDIV(e, selDIV, selLine);
+            KFK.procNodeInArrayOfSelected(selDIV, selLine, e.shiftKey);
             KFK.selectedDIVsChanged();
-        }else{
+        } else {
             console.log('link line is unselectable');
         }
     });
@@ -999,8 +982,6 @@ KFK.getDegree = function (p1, p2) {
         }
     }
 
-
-    console.log(deg);
     return deg;
 }
 
@@ -1042,7 +1023,6 @@ function editTextNode(textnode, theDIV) {
     KFK.editting = true;
     theDIV.editting = true;
     textnode.editting = true;
-    console.log(`edit textnode ${textnode.innerText}`);
     let oldText = textnode.innerText;
     textnode.style.visibility = "hidden";
     // theDIV.style.background = "transparent";
@@ -1062,7 +1042,7 @@ function editTextNode(textnode, theDIV) {
     textarea.style.position = 'absolute';
     textarea.style.top = areaPosition.y + 'px';
     textarea.style.left = areaPosition.x + 'px';
-    console.log(`${textarea.style.top} ${textarea.style.left}`);
+    // console.log(`${textarea.style.top} ${textarea.style.left}`);
     textarea.style.width = theDIV.style.width;
     textarea.style.height = theDIV.style.height;
     textarea.style.fontSize = textnode.style.fontSize;
@@ -1174,10 +1154,16 @@ KFK.getKFKNodeNumber = function () {
 }
 
 
-KFK.placeNode = function (id, type, x, y, w, h, attach) {
+KFK.placeNode = function (shiftKey, id, type, x, y, w, h, attach) {
     let aNode = new Node(id, type, x, y, w, h, attach);
     KFK.nodes.push(aNode);
     let nodeDIV = KFK._createNode(aNode);
+    let selDIV = nodeDIV;
+    let selLine = undefined;
+    KFK.procNodeInArrayOfSelected(selDIV, selLine, shiftKey);
+
+    KFK.selectedDIVsChanged();
+    KFK.onFocusOnNode(selDIV);
     return nodeDIV;
 };
 
@@ -1216,7 +1202,7 @@ KFK._createNode = function (node) {
         nodeObj.style.left = px(2); nodeObj.style.top = px(2);
     }
     if (!nodeObj) {
-        console.log(`${node.type} is not supported`);
+        // console.log(`${node.type} is not supported`);
         return;
     }
     nodeObj.edittable = config.node[node.type].edittable ? true : false;
@@ -1233,7 +1219,7 @@ KFK._createNode = function (node) {
         nodeDIV.style.height = "fit-content";
     }
     nodeDIV.style.zIndex = `${nodeCount + 1}`;
-    console.log(`CREATE NODE AT ${nodeCount + 1}`);
+    // console.log(`CREATE NODE AT ${nodeCount + 1}`);
     nodeDIV.style.border = 'none';
     nodeDIV.style.padding = '0px';
     if (node.type === 'text' || node.type === 'yellowtip' || node.type === 'textblock')
@@ -1253,6 +1239,8 @@ KFK._createNode = function (node) {
         $(nodeDIV).css("background-image", `url(${KFK.images['yellowtip'].src})`);
         $(nodeDIV).css("background-repeat", 'no-repeat');
         $(nodeDIV).css("background-size", '100% 100%');
+    } else if (node.type === 'textblock') {
+        $(nodeDIV).css('border-radius', "20px");
     }
 
     nodeObj.setAttribute("id", 'innerobj_' + node.id);
@@ -1287,7 +1275,7 @@ KFK.reArrangeLinks = function (jqNodeDIV) {
     $(KFK.C3).find('.kfkline').each((index, aLineDiv) => {
         //如果从当前node开始连接
         if (aLineDiv.getAttribute('fdiv') && aLineDiv.getAttribute('fdiv') === jqNodeDIV.attr('id')) {
-            console.log(`line ${index} link from this node`);
+            // console.log(`line ${index} link from this node`);
             KFK.linkPos = [];
             //如果结束点也是一个nodediv
             if (aLineDiv.getAttribute('tdiv')) {
@@ -1302,7 +1290,7 @@ KFK.reArrangeLinks = function (jqNodeDIV) {
             //因为link line不放入selectedDIVs
             $(aLineDiv).remove();
         } else if (aLineDiv.getAttribute('tdiv') && aLineDiv.getAttribute('tdiv') === jqNodeDIV.attr('id')) {
-            console.log(`line ${index} link to this node`);
+            // console.log(`line ${index} link to this node`);
             KFK.linkPos = [];
             if (aLineDiv.getAttribute('fdiv')) {
                 let divFilter = `#${aLineDiv.getAttribute('fdiv')}`;
@@ -1350,7 +1338,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
                     nodeDIV.style.height = px(KFK.nodeHeight(nodeDIV) + (newBottom - tmpBottom));
                 }
                 if (jqNodeType === 'image') {
-                    console.log("Resize inner image");
+                    // console.log("Resize inner image");
                     let imageId = `#innerobj_${jqNodeDIV.attr('id')}`;
                     el($(imageId)).style.width = el(jqNodeDIV).style.width;
                     el($(imageId)).style.height = el(jqNodeDIV).style.height;
@@ -1370,7 +1358,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
     jqNodeDIV.draggable({
         scroll: true,
         start: (event, ui) => {
-            console.log('Start node dragging...')
+            // console.log('Start node dragging...')
             event.stopImmediatePropagation();
             event.stopPropagation();
             KFK.originZIndex = KFK.getZIndex(el(jqNodeDIV));
@@ -1436,13 +1424,13 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
         },
     });
     if (config.node[jqNodeType].droppable) {
-        console.log(`${jqNodeType} is droppable`);
+        // console.log(`${jqNodeType} is droppable`);
         jqNodeDIV.droppable({
             activeClass: "ui-state-hover",
             hoverClass: "ui-state-active",
             accept: ".kfknode",
             drop: (event, ui) => {
-                console.log(`dropped, locMode = ${KFK.lockMode}`);
+                // console.log(`dropped, locMode = ${KFK.lockMode}`);
                 //lockMode时可以Marge
                 if (KFK.lockMode === false)
                     return;
@@ -1484,25 +1472,25 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
 
     //防止点在节点上，以后，画出框选框
     jqNodeDIV.mousedown((e) => {
-        console.log('mousedown on nodeDIV');
+        // console.log('mousedown on nodeDIV');
         e.stopImmediatePropagation();
         e.stopPropagation();
     });
     //click node
     jqNodeDIV.click((e) => {
-        console.log('click on nodeDIV');
+        // console.log('click on nodeDIV');
         KFK.afterDragging = false;
         KFK.afterResizing = false;
         let now = Date.now();
         let selDIV = el(jqNodeDIV);
         let selLine = undefined;
-        KFK.onClickDIV(e, selDIV, selLine);
+        KFK.procNodeInArrayOfSelected(selDIV, selLine, e.shiftKey);
         if (KFK.mode === 'line') {
             if (KFK.afterDragging === false) {
-                console.log('yark link node')
+                // console.log('yark link node')
                 KFK.yarkLinkNode(el(jqNodeDIV), e.shiftKey);
             } else {
-                console.log('NO yark link node because afterDragging');
+                // console.log('NO yark link node because afterDragging');
                 KFK.afterDragging = true;
             }
             e.stopImmediatePropagation();
@@ -1510,18 +1498,15 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
         }
 
         KFK.selectedDIVsChanged();
-        KFK.lastClickOnNode = now;
+        KFK.onFocusOnNode(selDIV);
         e.stopPropagation();
     });
 
 
 
     jqNodeDIV.dblclick(function (e) {
-        console.log("double click now");
-        console.log(jqNodeDIV.attr('edittable'));
         if (getBoolean(jqNodeDIV.attr('edittable'))) {
             let theObj = el($(`#innerobj_${jqNodeDIV.attr("id")}`));
-            console.log(theObj);
             editTextNode(theObj, el(jqNodeDIV));
         }
     });
@@ -1550,7 +1535,6 @@ KFK.nodeRect = function (aNode) {
 
 KFK.alignNodes = function (direction) {
     if (KFK.selectedDIVs.length < 2) return;
-    console.log(`Align ${direction}`);
     switch (direction) {
         case 'left':
             let left = KFK.nodeLeft(KFK.selectedDIVs[0]);
@@ -1630,7 +1614,6 @@ KFK.alignNodes = function (direction) {
             //计算中间的space
             let availableWidth = rightMost - leftMost;
             let space_hori = (availableWidth - totalWidth) / (KFK.selectedDIVs.length - 1);
-            console.log(`leftMost = ${leftMost} rightMost = ${rightMost}  space_hori=${space_hori}`);
             let tmpHoriArr = [];
             KFK.selectedDIVs.forEach((aNode) => {
                 tmpHoriArr.push(aNode);
@@ -1640,14 +1623,12 @@ KFK.alignNodes = function (direction) {
             let centerArr = tmpHoriArr.map((aNode) => {
                 return KFK.nodeCenter(aNode);
             });
-            console.log(`centerArr  ${JSON.stringify(centerArr)}`);
             let posX = KFK.nodeRight(nodeLeftMost);
             while (centerArr.length > 0) {
                 //找到剩余Node中最靠右边的一个
                 let min = Math.min.apply(null, centerArr);
                 let index = centerArr.indexOf(min);
                 let newLeft = posX + space_hori;
-                console.log(`move index ${index} left from ${KFK.nodeLeft(tmpHoriArr[index])} to ${newLeft}`);
                 //重设其位置
                 tmpHoriArr[index].style.left = px(newLeft);
 
@@ -1680,7 +1661,6 @@ KFK.alignNodes = function (direction) {
             });
             let availableHeight = bottomMost - topMost;
             let space_vert = (availableHeight - totalHeight) / (KFK.selectedDIVs.length - 1);
-            console.log(`topMost = ${topMost} bottomMost = ${bottomMost}  space_vert=${space_vert}`);
             let tmpVertArr = [];
             KFK.selectedDIVs.forEach((aNode) => {
                 tmpVertArr.push(aNode);
@@ -1689,13 +1669,11 @@ KFK.alignNodes = function (direction) {
             let middleArr = tmpVertArr.map((aNode) => {
                 return KFK.nodeMiddle(aNode);
             });
-            console.log(`middleArr  ${JSON.stringify(middleArr)}`);
             let posY = KFK.nodeBottom(nodeTopMost);
             while (middleArr.length > 0) {
                 let min = Math.min.apply(null, middleArr);
                 let index = middleArr.indexOf(min);
                 let newTop = posY + space_vert;
-                console.log(`move index ${index} top from ${KFK.nodeTop(tmpVertArr[index])} to ${newTop}`);
                 tmpVertArr[index].style.top = px(newTop);
 
                 posY = newTop + KFK.nodeHeight(tmpVertArr[index]);
@@ -1779,22 +1757,20 @@ KFK.deleteNode = function (nodeDIV) {
     let divid = $(nodeDIV).attr("id");
     let nodetype = $(nodeDIV).attr("nodetype");
     if (nodetype === "image") {
-        console.log()
         let innerObj_id = `#innerobj_${divid}`;
         let innerObj = $(innerObj_id);
-        console.log(innerObj.attr("src"));
         let imageSrc = innerObj.attr("src");
         let parsed = url.parse(imageSrc);
         let oss_filename = path.basename(parsed.pathname);
         try {
-            OSSClient.delete(oss_filename);
+            OSSClient.delete(parsed.pathname);
         } catch (err) {
             console.error(err);
         }
     }
     //这里是需要处理的，
     let nodeIndex = KFK.selectedDIVs.indexOf(nodeDIV);
-    if(nodeIndex >=0){
+    if (nodeIndex >= 0) {
         KFK.selectedDIVs.splice(nodeIndex, 1);
         KFK.selectedLINs.splice(nodeIndex, 1);
     }
@@ -1825,6 +1801,7 @@ KFK.duplicateHoverDiv = function (e) {
     if (KFK.divToCopy) {
         if ($(KFK.divToCopy).hasClass('kfknode')) {
             let newNode = KFK.placeNode(
+                false, //shiftKey
                 myuid(),
                 KFK.divToCopy.getAttribute("nodetype"),
                 KFK.scrollX(KFK.currentMousePos.x + offset.x),
@@ -1875,7 +1852,6 @@ KFK.getBoundingRectOfSelectedDIVs = function () {
         right: KFK.nodeRight(KFK.selectedDIVs[0]),
         bottom: KFK.nodeBottom(KFK.selectedDIVs[0]),
     };
-    console.log("first: " + JSON.stringify(ret));
     for (let i = 0; i < KFK.selectedDIVs.length; i++) {
         let tmp = {
             left: KFK.nodeLeft(KFK.selectedDIVs[i]),
@@ -1883,16 +1859,13 @@ KFK.getBoundingRectOfSelectedDIVs = function () {
             right: KFK.nodeRight(KFK.selectedDIVs[i]),
             bottom: KFK.nodeBottom(KFK.selectedDIVs[i]),
         };
-        console.log("tmp: " + JSON.stringify(tmp));
         if (tmp.left < ret.left) { ret.left = tmp.left; }
         if (tmp.top < ret.top) { ret.top = tmp.top; }
         if (tmp.right > ret.right) { ret.right = tmp.right; }
         if (tmp.bottom > ret.bottom) { ret.bottom = tmp.bottom; }
-        console.log("ret: " + JSON.stringify(ret));
     }
     ret.width = ret.right - ret.left;
     ret.height = ret.bottom - ret.top;
-    console.log(JSON.stringify(ret));
 
     return ret;
 }
@@ -1984,12 +1957,174 @@ KFK.init = function () {
         console.error('KFK.init was called more than once, maybe loadImages error');
         return;
     }
+    KFK.initDoc();
     KFK.initGridLayer();
     KFK.initC3();
-    KFK.placeWelcomeObjects();
-    KFK.initializeToolboxDrop();
+    KFK.initPropertyForm();
     KFK.initLineMover();
+    KFK.initColorPicker();
+    KFK.placeWelcomeObjects();
 };
+
+KFK.initPropertyForm = function () {
+    let spinnerBorderWidth = $("#spinner_border_width").spinner({
+        min: 0, max: 20, step: 1, start: 1,
+        spin: function (event, ui) {
+            if (KFK.lastFocusOnNode != null) {
+                $(KFK.lastFocusOnNode).css('border-width', ui.value);
+                $(KFK.lastFocusOnNode).css('border-style', "solid");
+            }
+        }
+    });
+    spinnerBorderWidth.spinner("value", 0);
+    $("#spinner_border_width").height("6px");
+
+    let spinnerBorderRadius = $("#spinner_border_radius").spinner({
+        min: 0, max: 200, step: 1, start: 20,
+        spin: function (event, ui) {
+            if (KFK.lastFocusOnNode != null) {
+                $(KFK.lastFocusOnNode).css('border-radius', ui.value);
+            }
+        }
+    });
+    spinnerBorderRadius.spinner("value", 20);
+    $("#spinner_border_radius").height("6px");
+    $("input.fonts").fontpicker({
+        lang: 'en', variants: true, lazyload: true, nrRecents: 3,
+        googleFonts: 'Alegreya,Boogaloo,Coiny,Dosis,Emilys Candy,Faster One,Galindo'.split(','),
+        localFonts: {// Default: web safe fonts
+            "Arial": { "category": "sans-serif", "variants": "400,400i,600,600i" },
+            "Courier New": { "category": "monospace", "variants": "400,400i,600,600i" },
+            "Georgia": { "category": "serif", "variants": "400,400i,600,600i" },
+            "Tahoma": { "category": "sans-serif", "variants": "400,400i,600,600i" },
+            "Times New Roman": { "category": "serif", "variants": "400,400i,600,600i" },
+            "Trebuchet MS": { "category": "sans-serif", "variants": "400,400i,600,600i" },
+            "Verdana": { "category": "sans-serif", "variants": "400,400i,600,600i", },
+            "SimSun": { "category": "sans-serif", "variants": "400,400i,600,600i" },
+            "SimHei": { "category": "sans-serif", "variants": "400,400i,600,600i" },
+            "Microsoft Yahei": { "category": "sans-serif", "variants": "400,400i,600,600i" },
+            "KaiTi": { "category": "sans-serif", "variants": "400,400i,600,600i" },
+            "FangSong": { "category": "sans-serif", "variants": "400,400i,600,600i" },
+            "STHeiti": { "category": "sans-serif", "variants": "400,400i,600,600i" },
+            "Hanzipen SC": { "category": "sans-serif", "variants": "400,400i,600,600i" },
+            "Hannotate SC": { "category": "sans-serif", "variants": "400,400i,600,600i" },
+            "Xingkai SC": { "category": "sans-serif", "variants": "400,400i,600,600i" },
+            "Yapi SC": { "category": "sans-serif", "variants": "400,400i,600,600i" },
+            "Yuanti SC": { "category": "sans-serif", "variants": "400,400i,600,600i" },
+        }
+    }).on('change', function () {
+        // Split font into family and weight/style
+        var tmp = $('input.fonts').val().split(':'),
+            family = tmp[0],
+            variant = tmp[1] || '400',
+            weight = parseInt(variant, 10),
+            italic = /i$/.test(variant);
+
+        // Set selected font on body
+        var css = {
+            fontFamily: "'" + family + "'",
+            fontWeight: weight,
+            fontStyle: italic ? 'italic' : 'normal'
+        };
+
+        console.log(css);
+        if(KFK.lastFocusOnNode != null)
+        $(KFK.lastFocusOnNode).css(css);
+    });
+    $("input.fonts").height(12);
+}
+
+
+
+KFK.initColorPicker = function () {
+
+    $('#cocoBgColor').spectrum({
+        type: "color",
+        color: doc.bgcolor,
+        localStorageKey: "color.cocoBgColor",
+        showPaletteOnly: "true",
+        togglePaletteOnly: "true",
+        hideAfterPaletteSelect: "true",
+        showInitial: "true",
+        showButtons: "false",
+        change: function (color) {
+            var hsv = color.toHsv();
+            var rgb = color.toRgbString();
+            var hex = color.toHexString();
+            KFK.APP.setBGto(color.toRgbString());
+        },
+    });
+    $('#shapeBgColor').spectrum({
+        type: "color",
+        color: config.node.textblock.background,
+        localStorageKey: "color.shapeBgColor",
+        showPaletteOnly: "true",
+        togglePaletteOnly: "true",
+        hideAfterPaletteSelect: "true",
+        showInitial: "true",
+        showButtons: "false",
+        change: function (color) {
+            var hsv = color.toHsv();
+            var rgb = color.toRgbString();
+            var hex = color.toHexString();
+            if (KFK.lastFocusOnNode !== null) {
+                $(KFK.lastFocusOnNode).css("background-color", color.toRgbString());
+            }
+        },
+    });
+    $('#shapeBorderColor').spectrum({
+        type: "color",
+        localStorageKey: "color.shapeBorderColor",
+        showPaletteOnly: "true",
+        togglePaletteOnly: "true",
+        hideAfterPaletteSelect: "true",
+        showInitial: "true",
+        showButtons: "false",
+        change: function (color) {
+            var hsv = color.toHsv();
+            var rgb = color.toRgbString();
+            var hex = color.toHexString();
+            // KFK.APP.setBGto(color.toRgbString()); 
+            $(KFK.lastFocusOnNode).css("border-color", color.toRgbString());
+        },
+    });
+    $('#fontColor').spectrum({
+        type: "color",
+        localStorageKey: "color.fontColor",
+        showPaletteOnly: "true",
+        togglePaletteOnly: "true",
+        hideAfterPaletteSelect: "true",
+        showInitial: "true",
+        showButtons: "false",
+        change: function (color) {
+            var hsv = color.toHsv();
+            var rgb = color.toRgbString();
+            var hex = color.toHexString();
+            // KFK.APP.setBGto(color.toRgbString()); 
+            $(KFK.lastFocusOnNode).css("color", color.toRgbString());
+        },
+    });
+};
+
+KFK.textAlignChanged = function(event, value){
+    let tmp = $('#textAlign').val();
+    if(KFK.lastFocusOnNode != null){
+        $(KFK.lastFocusOnNode).css("text-align", tmp);
+    }
+}
+
+KFK.initDoc = () => {
+    KFK.setDocId(myuid());
+}
+KFK.setDocId = (id) => {
+    config.doc.id = id;
+}
+KFK.setTenant = (tenant) => {
+    config.tenant = tenant;
+}
+KFK.getOSSFileName = (basename) => {
+    return `${config.tenant.id}/${config.doc.id}/${basename}`;
+}
 
 KFK.initLineMover = function () {
     $('#linetransformer').draggable({
@@ -2048,7 +2183,6 @@ KFK.initLineMover = function () {
                         parseInt($(KFK.tobeTransformLineDIV).attr('strokeWidth')),
                     );
                 } else {
-                    console.log("move to end of " + KFK.tobeTransformLineDIV.getAttribute("id"));
                     tmp = KFK.drawLine(
                         KFK.lineTwoEnds.from.x,
                         KFK.lineTwoEnds.from.y,
@@ -2071,29 +2205,6 @@ KFK.initLineMover = function () {
     })
 };
 
-KFK.initializeToolboxDrop = function () {
-    // $('.cocotool').each((index,tool)=>{
-    //     $(tool).draggable({
-    //         start:(event, ui)=>{
-    //         },
-    //         drag: (event, ui)=>{
-    //         },
-    //         stop: (event, ui)=>{
-    //             console.log(ui);
-    //         },
-    //     })
-    // } );
-
-    // $(KFK.C3).droppable({
-    //     activeClass: "ui-state-hover",
-    //     hoverClass: "ui-state-active",
-    //     accept: ".cocotool",
-    //     drop: (event, ui) => {
-    //         console.log(`dropped`);
-    //     },
-    // });
-};
-
 KFK.initGridLayer = function () {
     KFK.drawGridlines();
 };
@@ -2109,7 +2220,6 @@ KFK.drawGridlines = function (deltaX, deltaY) {
             strokeWidth: 1,
         }));
         if ((i + 1) * step > KFK._width) {
-            console.log(`break at ${i}`);
             break;
         }
     }
@@ -2127,9 +2237,10 @@ KFK.drawGridlines = function (deltaX, deltaY) {
 };
 
 KFK.placeWelcomeObjects = function () {
-    KFK.startNode = KFK.placeNode('START', 'start', KFK.scrollX(120), KFK.scrollY(120));
-    KFK.endNode = KFK.placeNode('END', 'end', KFK.scrollX(900), KFK.scrollY(340));
-    KFK.endNode2 = KFK.placeNode('END2', 'end', KFK.scrollX(980), KFK.scrollY(240));
+    KFK.startNode = KFK.placeNode(false, 'START', 'start', KFK.scrollX(120), KFK.scrollY(120));
+    KFK.endNode = KFK.placeNode(false, 'END', 'end', KFK.scrollX(900), KFK.scrollY(340));
+    KFK.endNode2 = KFK.placeNode(false, 'END2', 'end', KFK.scrollX(980), KFK.scrollY(240));
+    KFK.placeNode(false, 'block', 'textblock', KFK.scrollX(780), KFK.scrollY(240));
     // KFK.centerPos = { x: 120 + (KFK.width() - 50 - 120) * 0.5, y: KFK.height() * 0.5 };
     KFK.drawLine(200, 200, 500, 200);
     KFK.drawLine(200, 200, 200, 500);
@@ -2139,14 +2250,13 @@ KFK.placeWelcomeObjects = function () {
 
     KFK.addContainerMainEventHander();
     KFK.focusOnMainContainer();
-
+    KFK.selectNone();
     KFK.inited = true;
 };
 KFK.loadImages(KFK.init);
 
 KFK.setMode = function (mode) {
     KFK.mode = mode;
-    console.log(`Set mode to ${mode}`);
     for (let key in KFK.APP.active) {
         KFK.APP.active[key] = false;
     }
@@ -2189,7 +2299,6 @@ KFK.addContainerMainEventHander = function () {
     $(document).keydown(function (e) {
         let preventDefault = false;
         if (KFK.editting) return;
-        console.log(`keydown = ${e.keyCode}`);
         if (e.keyCode === 16) { //Shift
             KFK.lockMode = KFK.lockMode ? false : true;
             KFK.APP.lockMode = KFK.lockMode;
@@ -2313,30 +2422,12 @@ KFK.dataURLtoFile = function (dataurl, filename) {
 KFK.saveBlobToOSS = function (blob) {
     var reader = new FileReader();
     reader.onload = function (event) {
-        console.log(event.target.result)
         let file = KFK.dataURLtoFile(event.target.result, '');
-        // OSSClient.putBucketCORS('vts', [
-        //     {
-        //         allowedOrigin: '*',
-        //         allowedMethod: [
-        //             'GET',
-        //             'HEAD',
-        //             'PUT',
-        //         ],
-        //         allowedHeader: *,
-        //     }
-        // ]).then((result) => { });
-        // OSSClient.getBucketCORS('vts').then((res) => {
-        //     console.log(res);
-        // }).catch(e => {
-        //     console.log(e)
-        // })
-
-        OSSClient.multipartUpload(`ccp_${myuid()}.png`, file).then((res) => {
-            console.log(res);
-            console.log(res.res.requestUrls[0]);
+        let tmpid = myuid();
+        OSSClient.multipartUpload(KFK.getOSSFileName(`${tmpid}.png`), file).then((res) => {
             KFK.placeNode(
-                myuid(),
+                false,  //shiftKey
+                tmpid,
                 "image",
                 KFK.currentMousePos.x + KFK.scrollContainer.scrollLeft,
                 KFK.currentMousePos.y + KFK.scrollContainer.scrollTop,
@@ -2349,6 +2440,41 @@ KFK.saveBlobToOSS = function (blob) {
         });
     }; // data url!
     reader.readAsDataURL(blob);
+};
+
+KFK.save = async function () {
+    let docPath = `/${config.tenant.id}/${config.doc.id}/`;
+    // let result = await OSSClient.list({
+    //     prefix: 'lucas/',
+    // });
+    try {
+        // 不带任何参数，默认最多返回1000个文件。
+        let result = await OSSClient.list({
+            prefix: 'lucas/'
+        });
+        console.log(result);
+        // 根据nextMarker继续列出文件。
+        if (result.isTruncated) {
+            let result = await client.list({
+                marker: result.nextMarker
+            });
+            console.log(result);
+        }
+        // // 列举前缀为'my-'的文件。
+        // let result = await client.list({
+        //    prefix: 'my-'
+        // });
+        // console.log(result);
+        // // 列举前缀为'my-'且在'my-object'之后的文件。
+        // let result = await client.list({
+        //    prefix: 'my-',
+        //    marker: 'my-object'
+        // });
+        // console.log(result);
+    } catch (e) {
+        console.log(e);
+    }
+    // console.log(result.objects);
 };
 
 KFK.addTextToHoverDIV = function (text) {
@@ -2365,20 +2491,17 @@ KFK.addTextToHoverDIV = function (text) {
 
 document.onpaste = function (event) {
     var items = (event.clipboardData || event.originalEvent.clipboardData).items;
-    // console.log("clipboad items[0].kind " + items[0].kind);
     if (items[1]) {
-        console.log('items[1] is true');
         if (items[0].kind === 'string' && items[1].kind === 'string') {
             items[0].getAsString((text) => {
-                console.log(`items[0] ${text}`);
                 KFK.addTextToHoverDIV(text);
             });
             items[1].getAsString((text) => {
-                console.log(`items[1] ${text}`);
+                // console.log(`items[1] ${text}`);
             });
         } else if (items[0].kind === 'string' && items[1].kind === 'file') {
             items[0].getAsString((text) => {
-                console.log(`items[0] ${text}`);
+                // console.log(`items[0] ${text}`);
             });
             var blob = items[1].getAsFile();
             KFK.saveBlobToOSS(blob);
