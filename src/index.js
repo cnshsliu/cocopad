@@ -22,6 +22,7 @@ const app = new Vue({
     show: {
       'arrange_multi_nodes': false,
       'shape_property': false,
+      'text_property': false,
     },
     model: {
       rightTabIndex: 0,
@@ -36,6 +37,12 @@ const app = new Vue({
         '#C2FFFB', '#D0C8E8', '#FEE8E7', '#E8DFC8', '#B9FFA6',
         '#C2D3FF', '#C8D1E8', '#E8EFFE', '#E8EFFE', '#E8EFFE'
       ],
+      textAlign: 'left',
+      textAlignOptions: [
+        { value: 'left', text: 'Left' },
+        { value: 'center', text: 'Center' },
+        { value: 'right', text: 'Right'}
+      ]
     }
   },
   methods: {
@@ -67,6 +74,12 @@ const app = new Vue({
       console.log('Set BG to ' + color);
       this.setData('model', 'msg', color);
       $('#containerbkg')[0].style.backgroundColor = color;
+    },
+    save(){
+      KFK.save();
+    },
+    textAlignChanged(){
+      KFK.textAlignChanged();
     }
   },
 }).$mount("#app");

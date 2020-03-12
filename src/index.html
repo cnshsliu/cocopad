@@ -40,7 +40,7 @@
               <b-button variant="outline-success">
                 <b-icon icon="cloud-download"></b-icon> Open
               </b-button>
-              <b-button variant="outline-success">
+              <b-button variant="outline-success" @click="save()">
                 <b-icon icon="cloud-upload"></b-icon> Save
               </b-button>
               <b-button variant="outline-success">
@@ -117,12 +117,52 @@
       </b-list-group>
     </div>
     <div id="right">
-      <b-tabs v-if="show.shape_property" v-model="model.rightTabIndex" content-class="mt-3" justified>
-        <b-tab title="格式">
-          <p>I'm the first tab</p>
+      <b-tabs v-show="show.shape_property" v-model="model.rightTabIndex" content-class="mt-3" justified>
+        <b-tab title="样式">
+          <p v-show="show.customshape">I'm the first tab</p>
+          <b-container v-show="show.customshape">
+            <b-row>
+              <b-col>背景颜色</b-col>
+              <b-col><input name="shapeBgColor" id="shapeBgColor" /></b-col>
+            </b-row>
+            <b-row>
+              <b-col>边框颜色</b-col>
+              <b-col><input name="shapeBorderColor" id="shapeBorderColor" /></b-col>
+            </b-row>
+            <b-row>
+              <b-col>边框粗细</b-col>
+              <b-col><input class='selector' size=3 id="spinner_border_width" name="value_bw" /></b-col>
+            </b-row>
+            <b-row>
+              <b-col>圆角度数</b-col>
+              <b-col><input class='selector' size=3 id="spinner_border_radius" name="value_rad" /></b-col>
+            </b-row>
+          </b-container>
+          <b-container v-if="show.customyellowtip">
+            <b-row>
+              <b-col>YT样式</b-col>
+              <b-col></b-col>
+            </b-row>
+          </b-container>
         </b-tab>
         <b-tab title="文本">
           <p>I'm the second tab</p>
+          <b-container v-show="show.text_property">
+            <b-row>
+              <b-col>文本字体</b-col>
+            </b-row>
+            <b-row>
+              <b-col><input class="fonts"></b-col>
+            </b-row>
+            <b-row>
+              <b-col>文本颜色</b-col>
+              <b-col><input name="fontColor" id="fontColor" /></b-col>
+            </b-row>
+            <b-row>
+              <b-col>文本位置</b-col>
+              <b-col><b-form-select id="textAlign" v-model="model.textAlign" :options="model.textAlignOptions" size="sm" class="mt-3" @change="textAlignChanged"></b-form-select></b-col>
+            </b-row>
+          </b-container>
         </b-tab>
         <b-tab title="排列">
           <b-button-toolbar v-show="show.arrange_multi_nodes" key-nav class="w-100 justify-content-md-center">
@@ -151,7 +191,7 @@
           </b-button-toolbar>
         </b-tab>
       </b-tabs>
-      <b-tabs v-else content-class="mt-3" justified>
+      <b-tabs v-show="!show.shape_property" content-class="mt-3" justified>
         <b-tab title="COCOPAD" active>
           <p>欢迎使用</p>
           <b-checkbox id="cb-showgrid" v-model="model.showGrid" name="cb-showgrid" switch @change="showGridChanged">
@@ -160,14 +200,11 @@
           <b-checkbox v-model="model.snap" switch @change="snapChanged">对齐到网格
           </b-checkbox>
           <p> </p>
-          <p>背景颜色</p>
           <b-container class="mt-3">
-          <b-row>
-            <b-col style='background-color: #C2FFFB'><b-btn class="btn btn-outline-primary sharp" @click="setBGto('#C2FFFB')" ></b-btn></b-col>
-            <b-col style='background-color: #D0C8E8'><b-btn class="btn btn-outline-primary sharp" @click="setBGto('#D0C8E8')"></b-btn></b-col>
-            <b-col style='background-color: #FEE8E7'><b-btn class="btn btn-outline-primary sharp" @click="setBGto('#FEE8E7')"></b-btn></b-col>
-            <b-col style='background-color: #E8DFC8'><b-btn class="btn btn-outline-primary sharp" @click="setBGto('#E8DFC8')"></b-btn></b-col>
-          </b-row>
+            <b-row>
+              <b-col>背景颜色</b-col>
+              <b-col><input name="cocoBgColor" id="cocoBgColor" /></b-col>
+            </b-row>
           </b-container>
         </b-tab>
         </b-tab>

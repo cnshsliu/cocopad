@@ -112,7 +112,7 @@ body {
     box-shadow: inset 0px 0px 5px 2px #8E8EFF;
 }
 .msgarea{
-    font-size: 64px;
+    font-size: 24px;
     z-index: 100;
     color: #FF8E8F;
     position: absolute;
