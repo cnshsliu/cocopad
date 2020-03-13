@@ -13,11 +13,18 @@ body {
     background-color: #f0f0f0;
     overscroll-behavior-x: none;
 }
+#toplogo {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 100%;
+    padding-right: 10px;
+}
 
 #top {
     position: absolute;
     top: 5px;
-    left: 5px;
+    left: 120px;
     width: 100%;
     padding-right: 10px;
 }
@@ -29,6 +36,7 @@ body {
     width: 70px;
     height: calc(100vh - 200px);
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    border-radius: 15px;
 }
 
 #right {
@@ -41,16 +49,16 @@ body {
     width: 240px;
     height: calc(100vh - 200px);
     z-index: 99999;
-    border: 1px solid rgba(0,0, 0, 0.2);
-    border-radius: 5px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 15px;
 }
 
-.toolbar{
+.toolbar {
     width: 16px;
     height: 16px;
 }
 
-#rtcontrol{
+#rtcontrol {
     position: absolute;
     top: 5px;
     left: calc(100vw - 95px);
@@ -105,13 +113,15 @@ body {
     color: blueviolet;
 }
 
-.selected{
+.selected {
     box-shadow: inset 0px 0px 10px 2px #FF8E8F;
 }
-.hover{
+
+.hover {
     box-shadow: inset 0px 0px 5px 2px #8E8EFF;
 }
-.msgarea{
+
+.msgarea {
     font-size: 24px;
     z-index: 100;
     color: #FF8E8F;
@@ -119,18 +129,20 @@ body {
     bottom: 0px;
     left: 0px;
 }
-.cocopadbg{
+
+.cocopadbg {
     background: red;
 }
-.btn.btn-outline-primary.sharp
-{
+
+.btn.btn-outline-primary.sharp {
     background-color: #C2FFFB !important;
     border-color: #C2FFFB !important;
 }
-.boundingrect{
+
+.boundingrect {
     z-index: -1;
     border-radius: 20px;
-    background-color: rgba(0,0,0,0.2);
+    background-color: rgba(0, 0, 0, 0.2);
     border-color: red;
     border-width: 0px;
     border-style: dotted;
@@ -141,7 +153,8 @@ body {
     height: 300px;
     display: none;
 }
-.selectingrect{
+
+.selectingrect {
     z-index: -1;
     border-radius: 00px;
     background-color: transparent;
@@ -154,4 +167,71 @@ body {
     width: 300px;
     height: 300px;
     display: none;
+}
+
+
+.cocoproperty .col {
+    font-size: 14px;
+    background-color: '#333333';
+    padding-left: 0px;
+}
+
+.coco select {
+    width: 100px !important;
+    height: 24px !important;
+    font-size: 14px;
+}
+
+.coco {
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+}
+.coco .col {
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+}
+
+.coco .sp-replacer {
+    width: 100px !important;
+    height: 24px !important;
+}
+.coco .ui-spinner {
+    width: 100px !important;
+    height: 24px !important;
+}
+.coco .font-picker {
+    width: 100px !important;
+    height: 24px !important;
+    font-size: 12px !important;
+    padding: 0px 30px 0px 0px !important;
+}
+
+.btn-group.coco{
+    background-color: white;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    border-radius: 0px;
+}
+
+svg path{
+    fill: '#000000';
+}
+
+.editors_none{
+    display: none;
+}
+.editors_last{
+position: absolute;
+font-size: 10px;
+bottom: -18px;  /* - height */
+left: 10px;
+height: 18px;
+overflow: hidden;
+}
+.editors_all{
+position: absolute;
+font-size: 10px;
+bottom: -18px;  /* - height */
+left: 10px;
+height: 18px;
+overflow: show;
 }

@@ -10,7 +10,7 @@ import OSS from 'ossnolookup';
 import "./importjquery";
 import "jquery-ui-dist/jquery-ui.js";
 import "spectrum-colorpicker2/dist/spectrum.min";
-import "../fontpicker-jquery-plugin/dist/jquery.fontpicker.min";
+import "../fontpicker-jquery-plugin/dist/jquery.fontpicker";
 // import iro from '@jaames/iro';
 import { BIconFolderSymlinkFill, directivesPlugin, BIconKanbanFill } from "bootstrap-vue";
 import { REPL_MODE_SLOPPY } from "repl";
@@ -34,7 +34,8 @@ Array.prototype.remove = function () {
 
 let config = {
     tenant: {
-        id: 'lucas',
+        id: 'COMPANY A',
+        user: 'lucas',
     },
     doc: {
         id: '0000',
@@ -72,10 +73,15 @@ let config = {
             resizable: true,
             droppable: true,
             edittable: true,
+            textAlign: 'center', color: 'black', vertAlign: 'center',
+            defaultBkgImage: 'tipyellow',
         },
         textblock: {
             width: 200, height: 100, resizable: true,
-            background: '#49FFAC', minWidth: 1, minHeight: 1,
+            background: '#FFFFFF', minWidth: 1, minHeight: 1,
+            borderColor: '#333333', borderWidth: '1px',
+            borderStyle: 'solid', borderRadius: '20px',
+            textAlign: 'center', color: 'black', vertAlign: 'center',
             droppable: true,
             edittable: true,
             customshape: true,
@@ -102,6 +108,7 @@ KFK.centerPos = { x: 0, y: 0 };
 KFK.startNode = null;
 KFK.endNode = null;
 KFK.lastFocusOnNode = null;
+KFK.justCreatedNode = null;
 KFK.hoverDIV = null;
 KFK.hoverLineDIV = null;
 KFK.inited = false;
@@ -178,7 +185,10 @@ $(document).mousemove(function (event) {
     if (KFK.mode === 'pointer') {
         $('#modeIndicator').hide();
     } else {
-        $('#modeIndicatorImg').attr("src", KFK.images[KFK.mode].src);
+        if (KFK.mode === 'yellowtip')
+            $('#modeIndicatorImg').attr("src", KFK.images['tipyellow'].src);
+        else
+            $('#modeIndicatorImg').attr("src", KFK.images[KFK.mode].src);
         $('#modeIndicator').show();
     }
     KFK.dragToSelectTo = { x: KFK.scrollX(event.clientX), y: KFK.scrollY(event.clientY) };
@@ -307,12 +317,27 @@ KFK.gotoHome = function () {
     // console.log(`${KFK.startNode.x}`);
 };
 
-KFK.onFocusOnNode = function (nodeDIV) {
+KFK.setJustCreated = function (nodeDIV) {
+    KFK.justCreatedNode = nodeDIV;
+    KFK.updatePropertyFormWithNode(nodeDIV);
+    if ($(nodeDIV).attr("nodetype") === "text") {
+        KFK.APP.setData('model', 'rightTabIndex', 1);
+    }
+};
+
+KFK.focusOnNode = function (nodeDIV) {
     KFK.lastFocusOnNode = nodeDIV;
+    KFK.justCreatedNode = null;
+
+    KFK.updatePropertyFormWithNode(nodeDIV);
+};
+
+KFK.updatePropertyFormWithNode = function (nodeDIV) {
     let nodeType = 'unknown';
     if (nodeDIV != null) {
         nodeType = $(nodeDIV).attr('nodetype');
     }
+
     KFK.APP.setData('show', 'shape_property', nodeDIV != null);
     KFK.APP.setData('show', 'text_property', nodeDIV != null && getBoolean(config.node[nodeType].edittable));
     KFK.APP.setData('show', 'customshape', nodeDIV != null && getBoolean(config.node[nodeType].customshape));
@@ -332,8 +357,11 @@ KFK.onFocusOnNode = function (nodeDIV) {
         let fontFamily = $(nodeDIV).css('font-family');
         let fontSize = $(nodeDIV).css('font-size');
         let fontColor = $(nodeDIV).css('color');
-        let textAlign = $(nodeDIV).css('text-align');
+        let textAlign = $(nodeDIV).css('justify-content');
+        let vertAlign = $(nodeDIV).css('align-items');
         $('#fontColor').spectrum("set", fontColor);
+        KFK.APP.setData('model', 'textAlign', textAlign);
+        KFK.APP.setData('model', 'vertAlign', vertAlign);
     }
 
     KFK.log(JSON.stringify(KFK.APP.show));
@@ -510,7 +538,7 @@ KFK.selectNone = function () {
     KFK.selectedDIVs.clear();
     KFK.selectedLINs.clear();
     KFK.selectedDIVsChanged();
-    KFK.onFocusOnNode(null);
+    KFK.focusOnNode(null);
 };
 KFK.selectedDIVsChanged = function () {
     KFK.APP.setData('show', 'arrange_multi_nodes', KFK.selectedDIVs.length > 1);
@@ -550,9 +578,10 @@ KFK.initC3 = function () {
     // c3Stages.style.height = px(KFK._height);
     // c3Stages.style.zIndex = "10";
 
-    //click c3
+    //click c3   click canvas click background
     $(c3).on('click', function (e) {
-        KFK.onFocusOnNode(null);
+        KFK.focusOnNode(null);
+        KFK.setJustCreated(null);
         KFK.APP.setData('show', 'custom_shape', false);
         if (KFK.editting || KFK.resizing || KFK.dragging) {
             // console.log(`ignore click because editting: ${KFK.editting}, resizing: ${KFK.resizing}, dragging: ${KFK.dragging}`);
@@ -574,18 +603,23 @@ KFK.initC3 = function () {
                 e.shiftKey
             );
             return;
-        }
-        if (config.node[KFK.mode]) {
-            KFK.placeNode(
-                e.shiftKey,
-                myuid(), KFK.mode,
-                KFK.scrollX(e.clientX),
-                KFK.scrollY(e.clientY)
-            );
         } else {
-            console.log(`${KFK.mode} is not supported`);
-            if (KFK.mode === "line") {
-                KFK.drawLine(100, 100, 300, 300);
+            if (KFK.selectedDIVs.length > 0) {
+                KFK.selectNone();
+            } else {
+                if (config.node[KFK.mode]) {
+                    KFK.placeNode(
+                        e.shiftKey,
+                        myuid(), KFK.mode,
+                        KFK.scrollX(e.clientX),
+                        KFK.scrollY(e.clientY)
+                    );
+                } else {
+                    console.log(`${KFK.mode} is not supported`);
+                    if (KFK.mode === "line") {
+                        KFK.drawLine(100, 100, 300, 300);
+                    }
+                }
             }
         }
 
@@ -937,7 +971,7 @@ KFK.drawLine = function (x1, y1, x2, y2, strokeColor, strokeWidth) {
     });
     //click line
     jqLineDIV.click((e) => {
-        KFK.onFocusOnNode(null);
+        KFK.focusOnNode(null);
         KFK.APP.setData('show', 'custom_shape', false);
         if (!lineDIV.getAttribute('fdiv') && !lineDIV.getAttribute('tdiv')) {
             KFK.afterDragging = false;
@@ -1158,12 +1192,14 @@ KFK.placeNode = function (shiftKey, id, type, x, y, w, h, attach) {
     let aNode = new Node(id, type, x, y, w, h, attach);
     KFK.nodes.push(aNode);
     let nodeDIV = KFK._createNode(aNode);
-    let selDIV = nodeDIV;
-    let selLine = undefined;
-    KFK.procNodeInArrayOfSelected(selDIV, selLine, shiftKey);
+    KFK.setJustCreated(nodeDIV);
 
-    KFK.selectedDIVsChanged();
-    KFK.onFocusOnNode(selDIV);
+    // //set just created node selected
+    // let selDIV = nodeDIV;
+    // let selLine = undefined;
+    // KFK.procNodeInArrayOfSelected(selDIV, selLine, shiftKey);
+    // KFK.selectedDIVsChanged();
+
     return nodeDIV;
 };
 
@@ -1189,16 +1225,16 @@ KFK._createNode = function (node) {
     } else if (node.type === "yellowtip") {
         nodeObj = document.createElement('span');
         nodeObj.style.fontSize = "18px";
-        nodeObj.innerText = "Multiple line text";
-        nodeObj.style.width = px(node.width - textPadding * 2);
-        nodeObj.style.height = px(node.height - textPadding * 2);
+        nodeObj.innerText = "";
+        // nodeObj.style.width = px(node.width - textPadding * 2);
+        // nodeObj.style.height = px(node.height - textPadding * 2);
         nodeObj.style.left = px(2); nodeObj.style.top = px(2);
     } else if (node.type === "textblock") {
-        nodeObj = document.createElement('span');
+        nodeObj = document.createElement('div');
         nodeObj.style.fontSize = "18px";
         nodeObj.innerText = "";
-        nodeObj.style.width = px(node.width - textPadding * 2);
-        nodeObj.style.height = px(node.height - textPadding * 2);
+        // nodeObj.style.width = px(node.width - textPadding * 2);
+        // nodeObj.style.height = px(node.height - textPadding * 2);
         nodeObj.style.left = px(2); nodeObj.style.top = px(2);
     }
     if (!nodeObj) {
@@ -1220,38 +1256,54 @@ KFK._createNode = function (node) {
     }
     nodeDIV.style.zIndex = `${nodeCount + 1}`;
     // console.log(`CREATE NODE AT ${nodeCount + 1}`);
-    nodeDIV.style.border = 'none';
     nodeDIV.style.padding = '0px';
     if (node.type === 'text' || node.type === 'yellowtip' || node.type === 'textblock')
         nodeDIV.style.padding = `${textPadding}px`;
     nodeDIV.style.margin = '0px';
-    nodeDIV.style.overflow = 'hidden';
+    nodeDIV.style.overflow = 'show';
     if (config.node[node.type].background) {
         nodeDIV.style.background = config.node[node.type].background;
     } else {
         nodeDIV.style.background = 'transparent';
     }
-    nodeDIV.style.outline = 'none';
+    // nodeDIV.style.outline = 'none';
     // nodeDIV.style.resize = 'none';
-    nodeDIV.style.display = 'block';
+    nodeDIV.style.display = 'flex';
     //click时，切换selected状态
     if (node.type === 'yellowtip') {
-        $(nodeDIV).css("background-image", `url(${KFK.images['yellowtip'].src})`);
+        $(nodeDIV).css("background-image", `url(${KFK.images[config.node.yellowtip.defaultBkgImage].src})`);
         $(nodeDIV).css("background-repeat", 'no-repeat');
         $(nodeDIV).css("background-size", '100% 100%');
+        $(nodeDIV).css('color', config.node.yellowtip.color);
+        $(nodeDIV).css('justify-content', config.node.yellowtip.textAlign);
+        $(nodeDIV).css('align-items', config.node.yellowtip.vertAlign);
     } else if (node.type === 'textblock') {
-        $(nodeDIV).css('border-radius', "20px");
+        $(nodeDIV).css('border-radius', config.node.textblock.borderRadius);
+        $(nodeDIV).css('border-style', config.node.textblock.borderStyle);
+        $(nodeDIV).css('border-color', config.node.textblock.borderColor);
+        $(nodeDIV).css('border-width', config.node.textblock.borderWidth);
+        $(nodeDIV).css('color', config.node.textblock.color);
+        $(nodeDIV).css('justify-content', config.node.yellowtip.textAlign);
+        $(nodeDIV).css('align-items', config.node.yellowtip.vertAlign);
     }
 
     nodeObj.setAttribute("id", 'innerobj_' + node.id);
     // nodeDIV.attr('w', node.width);
     // nodeDIV.attr('h', node.height);
     nodeDIV.appendChild(nodeObj);
+
+    let editorDIV = document.createElement('div');
+    editorDIV.setAttribute("id", "editor_" + node.id);
+    $(editorDIV).addClass('cocoeditors');
+    $(editorDIV).addClass('editors_' + KFK.APP.model.showEditor);
+    $(editorDIV).html("lucas, kehong.liu, ppppppb, hellalala, abcdefg, hijklmn, opq, rstuvwxy, hellohahaha");
+    nodeDIV.appendChild(editorDIV);
     KFK.C3.appendChild(nodeDIV);
 
     let jqNodeDIV = $(nodeDIV);
     jqNodeDIV.attr('nodetype', node.type);
     jqNodeDIV.attr('edittable', nodeObj.edittable);
+    KFK.addEditorToNode(nodeDIV, config.tenant.user);
     KFK.setNodeEventHandler(jqNodeDIV);
 
     return nodeDIV;
@@ -1270,6 +1322,14 @@ function getBoolean(value) {
             return false;
     }
 }
+
+KFK.setTipVariant = function (tipvariant) {
+    config.node.yellowtip.defaultBkgImage = tipvariant;
+    let theNode = KFK.getPropertyApplyToNode();
+    if (theNode !== null) {
+        $(theNode).css("background-image", `url(${KFK.images[config.node.yellowtip.defaultBkgImage].src})`);
+    }
+};
 
 KFK.reArrangeLinks = function (jqNodeDIV) {
     $(KFK.C3).find('.kfkline').each((index, aLineDiv) => {
@@ -1498,7 +1558,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
         }
 
         KFK.selectedDIVsChanged();
-        KFK.onFocusOnNode(selDIV);
+        KFK.focusOnNode(selDIV);
         e.stopPropagation();
     });
 
@@ -1810,6 +1870,7 @@ KFK.duplicateHoverDiv = function (e) {
                 unpx(KFK.divToCopy.style.height),
             );
             KFK.setText($(newNode), KFK.getText($(KFK.divToCopy)));
+            KFK.applyNodeStyleFrom($(newNode), $(KFK.divToCopy));
         } else if ($(KFK.divToCopy).hasClass('kfkline')) {
             let x1 = parseInt($(KFK.divToCopy).attr('x1'));
             let y1 = parseInt($(KFK.divToCopy).attr('y1'));
@@ -1843,6 +1904,26 @@ KFK.duplicateHoverDiv = function (e) {
         }
     }
 };
+
+KFK.applyNodeStyleFrom = function (jqTo, jqFrom) {
+    let nodeType = jqTo.attr('nodetype');
+    if (nodeType === 'textblock') {
+        jqTo.css('background', jqFrom.css('background'));
+        jqTo.css('border-radius', jqFrom.css('border-radius'));
+        jqTo.css('border-style', jqFrom.css('border-style'));
+        jqTo.css('border-color', jqFrom.css('border-color'));
+        jqTo.css('border-width', jqFrom.css('border-width'));
+    }
+    if (config.node[nodeType].edittable) {
+        jqTo.css('color', jqFrom.css('color'));
+        jqTo.css('justify-content', jqFrom.css('justify-content'));
+        jqTo.css('align-items', jqFrom.css('align-items'));
+        jqTo.css('font-family', jqFrom.css('font-family'));
+        jqTo.css('font-weight', jqFrom.css('font-weight'));
+        jqTo.css('font-style', jqFrom.css('font-style'));
+        jqTo.css('font-size', jqFrom.css('font-size'));
+    }
+}
 
 KFK.getBoundingRectOfSelectedDIVs = function () {
     if (KFK.selectedDIVs.length == 0) return;
@@ -1965,14 +2046,24 @@ KFK.init = function () {
     KFK.initColorPicker();
     KFK.placeWelcomeObjects();
 };
+KFK.getPropertyApplyToNode = function () {
+    if (KFK.lastFocusOnNode != null) {
+        return KFK.lastFocusOnNode;
+    } else if (KFK.justCreatedNode != null) {
+        return KFK.justCreatedNode;
+    } else {
+        return null;
+    }
+};
 
 KFK.initPropertyForm = function () {
     let spinnerBorderWidth = $("#spinner_border_width").spinner({
         min: 0, max: 20, step: 1, start: 1,
         spin: function (event, ui) {
-            if (KFK.lastFocusOnNode != null) {
-                $(KFK.lastFocusOnNode).css('border-width', ui.value);
-                $(KFK.lastFocusOnNode).css('border-style', "solid");
+            let theNode = KFK.getPropertyApplyToNode();
+            if (theNode != null) {
+                $(theNode).css('border-width', ui.value);
+                $(theNode).css('border-style', "solid");
             }
         }
     });
@@ -1982,15 +2073,16 @@ KFK.initPropertyForm = function () {
     let spinnerBorderRadius = $("#spinner_border_radius").spinner({
         min: 0, max: 200, step: 1, start: 20,
         spin: function (event, ui) {
-            if (KFK.lastFocusOnNode != null) {
-                $(KFK.lastFocusOnNode).css('border-radius', ui.value);
+            let theNode = KFK.getPropertyApplyToNode();
+            if (theNode != null) {
+                $(theNode).css('border-radius', ui.value);
             }
         }
     });
     spinnerBorderRadius.spinner("value", 20);
     $("#spinner_border_radius").height("6px");
     $("input.fonts").fontpicker({
-        lang: 'en', variants: true, lazyload: true, nrRecents: 3,
+        lang: 'zh-CN', variants: true, lazyload: true, nrRecents: 3,
         googleFonts: 'Alegreya,Boogaloo,Coiny,Dosis,Emilys Candy,Faster One,Galindo'.split(','),
         localFonts: {// Default: web safe fonts
             "Arial": { "category": "sans-serif", "variants": "400,400i,600,600i" },
@@ -2028,13 +2120,23 @@ KFK.initPropertyForm = function () {
         };
 
         console.log(css);
-        if(KFK.lastFocusOnNode != null)
-        $(KFK.lastFocusOnNode).css(css);
+        let theNode = KFK.getPropertyApplyToNode();
+        if (theNode != null)
+            $(theNode).css(css);
     });
     $("input.fonts").height(12);
 }
 
-
+KFK.showEditorChanged = function(){
+    console.log(KFK.APP.model.showEditor);
+    $(document).find('.cocoeditors').each((index, editor)=>{
+        console.log(index);
+        $(editor).removeClass("editors_none");
+        $(editor).removeClass("editors_last");
+        $(editor).removeClass("editors_all");
+        $(editor).addClass("editors_" + KFK.APP.model.showEditor);
+    });
+}
 
 KFK.initColorPicker = function () {
 
@@ -2067,8 +2169,9 @@ KFK.initColorPicker = function () {
             var hsv = color.toHsv();
             var rgb = color.toRgbString();
             var hex = color.toHexString();
-            if (KFK.lastFocusOnNode !== null) {
-                $(KFK.lastFocusOnNode).css("background-color", color.toRgbString());
+            let theNode = KFK.getPropertyApplyToNode();
+            if (theNode !== null) {
+                $(theNode).css("background-color", color.toRgbString());
             }
         },
     });
@@ -2085,7 +2188,9 @@ KFK.initColorPicker = function () {
             var rgb = color.toRgbString();
             var hex = color.toHexString();
             // KFK.APP.setBGto(color.toRgbString()); 
-            $(KFK.lastFocusOnNode).css("border-color", color.toRgbString());
+            let theNode = KFK.getPropertyApplyToNode();
+            if (theNode != null)
+                $(theNode).css("border-color", color.toRgbString());
         },
     });
     $('#fontColor').spectrum({
@@ -2101,15 +2206,26 @@ KFK.initColorPicker = function () {
             var rgb = color.toRgbString();
             var hex = color.toHexString();
             // KFK.APP.setBGto(color.toRgbString()); 
-            $(KFK.lastFocusOnNode).css("color", color.toRgbString());
+            let theNode = KFK.getPropertyApplyToNode();
+            if (theNode != null)
+                $(theNode).css("color", color.toRgbString());
         },
     });
 };
 
-KFK.textAlignChanged = function(event, value){
+KFK.textAlignChanged = function (event, value) {
     let tmp = $('#textAlign').val();
-    if(KFK.lastFocusOnNode != null){
-        $(KFK.lastFocusOnNode).css("text-align", tmp);
+    let theNode = KFK.getPropertyApplyToNode();
+    if (theNode != null) {
+        $(theNode).css("justify-content", tmp);
+    }
+}
+
+KFK.vertAlignChanged = function (event, value) {
+    let tmp = $('#vertAlign').val();
+    let theNode = KFK.getPropertyApplyToNode();
+    if (theNode != null) {
+        $(theNode).css("align-items", tmp);
     }
 }
 
@@ -2240,7 +2356,7 @@ KFK.placeWelcomeObjects = function () {
     KFK.startNode = KFK.placeNode(false, 'START', 'start', KFK.scrollX(120), KFK.scrollY(120));
     KFK.endNode = KFK.placeNode(false, 'END', 'end', KFK.scrollX(900), KFK.scrollY(340));
     KFK.endNode2 = KFK.placeNode(false, 'END2', 'end', KFK.scrollX(980), KFK.scrollY(240));
-    KFK.placeNode(false, 'block', 'textblock', KFK.scrollX(780), KFK.scrollY(240));
+    let tmp = KFK.placeNode(false, 'block', 'textblock', KFK.scrollX(780), KFK.scrollY(240));
     // KFK.centerPos = { x: 120 + (KFK.width() - 50 - 120) * 0.5, y: KFK.height() * 0.5 };
     KFK.drawLine(200, 200, 500, 200);
     KFK.drawLine(200, 200, 200, 500);
@@ -2251,6 +2367,10 @@ KFK.placeWelcomeObjects = function () {
     KFK.addContainerMainEventHander();
     KFK.focusOnMainContainer();
     KFK.selectNone();
+
+    KFK.addEditorToNode(tmp, "liukehong");
+    KFK.addEditorToNode(tmp, "liuzijin");
+    KFK.addEditorToNode(tmp, "kehong.liu");
     KFK.inited = true;
 };
 KFK.loadImages(KFK.init);
@@ -2296,6 +2416,10 @@ KFK.isKfkNode = function (div) {
 };
 KFK.addContainerMainEventHander = function () {
     let preventDefault = false;
+    $('#right').keydown(function (e) {
+        e.stopImmediatePropagation();
+        e.stopPropagation();
+    });
     $(document).keydown(function (e) {
         let preventDefault = false;
         if (KFK.editting) return;
@@ -2307,7 +2431,7 @@ KFK.addContainerMainEventHander = function () {
             if (KFK.linkPos.length === 1) {
                 KFK.linkPos = [];
             }
-        } else if (e.keyCode === 82 && e.ctrlKey) { //Ctrl-R
+        } else if (e.keyCode === 82 && e.ctrlKey) { //Ctrl-R  key R
             KFK.toggleRightPanel();
         } else if (e.keyCode === 17) { //Ctrl
             KFK.ctrlDown = true;
@@ -2330,8 +2454,11 @@ KFK.addContainerMainEventHander = function () {
                 KFK.linkPos.clear();
             }
         } else if (e.keyCode >= 37 && e.keyCode <= 40) { //Left, Up, Right, Down
-            if (KFK.selectedDIVs.length > 0)
-                KFK.moveNodeByArrowKey(e);
+            // if (KFK.selectedDIVs.length > 0){
+            //     KFK.moveNodeByArrowKey(e);
+            //     e.stopImmediatePropagation();
+            //     e.stopPropagation();
+            // }
         } else if (e.keyCode === 46 || e.keyCode === 8 || e.keyCode === 88) {  // key DELETE  key X
             KFK.deleteHoverDiv(e);
         } else if (e.keyCode === 68) {  // key D
@@ -2410,6 +2537,11 @@ KFK.toggleRightPanel = function (flag) {
     $('#right').toggle("slide", { duration: 200, direction: "right" });
 };
 
+KFK.toggleFullScreen = function (flag) {
+    $('#right').toggle("slide", { duration: 200, direction: "right" });
+    $('#left').toggle("slide", { duration: 200, direction: "left" });
+    $('#top').toggle("slide", { duration: 200, direction: "left" });
+}
 KFK.dataURLtoFile = function (dataurl, filename) {
     let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
         bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
@@ -2531,6 +2663,29 @@ $('#scroll-container').scroll(() => {
     }
 });
 
+KFK.addEditorToNode = function (theNode, editor) {
+    let editors = $(theNode).attr('editors');
+    if (editors === undefined || editors === null || editors === "") {
+        editors = editor;
+    } else {
+        let editorsArr = editors.split("$$");
+        if (editorsArr[editorsArr.length - 1] === editor) {
+            return;
+        }
+        editorsArr.push(editor);
+        editors = editorsArr.join("$$");
+    }
+    $(theNode).attr('editors', editors);
+};
+
+KFK.getNodeEditors = function (theNode) {
+    let editors = $(theNode).attr('editors');
+    if (editors === undefined || editors === null || editors === "") {
+        return [];
+    }
+    let editorsArr = editors.split("$$");
+    return editorsArr;
+}
 
 module.exports = KFK;
 
@@ -2538,10 +2693,9 @@ module.exports = KFK;
 //TODO: 清理OSS图片
 // OSS路径名使用 tenant_id/doc_id/pic_name.png
 // 一开始生成文档的ID， 然后的OSS图片的目录使用这个ID， 最后保存时，检查真正剩余的图片，并与OSS中的对应，没有用到的从OSS中删除掉
-//TODO: 添加DIV，可配置radius, 背景色，边框色等
 //TODO: Zoom in / Zoom out
 //TODO: RichText with QuilJS
-//TODO: Font  颜色
 //TODO: Free Drawing
 //TODO: draw an multiple angles
 //TODO: double click on line to add text label
+//TODO: add editor tags (multiple/last one)
