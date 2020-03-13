@@ -18,6 +18,13 @@ const app = new Vue({
     showINVITATION: false,
     lockMode: KFK.lockMode,
     images: KFK.images,
+    tip_groups: [
+      ['tipyellow',               'tipblue',            'tipred',                 'tipgreen'],
+      ['tip_callout_yellow',      'tip_callout_blue',   'tip_callout_red',        'tip_callout_green'],
+      ['tip_heart_yellow',        'tip_heart_blue',     'tip_heart_red',          'tip_heart_green'],
+      ['tip_arrow_yellow',        'tip_arrow_blue',     'tip_arrow_red',          'tip_arrow_green'],
+      ['tip_sig_yellow',          'tip_sig_blue',       'tip_sig_red',            'tip_sig_green'],
+    ],
     active: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false },
     show: {
       'arrange_multi_nodes': false,
@@ -37,12 +44,24 @@ const app = new Vue({
         '#C2FFFB', '#D0C8E8', '#FEE8E7', '#E8DFC8', '#B9FFA6',
         '#C2D3FF', '#C8D1E8', '#E8EFFE', '#E8EFFE', '#E8EFFE'
       ],
-      textAlign: 'left',
+      textAlign: 'center',
       textAlignOptions: [
-        { value: 'left', text: 'Left' },
-        { value: 'center', text: 'Center' },
-        { value: 'right', text: 'Right'}
-      ]
+        { value: 'flex-start', text: '靠左' },
+        { value: 'center', text: '居中' },
+        { value: 'flex-end', text: '靠右'}
+      ],
+      vertAlign: 'center',
+      vertAlignOptions: [
+        { value: 'flex-start', text: '顶部' },
+        { value: 'center', text: '中部' },
+        { value: 'flex-end', text: '底部'}
+      ],
+      showEditor: 'last',
+      showEditors: [
+        { value: 'none', text: '不显示' },
+        { value: 'last', text: '最后一个' },
+        { value: 'all', text: '列出全部'}
+      ],
     }
   },
   methods: {
@@ -80,7 +99,22 @@ const app = new Vue({
     },
     textAlignChanged(){
       KFK.textAlignChanged();
-    }
+    },
+    vertAlignChanged(){
+      KFK.vertAlignChanged();
+    },
+    fullScreen(){
+      KFK.toggleFullScreen();
+    },
+    toggleRight(){
+      KFK.toggleRightPanel();
+    },
+    setTip(tip){
+      KFK.setTipVariant(tip);
+    },
+    showEditorChanged (){
+      KFK.showEditorChanged();
+    },
   },
 }).$mount("#app");
 KFK.APP = app;

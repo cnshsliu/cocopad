@@ -21,19 +21,22 @@
   </div>
 
   <div id='app'>
-    <div id="top" style="z-index: 999;">
-      <b-navbar toggleable="lg" type="light" variant="outline-primary">
-        <b-navbar-brand href="#">
+    <div id="toplogo" style="z-index: 999;">
+      <b-navbar toggleable="lg" type="light">
+        <b-navbar-brand>
           <img src="../assets/p8star.svg" class="logo d-inline-block align-top" alt="Kitten">
           <span class='lkh' id="greeting">KFEngine</span>
         </b-navbar-brand>
-
+      </b-navbar>
+    </div>
+    <div id="top" style="z-index: 999;">
+      <b-navbar toggleable="lg" type="light">
         <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
         <b-collapse id="nav-collapse" is-nav>
           <b-navbar-nav>
-            <b-nav-item href="#"></b-nav-item>
-            <b-button-group>
+            <b-nav-item></b-nav-item>
+            <b-button-group class="coco">
               <b-button variant="outline-success" href="javascript:newTpl()">
                 <b-icon icon="document"></b-icon> New
               </b-button>
@@ -47,7 +50,7 @@
                 <b-icon icon="trash"></b-icon> Delete
               </b-button>
             </b-button-group>
-            <b-button-group>
+            <b-button-group class="coco">
               <b-button variant="outline-success">
                 <b-icon icon="play"></b-icon> Resume
               </b-button>
@@ -64,18 +67,19 @@
           </b-navbar-nav>
 
           <!-- Right aligned nav items -->
-          <b-navbar-nav class="ml-auto">
+          <b-navbar-nav>
+            <b-nav-item></b-nav-item>
             <b-nav-form>
               <b-form-input size="sm" class="mr-sm-2" placeholder="Search"></b-form-input>
-              <b-button size="sm" class="my-2 my-sm-0" type="submit">Search</b-button>
+              <b-button size="sm" class="my-0 my-sm-0" type="submit">Search</b-button>
             </b-nav-form>
 
-            <b-nav-item-dropdown text="Lang" right>
+            <!-- <b-nav-item-dropdown text="Lang" right>
               <b-dropdown-item href="#">EN</b-dropdown-item>
               <b-dropdown-item href="#">ES</b-dropdown-item>
               <b-dropdown-item href="#">RU</b-dropdown-item>
               <b-dropdown-item href="#">FA</b-dropdown-item>
-            </b-nav-item-dropdown>
+            </b-nav-item-dropdown> -->
 
             <b-nav-item-dropdown right>
               <!-- Using 'button-content' slot -->
@@ -105,7 +109,7 @@
         </b-list-group-item>
         <b-list-group-item class="d-flex align-items-center" @click="setMode('yellowtip');"
           :active="active['yellowtip']">
-          <b-img :src="images['yellowtip'].src" fluid alt="" scale="2" class="cocotool"></b-img>
+          <b-img :src="images['tipyellow'].src" fluid alt="" scale="2" class="cocotool"></b-img>
         </b-list-group-item>
         <b-list-group-item class="d-flex align-items-center" @click="setMode('line');" :active="active['line']">
           <b-img :src="images['line'].src" fluid alt="" scale="2" class="cocotool" id='tool_line'></b-img>
@@ -118,50 +122,61 @@
     </div>
     <div id="right">
       <b-tabs v-show="show.shape_property" v-model="model.rightTabIndex" content-class="mt-3" justified>
-        <b-tab title="样式">
-          <p v-show="show.customshape">I'm the first tab</p>
+        <b-tab title="样式" class='cocoproperty'>
           <b-container v-show="show.customshape">
-            <b-row>
-              <b-col>背景颜色</b-col>
-              <b-col><input name="shapeBgColor" id="shapeBgColor" /></b-col>
+            <b-row class="mx-auto my-1">
+              <b-col >背景底色</b-col>
+              <b-col class='coco'><input class="w-100" name="shapeBgColor" id="shapeBgColor" /></b-col>
             </b-row>
-            <b-row>
+            <b-row class="mx-auto my-1">
               <b-col>边框颜色</b-col>
-              <b-col><input name="shapeBorderColor" id="shapeBorderColor" /></b-col>
+              <b-col class='coco'><input name="shapeBorderColor" id="shapeBorderColor" /></b-col>
             </b-row>
-            <b-row>
+            <b-row class="mx-auto my-1">
               <b-col>边框粗细</b-col>
-              <b-col><input class='selector' size=3 id="spinner_border_width" name="value_bw" /></b-col>
+              <b-col class='coco'><input class='selector' size=3 id="spinner_border_width" name="value_bw" /></b-col>
             </b-row>
-            <b-row>
+            <b-row class="mx-auto my-1">
               <b-col>圆角度数</b-col>
-              <b-col><input class='selector' size=3 id="spinner_border_radius" name="value_rad" /></b-col>
+              <b-col class='coco'><input class='selector' size=3 id="spinner_border_radius" name="value_rad" /></b-col>
             </b-row>
           </b-container>
           <b-container v-if="show.customyellowtip">
-            <b-row>
-              <b-col>YT样式</b-col>
-              <b-col></b-col>
+            <b-row v-for="tips in tip_groups" v-bind:key="tips[0]">
+              <b-col class='p-1' v-for="tip in tips" v-bind:key="tip">
+                <b-img :src="images[tip].src" fluid alt="" scale="2" class="cocotool" @click="setTip(tip)"></b-img>
+              </b-col>
             </b-row>
           </b-container>
         </b-tab>
-        <b-tab title="文本">
-          <p>I'm the second tab</p>
+        <b-tab title="文本" class="cocoproperty">
           <b-container v-show="show.text_property">
-            <b-row>
-              <b-col>文本字体</b-col>
-            </b-row>
-            <b-row>
-              <b-col><input class="fonts"></b-col>
-            </b-row>
-            <b-row>
-              <b-col>文本颜色</b-col>
-              <b-col><input name="fontColor" id="fontColor" /></b-col>
-            </b-row>
-            <b-row>
-              <b-col>文本位置</b-col>
-              <b-col><b-form-select id="textAlign" v-model="model.textAlign" :options="model.textAlignOptions" size="sm" class="mt-3" @change="textAlignChanged"></b-form-select></b-col>
-            </b-row>
+            <div class="row mx-auto my-1">
+              <div class="col">文本字体</div>
+              <div class="col coco"><input class="fonts p-0"/></div>
+            </div>
+            <div class="row mx-auto my-1">
+              <div class="col">文本颜色</div>
+              <div class="col coco">
+                <input name="fontColor" id="fontColor" />
+              </div>
+            </div>
+            <div class="row mx-auto my-1">
+              <div class="col">横向对齐</div>
+              <div class="col coco">
+                <b-form-select  id="textAlign" v-model="model.textAlign" :options="model.textAlignOptions" 
+                   @change="textAlignChanged">
+                  </b-form-select>
+              </div>
+            </div>
+            <div class="row mx-auto my-1">
+              <div class="col">纵向对齐</div>
+              <div class="col coco">
+                <b-form-select  id="vertAlign" v-model="model.vertAlign" :options="model.vertAlignOptions" 
+                   @change="vertAlignChanged">
+                  </b-form-select>
+              </div>
+            </div>
           </b-container>
         </b-tab>
         <b-tab title="排列">
@@ -192,7 +207,7 @@
         </b-tab>
       </b-tabs>
       <b-tabs v-show="!show.shape_property" content-class="mt-3" justified>
-        <b-tab title="COCOPAD" active>
+        <b-tab title="COCOPAD" active class='cocoproperty'>
           <p>欢迎使用</p>
           <b-checkbox id="cb-showgrid" v-model="model.showGrid" name="cb-showgrid" switch @change="showGridChanged">
             显示网格线
@@ -200,10 +215,20 @@
           <b-checkbox v-model="model.snap" switch @change="snapChanged">对齐到网格
           </b-checkbox>
           <p> </p>
-          <b-container class="mt-3">
-            <b-row>
+          <b-container class="coco">
+            <b-row class="mx-auto my-1">
               <b-col>背景颜色</b-col>
-              <b-col><input name="cocoBgColor" id="cocoBgColor" /></b-col>
+              <b-col class="coco"><input name="cocoBgColor" id="cocoBgColor" /></b-col>
+            </b-row>
+          </b-container>
+          <b-container class="coco">
+            <b-row class="mx-auto my-1">
+              <b-col>显示编辑者</b-col>
+            </b-row>
+            <b-row class="mx-auto my-1">
+              <b-form-radio v-model="model.showEditor" name="some-radios" value="none" @change="showEditorChanged">隐藏</b-form-radio>
+              <b-form-radio v-model="model.showEditor" name="some-radios" value="last" @change="showEditorChanged">最后</b-form-radio>
+              <b-form-radio v-model="model.showEditor" name="some-radios" value="all" @change="showEditorChanged">全部</b-form-radio>
             </b-row>
           </b-container>
         </b-tab>
@@ -211,11 +236,11 @@
       </b-tabs>
     </div>
     <div id="rtcontrol">
-      <b-button-group>
-        <b-button id="toggle_all" variant="outline-success" href="javascript:newTpl()">
+      <b-button-group class="coco">
+        <b-button id="toggle_all" variant="outline-success" @click="fullScreen">
           <b-icon icon="arrows-fullscreen"></b-icon>
         </b-button>
-        <b-button id="toggle-right" variant="outline-success">
+        <b-button id="toggle-right" variant="outline-success" @click="toggleRight">
           <b-icon icon="layout-sidebar-reverse"></b-icon>
         </b-button>
       </b-button-group>
