@@ -2,10 +2,10 @@
   "name": "kfconsole",
   "version": "1.0.0",
   "description": "Basic sandbox for Konva framework",
-  "main": "index.html",
+  "main": "pad.html",
   "scripts": {
-    "start": "parcel src/index.html --open",
-    "build": "parcel build src/index.html"
+    "start": "parcel src/pad.html --open",
+    "build": "parcel build src/pad.html"
   },
   "dependencies": {
     "bootstrap": "^4.4.1",
