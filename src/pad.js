@@ -1,11 +1,12 @@
 import Vue from 'vue';
-import { BootstrapVue, IconsPlugin, ListGroupPlugin } from 'bootstrap-vue';
+import { BootstrapVue, IconsPlugin, ListGroupPlugin, VBHoverPlugin } from 'bootstrap-vue';
 import "../scss/custom.scss";
 import KFK from './console';
 
 Vue.use(BootstrapVue);
 Vue.use(IconsPlugin);
 Vue.use(ListGroupPlugin);
+Vue.use(VBHoverPlugin);
 const app = new Vue({
   data: {
     seen: true,
@@ -19,11 +20,10 @@ const app = new Vue({
     lockMode: KFK.lockMode,
     images: KFK.images,
     tip_groups: [
-      ['tipyellow',               'tipblue',            'tipred',                 'tipgreen'],
-      ['tip_callout_yellow',      'tip_callout_blue',   'tip_callout_red',        'tip_callout_green'],
-      ['tip_heart_yellow',        'tip_heart_blue',     'tip_heart_red',          'tip_heart_green'],
-      ['tip_arrow_yellow',        'tip_arrow_blue',     'tip_arrow_red',          'tip_arrow_green'],
-      ['tip_sig_yellow',          'tip_sig_blue',       'tip_sig_red',            'tip_sig_green'],
+      ['tip', 'tip_heart', 'tip_callout2', 'tip_cloud', 'tip_sig'],
+      ['tip_circle', 'tip_p5star', 'tip_p8star', 'tip_cubic', 'tip_clinder'],
+      ['tip_circle2', 'tip_check', 'tip_cross', 'tip_thunder', 'tip_smile'],
+      ['tip_circle3', 'tip_arrow', 'tip_arrow2', 'tip_arrow3', 'tip_arrow4'],
     ],
     active: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false },
     show: {
@@ -32,7 +32,7 @@ const app = new Vue({
       'text_property': false,
     },
     model: {
-      rightTabIndex: 0,
+      rightTabIndex: 2,
       gridWidth: 20,
       snap: true,
       oldSnap: true,
@@ -40,6 +40,8 @@ const app = new Vue({
       dragToCreate: true,
       lineToggleMode: false,
       msg: 'hello',
+      tipBkgColor: '#f7f7c6',
+      shapeBkgColor: '#ffffff',
       padbkgcolor: [
         '#C2FFFB', '#D0C8E8', '#FEE8E7', '#E8DFC8', '#B9FFA6',
         '#C2D3FF', '#C8D1E8', '#E8EFFE', '#E8EFFE', '#E8EFFE'
@@ -48,19 +50,19 @@ const app = new Vue({
       textAlignOptions: [
         { value: 'flex-start', text: '靠左' },
         { value: 'center', text: '居中' },
-        { value: 'flex-end', text: '靠右'}
+        { value: 'flex-end', text: '靠右' }
       ],
       vertAlign: 'center',
       vertAlignOptions: [
         { value: 'flex-start', text: '顶部' },
         { value: 'center', text: '中部' },
-        { value: 'flex-end', text: '底部'}
+        { value: 'flex-end', text: '底部' }
       ],
       showEditor: 'last',
       showEditors: [
         { value: 'none', text: '不显示' },
         { value: 'last', text: '最后一个' },
-        { value: 'all', text: '列出全部'}
+        { value: 'all', text: '列出全部' }
       ],
     }
   },
@@ -89,31 +91,38 @@ const app = new Vue({
     dragToCreateChanged(checked) {
       console.log(`dragToCreate ${checked}`);
     },
-    setBGto(color){
+    setBGto(color) {
       console.log('Set BG to ' + color);
       this.setData('model', 'msg', color);
       $('#containerbkg')[0].style.backgroundColor = color;
     },
-    save(){
+    save() {
       KFK.save();
     },
-    textAlignChanged(){
+    textAlignChanged() {
       KFK.textAlignChanged();
     },
-    vertAlignChanged(){
+    vertAlignChanged() {
       KFK.vertAlignChanged();
     },
-    fullScreen(){
+    fullScreen() {
       KFK.toggleFullScreen();
     },
-    toggleRight(){
+    toggleRight() {
       KFK.toggleRightPanel();
     },
-    setTip(tip){
+    setTipVariant(tip) {
       KFK.setTipVariant(tip);
     },
-    showEditorChanged (){
-      KFK.showEditorChanged();
+    showEditorChanged(show_editor) {
+      KFK.onShowEditorChanged(show_editor);
+    },
+    changeSVGFill() {
+      KFK.changeSVGFill();
+    },
+    handleTipHover(tip){
+      console.log('Hover on ' + tip);
+      // $('#tipvariant_'+tip).style.visibility= "hidden";
     },
   },
 }).$mount("#app");

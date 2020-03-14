@@ -4,6 +4,7 @@ import Konva from "konva";
 import suuid from 'short-uuid';
 import "core-js/stable";
 import "regenerator-runtime/runtime";
+import SVGs from './svgs';
 // import uuidv4 from "uuid/v4";
 import assetIcons from '../assets/*.svg';
 import OSS from 'ossnolookup';
@@ -12,7 +13,7 @@ import "jquery-ui-dist/jquery-ui.js";
 import "spectrum-colorpicker2/dist/spectrum.min";
 import "../fontpicker-jquery-plugin/dist/jquery.fontpicker";
 // import iro from '@jaames/iro';
-import { BIconFolderSymlinkFill, directivesPlugin, BIconKanbanFill } from "bootstrap-vue";
+// import { BIconFolderSymlinkFill, directivesPlugin, BIconKanbanFill, VBHoverPlugin } from "bootstrap-vue";
 import { REPL_MODE_SLOPPY } from "repl";
 function myuid() {
     return suuid.generate();
@@ -37,8 +38,12 @@ let config = {
         id: 'COMPANY A',
         user: 'lucas',
     },
+    badge: {
+        lastSeconds: 3000,
+    },
     doc: {
         id: '0000',
+        name: 'test doc',
     },
     vault: {
         bucket: 'vts',
@@ -66,18 +71,21 @@ let config = {
             width: 120,
             height: 20,
             edittable: true,
+            content: '一行文字',
         },
         yellowtip: {
-            width: 200,
-            height: 200,
+            width: 160,
+            height: 160,
             resizable: true,
             droppable: true,
             edittable: true,
             textAlign: 'center', color: 'black', vertAlign: 'center',
-            defaultBkgImage: 'tipyellow',
+            defaultTip: 'tip',
+            defaultColor: 'rgb(255, 242, 204)',
+            content: '',
         },
         textblock: {
-            width: 200, height: 100, resizable: true,
+            width: 160, height: 80, resizable: true,
             background: '#FFFFFF', minWidth: 1, minHeight: 1,
             borderColor: '#333333', borderWidth: '1px',
             borderStyle: 'solid', borderRadius: '20px',
@@ -85,13 +93,36 @@ let config = {
             droppable: true,
             edittable: true,
             customshape: true,
+            content: '',
         },
         pin: {
             width: 40,
             height: 40,
-        }
-    }
-}
+        },
+    },
+    size: {
+        'yellowtip': {
+            'tip_arrow': { width: 60, height: 30 },
+            'tip_arrow2': { width: 60, height: 30 },
+            'tip_arrow3': { width: 30, height: 60 },
+            'tip_arrow4': { width: 30, height: 60 },
+            'tip_heart': { width: 50, height: 50 },
+            'tip_sig': { width: 60, height: 20 },
+            'tip_circle': { width: 50, height: 50 },
+            'tip_p5star': { width: 50, height: 50 },
+            'tip_p8star': { width: 50, height: 50 },
+            'tip_cubic': { width: 50, height: 50 },
+            'tip_clinder': { width: 50, height: 50 },
+            'tip_circle2': { width: 50, height: 50 },
+            'tip_check': { width: 50, height: 50 },
+            'tip_cross': { width: 50, height: 50 },
+            'tip_thunder': { width: 40, height: 50 },
+            'tip_smile': { width: 50, height: 50 },
+            'tip_circle3': { width: 50, height: 50 },
+        },
+    },
+};
+let badgeTimers = {};
 let doc = {
     bgcolor: '#FFFFFF',
 };
@@ -105,8 +136,6 @@ let KFK = {};
 KFK.scaleBy = 1.01;
 KFK.centerPos = { x: 0, y: 0 };
 KFK.centerPos = { x: 0, y: 0 };
-KFK.startNode = null;
-KFK.endNode = null;
 KFK.lastFocusOnNode = null;
 KFK.justCreatedNode = null;
 KFK.hoverDIV = null;
@@ -116,7 +145,9 @@ KFK.divInClipboard = undefined;
 KFK.lineTemping = false;
 
 // KFK._width = window.innerWidth; KFK._height = window.innerHeight;
-KFK._width = window.innerWidth * 6; KFK._height = window.innerHeight * 6;
+// KFK._width = window.innerWidth * 6; KFK._height = window.innerHeight * 6;
+// A4
+KFK._width = 842 * 10; KFK._height = 595 * 10;
 
 KFK.nodes = [];
 KFK.defaultNodeWidth = 40;
@@ -182,19 +213,11 @@ $(document).mousemove(function (event) {
     KFK.currentMousePos.y = event.clientY;
     el($('#modeIndicator')).style.left = px(KFK.currentMousePos.x + 10);
     el($('#modeIndicator')).style.top = px(KFK.currentMousePos.y + 10);
-    if (KFK.mode === 'pointer') {
-        $('#modeIndicator').hide();
-    } else {
-        if (KFK.mode === 'yellowtip')
-            $('#modeIndicatorImg').attr("src", KFK.images['tipyellow'].src);
-        else
-            $('#modeIndicatorImg').attr("src", KFK.images[KFK.mode].src);
-        $('#modeIndicator').show();
-    }
     KFK.dragToSelectTo = { x: KFK.scrollX(event.clientX), y: KFK.scrollY(event.clientY) };
 
+    //支持按下鼠标， 框选多个node
     if (KFK.mode === 'pointer' && KFK.mouseIsDown) {
-        KFK.APP.setData('model', 'msg', `款选 ${JSON.stringify(KFK.dragToSelectFrom)} - ${JSON.stringify(KFK.dragToSelectTo)}`);
+        KFK.APP.setData('model', 'msg', `框选 ${JSON.stringify(KFK.dragToSelectFrom)} - ${JSON.stringify(KFK.dragToSelectTo)}`);
         KFK.kuangXuan(KFK.dragToSelectFrom, KFK.dragToSelectTo);
     }
 
@@ -263,11 +286,13 @@ KFK.loadImages = function loadimg(callback) {
 };
 
 class Node {
-    constructor(id, type, x, y, w, h, attach) {
+    constructor(id, type, variant, x, y, w, h, attach) {
         this.id = id;
         this.type = type;
-        this.width = w ? w : config.node[type].width;
-        this.height = h ? h : config.node[type].height;
+        this.variant = variant;
+        let dds = KFK.getShapeDynamicDefaultSize(type, variant);
+        this.width = w ? w : dds.w;
+        this.height = h ? h : dds.h;
         this.iconscale = 0.8;
         this.x = x;
         this.y = y;
@@ -303,25 +328,11 @@ class Link {
     }
 }
 
-KFK.gotoHome = function () {
-    // var oldScale = KFK.stage.scaleX();
-    // KFK.stage.scale({ x: 1, y: 1 });
-    // var mousePointTo = { x: window.innerWidth * 0.5, y: window.innerHeight * 0.5 };
-    // var newPos = {
-    //     x: (KFK.stage.width() - window.innerWidth) * 0.5,
-    //     y: (KFK.stage.height() - window.innerHeight) * 0.5,
-    // };
-    // KFK.stage.position(newPos);
-    // KFK.stage.batchDraw();
-
-    // console.log(`${KFK.startNode.x}`);
-};
-
 KFK.setJustCreated = function (nodeDIV) {
     KFK.justCreatedNode = nodeDIV;
     KFK.updatePropertyFormWithNode(nodeDIV);
     if ($(nodeDIV).attr("nodetype") === "text") {
-        KFK.APP.setData('model', 'rightTabIndex', 1);
+        KFK.APP.setData('model', 'rightTabIndex', 0);
     }
 };
 
@@ -337,20 +348,28 @@ KFK.updatePropertyFormWithNode = function (nodeDIV) {
     if (nodeDIV != null) {
         nodeType = $(nodeDIV).attr('nodetype');
     }
+    if (KFK.selectedDIVs.length < 2) {
+        KFK.APP.setData('model', 'rightTabIndex', 0);
+    }
 
     KFK.APP.setData('show', 'shape_property', nodeDIV != null);
     KFK.APP.setData('show', 'text_property', nodeDIV != null && getBoolean(config.node[nodeType].edittable));
     KFK.APP.setData('show', 'customshape', nodeDIV != null && getBoolean(config.node[nodeType].customshape));
     KFK.APP.setData('show', 'customyellowtip', nodeDIV != null && (nodeType === 'yellowtip'));
     if (nodeDIV != null && getBoolean(config.node[nodeType].customshape)) {
-        let nodeBgColor = $(nodeDIV).css("background-color");
+        let nodeBkgColor = $(nodeDIV).css("background-color");
         let nodeBorderColor = $(nodeDIV).css("border-color")
         let nodeBorderWidth = unpx($(nodeDIV).css("border-width"));
         let nodeBorderRadius = unpx($(nodeDIV).css("border-radius"));
-        $('#shapeBgColor').spectrum("set", nodeBgColor);
+        $('#shapeBkgColor').spectrum("set", nodeBkgColor);
         $('#shapeBorderColor').spectrum("set", nodeBorderColor);
         $('#spinner_border_width').spinner("value", nodeBorderWidth);
         $('#spinner_border_radius').spinner("value", nodeBorderRadius);
+    }
+    if (nodeDIV != null && (nodeType === 'yellowtip')) {
+        let tipColor = KFK.getTipBkgColor(nodeDIV);
+        // console.log(`Current tip color: ${tipColor}`);
+        $('#tipBkgColor').spectrum("set", tipColor);
     }
 
     if (nodeDIV != null && getBoolean(config.node[nodeType].edittable)) {
@@ -359,12 +378,16 @@ KFK.updatePropertyFormWithNode = function (nodeDIV) {
         let fontColor = $(nodeDIV).css('color');
         let textAlign = $(nodeDIV).css('justify-content');
         let vertAlign = $(nodeDIV).css('align-items');
+        textAlign = (textAlign === 'normal') ? 'flex-start' : textAlign;
+        vertAlign = (vertAlign === 'normal') ? 'flex-start' : vertAlign;
+        if ($(nodeDIV).find('.tip_content').length !== 0) {
+            textAlign = $(nodeDIV).find('.tip_content').css('justify-content');
+            vertAlign = $(nodeDIV).find('.tip_content').css('align-items');
+        }
         $('#fontColor').spectrum("set", fontColor);
         KFK.APP.setData('model', 'textAlign', textAlign);
         KFK.APP.setData('model', 'vertAlign', vertAlign);
     }
-
-    KFK.log(JSON.stringify(KFK.APP.show));
 };
 
 KFK.log = function (msg) {
@@ -544,7 +567,7 @@ KFK.selectedDIVsChanged = function () {
     KFK.APP.setData('show', 'arrange_multi_nodes', KFK.selectedDIVs.length > 1);
     KFK.APP.setData('show', 'shape_property', KFK.selectedDIVs.length > 0);
     if (KFK.selectedDIVs.length > 1) {
-        KFK.APP.setData('model', 'rightTabIndex', 2);
+        KFK.APP.setData('model', 'rightTabIndex', 1);
     }
 };
 
@@ -594,7 +617,7 @@ KFK.initC3 = function () {
         }
         if (KFK.afterResizing === true) {
             KFK.afterResizing = false;
-            return;
+            // return;
         }
         if (KFK.mode === 'line') {
             KFK.yarkLinkPoint(
@@ -606,19 +629,22 @@ KFK.initC3 = function () {
         } else {
             if (KFK.selectedDIVs.length > 0) {
                 KFK.selectNone();
+            }
+            if (config.node[KFK.mode]) {
+                let variant = 'default';
+                if (KFK.mode === 'yellowtip') {
+                    variant = config.node.yellowtip.defaultTip;
+                }
+                KFK.placeNode(
+                    e.shiftKey,
+                    myuid(), KFK.mode, variant,
+                    KFK.scrollX(e.clientX),
+                    KFK.scrollY(e.clientY)
+                );
             } else {
-                if (config.node[KFK.mode]) {
-                    KFK.placeNode(
-                        e.shiftKey,
-                        myuid(), KFK.mode,
-                        KFK.scrollX(e.clientX),
-                        KFK.scrollY(e.clientY)
-                    );
-                } else {
-                    console.log(`${KFK.mode} is not supported`);
-                    if (KFK.mode === "line") {
-                        KFK.drawLine(100, 100, 300, 300);
-                    }
+                console.log(`${KFK.mode} is not supported`);
+                if (KFK.mode === "line") {
+                    KFK.drawLine(100, 100, 300, 300);
                 }
             }
         }
@@ -628,7 +654,37 @@ KFK.initC3 = function () {
         e.preventDefault();
     });
 
+    $(c3).on('mousemove', function (event) {
+        KFK.showUserMovingBadge(config.tenant.user, event.clientX, event.clientY);
+    });
+
     KFK.C3 = c3;
+}
+
+KFK.showUserMovingBadge = function (username, x, y) {
+    let pos = { x: KFK.scrollX(x), y: KFK.scrollY(y) };
+    let jqBadgeDIV = $(document).find('#badge_' + username);
+    if (jqBadgeDIV.length === 0) {
+        let tmp = document.createElement('div');
+        KFK.C3.appendChild(tmp);
+        jqBadgeDIV = $(tmp);
+        jqBadgeDIV.attr("id", "badge_" + username);
+        jqBadgeDIV.addClass("userbadge");
+    }
+    jqBadgeDIV.css("display", "block");
+    jqBadgeDIV.css("top", pos.y);
+    jqBadgeDIV.css("left", pos.x);
+    jqBadgeDIV.css("width", "fit-content");
+    jqBadgeDIV.css("height", "fit-content");
+    jqBadgeDIV.html(username);
+
+    if (badgeTimers[username] === undefined) {
+        badgeTimers[username] = setTimeout(() => {
+            jqBadgeDIV.css("display", "none");
+            delete badgeTimers[username];
+        }, config.badge.lastSeconds);
+    }
+
 }
 
 KFK.getPositionOfTwoEndsOfLine = function (lineDIV, theLine) {
@@ -1188,8 +1244,8 @@ KFK.getKFKNodeNumber = function () {
 }
 
 
-KFK.placeNode = function (shiftKey, id, type, x, y, w, h, attach) {
-    let aNode = new Node(id, type, x, y, w, h, attach);
+KFK.placeNode = function (shiftKey, id, type, variant, x, y, w, h, attach) {
+    let aNode = new Node(id, type, variant, x, y, w, h, attach);
     KFK.nodes.push(aNode);
     let nodeDIV = KFK._createNode(aNode);
     KFK.setJustCreated(nodeDIV);
@@ -1218,24 +1274,28 @@ KFK._createNode = function (node) {
     } else if (node.type === "text") {
         nodeObj = document.createElement('span');
         nodeObj.style.fontSize = "18px";
-        nodeObj.innerText = "Some text here";
-        nodeObj.style.width = px(node.width - textPadding * 2);
-        nodeObj.style.height = px(node.height - textPadding * 2);
-        nodeObj.style.left = px(2); nodeObj.style.top = px(2);
+        nodeObj.innerText = config.node.text.content;
+        nodeObj.style.padding = px(2);
     } else if (node.type === "yellowtip") {
         nodeObj = document.createElement('span');
         nodeObj.style.fontSize = "18px";
-        nodeObj.innerText = "";
-        // nodeObj.style.width = px(node.width - textPadding * 2);
-        // nodeObj.style.height = px(node.height - textPadding * 2);
-        nodeObj.style.left = px(2); nodeObj.style.top = px(2);
+        nodeObj.innerText = config.node.yellowtip.content;
+        $(nodeObj).css("width", "100%");
+        $(nodeObj).css("height", "100%");
+        $(nodeObj).css("padding", 2);
+        $(nodeObj).css("z-index", 1);
+        $(nodeObj).css("display", "flex");
+        $(nodeObj).css("justify-content", config.node.yellowtip.textAlign);
+        $(nodeObj).css("align-items", config.node.yellowtip.vertAlign);
+        $(nodeObj).css("position", "absolute");
+        $(nodeObj).addClass('tip_content');
     } else if (node.type === "textblock") {
         nodeObj = document.createElement('div');
         nodeObj.style.fontSize = "18px";
-        nodeObj.innerText = "";
+        nodeObj.innerText = config.node.textblock.content;
         // nodeObj.style.width = px(node.width - textPadding * 2);
         // nodeObj.style.height = px(node.height - textPadding * 2);
-        nodeObj.style.left = px(2); nodeObj.style.top = px(2);
+        nodeObj.style.padding = px(2);
     }
     if (!nodeObj) {
         // console.log(`${node.type} is not supported`);
@@ -1246,6 +1306,7 @@ KFK._createNode = function (node) {
     var nodeDIV = document.createElement('div');
     nodeDIV.id = node.id;
     nodeDIV.style.position = 'absolute';
+
     nodeDIV.style.top = px(ltPos(node).y);
     nodeDIV.style.left = px(ltPos(node).x);
     nodeDIV.style.width = px(node.width);
@@ -1269,15 +1330,21 @@ KFK._createNode = function (node) {
     // nodeDIV.style.outline = 'none';
     // nodeDIV.style.resize = 'none';
     nodeDIV.style.display = 'flex';
+    $(nodeDIV).attr('variant', 'default');
     //click时，切换selected状态
     if (node.type === 'yellowtip') {
-        $(nodeDIV).css("background-image", `url(${KFK.images[config.node.yellowtip.defaultBkgImage].src})`);
-        $(nodeDIV).css("background-repeat", 'no-repeat');
-        $(nodeDIV).css("background-size", '100% 100%');
+        //create tip
+        let rect = KFK.getShapeDynamicDefaultSize('yellowtip', config.node.yellowtip.defaultTip);
+        KFK.setTipBkgImage(nodeDIV, config.node.yellowtip.defaultTip, config.node.yellowtip.defaultColor);
+        $(nodeDIV).attr('variant', config.node.yellowtip.defaultTip);
+        $(nodeDIV).css('width', rect.w);
+        $(nodeDIV).css('height', rect.h);
         $(nodeDIV).css('color', config.node.yellowtip.color);
-        $(nodeDIV).css('justify-content', config.node.yellowtip.textAlign);
-        $(nodeDIV).css('align-items', config.node.yellowtip.vertAlign);
+        $(nodeDIV).addClass('yellowtip');
     } else if (node.type === 'textblock') {
+        let rect = KFK.getShapeDynamicDefaultSize('textblock', 'default');
+        $(nodeDIV).css('width', rect.w);
+        $(nodeDIV).css('height', rect.h);
         $(nodeDIV).css('border-radius', config.node.textblock.borderRadius);
         $(nodeDIV).css('border-style', config.node.textblock.borderStyle);
         $(nodeDIV).css('border-color', config.node.textblock.borderColor);
@@ -1285,6 +1352,7 @@ KFK._createNode = function (node) {
         $(nodeDIV).css('color', config.node.textblock.color);
         $(nodeDIV).css('justify-content', config.node.yellowtip.textAlign);
         $(nodeDIV).css('align-items', config.node.yellowtip.vertAlign);
+        $(nodeDIV).css("background-color", KFK.APP.model.shapeBkgColor);
     }
 
     nodeObj.setAttribute("id", 'innerobj_' + node.id);
@@ -1292,12 +1360,27 @@ KFK._createNode = function (node) {
     // nodeDIV.attr('h', node.height);
     nodeDIV.appendChild(nodeObj);
 
-    let editorDIV = document.createElement('div');
-    editorDIV.setAttribute("id", "editor_" + node.id);
-    $(editorDIV).addClass('cocoeditors');
-    $(editorDIV).addClass('editors_' + KFK.APP.model.showEditor);
-    $(editorDIV).html("lucas, kehong.liu, ppppppb, hellalala, abcdefg, hijklmn, opq, rstuvwxy, hellohahaha");
-    nodeDIV.appendChild(editorDIV);
+    //set editors
+    let allEditorDIV = document.createElement('div');
+    $(allEditorDIV).addClass('cocoeditors');
+    nodeDIV.appendChild(allEditorDIV);
+    let lastEditorDIV = document.createElement('div');
+    $(lastEditorDIV).addClass('lastcocoeditor');
+    nodeDIV.appendChild(lastEditorDIV);
+    if (KFK.APP.model.showEditor === 'none') {
+        $(allEditorDIV).css('display', 'none');
+        $(lastEditorDIV).css('display', 'none');
+    } else if (KFK.APP.model.showEditor === 'last') {
+        $(allEditorDIV).css('display', 'none');
+        $(lastEditorDIV).css('display', 'block');
+    } else if (KFK.APP.model.showEditor === 'all') {
+        $(allEditorDIV).css('display', 'block');
+        $(lastEditorDIV).css('display', 'none');
+    }
+    if (node.type === 'yellowtip') {
+        KFK.setTipBkgColor(nodeDIV, KFK.APP.model.tipBkgColor);
+    }
+
     KFK.C3.appendChild(nodeDIV);
 
     let jqNodeDIV = $(nodeDIV);
@@ -1323,13 +1406,65 @@ function getBoolean(value) {
     }
 }
 
-KFK.setTipVariant = function (tipvariant) {
-    config.node.yellowtip.defaultBkgImage = tipvariant;
-    let theNode = KFK.getPropertyApplyToNode();
-    if (theNode !== null) {
-        $(theNode).css("background-image", `url(${KFK.images[config.node.yellowtip.defaultBkgImage].src})`);
+KFK.getLastSelectedNode = function () {
+    if (KFK.selectedDIVs.length > 0) {
+        return KFK.selectedDIVs[KFK.selectedDIVs.length - 1];
+    } else {
+        return null;
     }
 };
+
+KFK.setTipVariant = function (tipvariant) {
+    config.node.yellowtip.defaultTip = tipvariant;
+    if (KFK.mode === 'yellowtip')
+        $('#modeIndicatorImg').attr("src", KFK.images[config.node.yellowtip.defaultTip].src);
+    // let theNode = KFK.getPropertyApplyToNode();
+    let theNode = KFK.getLastSelectedNode();
+    if (theNode !== null) {
+        let oldColor = KFK.getTipBkgColor(theNode);
+        console.log('setTipBkgImage for ' + theNode.getAttribute("id") + "   " + tipvariant + "  to " + oldColor);
+        $(theNode).attr('variant', tipvariant);
+        KFK.setTipBkgImage(theNode, tipvariant, oldColor);
+    }
+};
+KFK.setTipBkgImage = function (nodeDIV, svgid, svgcolor) {
+    $(nodeDIV).find('.tip_bkg').remove();
+    let bkgSVG = $(SVGs[svgid]);
+    bkgSVG.addClass("tip_bkg");
+    bkgSVG.css('width', '100%');
+    bkgSVG.css('height', '100%');
+    bkgSVG.css('z-index', '-1');
+    let svgMainPath = bkgSVG.find('.svg_main_path');
+    svgMainPath.attr('fill', svgcolor);
+    bkgSVG.appendTo($(nodeDIV));
+};
+
+KFK.setTipBkgColor = function (theNode, bgColor) {
+    if (theNode === null) {
+        console.warn('setTipBkgColor to null nodeDIV');
+        return;
+    }
+    // console.log('setTipBkgColor for ' + theNode.getAttribute('nodetype') + " " + theNode.getAttribute("variant"));
+    let svgImg = $(theNode).find('.tip_bkg .svg_main_path');
+    if (svgImg.length > 0) {
+        svgImg.attr('fill', bgColor);
+        // console.log('set color to ' + bgColor);
+    } else
+        console.warn(`Can't change main path color. Node type ${theNode.getAttribute("nodetype")} id:${theNode.getAttribute("id")}   .svg_main_path not found`);
+};
+KFK.getTipBkgColor = function (theNode) {
+    if (theNode === null) {
+        console.warn('getTipBkgColor to null nodeDIV, return default');
+        return config.node.yellowtip.defaultColor;
+    }
+    let svgImg = $(theNode).find('.tip_bkg .svg_main_path');
+    if (svgImg.length > 0) {
+        return svgImg.attr('fill');
+    } else {
+        console.warn(`.tip_bkg .svg_main_path not found> Node type ${theNode.getAttribute("nodetype")} id:${theNode.getAttribute("id")}   .svg_main_path not found`);
+        return config.node.yellowtip.defaultColor;
+    }
+}
 
 KFK.reArrangeLinks = function (jqNodeDIV) {
     $(KFK.C3).find('.kfkline').each((index, aLineDiv) => {
@@ -1367,6 +1502,45 @@ KFK.reArrangeLinks = function (jqNodeDIV) {
     });
 };
 
+//resize node时，记下当前shape variant的size，下次创建同样shape时，使用这个size
+KFK.setShapeDynamicDefaultSize = function (nodeType, variant, width, height) {
+    // console.log(`${nodeType} ${variant} ${width} ${height}`);
+    if (config.size[nodeType] === undefined)
+        config.size[nodeType] = {};
+    if (config.size[nodeType][variant] === undefined)
+        config.size[nodeType][variant] = {};
+    config.size[nodeType][variant].width = width;
+    config.size[nodeType][variant].height = height;
+    // console.log(config.size);
+    // console.log(JSON.stringify(config.size[nodeType][variant]));
+};
+KFK.getShapeDynamicDefaultSize = function (nodeType, variant) {
+    let ret = {};
+    // console.log(nodeType + " " + variant);
+    // console.log(config.size);
+    if (config.size[nodeType] === undefined) {
+        ret = {
+            w: config.node[nodeType].width,
+            h: config.node[nodeType].height
+        };
+    } else if (config.size[nodeType][variant] === undefined) {
+        ret = {
+            w: config.node[nodeType].width,
+            h: config.node[nodeType].height
+        };
+    } else {
+        let tmpw = 0;
+        let tmph = 0;
+        tmpw = config.size[nodeType][variant].width;
+        tmph = config.size[nodeType][variant].height;
+        ret = {
+            w: tmpw,
+            h: tmph
+        };
+    }
+    // console.log(JSON.stringify(ret));
+    return ret;
+};
 
 KFK.setNodeEventHandler = function (jqNodeDIV) {
     jqNodeDIV.addClass('kfknode');
@@ -1397,6 +1571,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
                     nodeDIV.style.width = px(KFK.nodeWidth(nodeDIV) + (newRight - tmpRight));
                     nodeDIV.style.height = px(KFK.nodeHeight(nodeDIV) + (newBottom - tmpBottom));
                 }
+                KFK.setShapeDynamicDefaultSize(jqNodeType, jqNodeDIV.attr('variant'), KFK.nodeWidth(nodeDIV), KFK.nodeHeight(nodeDIV));
                 if (jqNodeType === 'image') {
                     // console.log("Resize inner image");
                     let imageId = `#innerobj_${jqNodeDIV.attr('id')}`;
@@ -1864,6 +2039,7 @@ KFK.duplicateHoverDiv = function (e) {
                 false, //shiftKey
                 myuid(),
                 KFK.divToCopy.getAttribute("nodetype"),
+                KFK.divToCopy.getAttribute("variant"),
                 KFK.scrollX(KFK.currentMousePos.x + offset.x),
                 KFK.scrollY(KFK.currentMousePos.y + offset.y),
                 unpx(KFK.divToCopy.style.width),
@@ -1871,6 +2047,7 @@ KFK.duplicateHoverDiv = function (e) {
             );
             KFK.setText($(newNode), KFK.getText($(KFK.divToCopy)));
             KFK.applyNodeStyleFrom($(newNode), $(KFK.divToCopy));
+            KFK.focusOnNode(newNode);
         } else if ($(KFK.divToCopy).hasClass('kfkline')) {
             let x1 = parseInt($(KFK.divToCopy).attr('x1'));
             let y1 = parseInt($(KFK.divToCopy).attr('y1'));
@@ -1913,11 +2090,22 @@ KFK.applyNodeStyleFrom = function (jqTo, jqFrom) {
         jqTo.css('border-style', jqFrom.css('border-style'));
         jqTo.css('border-color', jqFrom.css('border-color'));
         jqTo.css('border-width', jqFrom.css('border-width'));
+    } else if (nodeType === 'yellowtip') {
+        jqTo.find('.tip_bkg').remove();
+        let bkgSvg = jqFrom.find('.tip_bkg').clone();
+        bkgSvg.appendTo(jqTo);
     }
+    //TODO: copy tip background
     if (config.node[nodeType].edittable) {
+        //TODO here yellowtip to inner
         jqTo.css('color', jqFrom.css('color'));
-        jqTo.css('justify-content', jqFrom.css('justify-content'));
-        jqTo.css('align-items', jqFrom.css('align-items'));
+        if (jqTo.find('.tip_content').length !== 0) {
+            jqTo.find('.tip_content').css('justify-content', jqFrom.find('.tip_content').css('justify-content'));
+            jqTo.find('.tip_content').css('align-items', jqFrom.find('.tip_content').css('align-items'));
+        } else {
+            jqTo.css('justify-content', jqFrom.css('justify-content'));
+            jqTo.css('align-items', jqFrom.css('align-items'));
+        }
         jqTo.css('font-family', jqFrom.css('font-family'));
         jqTo.css('font-weight', jqFrom.css('font-weight'));
         jqTo.css('font-style', jqFrom.css('font-style'));
@@ -2045,6 +2233,9 @@ KFK.init = function () {
     KFK.initLineMover();
     KFK.initColorPicker();
     KFK.placeWelcomeObjects();
+    KFK.initShowEditors('none');
+
+    KFK.APP.setData('model', 'rightTabIndex', 2);
 };
 KFK.getPropertyApplyToNode = function () {
     if (KFK.lastFocusOnNode != null) {
@@ -2079,6 +2270,7 @@ KFK.initPropertyForm = function () {
             }
         }
     });
+    //TODO: customize fontpicker
     spinnerBorderRadius.spinner("value", 20);
     $("#spinner_border_radius").height("6px");
     $("input.fonts").fontpicker({
@@ -2119,31 +2311,44 @@ KFK.initPropertyForm = function () {
             fontStyle: italic ? 'italic' : 'normal'
         };
 
-        console.log(css);
+        //set font
+
+        // console.log(css);
         let theNode = KFK.getPropertyApplyToNode();
         if (theNode != null)
             $(theNode).css(css);
+
+        KFK.focusOnMainContainer();
     });
     $("input.fonts").height(12);
-}
+};
 
-KFK.showEditorChanged = function(){
-    console.log(KFK.APP.model.showEditor);
-    $(document).find('.cocoeditors').each((index, editor)=>{
-        console.log(index);
-        $(editor).removeClass("editors_none");
-        $(editor).removeClass("editors_last");
-        $(editor).removeClass("editors_all");
-        $(editor).addClass("editors_" + KFK.APP.model.showEditor);
-    });
+KFK.initShowEditors = function (show_editor) {
+    KFK.APP.setData('model', 'showEditor', show_editor);
+    KFK.onShowEditorChanged(show_editor);
+};
+
+KFK.onShowEditorChanged = function (show_editor) {
+    // console.log(KFK.APP.model.showEditor + " -> " + show_editor);
+    if (show_editor === 'none') {
+        $(document).find('.cocoeditors').css('display', 'none');
+        $(document).find('.lastcocoeditor').css('display', 'none');
+    } else if (show_editor === 'last') {
+        $(document).find('.cocoeditors').css('display', 'none');
+        $(document).find('.lastcocoeditor').css('display', 'block');
+    } else if (show_editor === 'all') {
+        $(document).find('.cocoeditors').css('display', 'block');
+        $(document).find('.lastcocoeditor').css('display', 'none');
+    }
 }
+//TODO: 把显示editor与否调整好
 
 KFK.initColorPicker = function () {
 
-    $('#cocoBgColor').spectrum({
+    $('#cocoBkgColor').spectrum({
         type: "color",
         color: doc.bgcolor,
-        localStorageKey: "color.cocoBgColor",
+        localStorageKey: "color.cocoBkgColor",
         showPaletteOnly: "true",
         togglePaletteOnly: "true",
         hideAfterPaletteSelect: "true",
@@ -2156,10 +2361,10 @@ KFK.initColorPicker = function () {
             KFK.APP.setBGto(color.toRgbString());
         },
     });
-    $('#shapeBgColor').spectrum({
+    $('#shapeBkgColor').spectrum({
         type: "color",
         color: config.node.textblock.background,
-        localStorageKey: "color.shapeBgColor",
+        localStorageKey: "color.shapeBkgColor",
         showPaletteOnly: "true",
         togglePaletteOnly: "true",
         hideAfterPaletteSelect: "true",
@@ -2169,9 +2374,10 @@ KFK.initColorPicker = function () {
             var hsv = color.toHsv();
             var rgb = color.toRgbString();
             var hex = color.toHexString();
+            KFK.APP.setData('model', 'shapeBkgColor', rgb);
             let theNode = KFK.getPropertyApplyToNode();
             if (theNode !== null) {
-                $(theNode).css("background-color", color.toRgbString());
+                $(theNode).css("background-color", rgb);
             }
         },
     });
@@ -2211,22 +2417,54 @@ KFK.initColorPicker = function () {
                 $(theNode).css("color", color.toRgbString());
         },
     });
+    $('#tipBkgColor').spectrum({
+        type: "color",
+        color: 'yellow',
+        localStorageKey: "color.tipBkgColor",
+        showPaletteOnly: "true",
+        togglePaletteOnly: "true",
+        hideAfterPaletteSelect: "true",
+        showInitial: "true",
+        showButtons: "false",
+        change: function (color) {
+            var hsv = color.toHsv();
+            var rgb = color.toRgbString();
+            var hex = color.toHexString();
+            // let theNode = KFK.getPropertyApplyToNode();
+            KFK.APP.setData('model', 'tipBkgColor', rgb);
+            let theNode = KFK.getLastSelectedNode();
+            if (theNode != null) {
+                KFK.setTipBkgColor(theNode, rgb);
+            }
+        },
+    });
 };
+
 
 KFK.textAlignChanged = function (event, value) {
     let tmp = $('#textAlign').val();
     let theNode = KFK.getPropertyApplyToNode();
     if (theNode != null) {
-        $(theNode).css("justify-content", tmp);
+        if ($(theNode).find('.tip_content').length !== 0) {
+            $(theNode).find('.tip_content').css('justify-content', tmp);
+        } else {
+            $(theNode).css("justify-content", tmp);
+        }
     }
+    KFK.focusOnMainContainer();
 }
 
 KFK.vertAlignChanged = function (event, value) {
     let tmp = $('#vertAlign').val();
     let theNode = KFK.getPropertyApplyToNode();
     if (theNode != null) {
-        $(theNode).css("align-items", tmp);
+        if ($(theNode).find('.tip_content').length !== 0) {
+            $(theNode).find('.tip_content').css('align-items', tmp);
+        } else {
+            $(theNode).css("align-items", tmp);
+        }
     }
+    KFK.focusOnMainContainer();
 }
 
 KFK.initDoc = () => {
@@ -2239,7 +2477,7 @@ KFK.setTenant = (tenant) => {
     config.tenant = tenant;
 }
 KFK.getOSSFileName = (basename) => {
-    return `${config.tenant.id}/${config.doc.id}/${basename}`;
+    return `${config.tenant.id} / ${config.doc.id} / ${basename}`;
 }
 
 KFK.initLineMover = function () {
@@ -2353,10 +2591,8 @@ KFK.drawGridlines = function (deltaX, deltaY) {
 };
 
 KFK.placeWelcomeObjects = function () {
-    KFK.startNode = KFK.placeNode(false, 'START', 'start', KFK.scrollX(120), KFK.scrollY(120));
-    KFK.endNode = KFK.placeNode(false, 'END', 'end', KFK.scrollX(900), KFK.scrollY(340));
-    KFK.endNode2 = KFK.placeNode(false, 'END2', 'end', KFK.scrollX(980), KFK.scrollY(240));
-    let tmp = KFK.placeNode(false, 'block', 'textblock', KFK.scrollX(780), KFK.scrollY(240));
+    KFK.placeNode(false, 'mytip', 'yellowtip', 'tip', KFK.scrollX(280), KFK.scrollY(240));
+    let tmp = KFK.placeNode(false, 'block', 'textblock', 'default', KFK.scrollX(780), KFK.scrollY(240));
     // KFK.centerPos = { x: 120 + (KFK.width() - 50 - 120) * 0.5, y: KFK.height() * 0.5 };
     KFK.drawLine(200, 200, 500, 200);
     KFK.drawLine(200, 200, 200, 500);
@@ -2376,6 +2612,7 @@ KFK.placeWelcomeObjects = function () {
 KFK.loadImages(KFK.init);
 
 KFK.setMode = function (mode) {
+    let oldMode = KFK.mode;
     KFK.mode = mode;
     for (let key in KFK.APP.active) {
         KFK.APP.active[key] = false;
@@ -2384,6 +2621,42 @@ KFK.setMode = function (mode) {
         console.warn(`APP.active.${mode} does not exist`);
     else
         KFK.APP.active[mode] = true;
+
+    if (oldMode === 'line' && mode !== 'line') {
+        if (KFK.tmpLineDIV) {
+            $(KFK.tmpLineDIV).remove();
+            KFK.tmpLineDIV = undefined;
+        }
+        KFK.lineTemping = false;
+        KFK.linkPos = [];
+    }
+
+    if (KFK.mode === 'pointer') {
+        $('#modeIndicator').hide();
+    } else {
+        if (KFK.mode === 'yellowtip') {
+            $('#modeIndicatorImg').attr("src", KFK.images[config.node.yellowtip.defaultTip].src);
+            KFK.APP.setData('model', 'rightTabIndex', 0);
+        } else
+            $('#modeIndicatorImg').attr("src", KFK.images[KFK.mode].src);
+        $('#modeIndicator').show();
+    }
+
+    if (KFK.mode === 'yellowtip') {
+        KFK.APP.setData('show', 'shape_property', true);
+        KFK.APP.setData('show', 'customyellowtip', true);
+        KFK.APP.setData('show', 'customshape', false);
+    } else if (KFK.mode === 'textblock') {
+        KFK.APP.setData('show', 'shape_property', true);
+        KFK.APP.setData('show', 'customshape', true);
+        KFK.APP.setData('show', 'customyellowtip', false);
+    } else if (KFK.mode === 'text') {
+        KFK.APP.setData('show', 'shape_property', true);
+        KFK.APP.setData('show', 'customshape', false);
+        KFK.APP.setData('show', 'customyellowtip', false);
+        KFK.APP.setData('show', 'text_property', true);
+    }
+    KFK.APP.setData('model', 'rightTabIndex', 0);
 
     KFK.focusOnMainContainer();
 }
@@ -2416,10 +2689,10 @@ KFK.isKfkNode = function (div) {
 };
 KFK.addContainerMainEventHander = function () {
     let preventDefault = false;
-    $('#right').keydown(function (e) {
-        e.stopImmediatePropagation();
-        e.stopPropagation();
-    });
+    // $('#right').keydown(function (e) {
+    //     // e.stopImmediatePropagation();
+    //     // e.stopPropagation();
+    // });
     $(document).keydown(function (e) {
         let preventDefault = false;
         if (KFK.editting) return;
@@ -2518,6 +2791,8 @@ KFK.addContainerMainEventHander = function () {
                 });
                 KFK.setZIndex(KFK.hoverDIV, myZI - 1);
             }
+        } else if ((e.keyCode === 83 || e.keyCode === 87 || e.keyCode === 81) && e.metaKey) {
+            preventDefault = true;
         }
         if (preventDefault) {
             e.stopImmediatePropagation();
@@ -2529,6 +2804,12 @@ KFK.addContainerMainEventHander = function () {
         if (e.keyCode === 17) { //Ctrl
             KFK.ctrlDown = false;
         }
+        if ((e.keyCode === 83 || e.keyCode === 87 || e.keyCode === 81) && e.metaKey) {
+            e.stopImmediatePropagation();
+            e.stopPropagation();
+            e.preventDefault();
+        }
+        KFK.log(e.keyCode);
     });
 
 };
@@ -2561,6 +2842,7 @@ KFK.saveBlobToOSS = function (blob) {
                 false,  //shiftKey
                 tmpid,
                 "image",
+                'default',
                 KFK.currentMousePos.x + KFK.scrollContainer.scrollLeft,
                 KFK.currentMousePos.y + KFK.scrollContainer.scrollTop,
                 100,
@@ -2575,7 +2857,7 @@ KFK.saveBlobToOSS = function (blob) {
 };
 
 KFK.save = async function () {
-    let docPath = `/${config.tenant.id}/${config.doc.id}/`;
+    let docPath = `/ ${config.tenant.id} / ${config.doc.id} / `;
     // let result = await OSSClient.list({
     //     prefix: 'lucas/',
     // });
@@ -2629,11 +2911,11 @@ document.onpaste = function (event) {
                 KFK.addTextToHoverDIV(text);
             });
             items[1].getAsString((text) => {
-                // console.log(`items[1] ${text}`);
+                // console.log(`items[1] ${ text }`);
             });
         } else if (items[0].kind === 'string' && items[1].kind === 'file') {
             items[0].getAsString((text) => {
-                // console.log(`items[0] ${text}`);
+                // console.log(`items[0] ${ text }`);
             });
             var blob = items[1].getAsFile();
             KFK.saveBlobToOSS(blob);
@@ -2669,13 +2951,15 @@ KFK.addEditorToNode = function (theNode, editor) {
         editors = editor;
     } else {
         let editorsArr = editors.split("$$");
-        if (editorsArr[editorsArr.length - 1] === editor) {
+        if (editorsArr[0] === editor) {
             return;
         }
-        editorsArr.push(editor);
+        editorsArr.unshift(editor);
         editors = editorsArr.join("$$");
     }
     $(theNode).attr('editors', editors);
+    $(theNode).find('.cocoeditors').html(KFK.getNodeEditors(theNode).join(', '));
+    $(theNode).find('.lastcocoeditor').html(editor);
 };
 
 KFK.getNodeEditors = function (theNode) {
@@ -2685,6 +2969,10 @@ KFK.getNodeEditors = function (theNode) {
     }
     let editorsArr = editors.split("$$");
     return editorsArr;
+}
+
+KFK.changeSVGFill = function () {
+
 }
 
 module.exports = KFK;
@@ -2699,3 +2987,4 @@ module.exports = KFK;
 //TODO: draw an multiple angles
 //TODO: double click on line to add text label
 //TODO: add editor tags (multiple/last one)
+//TODO: change SVG fill color

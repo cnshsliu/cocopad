@@ -37,37 +37,14 @@
           <b-navbar-nav>
             <b-nav-item></b-nav-item>
             <b-button-group class="coco">
-              <b-button variant="outline-success" href="javascript:newTpl()">
-                <b-icon icon="document"></b-icon> New
-              </b-button>
-              <b-button variant="outline-success">
-                <b-icon icon="cloud-download"></b-icon> Open
-              </b-button>
-              <b-button variant="outline-success" @click="save()">
-                <b-icon icon="cloud-upload"></b-icon> Save
-              </b-button>
-              <b-button variant="outline-success">
-                <b-icon icon="trash"></b-icon> Delete
-              </b-button>
-            </b-button-group>
-            <b-button-group class="coco">
-              <b-button variant="outline-success">
-                <b-icon icon="play"></b-icon> Resume
-              </b-button>
-              <b-button variant="outline-success">
-                <b-icon icon="pause"></b-icon> Pause
-              </b-button>
-              <b-button variant="outline-success">
-                <b-icon icon="stop"></b-icon> Stop
-              </b-button>
-              <b-button :variant="lockMode?'primary':'outline-success'">
+              <!-- <b-button :variant="lockMode?'primary':'outline-success'">
                 <b-icon icon="stop"></b-icon> MAGIC
-              </b-button>
+              </b-button> -->
             </b-button-group>
           </b-navbar-nav>
 
           <!-- Right aligned nav items -->
-          <b-navbar-nav>
+          <b-navbar-nav class="stayright">
             <b-nav-item></b-nav-item>
             <b-nav-form>
               <b-form-input size="sm" class="mr-sm-2" placeholder="Search"></b-form-input>
@@ -98,35 +75,30 @@
         <b-list-group-item class="d-flex align-items-center" @click="setMode('pointer');" :active="active['pointer']">
           <b-img :src="images['pointer'].src" fluid alt="" scale="2" class="cocotool"></b-img>
         </b-list-group-item>
-        <b-list-group-item class="d-flex align-items-center" @click="setMode('p8star');" :active="active['p8star']">
-          <b-img :src="images['p8star'].src" fluid alt="" scale="2" class="cocotool"></b-img>
-        </b-list-group-item>
-        <b-list-group-item class="d-flex align-items-center" @click="setMode('pin');" :active="active['pin']">
-          <b-img :src="images['pin'].src" fluid alt="" scale="2" class="cocotool"></b-img>
-        </b-list-group-item>
         <b-list-group-item class="d-flex align-items-center" @click="setMode('text');" :active="active['text']">
           <b-img :src="images['text'].src" fluid alt="" scale="2" class="cocotool"></b-img>
-        </b-list-group-item>
-        <b-list-group-item class="d-flex align-items-center" @click="setMode('yellowtip');"
-          :active="active['yellowtip']">
-          <b-img :src="images['tipyellow'].src" fluid alt="" scale="2" class="cocotool"></b-img>
-        </b-list-group-item>
-        <b-list-group-item class="d-flex align-items-center" @click="setMode('line');" :active="active['line']">
-          <b-img :src="images['line'].src" fluid alt="" scale="2" class="cocotool" id='tool_line'></b-img>
         </b-list-group-item>
         <b-list-group-item class="d-flex align-items-center" @click="setMode('textblock');"
           :active="active['textblock']">
           <b-img :src="images['textblock'].src" fluid alt="" scale="2" class="cocotool"></b-img>
         </b-list-group-item>
+        <b-list-group-item class="d-flex align-items-center" @click="setMode('yellowtip');"
+          :active="active['yellowtip']">
+          <b-img :src="images['tip'].src" fluid alt="" scale="2" class="cocotool"></b-img>
+        </b-list-group-item>
+        <b-list-group-item class="d-flex align-items-center" @click="setMode('line');" :active="active['line']">
+          <b-img :src="images['line'].src" fluid alt="" scale="2" class="cocotool" id='tool_line'></b-img>
+        </b-list-group-item>
+        
       </b-list-group>
     </div>
     <div id="right">
-      <b-tabs v-show="show.shape_property" v-model="model.rightTabIndex" content-class="mt-3" justified>
+      <b-tabs v-model="model.rightTabIndex" content-class="mt-3" justified>
         <b-tab title="样式" class='cocoproperty'>
           <b-container v-show="show.customshape">
             <b-row class="mx-auto my-1">
               <b-col >背景底色</b-col>
-              <b-col class='coco'><input class="w-100" name="shapeBgColor" id="shapeBgColor" /></b-col>
+              <b-col class='coco'><input class="w-100" name="shapeBkgColor" id="shapeBkgColor" /></b-col>
             </b-row>
             <b-row class="mx-auto my-1">
               <b-col>边框颜色</b-col>
@@ -141,16 +113,18 @@
               <b-col class='coco'><input class='selector' size=3 id="spinner_border_radius" name="value_rad" /></b-col>
             </b-row>
           </b-container>
-          <b-container v-if="show.customyellowtip">
+          <b-container v-show="show.customyellowtip">
             <b-row v-for="tips in tip_groups" v-bind:key="tips[0]">
               <b-col class='p-1' v-for="tip in tips" v-bind:key="tip">
-                <b-img :src="images[tip].src" fluid alt="" scale="2" class="cocotool" @click="setTip(tip)"></b-img>
+                <b-img :src="images[tip].src" fluid alt="" scale="2" class="cocotool" @click="setTipVariant(tip)"></b-img>
               </b-col>
             </b-row>
+            <b-row class="mx-auto my-1">
+              <b-col>底色颜色</b-col>
+              <b-col class='coco'><input name="tipBkgColor" id="tipBkgColor" /></b-col>
+            </b-row>
           </b-container>
-        </b-tab>
-        <b-tab title="文本" class="cocoproperty">
-          <b-container v-show="show.text_property">
+          <b-container v-show="show.text_property" class='border-top'>
             <div class="row mx-auto my-1">
               <div class="col">文本字体</div>
               <div class="col coco"><input class="fonts p-0"/></div>
@@ -205,9 +179,7 @@
             </b-button-group>
           </b-button-toolbar>
         </b-tab>
-      </b-tabs>
-      <b-tabs v-show="!show.shape_property" content-class="mt-3" justified>
-        <b-tab title="COCOPAD" active class='cocoproperty'>
+        <b-tab title="COCO" active class='cocoproperty'>
           <p>欢迎使用</p>
           <b-checkbox id="cb-showgrid" v-model="model.showGrid" name="cb-showgrid" switch @change="showGridChanged">
             显示网格线
@@ -218,7 +190,7 @@
           <b-container class="coco">
             <b-row class="mx-auto my-1">
               <b-col>背景颜色</b-col>
-              <b-col class="coco"><input name="cocoBgColor" id="cocoBgColor" /></b-col>
+              <b-col class="coco"><input name="cocoBkgColor" id="cocoBkgColor" /></b-col>
             </b-row>
           </b-container>
           <b-container class="coco">
@@ -226,9 +198,9 @@
               <b-col>显示编辑者</b-col>
             </b-row>
             <b-row class="mx-auto my-1">
-              <b-form-radio v-model="model.showEditor" name="some-radios" value="none" @change="showEditorChanged">隐藏</b-form-radio>
-              <b-form-radio v-model="model.showEditor" name="some-radios" value="last" @change="showEditorChanged">最后</b-form-radio>
-              <b-form-radio v-model="model.showEditor" name="some-radios" value="all" @change="showEditorChanged">全部</b-form-radio>
+              <b-form-radio v-model="model.showEditor" name="some-radios" value="none" @change="showEditorChanged('none')">隐藏</b-form-radio>
+              <b-form-radio v-model="model.showEditor" name="some-radios" value="last" @change="showEditorChanged('last')">最近</b-form-radio>
+              <b-form-radio v-model="model.showEditor" name="some-radios" value="all" @change="showEditorChanged('all')">全部</b-form-radio>
             </b-row>
           </b-container>
         </b-tab>
@@ -252,7 +224,7 @@
       style="position: absolute; top:0px; left:0px; width: 20px; height: 20px; z-index: 9999; display: none;" />
     <div id="MSG" class="msgarea">{{model.msg}}</div>
   </div>
-  <script src="./index.js"></script>
+  <script src="./pad.js"></script>
 </body>
 
 </html>
