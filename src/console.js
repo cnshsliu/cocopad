@@ -11,7 +11,8 @@ import OSS from 'ossnolookup';
 import "./importjquery";
 import "jquery-ui-dist/jquery-ui.js";
 import "spectrum-colorpicker2/dist/spectrum.min";
-import "../fontpicker-jquery-plugin/dist/jquery.fontpicker";
+import "../lib/fontpicker-jquery-plugin/dist/jquery.fontpicker";
+import "../lib/jquery.line/jquery.line";
 // import iro from '@jaames/iro';
 // import { BIconFolderSymlinkFill, directivesPlugin, BIconKanbanFill, VBHoverPlugin } from "bootstrap-vue";
 import { REPL_MODE_SLOPPY } from "repl";
@@ -132,7 +133,9 @@ const OSSClient = new OSS({
     accessKeySecret: 'xpilgsl4KQbfnFDZkRMy0Dp1KuoW8A',
     bucket: config.vault.bucket,
 });
+let JC3 = null;
 let KFK = {};
+KFK.JC3 = null;
 KFK.scaleBy = 1.01;
 KFK.centerPos = { x: 0, y: 0 };
 KFK.centerPos = { x: 0, y: 0 };
@@ -659,6 +662,7 @@ KFK.initC3 = function () {
     });
 
     KFK.C3 = c3;
+    KFK.JC3 = JC3 = $(KFK.C3);
 }
 
 KFK.showUserMovingBadge = function (username, x, y) {
@@ -2236,6 +2240,18 @@ KFK.init = function () {
     KFK.initShowEditors('none');
 
     KFK.APP.setData('model', 'rightTabIndex', 2);
+
+
+    JC3.line(190, 225, 352, 225, {color:"red", zindex:1});
+
+    JC3.line(0,0,50,50, {color:"pink"});
+    JC3.line(0,50,50,0, {color:"red"});
+
+    JC3.line(20,45,200,400, {color:"blue", style: "dashed", class: "test"});
+    JC3.line(10, 10, 300, 100, {color:"#D60004", stroke:5, zindex:1001}, 
+                        function(){KFK.log('Hello new line!')});
+
+
 };
 KFK.getPropertyApplyToNode = function () {
     if (KFK.lastFocusOnNode != null) {
@@ -2270,7 +2286,6 @@ KFK.initPropertyForm = function () {
             }
         }
     });
-    //TODO: customize fontpicker
     spinnerBorderRadius.spinner("value", 20);
     $("#spinner_border_radius").height("6px");
     $("input.fonts").fontpicker({
