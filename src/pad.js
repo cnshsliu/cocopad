@@ -1,5 +1,7 @@
 import Vue from 'vue';
 import { BootstrapVue, IconsPlugin, ListGroupPlugin, VBHoverPlugin } from 'bootstrap-vue';
+import events from 'events';
+
 import "../scss/custom.scss";
 import KFK from './console';
 
@@ -30,6 +32,7 @@ const app = new Vue({
       'arrange_multi_nodes': false,
       'shape_property': false,
       'text_property': false,
+      'customline': true,
     },
     model: {
       rightTabIndex: 2,
@@ -42,6 +45,8 @@ const app = new Vue({
       msg: 'hello',
       tipBkgColor: '#f7f7c6',
       shapeBkgColor: '#ffffff',
+      lineColor: '#000000',
+      lineWidth: 1,
       padbkgcolor: [
         '#C2FFFB', '#D0C8E8', '#FEE8E7', '#E8DFC8', '#B9FFA6',
         '#C2D3FF', '#C8D1E8', '#E8EFFE', '#E8EFFE', '#E8EFFE'
@@ -126,4 +131,10 @@ const app = new Vue({
     },
   },
 }).$mount("#app");
+
+//To prevent listener number exceeds problems
+const emitter = new events.EventEmitter();
+emitter.setMaxListeners(100);
+// emitter.setMaxListeners(0);
+
 KFK.APP = app;

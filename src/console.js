@@ -136,6 +136,7 @@ const OSSClient = new OSS({
 let JC3 = null;
 let KFK = {};
 KFK.JC3 = null;
+KFK.transforming = false;
 KFK.scaleBy = 1.01;
 KFK.centerPos = { x: 0, y: 0 };
 KFK.centerPos = { x: 0, y: 0 };
@@ -250,9 +251,8 @@ $(document).mousemove(function (event) {
                 KFK.linkPos[0].points[selectedFromIndex].y,
                 tmpPoint.x,
                 tmpPoint.y,
-                '#888888',
-                1
-            ).div;
+                { color: '#888888', stroke: 1 }
+            );
         } else if (KFK.linkPos.length === 0) {
             KFK.APP.setData('model', 'msg', '');
         }
@@ -520,7 +520,8 @@ KFK.procLink = function (shiftKey) {
         KFK.linkPos[0].points[selectedFromIndex].y,
         KFK.linkPos[1].points[selectedToIndex].x,
         KFK.linkPos[1].points[selectedToIndex].y,
-    ).div;
+        {}
+    );
     //这四个属性都是有的
     lineDIV.setAttribute('fx', KFK.linkPos[0].points[selectedFromIndex].x);
     lineDIV.setAttribute('fy', KFK.linkPos[0].points[selectedFromIndex].y);
@@ -534,9 +535,9 @@ KFK.procLink = function (shiftKey) {
         lineDIV.setAttribute('tdiv', KFK.linkPos[1].div.getAttribute('id'));
     }
     //有一端连在nodeDIV上，则，不允许拖动和改变大小
-    if (KFK.linkPos[0].type === 'box' || KFK.linkPos[1].type === 'box') {
-        $(lineDIV).draggable('disable');
-    }
+    // if (KFK.linkPos[0].type === 'box' || KFK.linkPos[1].type === 'box') {
+    //     $(lineDIV).draggable('disable');
+    // }
     if (!shiftKey)
         KFK.linkPos.splice(0, 2);
     else {
@@ -608,7 +609,10 @@ KFK.initC3 = function () {
     $(c3).on('click', function (e) {
         KFK.focusOnNode(null);
         KFK.setJustCreated(null);
-        KFK.APP.setData('show', 'custom_shape', false);
+        console.log('set pickedLineDIV to null');
+        KFK.pickedLineDIV = null;
+        KFK.APP.setData('show', 'customshape', false);
+        KFK.APP.setData('show', 'customline', false);
         if (KFK.editting || KFK.resizing || KFK.dragging) {
             // console.log(`ignore click because editting: ${KFK.editting}, resizing: ${KFK.resizing}, dragging: ${KFK.dragging}`);
             return;
@@ -647,7 +651,7 @@ KFK.initC3 = function () {
             } else {
                 console.log(`${KFK.mode} is not supported`);
                 if (KFK.mode === "line") {
-                    KFK.drawLine(100, 100, 300, 300);
+                    KFK.drawLine(100, 100, 300, 300, {});
                 }
             }
         }
@@ -692,6 +696,50 @@ KFK.showUserMovingBadge = function (username, x, y) {
 }
 
 KFK.getPositionOfTwoEndsOfLine = function (lineDIV, theLine) {
+    let dynamicRect = {
+        x: unpx(lineDIV.style.left),
+        y: unpx(lineDIV.style.top),
+        width: unpx(lineDIV.style.width),
+        height: unpx(lineDIV.style.height),
+    };
+    let lineFrom = { x: theLine.points()[0], y: theLine.points()[1] };
+    let lineTo = { x: theLine.points()[2], y: theLine.points()[3] };
+    let fromPosition = {};
+    let toPosition = {};
+    if (lineFrom.x === 0 && lineFrom.y === 0) {
+        theLine.lineFromAt = "lt";
+        fromPosition = { x: KFK.nodeLeft(lineDIV), y: KFK.nodeTop(lineDIV) };
+    } else if (lineFrom.x === 0 && lineFrom.y === dynamicRect.height) {
+        theLine.lineFromAt = "lb";
+        fromPosition = { x: KFK.nodeLeft(lineDIV), y: KFK.nodeBottom(lineDIV) };
+    } else if (lineFrom.x === dynamicRect.width && lineFrom.y === 0) {
+        theLine.lineFromAt = "rt";
+        fromPosition = { x: KFK.nodeRight(lineDIV), y: KFK.nodeTop(lineDIV) };
+    } else if (lineFrom.x === dynamicRect.width && lineFrom.y === dynamicRect.height) {
+        theLine.lineFromAt = "rb";
+        fromPosition = { x: KFK.nodeRight(lineDIV), y: KFK.nodeBottom(lineDIV) };
+    }
+    if (lineTo.x === 0 && lineTo.y === 0) {
+        theLine.lineToAt = "lt";
+        toPosition = { x: KFK.nodeLeft(lineDIV), y: KFK.nodeTop(lineDIV) };
+    } else if (lineTo.x === 0 && lineTo.y === dynamicRect.height) {
+        theLine.lineToAt = "lb";
+        toPosition = { x: KFK.nodeLeft(lineDIV), y: KFK.nodeBottom(lineDIV) };
+    } else if (lineTo.x === dynamicRect.width && lineTo.y === 0) {
+        theLine.lineToAt = "rt";
+        toPosition = { x: KFK.nodeRight(lineDIV), y: KFK.nodeTop(lineDIV) };
+    } else if (lineTo.x === dynamicRect.width && lineTo.y === dynamicRect.height) {
+        theLine.lineToAt = "rb";
+        toPosition = { x: KFK.nodeRight(lineDIV), y: KFK.nodeBottom(lineDIV) };
+    }
+    return {
+        from: { x: fromPosition.x, y: fromPosition.y },
+        to: { x: toPosition.x, y: toPosition.y },
+    };
+};
+
+
+KFK.getPositionOfTwoEndsOfLine2 = function (lineDIV) {
     let dynamicRect = {
         x: unpx(lineDIV.style.left),
         y: unpx(lineDIV.style.top),
@@ -852,7 +900,8 @@ KFK.getNearGridPoint = function (x, y) {
     }
     return ({ x: newX, y: newY });
 };
-KFK.drawLine = function (x1, y1, x2, y2, strokeColor, strokeWidth) {
+
+KFK.drawLineWithCanvas = function (x1, y1, x2, y2, strokeColor, strokeWidth) {
     strokeColor = strokeColor ? strokeColor : 'blue';
     strokeWidth = strokeWidth ? strokeWidth : 3;
     let p1 = { x: x1, y: y1 };
@@ -1032,7 +1081,7 @@ KFK.drawLine = function (x1, y1, x2, y2, strokeColor, strokeWidth) {
     //click line
     jqLineDIV.click((e) => {
         KFK.focusOnNode(null);
-        KFK.APP.setData('show', 'custom_shape', false);
+        KFK.APP.setData('show', 'customshape', false);
         if (!lineDIV.getAttribute('fdiv') && !lineDIV.getAttribute('tdiv')) {
             KFK.afterDragging = false;
             KFK.afterResizing = false;
@@ -1050,6 +1099,266 @@ KFK.drawLine = function (x1, y1, x2, y2, strokeColor, strokeWidth) {
     // KFK.allLines.push(theLine);
     return { div: lineDIV, line: theLine };
 }
+
+KFK.drawLine = function (x1, y1, x2, y2, options) {
+    if (options === undefined) options = {};
+    let p1 = { x: x1, y: y1 };
+    let p2 = { x: x2, y: y2 };
+    if (KFK.APP.model.snap) {
+        p1 = KFK.getNearGridPoint(p1.x, p1.y);
+        p2 = KFK.getNearGridPoint(p2.x, p2.y);
+        x1 = p1.x; y1 = p1.y; x2 = p2.x; y2 = p2.y;
+    }
+
+    let tmpid = myuid();
+    let divid = `div_${tmpid}`;
+    let lineDIV = JC3.line(x1, y1, x2, y2, options);
+    let jqLine = $(lineDIV);
+    jqLine.attr("id", divid);
+    jqLine.attr('options', KFK.codeToBase64(JSON.stringify(options)));
+    jqLine.attr('x1', x1);
+    jqLine.attr('y1', y1);
+    jqLine.attr('x2', x2);
+    jqLine.attr('y2', y2);
+    jqLine.css('border-color', options.color);
+    jqLine.css('border-width', options.stroke);
+    if (options.tmp) {
+        return lineDIV;
+    }
+    jqLine.addClass('kfkline');
+    jqLine.hover(
+        function () {
+            if (KFK.lineDragging) return;
+            if (KFK.transforming) return;
+            $(document.body).css('cursor', 'pointer');
+            //TODO: hover line change style.
+            // theLine.dash([10, 2, 5, 2]);
+            // theLine.dashEnabled(true);
+            // theLine.shadowEnabled(false);
+            // lineLayer.batchDraw();
+            KFK.hoverLineDIV = lineDIV;
+
+            if (!lineDIV.getAttribute('fdiv') && !lineDIV.getAttribute('tdiv') && !KFK.lineTemping) {
+                function mouseNear(p1, p2) {
+                    if (Math.sqrt(Math.pow((p2.x - p1.x), 2) + Math.pow((p2.y - p1.y), 2)) <= 20) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+                KFK.lineTwoEnds = {
+                    from: { x: x1, y: y1 },
+                    to: { x: x2, y: y2 }
+                };
+
+                if (!lineDIV.getAttribute('fdiv') && mouseNear(KFK.scrollToScreen(KFK.lineTwoEnds.from), KFK.currentMousePos)) {
+                    $('#linetransformer').css('visibility', 'visible');
+                    KFK.moveLinePoint = 'from';
+                    KFK.tobeTransformLineDIV = lineDIV;
+                    KFK.moveLineMoverTo(KFK.scrollToScreen(KFK.lineTwoEnds.from));
+                } else if (!lineDIV.getAttribute('tdiv') && mouseNear(KFK.scrollToScreen(KFK.lineTwoEnds.to), KFK.currentMousePos)) {
+                    $('#linetransformer').css('visibility', 'visible');
+                    KFK.tobeTransformLineDIV = lineDIV;
+                    KFK.moveLinePoint = 'to';
+                    KFK.moveLineMoverTo(KFK.scrollToScreen(KFK.lineTwoEnds.to));
+                } else {
+                    $('#linetransformer').css('visibility', 'hidden');
+                }
+            } else {
+                $('#linetransformer').css('visibility', 'hidden');
+            }
+        },
+        function () {
+            if (KFK.lineDragging) return;
+            if (KFK.transforming) return;
+            $(document.body).css('cursor', 'default');
+            //TODO: change style back
+            // theLine.dash([10, 20, 5, 20]);
+            // theLine.dashEnabled(false);
+            // theLine.shadowEnabled(false);
+            // lineLayer.batchDraw();
+            KFK.hoverLineDIV = null;
+        });
+
+    // jqLine.draggable({
+    //     start: (event, ui) => {
+    //         console.log('line drag start');
+    //         $('#linetransformer').css('visibility', 'hidden');
+    //         KFK.dragging = true;
+    //         KFK.linkPos = [];
+    //         KFK.lineDragging = true;
+    //         KFK.linePosStart = ui.position;
+    //     },
+    //     drag: () => {
+    //         KFK.lineDragging = true;
+    //     },
+    //     //drag line
+    //     stop: (event, ui) => {
+    //         KFK.linePosStop = ui.position;
+    //         console.log('line drag end ' + ui.offset.left + ":"+ ui.offset.top);
+    //         console.log('line drag end ' + ui.position.left + ":"+ ui.position.top);
+    //         KFK.linkPos = [];
+    //         KFK.dragging = false;
+    //         KFK.lineDragging = false;
+    //         KFK.afterDragging = true;
+    //         if (KFK.APP.model.snap) {
+    //              let topLeftPoint = KFK.getNearGridPoint(KFK.linePosStop.left, KFK.linePosStop.top);
+    //              KFK.linePosStop.left = topLeftPoint.x;
+    //              KFK.linePosStop.top = topLeftPoint.y;
+    //         }
+    //             let delta = {
+    //                 x: KFK.linePosStop.left - KFK.linePosStart.left,
+    //                 y: KFK.linePosStop.top - KFK.linePosStart.top
+    //             }
+    //             //TODO: jquery.line    redraw line with different points but keep the DIV.
+    //         KFK.offsetLineDataAttr(lineDIV, delta);
+
+    //         // let newPosition = KFK.getPositionOfTwoEndsOfLine2(lineDIV);
+    //         // if (KFK.APP.model.snap) {
+    //         //     let topLeftPoint = KFK.getNearGridPoint(KFK.nodeLeft(lineDIV), KFK.nodeTop(lineDIV));
+    //         //     lineDIV.style.left = px(topLeftPoint.x);
+    //         //     lineDIV.style.top = px(topLeftPoint.y);
+    //         //     newPosition = KFK.getPositionOfTwoEndsOfLine2(lineDIV);
+    //         // }
+    //         //     let delta = {
+    //         //         x: KFK.nodeLeft(lineDIV) - KFK.positionBeforeDrag.x,
+    //         //         y: KFK.nodeTop(lineDIV) - KFK.positionBeforeDrag.y
+    //         //     }
+
+    //         //     if (!event.shiftKey) {
+    //         //         //拖动其它被同时选中的对象
+    //         //         let index = KFK.selectedDIVs.indexOf(el(jqLine));
+    //         //         if (KFK.selectedDIVs.length > 1 && index >= 0) {
+    //         //             for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+    //         //                 if (i === index)
+    //         //                     continue;
+    //         //                 KFK.selectedDIVs[i].style.left = px(
+    //         //                     KFK.nodeLeft(KFK.selectedDIVs[i]) + delta.x);
+    //         //                 KFK.selectedDIVs[i].style.top = px(
+    //         //                     KFK.nodeTop(KFK.selectedDIVs[i]) + delta.y);
+    //         //                 if (KFK.selectedDIVs[i].getAttribute('nodetype') === 'kfkline') {
+    //         //                     KFK.offsetLineDataAttr(KFK.selectedDIVs[i], delta);
+    //         //                 }
+    //         //             }
+    //         //         }
+    //         //     }
+    //         //     KFK.reArrangeBoundingRect();
+    //     },
+    // });
+
+    //防止点在线上，以后，画出框选框
+    jqLine.mousedown((e) => {
+        e.stopImmediatePropagation();
+        e.stopPropagation();
+    });
+    //click line
+    jqLine.click((e) => {
+        KFK.focusOnNode(null);
+        KFK.APP.setData('show', 'shape_property', true);
+        KFK.APP.setData('show', 'customshape', false);
+        KFK.APP.setData('show', 'customline', true);
+        console.log("here");
+        KFK.pickedLineDIV = lineDIV;
+        let color = jqLine.css('border-color');
+        let width = unpx(lineDIV.style.borderWidth);
+        $('#lineColor').spectrum("set", color);
+        $('#spinner_line_width').spinner("value", width);
+        e.stopImmediatePropagation();
+        e.stopPropagation();
+    });
+
+    // KFK.allLineDIVs.push(lineDIV);
+    // KFK.allLines.push(theLine);
+    return lineDIV;
+}
+
+
+KFK.initLineMover = function () {
+    $('#linetransformer').draggable({
+        // move line drag line
+        start: () => {
+            KFK.transforming = true;
+            $(KFK.tobeTransformLineDIV).css('visibility', 'hidden');
+            console.log('transformer drag start');
+            // $(KFK.tobeTransformLineDIV).draggable('disable');
+            KFK.lineMoverOldPosition = $('#linetransformer').position();
+            // KFK.setMode('line');
+        },
+        drag: () => {
+            KFK.lineMoverNewPosition = $('#linetransformer').position();
+            // console.log(KFK.lineMoverNewPosition);
+            if (KFK.lineMoverNewPosition.left != 0 && KFK.lineMoverNewPosition.top != 0) {
+                if (KFK.tmpLineDIV) {
+                    $(KFK.tmpLineDIV).remove();
+                }
+                if (KFK.tobeTransformLineDIV) {
+                    let options = JSON.parse(KFK.base64ToCode($(KFK.tobeTransformLineDIV).attr('options')));
+                    options.tmp = true;
+                    if (KFK.moveLinePoint === 'from') {
+                        KFK.tmpLineDIV = KFK.drawLine(
+                            KFK.scrollX(KFK.lineMoverNewPosition.left + 10),
+                            KFK.scrollY(KFK.lineMoverNewPosition.top + 10),
+                            KFK.lineTwoEnds.to.x,
+                            KFK.lineTwoEnds.to.y,
+                            options
+                        );
+                    } else {
+                        KFK.tmpLineDIV = KFK.drawLine(
+                            KFK.lineTwoEnds.from.x,
+                            KFK.lineTwoEnds.from.y,
+                            KFK.scrollX(KFK.lineMoverNewPosition.left + 10),
+                            KFK.scrollY(KFK.lineMoverNewPosition.top + 10),
+                            options
+                        );
+                    }
+                }
+            } else {
+                console.log(new Error().stack);
+            }
+        },
+        stop: () => {
+            console.log('transformer drag end');
+            KFK.transforming = false;
+            // $(KFK.tobeTransformLineDIV).draggable('enable');
+            if (KFK.tmpLineDIV) {
+                $(KFK.tmpLineDIV).remove();
+            }
+            KFK.lineTemping = false;
+            KFK.lineMoverNewPosition = $('#linetransformer').position();
+            if (KFK.APP.model.snap) {
+                let tmp = KFK.getNearGridPoint(KFK.lineMoverNewPosition.left + 10, KFK.lineMoverNewPosition.top + 10);
+                el($('#linetransformer')).style.left = px(tmp.x - 10);
+                el($('#linetransformer')).style.top = px(tmp.y - 10);
+                KFK.lineMoverNewPosition = $('#linetransformer').position();
+            }
+            let tmp = null;
+            if (KFK.tobeTransformLineDIV) {
+                let options = JSON.parse(KFK.base64ToCode($(KFK.tobeTransformLineDIV).attr('options')));
+                if (KFK.moveLinePoint === 'from') {
+                    tmp = KFK.drawLine(
+                        KFK.scrollX(KFK.lineMoverNewPosition.left + 10),
+                        KFK.scrollY(KFK.lineMoverNewPosition.top + 10),
+                        KFK.lineTwoEnds.to.x,
+                        KFK.lineTwoEnds.to.y,
+                        options
+                    );
+                } else {
+                    tmp = KFK.drawLine(
+                        KFK.lineTwoEnds.from.x,
+                        KFK.lineTwoEnds.from.y,
+                        KFK.scrollX(KFK.lineMoverNewPosition.left + 10),
+                        KFK.scrollY(KFK.lineMoverNewPosition.top + 10),
+                        options
+                    );
+                }
+                $(KFK.tobeTransformLineDIV).remove();
+                KFK.tobeTransformLineDIV = tmp;
+                KFK.pickedLineDIV = tmp;
+            }
+            KFK.reArrangeBoundingRect();
+        },
+    })
+};
 
 
 KFK.getDegree = function (p1, p2) {
@@ -1305,7 +1614,6 @@ KFK._createNode = function (node) {
         // console.log(`${node.type} is not supported`);
         return;
     }
-    nodeObj.edittable = config.node[node.type].edittable ? true : false;
 
     var nodeDIV = document.createElement('div');
     nodeDIV.id = node.id;
@@ -1389,7 +1697,7 @@ KFK._createNode = function (node) {
 
     let jqNodeDIV = $(nodeDIV);
     jqNodeDIV.attr('nodetype', node.type);
-    jqNodeDIV.attr('edittable', nodeObj.edittable);
+    jqNodeDIV.attr('edittable', config.node[node.type].edittable ? true : false);
     KFK.addEditorToNode(nodeDIV, config.tenant.user);
     KFK.setNodeEventHandler(jqNodeDIV);
 
@@ -2063,8 +2371,11 @@ KFK.duplicateHoverDiv = function (e) {
                     KFK.scrollY(y1 + offset.y),
                     KFK.scrollX(x2 + offset.x),
                     KFK.scrollY(y2 + offset.y),
-                    $(KFK.divToCopy).attr('strokeColor'),
-                    parseInt($(KFK.divToCopy).attr('strokeWidth')),
+
+                    {
+                        color: $(KFK.divToCopy).attr('strokeColor'),
+                        stroke: parseInt($(KFK.divToCopy).attr('strokeWidth'))
+                    }
                 );
             } else {
                 let cx = (x1 + x2) * 0.5;
@@ -2078,8 +2389,10 @@ KFK.duplicateHoverDiv = function (e) {
                     y1 + deltay + KFK.scrollContainer.scrollTop,
                     x2 + deltax + KFK.scrollContainer.scrollLeft,
                     y2 + deltay + KFK.scrollContainer.scrollTop,
-                    $(KFK.divToCopy).attr('strokeColor'),
-                    parseInt($(KFK.divToCopy).attr('strokeWidth')),
+                    {
+                        color: $(KFK.divToCopy).attr('strokeColor'),
+                        stroke: parseInt($(KFK.divToCopy).attr('strokeWidth'))
+                    }
                 );
             }
         }
@@ -2242,17 +2555,33 @@ KFK.init = function () {
     KFK.APP.setData('model', 'rightTabIndex', 2);
 
 
-    JC3.line(190, 225, 352, 225, {color:"red", zindex:1});
+    // JC3.line(190, 225, 352, 225, { color: "red", zindex: 1 });
 
-    JC3.line(0,0,50,50, {color:"pink"});
-    JC3.line(0,50,50,0, {color:"red"});
+    // JC3.line(0, 0, 50, 50, { color: "pink" });
+    // JC3.line(0, 50, 50, 0, { color: "red" });
 
-    JC3.line(20,45,200,400, {color:"blue", style: "dashed", class: "test"});
-    JC3.line(10, 10, 300, 100, {color:"#D60004", stroke:5, zindex:1001}, 
-                        function(){KFK.log('Hello new line!')});
+    // let tmpa = JC3.line(20, 45, 200, 400, { color: "blue", style: "dashed", class: "test" });
+    // let tmpb = JC3.line(10, 10, 300, 100, { color: "#D60004", stroke: 5, zindex: 1001 },
+    //     function () { console.log('new line appended') });
+    // console.log(tmpa === tmpb);
+    // console.log(tmpa);
+    // console.log(tmpb);
 
 
 };
+KFK.getLineOptions = function(div){
+ return JSON.parse(KFK.base64ToCode($(div).attr('options')));
+};
+KFK.setLineOptions = function(div, options){
+ $(div).attr('options', KFK.codeToBase64(JSON.stringify(options)));
+};
+KFK.codeToBase64 = function (code) {
+    return Buffer.from(code).toString('base64');
+};
+KFK.base64ToCode = function (base64) {
+    return Buffer.from(base64, 'base64').toString('utf-8');
+};
+
 KFK.getPropertyApplyToNode = function () {
     if (KFK.lastFocusOnNode != null) {
         return KFK.lastFocusOnNode;
@@ -2288,6 +2617,25 @@ KFK.initPropertyForm = function () {
     });
     spinnerBorderRadius.spinner("value", 20);
     $("#spinner_border_radius").height("6px");
+
+
+
+    let spinnerLineWidth = $("#spinner_line_width").spinner({
+        min: 1, max: 1000, step: 1, start: 1,
+        spin: function (event, ui) {
+            if (KFK.pickedLineDIV != null) {
+                $(KFK.pickedLineDIV).css("border-width", ui.value);
+                let options = KFK.getLineOptions(KFK.pickedLineDIV);
+                options.stroke = ui.value;
+                KFK.setLineOptions(KFK.pickedLineDIV, options);
+            }
+        }
+    });
+    spinnerLineWidth.spinner("value", 1);
+    $("#spinner_line_width").height("6px");
+
+
+
     $("input.fonts").fontpicker({
         lang: 'zh-CN', variants: true, lazyload: true, nrRecents: 3,
         googleFonts: 'Alegreya,Boogaloo,Coiny,Dosis,Emilys Candy,Faster One,Galindo'.split(','),
@@ -2414,6 +2762,27 @@ KFK.initColorPicker = function () {
                 $(theNode).css("border-color", color.toRgbString());
         },
     });
+    $('#lineColor').spectrum({
+        type: "color",
+        localStorageKey: "color.lineColor",
+        showPaletteOnly: "true",
+        togglePaletteOnly: "true",
+        hideAfterPaletteSelect: "true",
+        showInitial: "true",
+        showButtons: "false",
+        change: function (color) {
+            var hsv = color.toHsv();
+            var rgb = color.toRgbString();
+            var hex = color.toHexString();
+            // KFK.APP.setBGto(color.toRgbString()); 
+            if (KFK.pickedLineDIV != null) {
+                $(KFK.pickedLineDIV).css("border-color", color.toRgbString());
+                let options = KFK.getLineOptions(KFK.pickedLineDIV);
+                options.color = rgb;
+                KFK.setLineOptions(KFK.pickedLineDIV, options);
+            }
+        },
+    });
     $('#fontColor').spectrum({
         type: "color",
         localStorageKey: "color.fontColor",
@@ -2495,85 +2864,6 @@ KFK.getOSSFileName = (basename) => {
     return `${config.tenant.id} / ${config.doc.id} / ${basename}`;
 }
 
-KFK.initLineMover = function () {
-    $('#linetransformer').draggable({
-        start: () => {
-            KFK.lineMoverOldPosition = $('#linetransformer').position();
-            // KFK.setMode('line');
-        },
-        drag: () => {
-            KFK.lineMoverNewPosition = $('#linetransformer').position();
-            if (KFK.tmpLineDIV) {
-                $(KFK.tmpLineDIV).remove();
-            }
-            if (KFK.tobeTransformLineDIV) {
-                if (KFK.moveLinePoint === 'from') {
-                    KFK.tmpLineDIV = KFK.drawLine(
-                        KFK.scrollX(KFK.lineMoverNewPosition.left + 10),
-                        KFK.scrollY(KFK.lineMoverNewPosition.top + 10),
-                        KFK.lineTwoEnds.to.x,
-                        KFK.lineTwoEnds.to.y,
-                        '#888888',
-                        1,
-                    ).div;
-                } else {
-                    KFK.tmpLineDIV = KFK.drawLine(
-                        KFK.lineTwoEnds.from.x,
-                        KFK.lineTwoEnds.from.y,
-                        KFK.scrollX(KFK.lineMoverNewPosition.left + 10),
-                        KFK.scrollY(KFK.lineMoverNewPosition.top + 10),
-                        "#888888",
-                        1,
-                    ).div;
-                }
-            }
-        },
-        stop: () => {
-            if (KFK.tmpLineDIV) {
-                $(KFK.tmpLineDIV).remove();
-            }
-            KFK.lineTemping = false;
-            KFK.lineMoverNewPosition = $('#linetransformer').position();
-            if (KFK.APP.model.snap) {
-                let tmp = KFK.getNearGridPoint(KFK.lineMoverNewPosition.left + 10, KFK.lineMoverNewPosition.top + 10);
-                el($('#linetransformer')).style.left = px(tmp.x - 10);
-                el($('#linetransformer')).style.top = px(tmp.y - 10);
-                KFK.lineMoverNewPosition = $('#linetransformer').position();
-            }
-            let tmp = null;
-            if (KFK.tobeTransformLineDIV) {
-                if (KFK.moveLinePoint === 'from') {
-                    tmp = KFK.drawLine(
-                        KFK.scrollX(KFK.lineMoverNewPosition.left + 10),
-                        KFK.scrollY(KFK.lineMoverNewPosition.top + 10),
-                        KFK.lineTwoEnds.to.x,
-                        KFK.lineTwoEnds.to.y,
-                        $(KFK.tobeTransformLineDIV).attr('strokeColor'),
-                        parseInt($(KFK.tobeTransformLineDIV).attr('strokeWidth')),
-                    );
-                } else {
-                    tmp = KFK.drawLine(
-                        KFK.lineTwoEnds.from.x,
-                        KFK.lineTwoEnds.from.y,
-                        KFK.scrollX(KFK.lineMoverNewPosition.left + 10),
-                        KFK.scrollY(KFK.lineMoverNewPosition.top + 10),
-                        $(KFK.tobeTransformLineDIV).attr('strokeColor'),
-                        parseInt($(KFK.tobeTransformLineDIV).attr('strokeWidth')),
-                    );
-                }
-                let divIndexInSelected = KFK.selectedDIVs.indexOf(KFK.tobeTransformLineDIV);
-                if (divIndexInSelected >= 0) {
-                    KFK.selectedDIVs[divIndexInSelected] = tmp.div;
-                    KFK.selectedLINs[divIndexInSelected] = tmp.line;
-                }
-                $(KFK.tobeTransformLineDIV).remove();
-                KFK.tobeTransformLineDIV = tmp.div;
-            }
-            KFK.reArrangeBoundingRect();
-        },
-    })
-};
-
 KFK.initGridLayer = function () {
     KFK.drawGridlines();
 };
@@ -2609,11 +2899,11 @@ KFK.placeWelcomeObjects = function () {
     KFK.placeNode(false, 'mytip', 'yellowtip', 'tip', KFK.scrollX(280), KFK.scrollY(240));
     let tmp = KFK.placeNode(false, 'block', 'textblock', 'default', KFK.scrollX(780), KFK.scrollY(240));
     // KFK.centerPos = { x: 120 + (KFK.width() - 50 - 120) * 0.5, y: KFK.height() * 0.5 };
-    KFK.drawLine(200, 200, 500, 200);
-    KFK.drawLine(200, 200, 200, 500);
-    KFK.drawLine(500, 200, 500, 500);
-    KFK.drawLine(200, 500, 500, 500);
-    KFK.drawLine(200, 200, 500, 500);
+    KFK.drawLine(200, 200, 500, 200, {});
+    KFK.drawLine(200, 200, 200, 500, {});
+    KFK.drawLine(500, 200, 500, 500, {});
+    KFK.drawLine(200, 500, 500, 500, {});
+    KFK.drawLine(200, 200, 500, 500, {});
 
     KFK.addContainerMainEventHander();
     KFK.focusOnMainContainer();
@@ -2872,7 +3162,7 @@ KFK.saveBlobToOSS = function (blob) {
 };
 
 KFK.save = async function () {
-    let docPath = `/ ${config.tenant.id} / ${config.doc.id} / `;
+    let docPath = `/${config.tenant.id}/${config.doc.id}/`;
     // let result = await OSSClient.list({
     //     prefix: 'lucas/',
     // });
@@ -2948,7 +3238,7 @@ document.onpaste = function (event) {
 };
 let timer = null;
 $('#scroll-container').scroll(() => {
-    $('#linetransformer').hide();
+    $('#linetransformer').css('visibility', 'hidden');
     if (timer === null && KFK.gridLayer.visible()) {
         timer = setTimeout(() => {
             let tmp = KFK.getNearGridPoint(KFK.scrollContainer.scrollLeft, KFK.scrollContainer.scrollTop);
