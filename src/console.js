@@ -346,6 +346,7 @@ KFK.focusOnNode = function (nodeDIV) {
     KFK.updatePropertyFormWithNode(nodeDIV);
 };
 
+//TODO: syncNode on line 
 KFK.updatePropertyFormWithNode = function (nodeDIV) {
     let nodeType = 'unknown';
     if (nodeDIV != null) {
@@ -355,6 +356,7 @@ KFK.updatePropertyFormWithNode = function (nodeDIV) {
         KFK.APP.setData('model', 'rightTabIndex', 0);
     }
 
+    KFK.APP.setData('show', 'customline', false);
     KFK.APP.setData('show', 'shape_property', nodeDIV != null);
     KFK.APP.setData('show', 'text_property', nodeDIV != null && getBoolean(config.node[nodeType].edittable));
     KFK.APP.setData('show', 'customshape', nodeDIV != null && getBoolean(config.node[nodeType].customshape));
@@ -538,6 +540,8 @@ KFK.procLink = function (shiftKey) {
     // if (KFK.linkPos[0].type === 'box' || KFK.linkPos[1].type === 'box') {
     //     $(lineDIV).draggable('disable');
     // }
+
+    KFK.syncNode('C', $(lineDIV), 'link node');
     if (!shiftKey)
         KFK.linkPos.splice(0, 2);
     else {
@@ -609,7 +613,6 @@ KFK.initC3 = function () {
     $(c3).on('click', function (e) {
         KFK.focusOnNode(null);
         KFK.setJustCreated(null);
-        console.log('set pickedLineDIV to null');
         KFK.pickedLineDIV = null;
         KFK.APP.setData('show', 'customshape', false);
         KFK.APP.setData('show', 'customline', false);
@@ -642,17 +645,15 @@ KFK.initC3 = function () {
                 if (KFK.mode === 'yellowtip') {
                     variant = config.node.yellowtip.defaultTip;
                 }
-                KFK.placeNode(
+                let tmp = KFK.placeNode(
                     e.shiftKey,
                     myuid(), KFK.mode, variant,
                     KFK.scrollX(e.clientX),
                     KFK.scrollY(e.clientY)
                 );
+                KFK.syncNode('C', $(tmp), 'new node');
             } else {
                 console.log(`${KFK.mode} is not supported`);
-                if (KFK.mode === "line") {
-                    KFK.drawLine(100, 100, 300, 300, {});
-                }
             }
         }
 
@@ -1351,9 +1352,11 @@ KFK.initLineMover = function () {
                         options
                     );
                 }
+                KFK.syncNode('D', $(KFK.tobeTransformLineDIV), ' delete old line');
                 $(KFK.tobeTransformLineDIV).remove();
                 KFK.tobeTransformLineDIV = tmp;
                 KFK.pickedLineDIV = tmp;
+                KFK.syncNode('C', KFK.pickedLineDIV, ' replace with new line');
             }
             KFK.reArrangeBoundingRect();
         },
@@ -1461,7 +1464,7 @@ function editTextNode(textnode, theDIV) {
 
     textarea.focus();
 
-    function removeTextarea() {
+    function removeTextarea(txtChanged) {
         $(textarea).remove();
         window.removeEventListener('click', handleOutsideClick);
         textnode.style.visibility = "visible";
@@ -1469,6 +1472,9 @@ function editTextNode(textnode, theDIV) {
         textnode.editting = false;
         theDIV.editting = false;
         KFK.focusOnMainContainer();
+        if (txtChanged) {
+            KFK.syncNode('U', $(theDIV), 'change text');
+        }
     }
 
     function setTextareaWidth(newWidth) {
@@ -1506,7 +1512,7 @@ function editTextNode(textnode, theDIV) {
         // but don't hide on shift + enter
         if (e.keyCode === 13 && !e.shiftKey) {
             textnode.innerText = textarea.value;
-            removeTextarea();
+            removeTextarea(true);
         }
         // on esc do not set value back to node
         if (e.keyCode === 27) {
@@ -1519,7 +1525,7 @@ function editTextNode(textnode, theDIV) {
     function handleOutsideClick(e) {
         if (e.target !== textarea) {
             textnode.innerText = textarea.value;
-            removeTextarea();
+            removeTextarea(true);
         }
     }
     setTimeout(() => {
@@ -1689,19 +1695,43 @@ KFK._createNode = function (node) {
         $(allEditorDIV).css('display', 'block');
         $(lastEditorDIV).css('display', 'none');
     }
+    let jqNodeDIV = $(nodeDIV);
+    jqNodeDIV.attr('nodetype', node.type);
+    jqNodeDIV.attr('edittable', config.node[node.type].edittable ? true : false);
     if (node.type === 'yellowtip') {
         KFK.setTipBkgColor(nodeDIV, KFK.APP.model.tipBkgColor);
     }
 
     KFK.C3.appendChild(nodeDIV);
 
-    let jqNodeDIV = $(nodeDIV);
-    jqNodeDIV.attr('nodetype', node.type);
-    jqNodeDIV.attr('edittable', config.node[node.type].edittable ? true : false);
     KFK.addEditorToNode(nodeDIV, config.tenant.user);
+
     KFK.setNodeEventHandler(jqNodeDIV);
 
     return nodeDIV;
+}
+
+KFK.downloadDemoNode = function () {
+    let html = '<div id="mytip1" variant="tip" class="yellowtip kfknode ui-resizable ui-draggable ui-draggable-handle ui-droppable selected ui-resizable-autohide" nodetype="yellowtip" edittable="true" editors="lucas" style="position: absolute; top: 160px; left: 200px; width: 160px; height: 160px; z-index: 1; padding: 2px; margin: 0px; background: transparent; display: flex; color: rgb(0, 0, 0);"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" preserveAspectRatio="none" viewBox="-0.5 -0.5 141 140" class="tip_bkg" style="width: 100%; height: 100%; z-index: -1;"><defs></defs><g><path class="svg_main_path" d="M 140 19.71 L 140 138 L 0 138 L 0 0 L 120 0 Z" fill="#f7f7c6" stroke="#36393d" stroke-miterlimit="10" transform="rotate(-180,70,69)" pointer-events="none"></path><path d="M 120 0 C 121.63 4.61 118.95 9.37 112.86 12.67 L 140 19.71" fill="none" stroke="#36393d" stroke-miterlimit="10" transform="rotate(-180,70,69)" pointer-events="none"></path></g></svg><span class="tip_content" id="innerobj_mytip1" style="font-size: 18px; width: 100%; height: 100%; padding: 2px; z-index: 1; display: flex; justify-content: center; align-items: center; position: absolute;"></span><div class="cocoeditors" style="display: none;">lucas</div><div class="lastcocoeditor" style="display: none;">lucas</div><div class="ui-resizable-handle ui-resizable-e" style="z-index: 90; display: none;"></div><div class="ui-resizable-handle ui-resizable-s" style="z-index: 90; display: none;"></div><div class="ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se" style="z-index: 90; display: none;"></div></div>';
+    KFK.downloadNode(html);
+};
+
+KFK.downloadNode = function (html) {
+    let jqNodeDIV = $($.parseHTML(html));
+    KFK.C3.appendChild(el(jqNodeDIV));
+    KFK.setNodeEventHandler(jqNodeDIV);
+    KFK.syncNode('C', jqNodeDIV, 'download node');
+};
+
+KFK.syncNode = function (cmd, jqDIV, reason) {
+    let nodeID = jqDIV.attr('id');
+    let nodeType = jqDIV.attr('nodetype');
+    if(jqDIV.hasClass('kfkline')){
+        nodeType = "line";
+    }
+    let nodeContent = jqDIV.prop('outerHTML');
+    console.log(`${cmd} ${nodeType}:${nodeID}, ${reason}`);
+    //console.log(jqDIV.prop('outerHTML'));
 }
 
 function getBoolean(value) {
@@ -1734,7 +1764,7 @@ KFK.setTipVariant = function (tipvariant) {
     let theNode = KFK.getLastSelectedNode();
     if (theNode !== null) {
         let oldColor = KFK.getTipBkgColor(theNode);
-        console.log('setTipBkgImage for ' + theNode.getAttribute("id") + "   " + tipvariant + "  to " + oldColor);
+        // console.log('setTipBkgImage for ' + theNode.getAttribute("id") + "   " + tipvariant + "  to " + oldColor);
         $(theNode).attr('variant', tipvariant);
         KFK.setTipBkgImage(theNode, tipvariant, oldColor);
     }
@@ -1749,6 +1779,7 @@ KFK.setTipBkgImage = function (nodeDIV, svgid, svgcolor) {
     let svgMainPath = bkgSVG.find('.svg_main_path');
     svgMainPath.attr('fill', svgcolor);
     bkgSVG.appendTo($(nodeDIV));
+    KFK.syncNode('U', $(nodeDIV), 'change bkg image');
 };
 
 KFK.setTipBkgColor = function (theNode, bgColor) {
@@ -1761,6 +1792,7 @@ KFK.setTipBkgColor = function (theNode, bgColor) {
     if (svgImg.length > 0) {
         svgImg.attr('fill', bgColor);
         // console.log('set color to ' + bgColor);
+        KFK.syncNode('U', $(theNode), 'change bkg color');
     } else
         console.warn(`Can't change main path color. Node type ${theNode.getAttribute("nodetype")} id:${theNode.getAttribute("id")}   .svg_main_path not found`);
 };
@@ -1778,6 +1810,7 @@ KFK.getTipBkgColor = function (theNode) {
     }
 }
 
+//TODO: redraw line after download node
 KFK.reArrangeLinks = function (jqNodeDIV) {
     $(KFK.C3).find('.kfkline').each((index, aLineDiv) => {
         //如果从当前node开始连接
@@ -1795,6 +1828,7 @@ KFK.reArrangeLinks = function (jqNodeDIV) {
             }
             //老的link line不用从selectedDIVs中删除
             //因为link line不放入selectedDIVs
+            KFK.syncNode('D', $(aLineDiv), 'remove old line');
             $(aLineDiv).remove();
         } else if (aLineDiv.getAttribute('tdiv') && aLineDiv.getAttribute('tdiv') === jqNodeDIV.attr('id')) {
             // console.log(`line ${index} link to this node`);
@@ -1809,6 +1843,7 @@ KFK.reArrangeLinks = function (jqNodeDIV) {
             }
             //老的link line不用从selectedDIVs中删除
             //因为link line不放入selectedDIVs
+            KFK.syncNode('D', $(aLineDiv), 'remove old line');
             $(aLineDiv).remove();
         }
     });
@@ -1860,7 +1895,6 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
     let jqNodeType = jqNodeDIV.attr('nodetype');
     if (config.node[jqNodeType].resizable) {
         jqNodeDIV.resizable({
-            autoHide: true,
             start: () => { KFK.resizing = true; },
             resize: () => {
             },
@@ -1893,6 +1927,8 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
                 KFK.resizing = false; KFK.afterResizing = true;
                 KFK.reArrangeLinks(jqNodeDIV);
                 KFK.reArrangeBoundingRect();
+
+                KFK.syncNode('U', jqNodeDIV, 'resize node');
             }
         });
     }
@@ -1940,6 +1976,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
                 el(jqNodeDIV).style.top = px(newTop);
             }
 
+            //如果按住了shiftkey, 则只移动当前node, 不移动其他被选定Node
             if (!event.shiftKey) {
                 //拖动其它被同时选中的对象
                 let index = KFK.selectedDIVs.indexOf(el(jqNodeDIV));
@@ -1958,6 +1995,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
                         if (KFK.selectedDIVs[i].getAttribute('nodetype') === 'kfkline') {
                             KFK.offsetLineDataAttr(KFK.selectedDIVs[i], delta);
                         }
+                        KFK.syncNode('U', $(KFK.selectedDIV[i]), 'move following selected');
                     }
                 }
             }
@@ -1968,6 +2006,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
             //节点移动后，对连接到节点上的连接线重新划线
             KFK.reArrangeLinks(jqNodeDIV);
             KFK.reArrangeBoundingRect();
+            KFK.syncNode('U', jqNodeDIV, 'after drag');
         },
     });
     if (config.node[jqNodeType].droppable) {
@@ -1998,6 +2037,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
                     ) {
                         innerObj.html(newText);
                         KFK.deleteNode(el(ui.draggable));
+                        KFK.syncNode('U', jqNodeDIV, 'new text');
                     }
                 }
             }
@@ -2053,8 +2093,8 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
 
     jqNodeDIV.dblclick(function (e) {
         if (getBoolean(jqNodeDIV.attr('edittable'))) {
-            let theObj = el($(`#innerobj_${jqNodeDIV.attr("id")}`));
-            editTextNode(theObj, el(jqNodeDIV));
+            let innerText = el($(`#innerobj_${jqNodeDIV.attr("id")}`));
+            editTextNode(innerText, el(jqNodeDIV));
         }
     });
 }
@@ -2288,6 +2328,7 @@ KFK.deleteNode = function (nodeDIV) {
             aLinkDiv.getAttribute('tdiv') === nodeDIV.getAttribute('id')
         ) {
             //link div不会放入selectedDIVs, 因此也不用去从中删除
+            KFK.syncNode('D', $(aLineDiv), 'delete line for deleting node');
             $(aLinkDiv).remove();
         }
     });
@@ -2321,6 +2362,7 @@ KFK.deleteNode = function (nodeDIV) {
         KFK.selectedDIVs.splice(nodeIndex, 1);
         KFK.selectedLINs.splice(nodeIndex, 1);
     }
+    KFK.syncNode('D', $(nodeDIV), 'delete node');
     $(nodeDIV).remove();
 };
 
@@ -2359,14 +2401,16 @@ KFK.duplicateHoverDiv = function (e) {
             );
             KFK.setText($(newNode), KFK.getText($(KFK.divToCopy)));
             KFK.applyNodeStyleFrom($(newNode), $(KFK.divToCopy));
+            KFK.syncNode('C', $(newNode), 'duplicate node');
             KFK.focusOnNode(newNode);
         } else if ($(KFK.divToCopy).hasClass('kfkline')) {
             let x1 = parseInt($(KFK.divToCopy).attr('x1'));
             let y1 = parseInt($(KFK.divToCopy).attr('y1'));
             let x2 = parseInt($(KFK.divToCopy).attr('x2'));
             let y2 = parseInt($(KFK.divToCopy).attr('y2'));
+            let lineDIV = null;
             if (offset.x > 0) {
-                KFK.drawLine(
+                lineDIV = KFK.drawLine(
                     KFK.scrollX(x1 + offset.x),
                     KFK.scrollY(y1 + offset.y),
                     KFK.scrollX(x2 + offset.x),
@@ -2384,7 +2428,7 @@ KFK.duplicateHoverDiv = function (e) {
                 let ncy = KFK.currentMousePos.y;
                 let deltax = ncx - cx;
                 let deltay = ncy - cy;
-                KFK.drawLine(
+                lineDIV = KFK.drawLine(
                     x1 + deltax + KFK.scrollContainer.scrollLeft,
                     y1 + deltay + KFK.scrollContainer.scrollTop,
                     x2 + deltax + KFK.scrollContainer.scrollLeft,
@@ -2395,6 +2439,7 @@ KFK.duplicateHoverDiv = function (e) {
                     }
                 );
             }
+            KFK.syncNode('C', $(lineDIV), 'duplicate line');
         }
     }
 };
@@ -2569,11 +2614,11 @@ KFK.init = function () {
 
 
 };
-KFK.getLineOptions = function(div){
- return JSON.parse(KFK.base64ToCode($(div).attr('options')));
+KFK.getLineOptions = function (div) {
+    return JSON.parse(KFK.base64ToCode($(div).attr('options')));
 };
-KFK.setLineOptions = function(div, options){
- $(div).attr('options', KFK.codeToBase64(JSON.stringify(options)));
+KFK.setLineOptions = function (div, options) {
+    $(div).attr('options', KFK.codeToBase64(JSON.stringify(options)));
 };
 KFK.codeToBase64 = function (code) {
     return Buffer.from(code).toString('base64');
@@ -2598,8 +2643,10 @@ KFK.initPropertyForm = function () {
         spin: function (event, ui) {
             let theNode = KFK.getPropertyApplyToNode();
             if (theNode != null) {
-                $(theNode).css('border-width', ui.value);
-                $(theNode).css('border-style', "solid");
+                let jqNode = $(theNode);
+                jqNode.css('border-width', ui.value);
+                jqNode.css('border-style', "solid");
+                KFK.syncNode('U', jqNode, 'set border width');
             }
         }
     });
@@ -2611,7 +2658,9 @@ KFK.initPropertyForm = function () {
         spin: function (event, ui) {
             let theNode = KFK.getPropertyApplyToNode();
             if (theNode != null) {
-                $(theNode).css('border-radius', ui.value);
+                let jqNode = $(theNode);
+                jqNode.css('border-radius', ui.value);
+                KFK.syncNode('U', jqNode, 'set border radius');
             }
         }
     });
@@ -2628,6 +2677,7 @@ KFK.initPropertyForm = function () {
                 let options = KFK.getLineOptions(KFK.pickedLineDIV);
                 options.stroke = ui.value;
                 KFK.setLineOptions(KFK.pickedLineDIV, options);
+                KFK.syncNode('U', KFK.pickedLineDIV, 'set line width');
             }
         }
     });
@@ -2678,8 +2728,10 @@ KFK.initPropertyForm = function () {
 
         // console.log(css);
         let theNode = KFK.getPropertyApplyToNode();
-        if (theNode != null)
+        if (theNode != null) {
             $(theNode).css(css);
+            KFK.syncNode('U', $(theNode), 'set node font');
+        }
 
         KFK.focusOnMainContainer();
     });
@@ -2741,6 +2793,7 @@ KFK.initColorPicker = function () {
             let theNode = KFK.getPropertyApplyToNode();
             if (theNode !== null) {
                 $(theNode).css("background-color", rgb);
+                KFK.syncNode('U', $(theNode), 'set node bg color');
             }
         },
     });
@@ -2758,8 +2811,10 @@ KFK.initColorPicker = function () {
             var hex = color.toHexString();
             // KFK.APP.setBGto(color.toRgbString()); 
             let theNode = KFK.getPropertyApplyToNode();
-            if (theNode != null)
+            if (theNode != null) {
                 $(theNode).css("border-color", color.toRgbString());
+                KFK.syncNode('U', $(theNode), 'set node border-color');
+            }
         },
     });
     $('#lineColor').spectrum({
@@ -2780,6 +2835,7 @@ KFK.initColorPicker = function () {
                 let options = KFK.getLineOptions(KFK.pickedLineDIV);
                 options.color = rgb;
                 KFK.setLineOptions(KFK.pickedLineDIV, options);
+                KFK.syncNode('U', KFK.pickedLineDIV, 'set line color');
             }
         },
     });
@@ -2797,8 +2853,10 @@ KFK.initColorPicker = function () {
             var hex = color.toHexString();
             // KFK.APP.setBGto(color.toRgbString()); 
             let theNode = KFK.getPropertyApplyToNode();
-            if (theNode != null)
+            if (theNode != null) {
                 $(theNode).css("color", color.toRgbString());
+                KFK.syncNode('U', $(theNode), 'set color');
+            }
         },
     });
     $('#tipBkgColor').spectrum({
@@ -2819,6 +2877,7 @@ KFK.initColorPicker = function () {
             let theNode = KFK.getLastSelectedNode();
             if (theNode != null) {
                 KFK.setTipBkgColor(theNode, rgb);
+                KFK.syncNode('U', $(theNode), 'set tip bkg color');
             }
         },
     });
@@ -2834,6 +2893,7 @@ KFK.textAlignChanged = function (event, value) {
         } else {
             $(theNode).css("justify-content", tmp);
         }
+        KFK.syncNode('U', $(theNode), 'set text alignment');
     }
     KFK.focusOnMainContainer();
 }
@@ -2847,6 +2907,7 @@ KFK.vertAlignChanged = function (event, value) {
         } else {
             $(theNode).css("align-items", tmp);
         }
+        KFK.syncNode('U', $(theNode), 'set text vert alignment');
     }
     KFK.focusOnMainContainer();
 }
@@ -2896,7 +2957,7 @@ KFK.drawGridlines = function (deltaX, deltaY) {
 };
 
 KFK.placeWelcomeObjects = function () {
-    KFK.placeNode(false, 'mytip', 'yellowtip', 'tip', KFK.scrollX(280), KFK.scrollY(240));
+    KFK.placeNode(false, 'mytip', 'yellowtip', 'tip', KFK.scrollX(880), KFK.scrollY(240));
     let tmp = KFK.placeNode(false, 'block', 'textblock', 'default', KFK.scrollX(780), KFK.scrollY(240));
     // KFK.centerPos = { x: 120 + (KFK.width() - 50 - 120) * 0.5, y: KFK.height() * 0.5 };
     KFK.drawLine(200, 200, 500, 200, {});
@@ -2912,6 +2973,9 @@ KFK.placeWelcomeObjects = function () {
     KFK.addEditorToNode(tmp, "liukehong");
     KFK.addEditorToNode(tmp, "liuzijin");
     KFK.addEditorToNode(tmp, "kehong.liu");
+
+
+    KFK.downloadDemoNode();
     KFK.inited = true;
 };
 KFK.loadImages(KFK.init);
@@ -3143,7 +3207,7 @@ KFK.saveBlobToOSS = function (blob) {
         let file = KFK.dataURLtoFile(event.target.result, '');
         let tmpid = myuid();
         OSSClient.multipartUpload(KFK.getOSSFileName(`${tmpid}.png`), file).then((res) => {
-            KFK.placeNode(
+            let tmp = KFK.placeNode(
                 false,  //shiftKey
                 tmpid,
                 "image",
@@ -3154,6 +3218,7 @@ KFK.saveBlobToOSS = function (blob) {
                 100,
                 res.res.requestUrls[0]
             );
+            KFK.syncNode('C', $(tmp), 'create image node');
         }).catch((err) => {
             console.log(err)
         });
@@ -3204,6 +3269,7 @@ KFK.addTextToHoverDIV = function (text) {
             let oldText = innerObj.html();
             let newText = oldText + "<BR> " + text;
             innerObj.html(newText);
+            KFK.syncNode('U', $(KFK.hoverDIV), 'add text to hover div');
         }
     }
 };
