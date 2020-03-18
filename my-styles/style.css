@@ -121,13 +121,7 @@ body {
     color: blueviolet;
 }
 
-.selected {
-    box-shadow: inset 0px 0px 10px 2px #FF8E8F;
-}
 
-.hover {
-    box-shadow: inset 0px 0px 5px 2px #8E8EFF;
-}
 
 .msgarea {
     font-size: 24px;
@@ -287,4 +281,33 @@ svg path {
     background-color: #E5DBFF;
     border-radius: 10px;
     padding: 0px 2px 0px 2px;
+}
+
+.shadow1{
+    box-shadow: -1px 0 5px #8E8EFF, 0 1px 5px #8E8EFF, 1px 0 5px #8E8EFF, 0 -1px 5px #8E8EFF;
+}
+.shadow2{
+    box-shadow: -1px 0 5px #8E8EFF, 0 1px 5px #8E8EFF, 1px 0 5px #8E8EFF, 0 -1px 5px #8E8EFF;
+}
+.selected {
+    box-shadow: -1px 0 5px #FF8E8F, 0 1px 5px #FF8E8F, 1px 0 5px #FF8E8F, 0 -1px 5px #FF8E8F;
+}
+.hover {
+    box-shadow: inset 0px 0px 5px 2px #8E8EFF;
+}
+.waitinglogo{
+    width: 100px;
+	height: 100px;
+	background-color: red;
+	
+	position: absolute;
+	top:0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+  	
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
