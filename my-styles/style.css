@@ -311,3 +311,27 @@ svg path {
     justify-content: center;
     align-items: center;
 }
+
+.padlayout{
+    z-index: 999;
+}
+.padlogo{
+    z-index: 999;
+}
+
+.padtop{
+    z-index: 999;
+}
+.padleft{
+    z-index: 999;
+}
+.padright{
+    z-index: 999;
+}
+.padrtcontrol{
+    z-index: 999;
+}
+
+.noshow{
+    visibility: hidden;
+}

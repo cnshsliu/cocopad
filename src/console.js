@@ -2447,7 +2447,12 @@ KFK.wsStart = function(){
     KFK.APP.setData('show', 'wsready', true);
     KFK.APP.setData('model', 'rightTabIndex', 2);
 
+    $('.padlayout').removeClass("noshow");
+    $('.padlayout').fadeIn( 1000, function() {
+        // Animation complete
+      });
 };
+
 KFK.wsMsg = function(data){
     console.log(data);
 };
