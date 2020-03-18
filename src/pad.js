@@ -33,6 +33,8 @@ const app = new Vue({
       'shape_property': false,
       'text_property': false,
       'customline': true,
+      'waitingws': true,
+      'wsready': false,
     },
     model: {
       rightTabIndex: 2,
