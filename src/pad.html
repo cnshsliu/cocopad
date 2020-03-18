@@ -21,7 +21,7 @@
   </div>
 
   <div id='app'>
-    <div id="toplogo" v-show="show.wsready" style="z-index: 999;">
+    <div id="toplogo" v-show="show.wsready" class="padlayout noshow">
       <b-navbar toggleable="lg" type="light">
         <b-navbar-brand>
           <img src="../assets/p8star.svg" class="logo d-inline-block align-top" alt="Kitten">
@@ -33,7 +33,7 @@
       hahaha
     </div>
 
-    <div id="top" v-show="show.wsready" style="z-index: 999;">
+    <div id="top" v-show="show.wsready" class="padlayout noshow">
       <b-navbar toggleable="lg" type="light">
         <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
 
@@ -74,7 +74,7 @@
         </b-collapse>
       </b-navbar>
     </div>
-    <div id="left"  v-show="show.wsready" class="bg-white" style="z-index: 999;">
+    <div id="left"  v-show="show.wsready" class="bg-white padlayout noshow">
       <b-list-group>
         <b-list-group-item class="d-flex align-items-center" @click="setMode('pointer');" :active="active['pointer']">
           <b-img :src="images['pointer'].src" fluid alt="" scale="2" class="cocotool"></b-img>
@@ -96,7 +96,7 @@
         
       </b-list-group>
     </div>
-    <div id="right" v-show="show.wsready">
+    <div id="right" v-show="show.wsready" class="padlayout noshow">
       <b-tabs v-model="model.rightTabIndex" content-class="mt-3" justified>
         <b-tab title="样式" class='cocoproperty'>
           <b-container v-show="show.customshape">
@@ -222,7 +222,7 @@
         </b-tab>
       </b-tabs>
     </div>
-    <div id="rtcontrol"  v-show="show.wsready">
+    <div id="rtcontrol"  v-show="show.wsready" class="padlayout noshow">
       <b-button-group class="coco">
         <b-button id="toggle_all" variant="outline-success" @click="fullScreen">
           <b-icon icon="arrows-fullscreen"></b-icon>
