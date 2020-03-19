@@ -10,7 +10,7 @@ WS.sleep =  function (delay) {
 };
 
 WS.start = async (onOpen, callback) => {
-    await WS.sleep(5000);
+    await WS.sleep(1000);
     WS.ws = new WebSocket(WS.url);
     WS.ws.onopen = function () {
         console.info(`ws opened to ${WS.url}`);
