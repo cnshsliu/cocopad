@@ -2445,6 +2445,7 @@ KFK.recreateNodeFromHTML = function (html) {
     else if (jqDIV.hasClass('kfkline'))
         KFK.setLineEventHandler(jqDIV);
 };
+
 KFK.replaceNodeFromHTML = function (html) {
     let jqDIV = $($.parseHTML(html));
     let nodeid = jqDIV.attr("id");
@@ -3176,7 +3177,7 @@ KFK.loadImages(KFK.init);
 
 module.exports = KFK;
 
-
+//TODO: ask to input password
 //TODO: 清理OSS图片
 // OSS路径名使用 tenant_id/doc_id/pic_name.png
 // 一开始生成文档的ID， 然后的OSS图片的目录使用这个ID， 最后保存时，检查真正剩余的图片，并与OSS中的对应，没有用到的从OSS中删除掉
