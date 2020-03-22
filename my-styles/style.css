@@ -373,6 +373,7 @@ svg path {
     width: 100vw;
     height: 100vh;
     display: flex;
+    z-index: 99999;
 }
 
 .explorer .inner {
