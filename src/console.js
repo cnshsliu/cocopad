@@ -2,6 +2,7 @@ import url from "url";
 import path from "path";
 import Konva from "konva";
 import suuid from 'short-uuid';
+import Joi from '@hapi/joi';
 import "core-js/stable";
 import "regenerator-runtime/runtime";
 import SVGs from './svgs';
@@ -37,7 +38,7 @@ Array.prototype.remove = function () {
 let config = {
     tenant: {
         id: 'COMPANY A',
-        user: 'lucas',
+        name: 'Company A',
     },
     badge: {
         lastSeconds: 3000,
@@ -679,21 +680,21 @@ KFK.initC3 = function () {
     });
 
     $(c3).on('mousemove', function (event) {
-        KFK.showUserMovingBadge(config.tenant.user, event.clientX, event.clientY);
+        KFK.showUserMovingBadge(KFK.APP.model.user, event.clientX, event.clientY);
     });
 
     KFK.C3 = c3;
     KFK.JC3 = JC3 = $(KFK.C3);
 }
 
-KFK.showUserMovingBadge = function (username, x, y) {
+KFK.showUserMovingBadge = function (user, x, y) {
     let pos = { x: KFK.scrollX(x), y: KFK.scrollY(y) };
-    let jqBadgeDIV = $(document).find('#badge_' + username);
+    let jqBadgeDIV = $(document).find('#badge_' + user.userid);
     if (jqBadgeDIV.length === 0) {
         let tmp = document.createElement('div');
         KFK.C3.appendChild(tmp);
         jqBadgeDIV = $(tmp);
-        jqBadgeDIV.attr("id", "badge_" + username);
+        jqBadgeDIV.attr("id", "badge_" + user.userid);
         jqBadgeDIV.addClass("userbadge");
     }
     jqBadgeDIV.css("display", "block");
@@ -701,12 +702,12 @@ KFK.showUserMovingBadge = function (username, x, y) {
     jqBadgeDIV.css("left", pos.x);
     jqBadgeDIV.css("width", "fit-content");
     jqBadgeDIV.css("height", "fit-content");
-    jqBadgeDIV.html(username);
+    jqBadgeDIV.html(user.name);
 
-    if (badgeTimers[username] === undefined) {
-        badgeTimers[username] = setTimeout(() => {
+    if (badgeTimers[user.userid] === undefined) {
+        badgeTimers[user.userid] = setTimeout(() => {
             jqBadgeDIV.css("display", "none");
-            delete badgeTimers[username];
+            delete badgeTimers[user.userid];
         }, config.badge.lastSeconds);
     }
 
@@ -889,7 +890,7 @@ KFK.setLineEventHandler = function (jqLine) {
                     to: { x: x2, y: y2 }
                 };
 
-                if (KFK.tobeTransformJqLine  && KFK.tobeTransformJqLine !== jqLine) {
+                if (KFK.tobeTransformJqLine && KFK.tobeTransformJqLine !== jqLine) {
                     KFK.tobeTransformJqLine.removeClass('shadow2');
                 }
                 if (!jqLine.attr('fdiv') && mouseNear(KFK.scrollToScreen(KFK.lineTwoEnds.from), KFK.currentMousePos)) {
@@ -1458,8 +1459,11 @@ KFK.cleanNodeEventFootprint = function (jqNodeDIV) {
     jqNodeDIV.find('.ui-resizable-handle').remove();
     jqNodeDIV.removeClass('ui-resizable ui-draggable ui-draggable-handle ui-droppable selected ui-resizable-autohide');
 }
+KFK.cleanNodeOfflineFlag = function (jqNodeDIV) {
+    jqNodeDIV.removeClass('offline');
+}
 
-KFK.syncNodePut = function (cmd, jqDIV, reason) {
+KFK.syncNodePut = async function (cmd, jqDIV, reason) {
     try {
         if (!(jqDIV instanceof jQuery)) {
             jqDIV = $(jqDIV);
@@ -1471,6 +1475,7 @@ KFK.syncNodePut = function (cmd, jqDIV, reason) {
         }
         let tobeSync = jqDIV.clone();
         KFK.cleanNodeEventFootprint(tobeSync);
+        KFK.cleanNodeOfflineFlag(tobeSync);
         let nodeContent = tobeSync.prop('outerHTML');
         console.log(`${cmd} ${nodeType}:${nodeID}, ${reason}`);
         let payload = {
@@ -1480,11 +1485,27 @@ KFK.syncNodePut = function (cmd, jqDIV, reason) {
             nodeid: nodeID,
             content: cmd === 'D' ? nodeID : tobeSync.prop('outerHTML'),
         }
-        KFK.WS.put(cmd, payload);
+        let result = await KFK.WS.put(cmd, payload);
+        if(result === false){
+            jqDIV.addClass('offline');
+            jqDIV.attr('updatedAt', new Date().getTime());
+        }
     } catch (e) {
         console.log(e);
     }
     //console.log(jqDIV.prop('outerHTML'));
+}
+
+function getNull(value) {
+    switch (value) {
+        case undefined:
+        case null:
+        case "undefined":
+        case "null":
+            return true;
+        default:
+            return false;
+    }
 }
 
 function getBoolean(value) {
@@ -2338,20 +2359,174 @@ KFK.init = async function () {
     s1 = KFK.base64ToCode(s1);
     console.log(s1);
 
-    await WS.start(KFK.onWsConnected, KFK.onWsMsg);
-
+    await WS.start(KFK.onWsConnected, KFK.onWsMsg, 2000);
 };
+
 KFK.onWsConnected = function () {
     KFK.WS = WS;
     console.log("WS Connnected");
+    KFK.APP.setData('show', 'wsready', true);
     KFK.initC3();
     KFK.initPropertyForm();
     KFK.initLineMover();
     KFK.initColorPicker();
-    KFK.loadDoc(KFK.onDocLoaded);
+
+    //TODO: last line for test purpose
+    // clear footprint
+    // localStorage.removeItem('cocouser');
+    // localStorage.removeItem('cocoprj');
+
+    KFK.checkUser(false);
 };
 
-KFK.loadDoc = function (callback) {
+
+KFK.checkUser = function (isAfterLogin) {
+    let cocouser = localStorage.getItem('cocouser');
+    if (cocouser) {
+        console.log("find cocouser in local " + cocouser);
+        KFK.APP.setData("show", "loginform", false);
+        cocouser = JSON.parse(cocouser);
+        if (!isAfterLogin) //从localstorage中找到用户名
+            KFK.WS.put('COMEBACK', { userid: cocouser.userid });
+        KFK.log("hello [" + cocouser.name + "]");
+        let pathname = $(location).attr('pathname');
+        if (pathname.match(/\/doc\/(.+)/)) {
+            let docid = pathname.substring(pathname.lastIndexOf('/') + 1);
+            if (docid === 'history' || docid === 'list')
+                KFK.showConsole();
+            else {
+                //TODO: get project id in url
+                KFK.loadDoc(docid, KFK.onDocLoaded);
+            }
+        } else {
+            KFK.showConsole();
+            KFK.showPrjs();
+        }
+    } else {
+        console.log("there is no cocosuer in local, show loginform now");
+        KFK.APP.setData("show", "loginform", true);
+    }
+};
+
+//这里检查是否有project
+KFK.showConsole = function () {
+    // let currentprj = localStorage.getItem('cocoprj');
+    // if (!getNull(currentprj)) {
+    //     KFK.APP.setData('show', 'explorer', true);
+    //     let prj = JSON.parse(currentprj);
+    //     console.log('Find local project ' + prj.prjid + " " + prj.name);
+    //     KFK.APP.setData('model', 'project', prj);
+    //     KFK.APP.setData('show', 'form', { newdoc: false, newprj: false, contentlist: true, bottomlinks: false });
+    // } else {
+    //     console.log('There is no local project');
+    //     KFK.APP.setData('show', 'explorer', true);
+    //     KFK.APP.setData('show', 'form', { newdoc: false, newprj: false, contentlist: true, bottomlinks: true });
+    // }
+    KFK.APP.setData('show', 'explorer', true);
+    KFK.APP.setData('show', 'form', { newdoc: false, newprj: false, contentlist: true, bottomlinks: true });
+    let currentprj = localStorage.getItem('cocoprj');
+    if (!getNull(currentprj)) {
+        let prj = JSON.parse(currentprj);
+        console.log('Find local project ' + prj.prjid + " " + prj.name);
+        let found = -1
+        for (let i = 2; i < KFK.APP.model.prjs.length; i++) {
+            if (prj.prjid === KFK.APP.model.prjs[i].prjid) {
+                found = i;
+                break;
+            }
+        }
+        if (found < 0) {
+            if (KFK.APP.model.prjs.length > 2) {
+                KFK.showPrjs('请选择一个项目');
+            } else {
+                KFK.showCreateNewPrj();
+            }
+        } else {
+            KFK.APP.setData('model', 'project', prj);
+            if (prj.prjid !== 'all' && prj.prjid !== 'mine')
+                KFK.APP.setData('model', 'lastrealproject', prj);
+            KFK.WS.put("LISTDOC", { prjid: prj.prjid });
+        }
+    } else {
+        KFK.WS.put("LISTDOC", { prjid: "all" });
+    }
+
+    KFK.WS.put("LISTPRJ", { skip: 0 });
+};
+
+KFK.signin = function () {
+    //TODO: JOI validation
+    KFK.log('singin ' + $('#userid').val());
+    KFK.WS.put('LOGIN', { userid: $('#userid').val(), password: '123' });
+};
+
+KFK.signOut = function () {
+    localStorage.removeItem("cocouser");
+    KFK.APP.setData('show', 'explorer', false);
+    //TODO: notify server  not to send data anymore
+    KFK.checkUser(false);
+};
+
+KFK.showCreateNewDoc = function () {
+    console.log(KFK.APP.model.lastrealproject.name);
+    if (
+        KFK.APP.model.lastrealproject.prjid === '' ||
+        KFK.APP.model.lastrealproject.prjid === 'all' ||
+        KFK.APP.model.lastrealproject.prjid === 'mine'
+    ) {
+        KFK.showPrjs('请先选择一个项目');
+    } else {
+        KFK.APP.setData('show', 'form', { newdoc: true, newprj: false, contentlist: false, bottomlinks: true });
+    }
+};
+KFK.showCreateNewPrj = function () {
+    KFK.APP.setData('show', 'form', { newdoc: false, newprj: true, contentlist: false, bottomlinks: true });
+};
+KFK.showPrjs = function (msg) {
+    if (msg && typeof msg === 'string') {
+        KFK.APP.setData("model", "prjwarning", msg);
+    } else {
+        KFK.APP.setData("model", "prjwarning", " ");
+    }
+    KFK.APP.setData('show', 'form', { newdoc: false, newprj: false, contentlist: true, bottomlinks: true });
+    KFK.APP.setData('model', 'contentTabIndex', 0);
+}
+KFK.showDocs = function () {
+    KFK.APP.setData('show', 'form', { newdoc: false, newprj: false, contentlist: true, bottomlinks: true });
+    KFK.APP.setData('model', 'contentTabIndex', 1);
+}
+
+KFK.createNewDoc = function () {
+    let docName = KFK.APP.model.newdocname;
+    const schema = Joi.string().regex(/^[a-zA-Z0-9_\u4e00-\u9fa5]{3,20}$/).required();
+    let { error, value } = schema.validate(docName);
+    if (error === undefined) {
+        console.log('createNewDoc ' + docName);
+        KFK.WS.put('NEWDOC', { prjid: KFK.APP.model.lastrealproject.prjid, name: docName });
+        return true;
+    } else {
+        return false;
+    }
+};
+KFK.createNewPrj = function () {
+    let prjName = KFK.APP.model.newprjname;
+    const schema = Joi.string().regex(/^[a-zA-Z0-9_\u4e00-\u9fa5]{3,20}$/).required();
+    let { error, value } = schema.validate(prjName);
+    if (error === undefined) {
+        console.log('createNewPrj ' + prjName);
+        KFK.WS.put('NEWPRJ', { name: prjName });
+        return true;
+    } else {
+        return false;
+    }
+};
+KFK.sayHello = function () {
+    KFK.log('hello, cocopad');
+}
+
+KFK.loadDoc = function (docid, callback) {
+    KFK.APP.setData('show', 'loginform', false);
+    KFK.APP.setData('show', 'explorer', false);
     try {
         // let tmp = KFK.placeNode(false, 'mytip', 'yellowtip', 'tip', KFK.scrollX(880), KFK.scrollY(240));
         // KFK.syncNodePut('C', $(tmp), 'load demo node');
@@ -2368,11 +2543,9 @@ KFK.loadDoc = function (callback) {
         // tmp = KFK.drawLine(200, 200, 500, 500, {});
         // KFK.syncNodePut('C', $(tmp), 'load demo node');
 
-        //TODO: use docid from url
+        config.doc.id = docid;
+        console.log('loadDoc ' + config.doc.id);
         KFK.downloadDoc(config.doc.id);
-
-        config.doc.id = myuid();
-        config.doc.name = "test doc";
     } catch (e) {
         console.error(e);
     } finally {
@@ -2384,6 +2557,7 @@ KFK.loadDoc = function (callback) {
 KFK.onDocLoaded = function () {
     KFK.initShowEditors('none');
     KFK.startPadDesigner();
+    KFK.APP.setData('model', 'docLoaded', true);
 };
 
 KFK.startPadDesigner = function () {
@@ -2391,7 +2565,6 @@ KFK.startPadDesigner = function () {
     KFK.focusOnMainContainer();
     KFK.selectNone();
 
-    KFK.APP.setData('show', 'wsready', true);
     KFK.APP.setData('model', 'rightTabIndex', 2);
     $('.padlayout').removeClass("noshow");
     $('.padlayout').fadeIn(1000, function () {
@@ -2401,7 +2574,6 @@ KFK.startPadDesigner = function () {
 
 KFK.onWsMsg = function (data) {
     data = JSON.parse(data);
-    console.log(data);
     if (data.cmd === 'PING') {
         KFK.WS.put('PONG', {});
     }
@@ -2410,26 +2582,97 @@ KFK.onWsMsg = function (data) {
     }
 
     switch (data.payload.cmd) {
+        case 'ONLOGIN':
+            let user = data.payload.data;
+            localStorage.setItem("cocouser", JSON.stringify(user));
+            KFK.checkUser(true);
+            break;
         case 'OPEN':
         case 'SYNC':
             data.payload.data.forEach((html) => {
-                console.log(html);
                 KFK.recreateNodeFromHTML(html);
             });
             break;
+        case 'NEWPRJ':
+            console.log(data.payload);
+            let cocoprj = {
+                prjid: data.payload.data[0].prjid,
+                name: data.payload.data[0].name
+            };
+            localStorage.setItem('cocoprj', JSON.stringify(cocoprj));
+            KFK.APP.setData('model', 'project', cocoprj);
+            KFK.APP.setData('model', 'lastrealproject', cocoprj);
+            localStorage.setItem('cocoprj', JSON.stringify(cocoprj));
+            KFK.showConsole();
+            KFK.showPrjs();
+            break;
+        case 'NEWDOC':
+            console.log(data.payload);
+            KFK.loadDoc(data.payload.data.docid, KFK.onDocLoaded);
+            break;
+        case 'LISTDOC':
+            KFK.APP.setData('model', 'listdocoption', data.payload.option);
+            let docs = data.payload.data;
+            console.log("LISTDOC");
+            console.log(docs);
+            KFK.APP.setData('model', 'docs', docs);
+            KFK.APP.setData('show', 'explorer', true);
+            break;
+        case 'LISTPRJ':
+            KFK.APP.setData('model', 'listprjoption', data.payload.option);
+            let option = data.payload.option;
+            // let skip = option.skip;
+            // let count = option.count;
+            let prjs = data.payload.data;
+            console.log(prjs);
+            prjs.unshift({ _id: 'mine', prjid: 'mine', name: '我创建的所有项目', owner: 'me' });
+            prjs.unshift({ _id: 'all', prjid: 'all', name: '我参与过的所有项目', owner: 'me' });
+            KFK.APP.setData('model', 'prjs', prjs);
+            KFK.APP.setData('show', 'explorer', true);
+            break;
         case 'UPD':
-            data.payload.data.forEach((html) =>{
+            data.payload.data.forEach((html) => {
                 KFK.replaceNodeFromHTML(html);
             });
             break;
         case 'DEL':
-            data.payload.data.forEach((nodeid) =>{
+            data.payload.data.forEach((nodeid) => {
                 $(`#${nodeid}`).remove();
             });
             break;
     }
 };
 
+KFK.deletePrj = async function (prjid) {
+    let payload = { prjid: prjid };
+    console.log(payload);
+    await KFK.WS.put('DELPRJ', payload);
+    if (KFK.APP.model.prjs.length > 2) {
+        KFK.APP.setData("model", "project", KFK.APP.model.prjs[2]);
+        KFK.APP.setData("model", "lastrealproject", KFK.APP.model.prjs[2]);
+        KFK.WS.put("LISTDOC", { prjid: KFK.APP.model.prjs[2].prjid });
+        KFK.showPrjs();
+    } else {
+        KFK.showCreateNewPrj();
+        KFK.APP.setData("model", "lastrealproject", { prjid: '', name: '' });
+    }
+};
+
+KFK.prjRowClickHandler = function (record, index) {
+    console.log(record);
+    KFK.APP.setData('model', 'project', { prjid: record.prjid, name: record.name });
+    if (record.prjid !== 'all' && record.prjid !== 'mine') {
+        let cocoprj = { prjid: record.prjid, name: record.name };
+        KFK.APP.setData('model', 'lastrealproject', cocoprj);
+        localStorage.setItem('cocoprj', JSON.stringify(cocoprj));
+    }
+    KFK.WS.put("LISTDOC", { prjid: record.prjid });
+    KFK.showDocs();
+};
+KFK.docRowClickHandler = function (record, index) {
+    console.log(record);
+    KFK.loadDoc(record.docid, KFK.onDocLoaded);
+};
 
 KFK.downloadDoc = function (docid) {
     let payload = { docid: docid, pwd: '123' };
@@ -2438,12 +2681,20 @@ KFK.downloadDoc = function (docid) {
 
 KFK.recreateNodeFromHTML = function (html) {
     let jqDIV = $($.parseHTML(html));
-    KFK.cleanNodeEventFootprint(jqDIV);
-    KFK.C3.appendChild(el(jqDIV));
-    if (jqDIV.hasClass('kfknode'))
-        KFK.setNodeEventHandler(jqDIV);
-    else if (jqDIV.hasClass('kfkline'))
-        KFK.setLineEventHandler(jqDIV);
+    if (jqDIV.attr('id') === 'document') {
+        //在handlers.js 中，第一个进入doc时，返回document的docid和name
+        let doc = { docid: jqDIV.attr('docid'), name: jqDIV.attr('name') };
+        KFK.APP.setData('model', "document", doc);
+    } else if (jqDIV.hasClass('notify')) {  //TODO: notification
+    } else if (jqDIV.hasClass('ad')) {  //TODO: Advertisement
+    } else {
+        KFK.cleanNodeEventFootprint(jqDIV);
+        KFK.C3.appendChild(el(jqDIV));
+        if (jqDIV.hasClass('kfknode'))
+            KFK.setNodeEventHandler(jqDIV);
+        else if (jqDIV.hasClass('kfkline'))
+            KFK.setLineEventHandler(jqDIV);
+    }
 };
 
 KFK.replaceNodeFromHTML = function (html) {
@@ -2452,7 +2703,7 @@ KFK.replaceNodeFromHTML = function (html) {
     KFK.cleanNodeEventFootprint(jqDIV);
     $(`#${nodeid}`).prop('outerHTML', jqDIV.prop('outerHTML'));
 
-    jqDIV=$(`#${nodeid}`);
+    jqDIV = $(`#${nodeid}`);
     // KFK.C3.appendChild(el(jqDIV));
     if (jqDIV.hasClass('kfknode'))
         KFK.setNodeEventHandler(jqDIV);
@@ -2758,9 +3009,6 @@ KFK.vertAlignChanged = function (event, value) {
     KFK.focusOnMainContainer();
 }
 
-KFK.setDocId = (id) => {
-    config.doc.id = id;
-}
 KFK.setTenant = (tenant) => {
     config.tenant = tenant;
 }
@@ -2894,7 +3142,7 @@ KFK.addContainerMainEventHander = function () {
                 KFK.linkPos = [];
             }
         } else if (e.keyCode === 82 && e.ctrlKey) { //Ctrl-R  key R
-            KFK.toggleRightPanel();
+            KFK.toggleRight();
         } else if (e.keyCode === 17) { //Ctrl
             KFK.ctrlDown = true;
         } else if (e.keyCode === 18) { //Option
@@ -3003,15 +3251,24 @@ KFK.addContainerMainEventHander = function () {
 
 };
 
-KFK.toggleRightPanel = function (flag) {
-    $('#right').toggle("slide", { duration: 200, direction: "right" });
+KFK.toggleRight = function (flag) {
+    $('#right').toggle("slide", { duration: 100, direction: "right" });
 };
 
 KFK.toggleFullScreen = function (flag) {
-    $('#right').toggle("slide", { duration: 200, direction: "right" });
-    $('#left').toggle("slide", { duration: 200, direction: "left" });
-    $('#top').toggle("slide", { duration: 200, direction: "left" });
+    $('#right').toggle("slide", { duration: 100, direction: "right" });
+    $('#left').toggle("slide", { duration: 100, direction: "left" });
+    $('#top').toggle("slide", { duration: 100, direction: "left" });
 }
+
+KFK.gotoExplorer = function(){
+    KFK.APP.setData('model', 'contentTabIndex', 1);
+    KFK.APP.setData('show', 'explorer', true);
+};
+KFK.gotoDesigner = function(){
+    KFK.APP.setData('show', 'explorer', false);
+};
+
 KFK.dataURLtoFile = function (dataurl, filename) {
     let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
         bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
@@ -3188,3 +3445,4 @@ module.exports = KFK;
 //TODO: double click on line to add text label
 //TODO: add editor tags (multiple/last one)
 //TODO: change SVG fill color
+//TODO: grey out on disconnect

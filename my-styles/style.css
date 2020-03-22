@@ -53,7 +53,8 @@ body {
     border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 15px;
 }
-.stayright{
+
+.stayright {
     text-align: right;
     justify-content: right;
     right: 300px;
@@ -69,13 +70,24 @@ body {
 #rtcontrol {
     position: absolute;
     top: 5px;
-    left: calc(100vw - 95px);
+    left: calc(100vw - 142px);
     z-index: 99999;
+}
+
+#gotodesignercontrol {
+    position: absolute;
+    top: 5px;
+    left: calc(100vw - 142px);
 }
 
 .logo {
     width: 24px;
     height: 24px;
+}
+
+.cocologo {
+    width: 36px;
+    height: 36px;
 }
 
 #large-container {
@@ -121,8 +133,6 @@ body {
     color: blueviolet;
 }
 
-
-
 .msgarea {
     font-size: 24px;
     z-index: 100;
@@ -135,7 +145,6 @@ body {
 .cocopadbg {
     background: red;
 }
-
 
 .btn.btn-outline-primary.sharp {
     background-color: #C2FFFB !important;
@@ -221,7 +230,7 @@ svg path {
     fill: '#000000';
 }
 
-.yellowtip{
+.yellowtip {
     fill: '#000000';
 }
 
@@ -256,6 +265,7 @@ svg path {
     border-radius: 5px;
     padding: 0px 2px 0px 2px;
 }
+
 .lastcocoeditor {
     font-family: 'monospace';
     font-weight: 'normal';
@@ -283,55 +293,120 @@ svg path {
     padding: 0px 2px 0px 2px;
 }
 
-.shadow1{
+.shadow1 {
     box-shadow: -1px 0 5px #8E8EFF, 0 1px 5px #8E8EFF, 1px 0 5px #8E8EFF, 0 -1px 5px #8E8EFF;
 }
-.shadow2{
+
+.shadow2 {
     box-shadow: -1px 0 5px #8E8EFF, 0 1px 5px #8E8EFF, 1px 0 5px #8E8EFF, 0 -1px 5px #8E8EFF;
 }
+
 .selected {
     box-shadow: -1px 0 5px #FF8E8F, 0 1px 5px #FF8E8F, 1px 0 5px #FF8E8F, 0 -1px 5px #FF8E8F;
 }
+
 .hover {
     box-shadow: inset 0px 0px 5px 2px #8E8EFF;
 }
-.waitinglogo{
+
+.waitinglogo {
     width: 100px;
-	height: 100px;
-	background-color: red;
-	
-	position: absolute;
-	top:0;
-	bottom: 0;
-	left: 0;
-	right: 0;
-  	
+    height: 100px;
+    background-color: transparent;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
     margin: auto;
     display: flex;
     justify-content: center;
     align-items: center;
 }
-
-.padlayout{
-    z-index: 999;
+.waitinglogo .logo{
+    width: 64px;
+    height: 64px;
 }
-.padlogo{
-    z-index: 999;
-}
-
-.padtop{
-    z-index: 999;
-}
-.padleft{
-    z-index: 999;
-}
-.padright{
-    z-index: 999;
-}
-.padrtcontrol{
+.padlayout {
     z-index: 999;
 }
 
-.noshow{
+.padlogo {
+    z-index: 999;
+}
+
+.padtop {
+    z-index: 999;
+}
+
+.padleft {
+    z-index: 999;
+}
+
+.padright {
+    z-index: 999;
+}
+
+.padrtcontrol {
+    z-index: 999;
+}
+
+.noshow {
     visibility: hidden;
+}
+
+.loginform {
+    position: absolute;
+    width: 400px;
+    height: 240px;
+    background-color: white;
+    box-shadow: 5px 5px 5px #8E8EFF;
+    top: calc(50vh - 200px);
+    left: calc(50vw - 120px);
+    z-index: 99999;
+}
+
+.explorer {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+}
+
+.explorer .inner {
+    margin: 100px auto;
+    background-color: #FFFFFF;
+    width: 600px;
+    padding: 20px;
+    box-shadow: -1px 0 5px #8E8EFF, 0 1px 5px #8E8EFF, 1px 0 5px #8E8EFF, 0 -1px 5px #8E8EFF;
+    border-radius: 20px;
+}
+
+.custom-select {
+    background: #FFFFFF !important;
+}
+
+.borderless {
+    border-top-style: hidden;
+    border-right-style: hidden;
+    border-left-style: hidden;
+    border-bottom-style: groove;
+    border-width: 0px;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    appearance: none;
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+}
+
+.borderless:focus {
+    outline: none !important;
+}
+
+select:focus {
+    border: none !important;
+    outline: none !important;
 }
