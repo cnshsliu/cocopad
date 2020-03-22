@@ -1,7 +1,7 @@
 {
-  "name": "kfconsole",
+  "name": "cocopad",
   "version": "1.0.0",
-  "description": "Basic sandbox for Konva framework",
+  "description": "Cocopad a online collaborated pad",
   "main": "pad.html",
   "scripts": {
     "start": "parcel src/pad.html --open",
@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "bootstrap": "^4.4.1",
-    "bootstrap-vue": "^2.5.0",
+    "bootstrap-vue": "^2.7.0",
     "console": "^0.7.2",
     "console2": "^2.3.8",
     "core-js": "^3.6.4",
@@ -32,6 +32,7 @@
   "devDependencies": {
     "@babel/core": "latest",
     "babel-preset-env": "^1.7.0",
+    "node-fetch": "^2.6.0",
     "node-minify": "^3.6.0",
     "sass": "^1.26.2"
   },
