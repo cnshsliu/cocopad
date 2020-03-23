@@ -29,31 +29,42 @@ const app = new Vue({
       ['tip_circle2', 'tip_check', 'tip_cross', 'tip_thunder', 'tip_smile'],
       ['tip_circle3', 'tip_arrow', 'tip_arrow2', 'tip_arrow3', 'tip_arrow4'],
     ],
+    //TODO: 没有用户信息时，显示注册页面而不是登录页面
     active: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false },
     show: {
+      'wsready': false,
       'arrange_multi_nodes': false,
       'shape_property': false,
       'text_property': false,
       'customline': true,
       'waitingws': true,
-      'wsready': false,
       'loginform': false,
-      'explorer': false,
-      'newdocform': false,
-      'form': { newdoc: false, newprj: false, contentlist: true, bottomlinks: false },
+      'explorer': true,
+      'form': { newdoc: false, newprj: false, prjlist: true, doclist: false, bottomlinks: false, explorerTabIndex: 0 },
+      'section': { login: false, register: false, explorer: false, designer: false, },
+      'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false },
     },
     model: {
+      hidepassword: true,
+      inputUserPwd: '',
+      docOldPwd: '',
+      docNewPwd: '',
       newprjname: '',
       newdocname: '',
+      newdocpwd: '',
+      opendocpwd: '',
       docLoaded: false,
       project: { prjid: '', name: '' },
       lastrealproject: { prjid: '', name: '' },
-      document: { docid: '', name: '' },
+      document: { docid: '', name: 'my doc' },
       user: { userid: '', name: '' },
-      contentTabIndex: 0,
       listdocoption: {},
       listprjoption: {},
-      docfields: [{ key: 'name', label: '名称' }, { key: 'owner', label: '发起人' }],
+      register: { userid: '', pwd: '', pwd2: '', name: '' },
+      login: { userid: '', pwd: '' },
+      feedback: {forRegister: '新用户注册', forLogin: '请登录'},
+      feedback_const: {forRegister: '新用户注册', forLogin: '请登录'},
+      docfields: [{ key: 'name', label: '名称' }, { key: 'lock', label: '密保' }, { key: 'owner', label: '发起人' }, { key: 'operation', label: '操作' }],
       prjfields: [{ key: 'name', label: '名称' }, { key: 'operation', label: '操作' }],
       prjwarning: '',
       docs: [],
@@ -104,10 +115,75 @@ const app = new Vue({
     prjcount() {
       return this.model.prjs.length;
     },
+    userIdState() {
+      const schema = Joi.string().regex(
+        /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/
+        // 邮箱地址
+      ).required();
+      let str = this.model.login.userid;
+      let { error, value } = schema.validate(str);
+      if (error === undefined)
+        return true;
+      else
+        return false;
+    },
+    userPwdState() {
+      const schema = Joi.string().regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]{8,}/
+        // 至少8个字符，至少1个大写字母，1个小写字母，1个数字和1个特殊字符：
+      ).required();
+      let str = this.model.login.pwd;
+      let { error, value } = schema.validate(str);
+      if (error === undefined)
+        return true;
+      else
+        return false;
+    },
+    regUserIdState() {
+      const schema = Joi.string().regex(
+        /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/
+        // 邮箱地址
+      ).required();
+      let str = this.model.register.userid;
+      let { error, value } = schema.validate(str);
+      if (error === undefined) {
+        KFK.remoteCheckUserId(this.model.register.userid);
+        return true;
+      } else
+        return false;
+    },
+    regUserPwdState() {
+      const schema = Joi.string().regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]{8,}/
+        // 至少8个字符，至少1个大写字母，1个小写字母，1个数字和1个特殊字符：
+      ).required();
+      let str = this.model.register.pwd;
+      let { error, value } = schema.validate(str);
+      if (error === undefined)
+        return true;
+      else
+        return false;
+    },
+    regUserPwd2State() {
+      let str = this.model.register.pwd;
+      let str2 = this.model.register.pwd2;
+      if (str === str2)
+        return true;
+      else
+        return false;
+    },
+    regUserNameState() {
+      const schema = Joi.string().regex(/^[a-zA-Z0-9_\u4e00-\u9fa5]{2,10}$/).required();
+      let str = this.model.register.name;
+      let { error, value } = schema.validate(str);
+      if (error === undefined)
+        return true;
+      else
+        return false;
+    },
     docNameState() {
       const schema = Joi.string().regex(/^[a-zA-Z0-9_\u4e00-\u9fa5]{3,20}$/).required();
       let str = this.model.newdocname;
-      console.log('validate[' + str + ']');
       let { error, value } = schema.validate(str);
       if (error === undefined)
         return true;
@@ -117,7 +193,6 @@ const app = new Vue({
     prjNameState() {
       const schema = Joi.string().regex(/^[a-zA-Z0-9_\u4e00-\u9fa5]{3,20}$/).required();
       let str = this.model.newprjname;
-      console.log('validate[' + str + ']');
       let { error, value } = schema.validate(str);
       if (error === undefined)
         return true;
@@ -126,6 +201,18 @@ const app = new Vue({
     },
   },
   methods: {
+    toggleHidePassword() {
+      this.setData('model', 'hidepassword', !this.model.hidepassword);
+    },
+    focusOnPwdInput() {
+      this.$refs.focusThis.focus();
+    },
+    focusOnOldPwdInput() {
+      this.$refs.focusOldPwd.focus();
+    },
+    focusOnUserPwdInput() {
+      this.$refs.focusUserPwd.focus();
+    },
     setData(data, key, value) {
       this.$set(this[data], key, value);
       if (key === 'lineToggleMode')
@@ -177,12 +264,12 @@ const app = new Vue({
       console.log('Hover on ' + tip);
       // $('#tipvariant_'+tip).style.visibility= "hidden";
     },
-    clickPrjItem(item, index, button) {
+    deletePrjItem(item, index, button) {
       console.log(item);
       console.log(index);
       this.$bvModal.msgBoxConfirm('删除项目:' + item.name, {
         title: '请确认',
-        size: 'sm',
+        size: 'md',
         buttonSize: 'sm',
         okVariant: 'danger',
         okTitle: '确认',
@@ -197,6 +284,32 @@ const app = new Vue({
               if (this.model.prjs[i].prjid === item.prjid) {
                 KFK.deletePrj(item.prjid);
                 this.model.prjs.splice(i, 1);
+                break;
+              }
+            }
+          }
+        })
+        .catch(err => { })
+    },
+
+    deleteDocItem(item, index, button) {
+      this.$bvModal.msgBoxConfirm('删除文档:' + item.name, {
+        title: '请确认',
+        size: 'sm',
+        buttonSize: 'sm',
+        okVariant: 'danger',
+        okTitle: '确认',
+        cancelTitle: '取消',
+        footerClass: 'p-2',
+        hideHeaderClose: false,
+        centered: true
+      })
+        .then(value => {
+          if (value) {
+            for (let i = 0; i < this.model.docs.length; i++) {
+              if (this.model.docs[i].docid === item.docid) {
+                KFK.deleteDoc(item.docid);
+                this.model.docs.splice(i, 1);
                 break;
               }
             }

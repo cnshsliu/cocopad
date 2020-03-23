@@ -355,15 +355,27 @@ svg path {
     visibility: hidden;
 }
 
-.loginform {
+.loginform{
     position: absolute;
     width: 400px;
-    height: 240px;
+    height: 600px;
     background-color: white;
-    box-shadow: 5px 5px 5px #8E8EFF;
-    top: calc(50vh - 200px);
-    left: calc(50vw - 120px);
+    box-shadow: -1px 0 15px #686868, 0 1px 15px #686868, 1px 0 15px #686868, 0 -1px 15px #686868;
+    top: calc(50vh - 300px);
+    left: calc(50vw - 200px);
     z-index: 99999;
+    border-radius: 20px;
+}
+.registerform{
+    position: absolute;
+    width: 400px;
+    height: 600px;
+    background-color: white;
+    box-shadow: -1px 0 15px #686868, 0 1px 15px #686868, 1px 0 15px #686868, 0 -1px 15px #686868;
+    top: calc(50vh - 300px);
+    left: calc(50vw - 200px);
+    z-index: 99999;
+    border-radius: 20px;
 }
 
 .explorer {
@@ -373,15 +385,14 @@ svg path {
     width: 100vw;
     height: 100vh;
     display: flex;
-    z-index: 99999;
 }
 
 .explorer .inner {
     margin: 100px auto;
     background-color: #FFFFFF;
-    width: 600px;
+    width: min(90vw, 1000px);
     padding: 20px;
-    box-shadow: -1px 0 5px #8E8EFF, 0 1px 5px #8E8EFF, 1px 0 5px #8E8EFF, 0 -1px 5px #8E8EFF;
+    box-shadow: -1px 0 15px #686868, 0 1px 15px #686868, 1px 0 15px #686868, 0 -1px 15px #686868;
     border-radius: 20px;
 }
 
@@ -410,4 +421,17 @@ svg path {
 select:focus {
     border: none !important;
     outline: none !important;
+}
+
+.docname{
+    position:absolute;
+    top: 14px;
+    left: 200px;
+    font-size: 24px;
+    color: #777777;
+}
+
+.btn.focus, .btn:focus {
+    outline: 0;
+    box-shadow: none!important;
 }
