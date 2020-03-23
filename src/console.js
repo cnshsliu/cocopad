@@ -962,7 +962,6 @@ KFK.setLineEventHandler = function (jqLine) {
     //                 x: KFK.linePosStop.left - KFK.linePosStart.left,
     //                 y: KFK.linePosStop.top - KFK.linePosStart.top
     //             }
-    //             //TODO: jquery.line    redraw line with different points but keep the DIV.
     //         KFK.offsetLineDataAttr(lineDIV, delta);
 
     //         // let newPosition = KFK.getPositionOfTwoEndsOfLine2(lineDIV);
@@ -1487,10 +1486,11 @@ KFK.syncNodePut = async function (cmd, jqDIV, reason) {
         let payload = {
             tenant: config.tenant.id,
             user: config.tenant.user,
-            doc: config.doc.id,
+            docid: config.doc.docid,
             nodeid: nodeID,
             content: cmd === 'D' ? nodeID : tobeSync.prop('outerHTML'),
             offline: isOffline,
+            lastupdate: tobeSync.attr('lastupdate')
         }
         jqDIV.removeClass('offline');
         let result = await KFK.WS.put(cmd, payload);
@@ -2367,7 +2367,7 @@ KFK.init = async function () {
     s1 = KFK.base64ToCode(s1);
     console.log(s1);
 
-    await WS.start(KFK.onWsConnected, KFK.onWsMsg, 2000);
+    await WS.start(KFK.onWsConnected, KFK.onWsMsg, 500);
 };
 
 KFK.onWsConnected = function () {
@@ -2381,7 +2381,6 @@ KFK.onWsConnected = function () {
         KFK.initPropertyForm();
         KFK.initLineMover();
         KFK.initColorPicker();
-        //TODO: last line for test purpose
         // clear footprint
         // localStorage.removeItem('cocouser');
         // localStorage.removeItem('cocoprj');
@@ -2397,11 +2396,38 @@ KFK.onWsConnected = function () {
     }
 };
 
+KFK.feedback = function (key, value) {
+    let tmp = {};
+    let constValue = KFK.APP.model.feedback_const[key];
+    tmp[key] = value;
+    let feedback = $.extend({}, KFK.APP.model.feedback, tmp);
+    KFK.APP.setData("model", "feedback", feedback);
+    if(value !== constValue)
+        setTimeout(function () { KFK.feedback(key, constValue); }, 2000);
+};
+
+KFK.showSection = function (options) {
+    let section = $.extend({}, KFK.APP.show.section, options);
+    KFK.APP.setData("show", "section", section);
+};
+
+KFK.showForm = function (options) {
+    let form = $.extend({}, KFK.APP.show.form, options);
+    KFK.APP.setData("show", "form", form);
+};
+
+KFK.showDialog = function (options) {
+    let dialog = $.extend({}, KFK.APP.show.dialog, options);
+    KFK.APP.setData("show", "dialog", dialog);
+};
+
+
+
+
 KFK.checkUser = function (isAfterLogin) {
     let cocouser = localStorage.getItem('cocouser');
     if (cocouser) {
         console.log("find cocouser in local " + cocouser);
-        KFK.APP.setData("show", "loginform", false);
         cocouser = JSON.parse(cocouser);
         if (!isAfterLogin) //从localstorage中找到用户名
             KFK.WS.put('COMEBACK', { userid: cocouser.userid });
@@ -2409,38 +2435,31 @@ KFK.checkUser = function (isAfterLogin) {
         let pathname = $(location).attr('pathname');
         if (pathname.match(/\/doc\/(.+)/)) {
             let docid = pathname.substring(pathname.lastIndexOf('/') + 1);
-            if (docid === 'history' || docid === 'list')
+            if (docid === 'history' || docid === 'list') {
+                KFK.showSection({ login: false, register: false, explorer: true, designer: false });
                 KFK.showConsole();
-            else {
-                //TODO: get project id in url
-                KFK.loadDoc(docid, KFK.onDocLoaded);
+            } else {
+                KFK.showSection({ login: false, register: false, explorer: false, designer: true });
+                KFK.loadDoc(docid, '', KFK.onDocLoaded);
             }
         } else {
+            KFK.showSection({ login: false, register: false, explorer: true, designer: false });
             KFK.showConsole();
             KFK.showPrjs();
         }
     } else {
         console.log("there is no cocosuer in local, show loginform now");
-        KFK.APP.setData("show", "loginform", true);
+        if(!isAfterLogin)
+            KFK.showRegisterForm();
+        else{
+            KFK.feedback("forLogin", "登录失败，请重试");
+        }
     }
 };
 
 //这里检查是否有project
 KFK.showConsole = function () {
-    // let currentprj = localStorage.getItem('cocoprj');
-    // if (!getNull(currentprj)) {
-    //     KFK.APP.setData('show', 'explorer', true);
-    //     let prj = JSON.parse(currentprj);
-    //     console.log('Find local project ' + prj.prjid + " " + prj.name);
-    //     KFK.APP.setData('model', 'project', prj);
-    //     KFK.APP.setData('show', 'form', { newdoc: false, newprj: false, contentlist: true, bottomlinks: false });
-    // } else {
-    //     console.log('There is no local project');
-    //     KFK.APP.setData('show', 'explorer', true);
-    //     KFK.APP.setData('show', 'form', { newdoc: false, newprj: false, contentlist: true, bottomlinks: true });
-    // }
-    KFK.APP.setData('show', 'explorer', true);
-    KFK.APP.setData('show', 'form', { newdoc: false, newprj: false, contentlist: true, bottomlinks: true });
+    KFK.showForm({ newdoc: false, newprj: false, prjlist: true, doclist: true, explorerTabIndex: 0 });
     let currentprj = localStorage.getItem('cocoprj');
     if (!getNull(currentprj)) {
         let prj = JSON.parse(currentprj);
@@ -2473,14 +2492,18 @@ KFK.showConsole = function () {
 
 KFK.signin = function () {
     //TODO: JOI validation
-    KFK.log('singin ' + $('#userid').val());
-    KFK.WS.put('LOGIN', { userid: $('#userid').val(), password: '123' });
+    let userid = KFK.APP.model.login.userid;
+    let pwd = KFK.APP.model.login.pwd;
+    KFK.feedback("forRegister", "");
+    KFK.feedback("forLogin", "");
+    KFK.log('singin ' + userid);
+    KFK.WS.put('LOGIN', { userid: userid, pwd: pwd });
 };
 
 KFK.signOut = function () {
     localStorage.removeItem("cocouser");
-    KFK.APP.setData('show', 'explorer', false);
     //TODO: notify server  not to send data anymore
+    //直接断掉WS？ 断掉后不去重试连接， 回到登录界面，用户重新登录后，可再连接
     KFK.checkUser(false);
 };
 
@@ -2491,35 +2514,85 @@ KFK.showCreateNewDoc = function () {
         KFK.APP.model.lastrealproject.prjid === 'all' ||
         KFK.APP.model.lastrealproject.prjid === 'mine'
     ) {
-        KFK.showPrjs('请先选择一个项目');
+        KFK.onPrjSelected = KFK.showCreateNewDoc;
+        KFK.showPrjs('请选择新建共创的项目');
     } else {
-        KFK.APP.setData('show', 'form', { newdoc: true, newprj: false, contentlist: false, bottomlinks: true });
+        KFK.onPrjSelected = undefined;
+        KFK.APP.setData('show', 'form', { newdoc: true, newprj: false, prjlist: true, doclist: false, explorerTabIndex: 1, bottomlinks: true });
     }
 };
-KFK.showCreateNewPrj = function () {
-    KFK.APP.setData('show', 'form', { newdoc: false, newprj: true, contentlist: false, bottomlinks: true });
+
+KFK.showHelp = function () {
+    console.log('showHelp not implemented');
 };
+
+KFK.showLoginForm = function () {
+    KFK.APP.setData("model", "login", { userid: '', pwd: '' });
+    KFK.showSection({ register: false, login: true, explorer: false, designer: false });
+}
+
+KFK.showRegisterForm = function () {
+    KFK.APP.setData("model", "register", { userid: '', pwd: '', pwd2: '', name: '' });
+    KFK.showSection({ login: false, register: true, explorer: false, designer: false });
+};
+
+KFK.remoteCheckUserId = function (userid) {
+    console.log("send IFEXIST checking");
+    KFK.usefAlreadyExist = false;
+    KFK.WS.put("IFEXIST", { userid: userid });
+};
+
+KFK.registerUser = function () {
+    let userid = KFK.APP.model.register.userid;
+    let pwd = KFK.APP.model.register.pwd;
+    let name = KFK.APP.model.register.name;
+    let pwd2 = KFK.APP.model.register.pwd2;
+    let errmsg = "";
+    if (pwd !== pwd2) {
+        $("#regUserPwd2-feedback").html("两次密码录入不一致");
+        return;
+    }
+    KFK.feedback("forRegister", "");
+    KFK.feedback("forLogin", "");
+    KFK.WS.put('REGUSER', { userid: userid, pwd: pwd, name: name });
+}
+
+
+KFK.pickPrjForCreateDoc = function () {
+    KFK.onPrjSelected = KFK.showCreateNewDoc;
+    KFK.showPrjs('请选择一个项目用于在其中共创');
+}
+KFK.showCreateNewPrj = function () {
+    KFK.APP.setData('show', 'form', { newdoc: false, newprj: true, prjlist: false, doclist: true, explorerTabIndex: 0, bottomlinks: true });
+};
+KFK.selectPrjTab = function () {
+    KFK.APP.setData('show', 'form', { newdoc: false, newprj: false, prjlist: true, doclist: true, explorerTabIndex: 0, bottomlinks: true });
+}
+KFK.selectDocTab = function () {
+    KFK.APP.setData('show', 'form', { newdoc: false, newprj: false, prjlist: true, doclist: true, explorerTabIndex: 1, bottomlinks: true });
+}
 KFK.showPrjs = function (msg) {
     if (msg && typeof msg === 'string') {
         KFK.APP.setData("model", "prjwarning", msg);
     } else {
         KFK.APP.setData("model", "prjwarning", " ");
     }
-    KFK.APP.setData('show', 'form', { newdoc: false, newprj: false, contentlist: true, bottomlinks: true });
-    KFK.APP.setData('model', 'contentTabIndex', 0);
+    KFK.APP.setData('show', 'form', { newdoc: false, newprj: false, prjlist: true, doclist: true, bottomlinks: true, explorerTabIndex: 0 });
 }
-KFK.showDocs = function () {
-    KFK.APP.setData('show', 'form', { newdoc: false, newprj: false, contentlist: true, bottomlinks: true });
-    KFK.APP.setData('model', 'contentTabIndex', 1);
+KFK.showDocs = async function () {
+    await KFK.APP.setData('show', 'form', { newdoc: false, newprj: false, prjlist: true, doclist: true, bottomlinks: true, explorerTabIndex: 1 });
+    // await new Promise(resolve => setTimeout(resolve, 100));
+    // await KFK.APP.setData('model', 'explorerTabIndex', 1);
 }
 
 KFK.createNewDoc = function () {
     let docName = KFK.APP.model.newdocname;
+    let docPwd = KFK.APP.model.newdocpwd;
     const schema = Joi.string().regex(/^[a-zA-Z0-9_\u4e00-\u9fa5]{3,20}$/).required();
     let { error, value } = schema.validate(docName);
     if (error === undefined) {
         console.log('createNewDoc ' + docName);
-        KFK.WS.put('NEWDOC', { prjid: KFK.APP.model.lastrealproject.prjid, name: docName });
+        KFK.WS.put('NEWDOC', { prjid: KFK.APP.model.lastrealproject.prjid, name: docName, pwd: docPwd });
         return true;
     } else {
         return false;
@@ -2541,9 +2614,7 @@ KFK.sayHello = function () {
     KFK.log('hello, cocopad');
 }
 
-KFK.loadDoc = function (docid, callback) {
-    KFK.APP.setData('show', 'loginform', false);
-    KFK.APP.setData('show', 'explorer', false);
+KFK.loadDoc = function (docid, pwd, callback) {
     try {
         // let tmp = KFK.placeNode(false, 'mytip', 'yellowtip', 'tip', KFK.scrollX(880), KFK.scrollY(240));
         // KFK.syncNodePut('C', $(tmp), 'load demo node');
@@ -2560,9 +2631,11 @@ KFK.loadDoc = function (docid, callback) {
         // tmp = KFK.drawLine(200, 200, 500, 500, {});
         // KFK.syncNodePut('C', $(tmp), 'load demo node');
 
-        config.doc.id = docid;
-        console.log('loadDoc ' + config.doc.id);
-        KFK.downloadDoc(config.doc.id);
+        config.doc.docid = docid;
+        console.log('loadDoc ' + config.doc.docid);
+        let payload = { docid: config.doc.docid, pwd: pwd };
+        KFK.WS.put('OPEN', payload);
+        KFK.showSection({ login: false, register: false, explorer: false, designer: true });
     } catch (e) {
         console.error(e);
     } finally {
@@ -2599,9 +2672,32 @@ KFK.onWsMsg = function (data) {
     }
 
     switch (data.payload.cmd) {
-        case 'ONLOGIN':
+        case 'IFEXIST-TRUE':
+            console.log('IFEXIST-TRUE');
+            let justInputUid = $('#regUserId').val();
+            KFK.feedback('forRegister', justInputUid + "已被占用");
+            break;
+        case 'IFEXIST-FALSE':
+            console.log('IFEXIST-FALSE');
+            break;
+        case 'REGUSER-TRUE':
+            KFK.feedback("forLogin", "注册成功，请登录");
+            KFK.showLoginForm();
+            break;
+        case 'REGUSER-FALSE':
+            console.log('REGUSER-FALSE');
+            KFK.feedback("forRegister", "注册失败，请重试");
+            break;
+        case 'LOGIN':
+            console.log("login success");
             let user = data.payload.data;
             localStorage.setItem("cocouser", JSON.stringify(user));
+            KFK.checkUser(true);
+            break;
+        case 'PLSLOGIN':
+            console.log("login failed");
+            KFK.APP.setData('show', 'loginfailed', true);
+            localStorage.removeItem("cocouser");
             KFK.checkUser(true);
             break;
         case 'OPEN':
@@ -2610,6 +2706,45 @@ KFK.onWsMsg = function (data) {
             data.payload.data.forEach((html) => {
                 KFK.recreateNodeFromHTML(html);
             });
+            break;
+        case 'ASKPWD':
+            KFK.showDialog({ inputDocPasswordDialog: true });
+            break;
+        case 'RESETPWD':
+            KFK.APP.model.docs.forEach((doc) => {
+                if (doc.docid === data.payload.docid) {
+                    console.log('RESETPWD return pwd:' + data.payload.pwd + ' for doc ' + doc.name);
+                    if (data.payload.pwd === '') {
+                        doc.lock = 'blank';
+                        doc.pwd = '';
+                    } else {
+                        doc.lock = "lock";
+                        doc.pwd = '*********';
+                    }
+                }
+            })
+            break;
+        case 'REMOVEPWD':
+            KFK.APP.model.docs.forEach((doc) => {
+                if (doc.docid === data.payload.docid) {
+                    console.log('REMOVEPWD return pwd:' + data.payload.pwd + ' for doc ' + doc.name);
+                    if (data.payload.pwd === '') {
+                        doc.lock = 'blank';
+                        doc.pwd = '';
+                    } else {
+                        doc.lock = "lock";
+                        doc.pwd = '*********';
+                    }
+                }
+            })
+            break;
+        case 'NONEXIST':
+            KFK.showDialog({ inputDocPasswordDialog: true });
+            this.$bvModal.msgBoxOk('文档不存在')
+                .then(value => {
+                    KFK.showSection({ login: false, register: false, explorer: true, designer: false });
+                    KFK.showDocs();
+                }).catch(err => { })
             break;
         case 'NEWPRJ':
             console.log(data.payload);
@@ -2626,15 +2761,21 @@ KFK.onWsMsg = function (data) {
             break;
         case 'NEWDOC':
             console.log(data.payload);
-            KFK.loadDoc(data.payload.data.docid, KFK.onDocLoaded);
+            KFK.loadDoc(data.payload.data.docid, KFK.APP.model.newdocpwd.trim(), KFK.onDocLoaded);
             break;
         case 'LISTDOC':
             KFK.APP.setData('model', 'listdocoption', data.payload.option);
             let docs = data.payload.data;
             console.log("LISTDOC");
+            docs.forEach((doc) => {
+                if (doc.pwd === '') {
+                    doc.lock = 'blank';
+                } else {
+                    doc.lock = 'lock';
+                }
+            })
             console.log(docs);
             KFK.APP.setData('model', 'docs', docs);
-            KFK.APP.setData('show', 'explorer', true);
             break;
         case 'LISTPRJ':
             KFK.APP.setData('model', 'listprjoption', data.payload.option);
@@ -2646,7 +2787,6 @@ KFK.onWsMsg = function (data) {
             prjs.unshift({ _id: 'mine', prjid: 'mine', name: '我创建的所有项目', owner: 'me' });
             prjs.unshift({ _id: 'all', prjid: 'all', name: '我参与过的所有项目', owner: 'me' });
             KFK.APP.setData('model', 'prjs', prjs);
-            KFK.APP.setData('show', 'explorer', true);
             break;
 
         case 'DEL':
@@ -2658,7 +2798,7 @@ KFK.onWsMsg = function (data) {
 };
 
 KFK.deletePrj = async function (prjid) {
-    let payload = { prjid: prjid };
+    let payload = { owner: KFK.getCocouser().userid, prjid: prjid };
     console.log(payload);
     await KFK.WS.put('DELPRJ', payload);
     if (KFK.APP.model.prjs.length > 2) {
@@ -2672,6 +2812,20 @@ KFK.deletePrj = async function (prjid) {
     }
 };
 
+KFK.getCocouser = function () {
+    return JSON.parse(localStorage.getItem('cocouser'));
+}
+
+KFK.deleteDoc = async function (docid) {
+    let payload = { owner: KFK.getCocouser().userid, docid: docid };
+    console.log(payload);
+    await KFK.WS.put('DELDOC', payload);
+    if (KFK.APP.model.docs.length > 0) {
+        KFK.APP.setData("model", "document", KFK.APP.model.docs[0]);
+        KFK.showDocs();
+    }
+};
+
 KFK.prjRowClickHandler = function (record, index) {
     console.log(record);
     KFK.APP.setData('model', 'project', { prjid: record.prjid, name: record.name });
@@ -2681,17 +2835,62 @@ KFK.prjRowClickHandler = function (record, index) {
         localStorage.setItem('cocoprj', JSON.stringify(cocoprj));
     }
     KFK.WS.put("LISTDOC", { prjid: record.prjid });
-    KFK.showDocs();
+    if (KFK.onPrjSelected) {
+        KFK.onPrjSelected();
+    } else {
+        KFK.showDocs();
+    }
 };
 KFK.docRowClickHandler = function (record, index) {
     console.log(record);
-    KFK.loadDoc(record.docid, KFK.onDocLoaded);
+    if (record.pwd === '*********') {
+        console.log('ask for password');
+        KFK.APP.setData('model', "opendocpwd", '');
+        KFK.showDialog({ inputDocPasswordDialog: true });
+        KFK.tryToOpenDocId = record.docid;
+    } else {
+        KFK.loadDoc(record.docid, '', KFK.onDocLoaded);
+    }
+};
+KFK.getDocPwd = function () {
+    console.log(`PWD is ${KFK.APP.model.opendocpwd}`);
+    KFK.loadDoc(KFK.tryToOpenDocId, KFK.APP.model.opendocpwd, KFK.onDocLoaded);
 };
 
-KFK.downloadDoc = function (docid) {
-    let payload = { docid: docid, pwd: '123' };
-    KFK.WS.put('OPEN', payload);
+KFK.showResetPwdModal = function (item, index, button) {
+    KFK.tryToResetPwdDocId = item.docid;
+    KFK.APP.setData("model", "docOldPwd", "");
+    KFK.APP.setData("model", "docNewPwd", "");
+    KFK.showDialog({ resetDocPasswordDialog: true });
 };
+
+KFK.showRemovePwdModal = function (item, index, button) {
+    KFK.tryToRemovePwdDocId = item.docid;
+    KFK.APP.setData("model", "inputUserPwd", "");
+    KFK.showDialog({ userPasswordDialog: true });
+};
+
+KFK.removeDocPwd = function () {
+    let payload = {
+        docid: KFK.tryToRemovePwdDocId,
+        userid: KFK.getCocouser().userid,
+        pwd: KFK.APP.model.inputUserPwd,
+    };
+    KFK.WS.put('REMOVEPWD', payload);
+};
+
+KFK.resetDocPwd = function () {
+    console.log('old:' + KFK.APP.model.docOldPwd);
+    console.log('new:' + KFK.APP.model.docNewPwd);
+    let payload = {
+        docid: KFK.tryToResetPwdDocId,
+        oldpwd: KFK.APP.model.docOldPwd ? KFK.APP.model.docOldPwd : '',
+        newpwd: KFK.APP.model.docNewPwd ? KFK.APP.model.docNewPwd : '',
+    }
+    console.log(payload);
+    KFK.WS.put('RESETPWD', payload);
+};
+
 
 KFK.recreateNodeFromHTML = function (html) {
     console.log(html);
@@ -2700,6 +2899,7 @@ KFK.recreateNodeFromHTML = function (html) {
     if (nodeid === 'document') {
         //在handlers.js 中，第一个进入doc时，返回document的docid和name
         let doc = { docid: jqDIV.attr('docid'), name: jqDIV.attr('name') };
+        config.doc = doc;
         KFK.APP.setData('model', "document", doc);
     } else if (jqDIV.hasClass('notify')) {  //TODO: notification
     } else if (jqDIV.hasClass('ad')) {  //TODO: Advertisement
@@ -3019,7 +3219,7 @@ KFK.setTenant = (tenant) => {
     config.tenant = tenant;
 }
 KFK.getOSSFileName = (basename) => {
-    return `${config.tenant.id} / ${config.doc.id} / ${basename}`;
+    return `${config.tenant.id} / ${config.doc.docid} / ${basename}`;
 }
 
 KFK.initGridLayer = function () {
@@ -3287,11 +3487,11 @@ KFK.toggleFullScreen = function (flag) {
 }
 
 KFK.gotoExplorer = function () {
-    KFK.APP.setData('model', 'contentTabIndex', 1);
-    KFK.APP.setData('show', 'explorer', true);
+    KFK.showSection({ explorer: true, designer: false });
 };
+
 KFK.gotoDesigner = function () {
-    KFK.APP.setData('show', 'explorer', false);
+    KFK.showSection({ explorer: false, designer: true });
 };
 
 KFK.dataURLtoFile = function (dataurl, filename) {
@@ -3329,7 +3529,7 @@ KFK.saveBlobToOSS = function (blob) {
 };
 
 KFK.save = async function () {
-    let docPath = `/${config.tenant.id}/${config.doc.id}/`;
+    let docPath = `/${config.tenant.id}/${config.doc.docid}/`;
     // let result = await OSSClient.list({
     //     prefix: 'lucas/',
     // });
@@ -3447,17 +3647,11 @@ KFK.loadImages(KFK.init);
 
 module.exports = KFK;
 
-//TODO: ask to input password
-//TODO: create password /update password of doc
-//TODO: find offline node and put after reconnection. C or U?
+//TODO: update document password. 
+//TODO: 设置密码的界面，用眼睛icon切换密码输入是否明文
 //TODO: 清理OSS图片
 // OSS路径名使用 tenant_id/doc_id/pic_name.png
 // 一开始生成文档的ID， 然后的OSS图片的目录使用这个ID， 最后保存时，检查真正剩余的图片，并与OSS中的对应，没有用到的从OSS中删除掉
 //TODO: Zoom in / Zoom out
 //TODO: RichText with QuilJS
-//TODO: Free Drawing
-//TODO: draw an multiple angles
 //TODO: double click on line to add text label
-//TODO: add editor tags (multiple/last one)
-//TODO: change SVG fill color
-//TODO: grey out on disconnect

@@ -11,221 +11,298 @@
 
 <body>
   <div id="containerbkg"></div>
-
   <div id='app'>
-    <div id="scroll-container">
-        <div id="C3" >
+    <div>{{show.section}}</div>
+    <div id="waiting" v-show="!show.wsready" class="waitinglogo">
+      <b-container>
+        <b-row cols="3" align-v='center'>
+          <b-col>
+            <b-iconstack font-scale="6">
+              <b-icon stacked icon="cloud" variant="info" scale="1.5"></b-icon>
+              <b-icon stacked icon="three-dots" variant="danger" scale="0.8" shift-v="-2.5" animation="cylon"></b-icon>
+            </b-iconstack>
+          </b-col>
+          <b-col>
+            <b-icon icon="three-dots" animation="cylon" font-scale="3" color="#7952b3"></b-icon>
+          </b-col>
+          <b-col>
+            <img src="../assets/cocopad.svg" class="logo d-inline-block align-top" alt="COCOPAD">
+          </b-col>
+        </b-row>
+      </b-container>
+    </div>
+    <div id="registerform" class="registerform" v-show="show.section.register" style="display:none;">
+      <b-container class="my-3 ">
+        <b-form class="w-100 px-2">
+          <div class="text-center pb-4"><img src="../assets/cocopad.svg" class="d-inline-block align-top cocologo"
+              alt="">
+          </div>
+          <div class="w-100 text-center">{{model.feedback.forRegister}}</div>
+          <b-form-group label-cols=3 label="新用户ID" label-for="regUserId">
+            <b-form-input id="regUserId" trim v-model="model.register.userid" :state="regUserIdState"
+              class="mb-2 mr-sm-2 mb-sm-0" required placeholder="Pls use email" class="w-50"></b-form-input>
+            <b-form-invalid-feedback id="regUserId-feedback">
+              一个正确的邮箱地址
+            </b-form-invalid-feedback>
+          </b-form-group>
+          <b-form-group label-cols=3 label="全名" label-for="regUserName">
+            <b-form-input id="regUserName" trim v-model="model.register.name" :state="regUserNameState"
+              class="mb-2 mr-sm-2 mb-sm-0" required placeholder="Your full name" class="w-50"></b-form-input>
+            <b-form-invalid-feedback id="regUserName-feedback">
+              2-10个英文/数字/汉字
+            </b-form-invalid-feedback>
+          </b-form-group>
+          <b-form-group label-cols=3 label="用户密码" label-for="regUserPwd">
+            <b-form-input id="regUserPwd" trim :type="model.hidepassword?'password':'text'" v-model="model.register.pwd"
+              :state="regUserPwdState" class="mb-2 mr-sm-2 mb-sm-0" required placeholder="" class="w-50"></b-form-input>
+            <b-form-invalid-feedback id="regUserPwd-feedback">
+              密码至少8字符，<BR>必须含大小写字母数字和特殊字符
+            </b-form-invalid-feedback>
+          </b-form-group>
+          <b-form-group label-cols=3 label="再次录入" label-for="regUserPwd2">
+            <b-form-input id="regUserPwd2" trim :type="model.hidepassword?'password':'text'"
+              v-model="model.register.pwd2" :state="regUserPwd2State" class="mb-2 mr-sm-2 mb-sm-0" required
+              placeholder="" class="w-50"></b-form-input>
+            <b-form-invalid-feedback id="regUserPwd2-feedback">
+              两次密码输入需要一致
+            </b-form-invalid-feedback>
+            <b-button @click="toggleHidePassword" variant="outline-none">
+              <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
+            </b-button>
+          </b-form-group>
+          <div class="bg-none text-right">
+            <b-button @click="KFK.registerUser" variant="outline-primary">注册账号 &gt;&gt;</b-button>
+          </div>
+        </b-form>
+        <hr>
+        <a href="#" class="card-link" @click="KFK.showLoginForm">&lt; 已有账号？请登录</a>
+        <div class="w-100"></div>
+        <a href="#" class="card-link" @click="KFK.showHelp">&lt; 帮助</a>
+        </b-form>
+      </b-container>
+    </div>
+    <div id="loginform" class="loginform" v-show="show.section.login" style="display:none;">
+      <b-container class="my-3 ">
+        <b-form class="w-100 px-2">
+          <div class="text-center pb-4"><img src="../assets/cocopad.svg" class="d-inline-block align-top cocologo"
+              alt="">
+          </div>
+          <div class="w-100 text-center">{{model.feedback.forLogin}}</div>
+          <b-form-group label-cols=3 label="用户ID" label-for="userId">
+            <b-form-input id="userId" trim v-model="model.login.userid" :state="userIdState"
+              class="mb-2 mr-sm-2 mb-sm-0" placeholder="" class="w-50"></b-form-input>
+          </b-form-group>
+          <b-form-group label-cols="3" label="用户密码" label-for="userPwd">
+            <b-form-input id="userPwd" trim :type="model.hidepassword?'password':'text'" v-model="model.login.pwd"
+              :state="userPwdState" class="mb-2 mr-sm-2 mb-sm-0" placeholder="" class="w-50"></b-form-input>
+            <b-button @click="toggleHidePassword" variant="outline-none">
+              <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
+            </b-button>
+          </b-form-group>
+          <div class="bg-none text-right">
+            <b-button @click="KFK.signin" variant="outline-primary">登录 &gt;&gt;</b-button>
+          </div>
+        </b-form>
+        <hr>
+        <a href="#" class="card-link" @click="KFK.showRegisterForm">&lt; 新用户注册</a>
+        <div class="w-100"></div>
+        <a href="#" class="card-link" @click="KFK.showHelp">&lt; 帮助</a>
+        </b-form>
+      </b-container>
+    </div>
+
+    <div v-show="show.section.designer"  style="display:none;">
+      <div id="scroll-container">
+        <div id="C3">
           <div id="boundingrect" class="boundingrect"></div>
           <div id="selectingrect" class="selectingrect"></div>
         </div>
-    </div>
-    <div id="toplogo" class="padlayout" v-show="show.wsready && !show.explorer">
-      <b-navbar toggleable="lg" type="light">
-        <b-navbar-brand>
-          <img src="../assets/cocopad.svg" class="logo d-inline-block align-top" alt="COCOPAD">
-          <span class='lkh' id="greeting">网络白板</span>
-        </b-navbar-brand>
-      </b-navbar>
-    </div>
-    <div id="waiting" v-show="!show.wsready" class="waitinglogo">
-      <b-row cols="1" class="text-center" variant="danger">
-        <b-col class="mb-0">
-          <b-icon icon="cloud" style="color: #7952b3;" scale="6"></b-icon>
-        </b-col>
-        <b-col class="mb-2 mt-4">
-          <b-icon icon="three-dots-vertical" animation="cylon-vertical" font-scale="3" color="#7952b3"></b-icon>
-        </b-col>
-        <b-col class="mb-0">
-          <img src="../assets/cocopad.svg" class="logo d-inline-block align-top" alt="COCOPAD">
-        </b-col>
-      </b-row>
+      </div>
+      <div id="toplogo" class="padlayout">
+        <b-navbar toggleable="lg" type="light">
+          <b-navbar-brand>
+            <img src="../assets/cocopad.svg" class="logo d-inline-block align-top" alt="COCOPAD">
+            <span class='lkh' id="greeting">网络白板</span>
+          </b-navbar-brand>
+        </b-navbar>
+      </div>
+
+      <div id="left" class="bg-white padlayout noshow">
+        <b-list-group>
+          <b-list-group-item class="d-flex align-items-center" @click="setMode('pointer');" :active="active['pointer']">
+            <b-img :src="images['pointer'].src" fluid alt="" scale="2" class="cocotool"></b-img>
+          </b-list-group-item>
+          <b-list-group-item class="d-flex align-items-center" @click="setMode('text');" :active="active['text']">
+            <b-img :src="images['text'].src" fluid alt="" scale="2" class="cocotool"></b-img>
+          </b-list-group-item>
+          <b-list-group-item class="d-flex align-items-center" @click="setMode('textblock');"
+            :active="active['textblock']">
+            <b-img :src="images['textblock'].src" fluid alt="" scale="2" class="cocotool"></b-img>
+          </b-list-group-item>
+          <b-list-group-item class="d-flex align-items-center" @click="setMode('yellowtip');"
+            :active="active['yellowtip']">
+            <b-img :src="images['tip'].src" fluid alt="" scale="2" class="cocotool"></b-img>
+          </b-list-group-item>
+          <b-list-group-item class="d-flex align-items-center" @click="setMode('line');" :active="active['line']">
+            <b-img :src="images['line'].src" fluid alt="" scale="2" class="cocotool" id='tool_line'></b-img>
+          </b-list-group-item>
+
+        </b-list-group>
+      </div>
+      <div id="right" class="padlayout noshow">
+        <b-tabs v-model="model.rightTabIndex" content-class="mt-3" justified>
+          <b-tab title="样式" class='cocoproperty'>
+            <b-container v-show="show.customshape">
+              <b-row class="mx-auto my-1">
+                <b-col>背景底色</b-col>
+                <b-col class='coco'><input class="w-100" name="shapeBkgColor" id="shapeBkgColor" /></b-col>
+              </b-row>
+              <b-row class="mx-auto my-1">
+                <b-col>边框颜色</b-col>
+                <b-col class='coco'><input name="shapeBorderColor" id="shapeBorderColor" /></b-col>
+              </b-row>
+              <b-row class="mx-auto my-1">
+                <b-col>边框粗细</b-col>
+                <b-col class='coco'><input class='selector' size=3 id="spinner_border_width" name="value_bw" /></b-col>
+              </b-row>
+              <b-row class="mx-auto my-1">
+                <b-col>圆角度数</b-col>
+                <b-col class='coco'><input class='selector' size=3 id="spinner_border_radius" name="value_rad" />
+                </b-col>
+              </b-row>
+            </b-container>
+            <b-container v-show="show.customline">
+              <b-row class="mx-auto my-1">
+                <b-col>线条颜色</b-col>
+                <b-col class='coco'><input name="lineColor" id="lineColor" /></b-col>
+              </b-row>
+              <b-row class="mx-auto my-1">
+                <b-col>线条粗细</b-col>
+                <b-col class='coco'><input class='selector' size=3 id="spinner_line_width" name="value_lw" /></b-col>
+              </b-row>
+            </b-container>
+
+            <b-container v-show="show.text_property" class='border-top'>
+              <div class="row mx-auto my-1">
+                <div class="col">文本字体</div>
+                <div class="col coco"><input class="fonts p-0" /></div>
+              </div>
+              <div class="row mx-auto my-1">
+                <div class="col">文本颜色</div>
+                <div class="col coco">
+                  <input name="fontColor" id="fontColor" />
+                </div>
+              </div>
+              <div class="row mx-auto my-1">
+                <div class="col">横向对齐</div>
+                <div class="col coco">
+                  <b-form-select id="textAlign" v-model="model.textAlign" :options="model.textAlignOptions"
+                    @change="textAlignChanged">
+                  </b-form-select>
+                </div>
+              </div>
+              <div class="row mx-auto my-1">
+                <div class="col">纵向对齐</div>
+                <div class="col coco">
+                  <b-form-select id="vertAlign" v-model="model.vertAlign" :options="model.vertAlignOptions"
+                    @change="vertAlignChanged">
+                  </b-form-select>
+                </div>
+              </div>
+            </b-container>
+            <b-container v-show="show.custombacksvg">
+              <b-row v-for="tips in tip_groups" v-bind:key="tips[0]">
+                <b-col class='p-1' v-for="tip in tips" v-bind:key="tip">
+                  <b-img :src="images[tip].src" fluid alt="" scale="2" class="cocotool" @click="setTipVariant(tip)">
+                  </b-img>
+                </b-col>
+              </b-row>
+              <b-row class="mx-auto my-1">
+                <b-col>底图颜色</b-col>
+                <b-col class='coco'><input name="tipBkgColor" id="tipBkgColor" /></b-col>
+              </b-row>
+            </b-container>
+          </b-tab>
+          <b-tab title="排列">
+            <b-button-toolbar v-show="show.arrange_multi_nodes" key-nav class="w-100 justify-content-md-center">
+              <b-button-group class="d-flex w-100">
+                <b-button variant="light" title="对齐左侧" class="flex-fill p-0" @click="KfkAlign('left')"><img
+                    src="../assets/align_left.svg" class="toolbar"></b-button>
+                <b-button variant="light" title="对齐垂直中线" class="flex-fill p-0" @click="KfkAlign('center')"><img
+                    src="../assets/align_center.svg" class="toolbar"></b-button>
+                <b-button variant="light" title="对齐右侧" class="flex-fill p-0" @click="KfkAlign('right')"><img
+                    src="../assets/align_right.svg" class="toolbar"></b-button>
+                <b-button variant="light" title="对齐顶部" class="flex-fill p-0" @click="KfkAlign('top')"><img
+                    src="../assets/align_top.svg" class="toolbar"></b-button>
+                <b-button variant="light" title="对齐水平中线" class="flex-fill p-0" @click="KfkAlign('middle')"><img
+                    src="../assets/align_middle.svg" class="toolbar"></b-button>
+                <b-button variant="light" title="对齐底部" class="flex-fill p-0" @click="KfkAlign('bottom')"><img
+                    src="../assets/align_bottom.svg" class="toolbar"></b-button>
+              </b-button-group>
+            </b-button-toolbar>
+            <b-button-toolbar v-show="show.arrange_multi_nodes" key-nav class="w-100 justify-content-md-center">
+              <b-button-group class="d-flex w-100">
+                <b-button variant="light" class="flex-fill" title="横向均匀分布" @click="KfkAlign('hori')"><img
+                    src="../assets/align_hori.svg" class="toolbar"></b-button>
+                <b-button variant="light" class="flex-fill" title="纵向均匀分布" @click="KfkAlign('vert')"><img
+                    src="../assets/align_vert.svg" class="toolbar"></b-button>
+              </b-button-group>
+            </b-button-toolbar>
+          </b-tab>
+          <b-tab title="COCO" active class='cocoproperty'>
+            <p>欢迎使用</p>
+            <b-checkbox id="cb-showgrid" v-model="model.showGrid" name="cb-showgrid" switch @change="showGridChanged">
+              显示网格线
+            </b-checkbox>
+            <b-checkbox v-model="model.snap" switch @change="snapChanged">对齐到网格
+            </b-checkbox>
+            <p> </p>
+            <b-container class="coco">
+              <b-row class="mx-auto my-1">
+                <b-col>背景颜色</b-col>
+                <b-col class="coco"><input name="cocoBkgColor" id="cocoBkgColor" /></b-col>
+              </b-row>
+            </b-container>
+            <b-container class="coco">
+              <b-row class="mx-auto my-1">
+                <b-col>显示编辑者</b-col>
+              </b-row>
+              <b-row class="mx-auto my-1">
+                <b-form-radio v-model="model.showEditor" name="some-radios" value="none"
+                  @change="showEditorChanged('none')">隐藏</b-form-radio>
+                <b-form-radio v-model="model.showEditor" name="some-radios" value="last"
+                  @change="showEditorChanged('last')">最近</b-form-radio>
+                <b-form-radio v-model="model.showEditor" name="some-radios" value="all"
+                  @change="showEditorChanged('all')">全部</b-form-radio>
+              </b-row>
+            </b-container>
+          </b-tab>
+          </b-tab>
+        </b-tabs>
+      </div>
+      <div id="rtcontrol" class="padlayout noshow">
+        <b-button-group class="coco">
+          <b-button id="goto_explorer" variant="outline-success" @click="KFK.gotoExplorer">
+            <b-icon icon="folder"></b-icon>
+          </b-button>
+          <b-button id="toggle_all" variant="outline-success" @click="KFK.toggleFullScreen">
+            <b-icon icon="arrows-fullscreen"></b-icon>
+          </b-button>
+          <b-button id="toggle-right" variant="outline-success" @click="KFK.toggleRight">
+            <b-icon icon="layout-sidebar-reverse"></b-icon>
+          </b-button>
+        </b-button-group>
+      </div>
+      <div class="docname">{{model.document.name}}</div>
+      <div id="modeIndicator" style="position:absolute; top: 0px; left: 0px; display: none; ">
+        <img id="modeIndicatorImg" src="../assets/pointer.svg" style='width: 18px; height: 18px;' />
+      </div>
+      <img id="linetransformer" src="../assets/linetransformer.svg"
+        style="position: absolute; top:10px; height: 10px; width: 20px; height: 20px; z-index: 9999; visibility: hidden;" />
+      <div id="MSG" class="msgarea">{{model.msg}}</div>
     </div>
 
-    <div id="left" v-show="show.wsready && !show.explorer" class="bg-white padlayout noshow">
-      <b-list-group>
-        <b-list-group-item class="d-flex align-items-center" @click="setMode('pointer');" :active="active['pointer']">
-          <b-img :src="images['pointer'].src" fluid alt="" scale="2" class="cocotool"></b-img>
-        </b-list-group-item>
-        <b-list-group-item class="d-flex align-items-center" @click="setMode('text');" :active="active['text']">
-          <b-img :src="images['text'].src" fluid alt="" scale="2" class="cocotool"></b-img>
-        </b-list-group-item>
-        <b-list-group-item class="d-flex align-items-center" @click="setMode('textblock');"
-          :active="active['textblock']">
-          <b-img :src="images['textblock'].src" fluid alt="" scale="2" class="cocotool"></b-img>
-        </b-list-group-item>
-        <b-list-group-item class="d-flex align-items-center" @click="setMode('yellowtip');"
-          :active="active['yellowtip']">
-          <b-img :src="images['tip'].src" fluid alt="" scale="2" class="cocotool"></b-img>
-        </b-list-group-item>
-        <b-list-group-item class="d-flex align-items-center" @click="setMode('line');" :active="active['line']">
-          <b-img :src="images['line'].src" fluid alt="" scale="2" class="cocotool" id='tool_line'></b-img>
-        </b-list-group-item>
-
-      </b-list-group>
-    </div>
-    <div id="right" v-show="show.wsready && !show.explorer" class="padlayout noshow">
-      <b-tabs v-model="model.rightTabIndex" content-class="mt-3" justified>
-        <b-tab title="样式" class='cocoproperty'>
-          <b-container v-show="show.customshape">
-            <b-row class="mx-auto my-1">
-              <b-col>背景底色</b-col>
-              <b-col class='coco'><input class="w-100" name="shapeBkgColor" id="shapeBkgColor" /></b-col>
-            </b-row>
-            <b-row class="mx-auto my-1">
-              <b-col>边框颜色</b-col>
-              <b-col class='coco'><input name="shapeBorderColor" id="shapeBorderColor" /></b-col>
-            </b-row>
-            <b-row class="mx-auto my-1">
-              <b-col>边框粗细</b-col>
-              <b-col class='coco'><input class='selector' size=3 id="spinner_border_width" name="value_bw" /></b-col>
-            </b-row>
-            <b-row class="mx-auto my-1">
-              <b-col>圆角度数</b-col>
-              <b-col class='coco'><input class='selector' size=3 id="spinner_border_radius" name="value_rad" /></b-col>
-            </b-row>
-          </b-container>
-          <b-container v-show="show.customline">
-            <b-row class="mx-auto my-1">
-              <b-col>线条颜色</b-col>
-              <b-col class='coco'><input name="lineColor" id="lineColor" /></b-col>
-            </b-row>
-            <b-row class="mx-auto my-1">
-              <b-col>线条粗细</b-col>
-              <b-col class='coco'><input class='selector' size=3 id="spinner_line_width" name="value_lw" /></b-col>
-            </b-row>
-          </b-container>
-
-          <b-container v-show="show.text_property" class='border-top'>
-            <div class="row mx-auto my-1">
-              <div class="col">文本字体</div>
-              <div class="col coco"><input class="fonts p-0" /></div>
-            </div>
-            <div class="row mx-auto my-1">
-              <div class="col">文本颜色</div>
-              <div class="col coco">
-                <input name="fontColor" id="fontColor" />
-              </div>
-            </div>
-            <div class="row mx-auto my-1">
-              <div class="col">横向对齐</div>
-              <div class="col coco">
-                <b-form-select id="textAlign" v-model="model.textAlign" :options="model.textAlignOptions"
-                  @change="textAlignChanged">
-                </b-form-select>
-              </div>
-            </div>
-            <div class="row mx-auto my-1">
-              <div class="col">纵向对齐</div>
-              <div class="col coco">
-                <b-form-select id="vertAlign" v-model="model.vertAlign" :options="model.vertAlignOptions"
-                  @change="vertAlignChanged">
-                </b-form-select>
-              </div>
-            </div>
-          </b-container>
-          <b-container v-show="show.custombacksvg">
-            <b-row v-for="tips in tip_groups" v-bind:key="tips[0]">
-              <b-col class='p-1' v-for="tip in tips" v-bind:key="tip">
-                <b-img :src="images[tip].src" fluid alt="" scale="2" class="cocotool" @click="setTipVariant(tip)">
-                </b-img>
-              </b-col>
-            </b-row>
-            <b-row class="mx-auto my-1">
-              <b-col>底图颜色</b-col>
-              <b-col class='coco'><input name="tipBkgColor" id="tipBkgColor" /></b-col>
-            </b-row>
-          </b-container>
-        </b-tab>
-        <b-tab title="排列">
-          <b-button-toolbar v-show="show.arrange_multi_nodes" key-nav class="w-100 justify-content-md-center">
-            <b-button-group class="d-flex w-100">
-              <b-button variant="light" title="对齐左侧" class="flex-fill p-0" @click="KfkAlign('left')"><img
-                  src="../assets/align_left.svg" class="toolbar"></b-button>
-              <b-button variant="light" title="对齐垂直中线" class="flex-fill p-0" @click="KfkAlign('center')"><img
-                  src="../assets/align_center.svg" class="toolbar"></b-button>
-              <b-button variant="light" title="对齐右侧" class="flex-fill p-0" @click="KfkAlign('right')"><img
-                  src="../assets/align_right.svg" class="toolbar"></b-button>
-              <b-button variant="light" title="对齐顶部" class="flex-fill p-0" @click="KfkAlign('top')"><img
-                  src="../assets/align_top.svg" class="toolbar"></b-button>
-              <b-button variant="light" title="对齐水平中线" class="flex-fill p-0" @click="KfkAlign('middle')"><img
-                  src="../assets/align_middle.svg" class="toolbar"></b-button>
-              <b-button variant="light" title="对齐底部" class="flex-fill p-0" @click="KfkAlign('bottom')"><img
-                  src="../assets/align_bottom.svg" class="toolbar"></b-button>
-            </b-button-group>
-          </b-button-toolbar>
-          <b-button-toolbar v-show="show.arrange_multi_nodes" key-nav class="w-100 justify-content-md-center">
-            <b-button-group class="d-flex w-100">
-              <b-button variant="light" class="flex-fill" title="横向均匀分布" @click="KfkAlign('hori')"><img
-                  src="../assets/align_hori.svg" class="toolbar"></b-button>
-              <b-button variant="light" class="flex-fill" title="纵向均匀分布" @click="KfkAlign('vert')"><img
-                  src="../assets/align_vert.svg" class="toolbar"></b-button>
-            </b-button-group>
-          </b-button-toolbar>
-        </b-tab>
-        <b-tab title="COCO" active class='cocoproperty'>
-          <p>欢迎使用</p>
-          <b-checkbox id="cb-showgrid" v-model="model.showGrid" name="cb-showgrid" switch @change="showGridChanged">
-            显示网格线
-          </b-checkbox>
-          <b-checkbox v-model="model.snap" switch @change="snapChanged">对齐到网格
-          </b-checkbox>
-          <p> </p>
-          <b-container class="coco">
-            <b-row class="mx-auto my-1">
-              <b-col>背景颜色</b-col>
-              <b-col class="coco"><input name="cocoBkgColor" id="cocoBkgColor" /></b-col>
-            </b-row>
-          </b-container>
-          <b-container class="coco">
-            <b-row class="mx-auto my-1">
-              <b-col>显示编辑者</b-col>
-            </b-row>
-            <b-row class="mx-auto my-1">
-              <b-form-radio v-model="model.showEditor" name="some-radios" value="none"
-                @change="showEditorChanged('none')">隐藏</b-form-radio>
-              <b-form-radio v-model="model.showEditor" name="some-radios" value="last"
-                @change="showEditorChanged('last')">最近</b-form-radio>
-              <b-form-radio v-model="model.showEditor" name="some-radios" value="all"
-                @change="showEditorChanged('all')">全部</b-form-radio>
-            </b-row>
-          </b-container>
-        </b-tab>
-        </b-tab>
-      </b-tabs>
-    </div>
-    <div id="rtcontrol" v-show="show.wsready && !show.explorer" class="padlayout noshow">
-      <b-button-group class="coco">
-        <b-button id="goto_explorer" variant="outline-success" @click="KFK.gotoExplorer">
-          <b-icon icon="folder"></b-icon>
-        </b-button>
-        <b-button id="toggle_all" variant="outline-success" @click="KFK.toggleFullScreen">
-          <b-icon icon="arrows-fullscreen"></b-icon>
-        </b-button>
-        <b-button id="toggle-right" variant="outline-success" @click="KFK.toggleRight">
-          <b-icon icon="layout-sidebar-reverse"></b-icon>
-        </b-button>
-      </b-button-group>
-    </div>
-    <div id="gotodesignercontrol" v-show="show.wsready && show.explorer && model.docLoaded" class="padlayout noshow">
-      <b-button-group class="coco">
-        <b-button id="goto_designer" variant="outline-success" @click="KFK.gotoDesigner">
-          <b-icon icon="reply"></b-icon>
-        </b-button>
-      </b-button-group>
-    </div>
-    <div id="modeIndicator" style="position:absolute; top: 0px; left: 0px; display: none; ">
-      <img id="modeIndicatorImg" src="../assets/pointer.svg" style='width: 18px; height: 18px;' />
-    </div>
-    <img id="linetransformer" src="../assets/linetransformer.svg"
-      style="position: absolute; top:10px; height: 10px; width: 20px; height: 20px; z-index: 9999; visibility: hidden;" />
-    <div id="MSG" class="msgarea">{{model.msg}}</div>
-    <div id="loginform" class="loginform" v-show="show.wsready && show.loginform">
-      <form>
-        <input id="userid" />
-        <b-btn @click="KFK.signin">Sign in</b-btn>
-      </form>
-    </div>
-    <div class="explorer" v-show="show.wsready && show.explorer">
+    <div class="explorer" v-show="show.section.explorer"  style="display:none;">
       <div class="inner">
         <b-navbar type="light" variant="light">
           <b-navbar-nav class="mr-auto">
@@ -250,88 +327,204 @@
             </b-nav-item-dropdown>
           </b-navbar-nav>
         </b-navbar>
-        <div v-if="show.form.newprj">
-          <b-card title="新建项目">
-            <b-form inline>
-              <label class="mr-sm-2" for="newPrjName">项目名称</label>
-              <b-input id="prjName" trim v-model="model.newprjname" :state="prjNameState" class="mb-2 mr-sm-2 mb-sm-0"
-                placeholder=""></b-input>
-              <b-button variant="primary" @click="KFK.createNewPrj">发起</b-button>
-              <b-form-invalid-feedback id="prjName-feedback">
-                名称为3个以上英文或中文字符，不超过20个
-              </b-form-invalid-feedback>
-            </b-form>
-            <div>&nbsp;</div>
-            <div>&nbsp;</div>
-            <a href="#" class="card-link" @click="KFK.showPrjs">&lt; 返回项目列表</a>
-          </b-card>
-        </div>
-        <div v-if="show.form.newdoc">
-          <b-card title="新建共创板">
-            <b-card-text>在项目 <B>{{model.lastrealproject.name}}</B> 中</b-card-text>
-            <b-form inline>
-              <label class="mr-sm-2" for="newDocName">共创板名</label>
-              <b-input id="docName" trim v-model="model.newdocname" :state="docNameState" class="mb-2 mr-sm-2 mb-sm-0"
-                placeholder=""></b-input>
-              <b-button variant="primary" @click="KFK.createNewDoc">发起</b-button>
-              <b-form-invalid-feedback id="docName-feedback">
-                名称为3个以上英文或中文字符，不超过20个
-              </b-form-invalid-feedback>
-            </b-form>
-            <div>&nbsp;</div>
-            <div>&nbsp;</div>
-            <a href="#" class="card-link" @click="KFK.showDocs">&lt; 返回文档列表</a>
-          </b-card>
-        </div>
-        <div class="overflow-auto" v-if="show.form.contentlist">
+
+        <div class="overflow-auto"
+          v-show="show.form.newdoc || show.form.newprj || show.form.doclist || show.form.prjlist">
           <b-card no-body>
-            <b-tabs card v-model="model.contentTabIndex" vertical
+            <b-tabs card v-model="show.form.explorerTabIndex" vertical
               active-nav-item-class="font-weight-bold text-uppercase text-danger" active-tab-class="">
-              <b-tab title="我的项目" active>
-                {{model.prjwarning}}
-                <b-table hover id="my-prj-table" :items="model.prjs" :per-page="model.perPage"
-                  :current-page="model.currentPrjPage" small :fields="model.prjfields"
-                  @row-clicked="KFK.prjRowClickHandler">
-                  <template v-slot:cell(operation)="data">
-                    <b-button v-if="data.item.prjid !== 'all' && data.item.prjid !== 'mine' " size="sm"
-                      @click="clickPrjItem(data.item, data.index, $event.target)" class="mr-1">
-                      删除
-                    </b-button>
-                  </template>
-                  <template v-slot:cell()="data">
-                    <i>{{ data.value }}</i>
-                  </template>
-                </b-table>
-                <div>
-                  <b-pagination class="justify-content-center" v-model="model.currentPrjPage" :total-rows="prjcount"
-                    :per-page="model.perPage" aria-controls="my-prj-table" pills></b-pagination>
+              <b-tab title="我的项目" @click="KFK.selectPrjTab">
+                <div v-show="show.form.newprj">
+                  <b-card title="新建项目">
+                    <b-form>
+                      <b-form-group label-cols=3  label-align="right" label="项目名称" label-for="prjName">
+                        <b-form-input id="prjName" trim v-model="model.newprjname" :state="prjNameState"
+                          class="mb-2 mr-sm-2 mb-sm-0" placeholder=""></b-form-input>
+                        <b-form-invalid-feedback id="prjName-feedback">
+                          名称为3个以上英文或中文字符，不超过20个
+                        </b-form-invalid-feedback>
+                      </b-form-group>
+                      <div class="bg-none text-right">
+                        <b-button variant="primary" @click="KFK.createNewPrj">发起</b-button>
+                      </div>
+                    </b-form>
+                    <div>&nbsp;</div>
+                    <div>&nbsp;</div>
+                    <a href="#" class="card-link" @click="KFK.showPrjs">&lt; 返回项目列表</a>
+                  </b-card>
+                </div>
+                <div v-show="show.form.prjlist">
+                  {{model.prjwarning}}
+                  <b-table hover id="my-prj-table" :items="model.prjs" :per-page="model.perPage"
+                    :current-page="model.currentPrjPage" small :fields="model.prjfields"
+                    @row-clicked="KFK.prjRowClickHandler">
+                    <template v-slot:cell(operation)="data">
+                      <b-button v-if="data.item.prjid !== 'all' && data.item.prjid !== 'mine' " size="sm"
+                        @click="deletePrjItem(data.item, data.index, $event.target)" class="mr-1"
+                        variant="outline-primary">
+                        <b-icon icon="trash"></b-icon>删除
+                      </b-button>
+                    </template>
+                    <template v-slot:cell()="data">
+                      <i>{{ data.value }}</i>
+                    </template>
+                  </b-table>
+                  <div>
+                    <b-pagination class="justify-content-center" v-model="model.currentPrjPage" :total-rows="prjcount"
+                      :per-page="model.perPage" aria-controls="my-prj-table" pills></b-pagination>
+                  </div>
                 </div>
               </b-tab>
-              <b-tab title="我的白板">
-                <div v-if="model.project.prjid === 'all' || model.project.prjid === 'mine'">
-                  <B>{{model.project.name}}</B> 中的共创文档
+              <b-tab title="我的白板" @click="KFK.selectDocTab">
+                <div v-show="show.form.newdoc">
+                  <b-card title="新建共创板">
+                    <b-card-text>
+                      项目 <B>{{model.lastrealproject.name}}</B> 的共创白板
+                      <a href="#" class="card-link" @click="KFK.pickPrjForCreateDoc">选择其他项目 &gt;</a>
+                    </b-card-text>
+                    <b-form>
+                      <b-form-group label-cols="3" label-align="right" label="白板名" label-for="docName">
+                        <b-form-input id="docName" trim v-model="model.newdocname" :state="docNameState"
+                          class="mb-2 mr-sm-2 mb-sm-0" placeholder=""></b-form-input>
+                        <b-form-invalid-feedback id="docName-feedback">
+                          名称为3个以上英文或中文字符，不超过20个
+                        </b-form-invalid-feedback>
+                      </b-form-group>
+                      <b-form-group label-cols="3" label-align="right" label="访问密码" label-for="docPwd">
+                        <b-form-input id="docPwd" :type="model.hidepassword?'password':'text'" trim
+                          v-model="model.newdocpwd" class="mb-2 mr-sm-2 mb-sm-0" placeholder=""></b-form-input>
+                        <b-button @click="toggleHidePassword" variant="outline-none">
+                          <b-icon scale="2" :icon="model.hidepassword?'eye':'eye-slash'" />
+                        </b-button>
+                      </b-form-group>
+                      <div class="bg-none text-right">
+                        <b-button variant="primary" @click="KFK.createNewDoc">发起</b-button>
+                      </div>
+                    </b-form>
+                    <div>&nbsp;</div>
+                    <div>&nbsp;</div>
+                    <a href="#" class="card-link" @click="KFK.showDocs">&lt; 返回文档列表</a>
+                  </b-card>
                 </div>
-                <div v-else> 项目 <B>{{model.project.name}}</B> 中的共创文档 </div>
-                <b-table hover id="my-doc-table" :items="model.docs" :per-page="model.perPage"
-                  :current-page="model.currentDocPage" small :fields="model.docfields"
-                  @row-clicked="KFK.docRowClickHandler">
-                  <template v-slot:cell(operation)="data">
-                    HELLO
-                  </template>
-                  <template v-slot:cell()="data">
-                    <i>{{ data.value }}</i>
-                  </template>
-                </b-table>
-                <div>
-                  <b-pagination class="justify-content-center" v-model="model.currentDocPage" :total-rows="doccount"
-                    :per-page="model.perPage" aria-controls="my-doc-table" pills></b-pagination>
+                <div v-show="show.form.doclist">
+                  <div v-if="model.project.prjid === 'all' || model.project.prjid === 'mine'">
+                    <B>{{model.project.name}}</B> 中的共创白板
+                  </div>
+                  <div v-else> 项目 <B>{{model.project.name}}</B> 中的共创文档 </div>
+                  <b-table hover id="my-doc-table" :items="model.docs" :per-page="model.perPage"
+                    :current-page="model.currentDocPage" small :fields="model.docfields"
+                    @row-clicked="KFK.docRowClickHandler">
+                    <template v-slot:cell(lock)="data">
+                      <b-icon :icon="data.item.lock" size="sm" class="mr-1" />
+                    </template>
+                    <template v-slot:cell(operation)="data">
+                      <b-button size="sm" class="mr-1" variant="outline-primary"
+                        @click="KFK.showResetPwdModal(data.item, data.index, $event.target)">
+                        <b-iconstack>
+                          <b-icon stacked icon="square" variant="info"></b-icon>
+                          <b-icon stacked icon="three-dots" variant="danger" shift-v="-2.5"></b-icon>
+                        </b-iconstack>设置密码
+                      </b-button>
+                      <b-button size="sm" class="mr-1" variant="outline-primary"
+                        @click="KFK.showRemovePwdModal(data.item, data.index, $event.target)">
+                        <b-iconstack>
+                          <b-icon stacked icon="square" variant="info"></b-icon>
+                          <b-icon stacked icon="three-dots" variant="danger"></b-icon>
+                          <b-icon stacked icon="slash" variant="info"></b-icon>
+                        </b-iconstack>取消密码
+                      </b-button>
+                      <b-button size="sm" class="mr-1" variant="outline-primary"
+                        @click="deleteDocItem(data.item, data.index, $event.target)" class="mr-1"
+                        variant="outline-primary">
+                        <b-icon icon="trash"></b-icon>删除
+                      </b-button>
+                    </template>
+                    <template v-slot:cell()="data">
+                      <i>{{ data.value }}</i>
+                    </template>
+                  </b-table>
+                  <div>
+                    <b-pagination class="justify-content-center" v-model="model.currentDocPage" :total-rows="doccount"
+                      :per-page="model.perPage" aria-controls="my-doc-table" pills></b-pagination>
+                  </div>
                 </div>
               </b-tab>
             </b-tabs>
           </b-card>
         </div>
+        <b-modal @shown="focusOnPwdInput" @ok="KFK.getDocPwd" v-model="show.dialog.inputDocPasswordDialog"
+          title="请输入访问密码" button-size="sm" centered size="md">
+          <b-container>
+            <b-row>
+              <b-col cols="4">访问密码</b-col>
+              <b-col cols="8">
+                <b-form-input trim :type="model.hidepassword?'password':'text'" v-model="model.opendocpwd"
+                  ref="focusThis">
+                </b-form-input>
+              </b-col>
+            </b-row>
+            <b-row>
+              <b-col cols="4">&nbsp;</b-col>
+              <b-col md="auto" cols="8" class="text-left align-middle">
+                <b-button @click="toggleHidePassword" variant="outline-none">
+                  <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
+                </b-button>
+              </b-col>
+            </b-row>
+          </b-container>
+        </b-modal>
+        <b-modal @shown="focusOnOldPwdInput" @ok="KFK.resetDocPwd" v-model="show.dialog.resetDocPasswordDialog"
+          title="请输入访问密码" button-size="sm" centered size="md">
+          <b-container>
+            <b-row>
+              <b-col cols="4">原密码</b-col>
+              <b-col cols="8">
+                <b-form-input trim :type="model.hidepassword?'password':'text'" v-model="model.docOldPwd"
+                  ref="focusOldPwd">
+                </b-form-input>
+              </b-col>
+              <b-col cols="4">新密码</b-col>
+              <b-col cols="8">
+                <b-form-input trim :type="model.hidepassword?'password':'text'" v-model="model.docNewPwd">
+                </b-form-input>
+              </b-col>
+              <b-col cols="4">&nbsp;</b-col>
+              <b-col cols="8">
+                <b-button @click="toggleHidePassword" variant="outline-none">
+                  <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
+                </b-button>
+              </b-col>
+            </b-row>
+          </b-container>
+        </b-modal>
+        <b-modal @shown="focusOnUserPwdInput" @ok="KFK.removeDocPwd" v-model="show.dialog.userPasswordDialog"
+          title="请输入你的用户密码" button-size="sm" centered size="md">
+          <b-container>
+            <b-row>
+              <b-col cols="4">密码</b-col>
+              <b-col cols="8">
+                <b-form-input trim :type="model.hidepassword?'password':'text'" v-model="model.inputUserPwd"
+                  ref="focusUserPwd">
+                </b-form-input>
+              </b-col>
+              <b-col cols="4">&nbsp;</b-col>
+              <b-col cols="8">
+                <b-button @click="toggleHidePassword" variant="outline-none">
+                  <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
+                </b-button>
+              </b-col>
+            </b-row>
+          </b-container>
+        </b-modal>
+      </div> <!-- explorer inner -->
+      <div id="gotodesignercontrol" v-show="model.docLoaded" class="padlayout noshow">
+        <b-button-group class="coco">
+          <b-button id="goto_designer" variant="outline-success" @click="KFK.gotoDesigner">
+            <b-icon icon="pencil"></b-icon>
+          </b-button>
+        </b-button-group>
       </div>
-    </div>
+    </div> <!-- explorer -->
   </div>
   <script src="./pad.js"></script>
 </body>
