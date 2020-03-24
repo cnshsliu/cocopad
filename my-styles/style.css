@@ -49,7 +49,6 @@ body {
     left: calc(100vw - 245px);
     width: 240px;
     height: calc(100vh - 200px);
-    z-index: 99999;
     border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 15px;
 }
@@ -71,7 +70,6 @@ body {
     position: absolute;
     top: 5px;
     left: calc(100vw - 142px);
-    z-index: 99999;
 }
 
 #gotodesignercontrol {
@@ -283,15 +281,6 @@ svg path {
     padding: 0px 2px 0px 2px;
 }
 
-.userbadge {
-    font-family: 'monospace';
-    font-size: 10px;
-    position: absolute;
-    z-index: 999;
-    background-color: #E5DBFF;
-    border-radius: 10px;
-    padding: 0px 2px 0px 2px;
-}
 
 .shadow1 {
     box-shadow: -1px 0 5px #8E8EFF, 0 1px 5px #8E8EFF, 1px 0 5px #8E8EFF, 0 -1px 5px #8E8EFF;
@@ -335,21 +324,6 @@ svg path {
     z-index: 999;
 }
 
-.padtop {
-    z-index: 999;
-}
-
-.padleft {
-    z-index: 999;
-}
-
-.padright {
-    z-index: 999;
-}
-
-.padrtcontrol {
-    z-index: 999;
-}
 
 .noshow {
     visibility: hidden;
@@ -435,3 +409,38 @@ select:focus {
     outline: 0;
     box-shadow: none!important;
 }
+
+.shareItContainer{
+    position: absolute;
+    width: 400px;
+    height: 600px;
+    background-color: white;
+    box-shadow: -1px 0 15px #686868, 0 1px 15px #686868, 1px 0 15px #686868, 0 -1px 15px #686868;
+    top: calc(50vh - 300px);
+    left: calc(50vw - 200px);
+    border-radius: 20px;
+}
+
+.userbadge {
+    font-family: 'monospace';
+    font-size: 10px;
+    position: absolute;
+    z-index: 998;
+    background-color: #E5DBFF;
+    border-radius: 10px;
+    padding: 0px 2px 0px 2px;
+}
+.userbadge_0 { color: #FFAAAA; background-color: #AA3939; }
+.userbadge_1 { color: #669999; background-color: #226666; }
+.userbadge_2 { color: #D6DBE8; background-color: #7887AB; }
+.userbadge_3 { color: #554700; background-color: #AA9738; }
+.userbadge_4 { color: #FFE3A9; background-color: #AA8538; }
+.userbadge_5 { color: #CDC0F8; background-color: #AA8538; }
+.userbadge_6 { color: #CDC0F8; background-color: #691B6F; }
+.userbadge_7 { color: #FFF4BE; background-color: #A99328; }
+.userbadge_8 { color: #0A0C00; background-color: #91A426; }
+.userbadge_9 { color: #0A0C00; background-color: #CBB80C; }
+.userbadge_10 { color: #FFF4BE; background-color: #7887AB; }
+.userbadge_11 { color: #D6DDE8; background-color: #AA3939; }
+.userbadge_12 { color: #0A0C00; background-color: #669999; }
+.userbadge_13 { color: #FFF4BE; background-color: #226666; }

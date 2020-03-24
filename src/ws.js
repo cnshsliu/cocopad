@@ -44,13 +44,13 @@ WS.closeSocket = () => {
 
 WS.put = async (cmd, payload) => {
     payload.cmd = cmd;
-    console.log('readystate=' + WS.ws.readyState);
+    // console.log('readystate=' + WS.ws.readyState);
     let ret = false;
     if (WS.ws.readyState === 1) {
         await WS.ws.send(JSON.stringify(payload));
         ret = true;
     }
-    console.log("return " + ret);
+    // console.log("return " + ret);
     return ret;
 };
 export default WS;

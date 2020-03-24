@@ -40,7 +40,7 @@ const app = new Vue({
       'waitingws': true,
       'loginform': false,
       'explorer': true,
-      'form': { newdoc: false, newprj: false, prjlist: true, doclist: false, bottomlinks: false, explorerTabIndex: 0 },
+      'form': { newdoc: false, newprj: false, prjlist: true, doclist: false, share:false, bottomlinks: false, explorerTabIndex: 0 },
       'section': { login: false, register: false, explorer: false, designer: false, },
       'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false },
     },
@@ -56,12 +56,13 @@ const app = new Vue({
       docLoaded: false,
       project: { prjid: '', name: '' },
       lastrealproject: { prjid: '', name: '' },
-      document: { docid: '', name: 'my doc' },
+      document: { doc_id: '', name: ' ' },
       user: { userid: '', name: '' },
       listdocoption: {},
       listprjoption: {},
       register: { userid: '', pwd: '', pwd2: '', name: '' },
       login: { userid: '', pwd: '' },
+      share: {},
       feedback: {forRegister: '新用户注册', forLogin: '请登录'},
       feedback_const: {forRegister: '新用户注册', forLogin: '请登录'},
       docfields: [{ key: 'name', label: '名称' }, { key: 'lock', label: '密保' }, { key: 'owner', label: '发起人' }, { key: 'operation', label: '操作' }],
@@ -205,6 +206,7 @@ const app = new Vue({
       this.setData('model', 'hidepassword', !this.model.hidepassword);
     },
     focusOnPwdInput() {
+      this.setData('model', 'passwordinputok', "show");
       this.$refs.focusThis.focus();
     },
     focusOnOldPwdInput() {
@@ -307,8 +309,8 @@ const app = new Vue({
         .then(value => {
           if (value) {
             for (let i = 0; i < this.model.docs.length; i++) {
-              if (this.model.docs[i].docid === item.docid) {
-                KFK.deleteDoc(item.docid);
+              if (this.model.docs[i]._id === item._id) {
+                KFK.deleteDoc(item._id);
                 this.model.docs.splice(i, 1);
                 break;
               }
@@ -322,7 +324,7 @@ const app = new Vue({
 
 //To prevent listener number exceeds problems
 const emitter = new events.EventEmitter();
-emitter.setMaxListeners(100);
+emitter.setMaxListeners(0);
 // emitter.setMaxListeners(0);
 
 KFK.APP = app;
