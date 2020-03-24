@@ -12,7 +12,6 @@
 <body>
   <div id="containerbkg"></div>
   <div id='app'>
-    <div>{{show.section}}</div>
     <div id="waiting" v-show="!show.wsready" class="waitinglogo">
       <b-container>
         <b-row cols="3" align-v='center'>
@@ -111,7 +110,7 @@
       </b-container>
     </div>
 
-    <div v-show="show.section.designer"  style="display:none;">
+    <div v-show="show.section.designer" style="display:none;">
       <div id="scroll-container">
         <div id="C3">
           <div id="boundingrect" class="boundingrect"></div>
@@ -302,7 +301,7 @@
       <div id="MSG" class="msgarea">{{model.msg}}</div>
     </div>
 
-    <div class="explorer" v-show="show.section.explorer"  style="display:none;">
+    <div class="explorer" v-show="show.section.explorer" style="display:none;">
       <div class="inner">
         <b-navbar type="light" variant="light">
           <b-navbar-nav class="mr-auto">
@@ -337,7 +336,7 @@
                 <div v-show="show.form.newprj">
                   <b-card title="新建项目">
                     <b-form>
-                      <b-form-group label-cols=3  label-align="right" label="项目名称" label-for="prjName">
+                      <b-form-group label-cols=3 label-align="right" label="项目名称" label-for="prjName">
                         <b-form-input id="prjName" trim v-model="model.newprjname" :state="prjNameState"
                           class="mb-2 mr-sm-2 mb-sm-0" placeholder=""></b-form-input>
                         <b-form-invalid-feedback id="prjName-feedback">
@@ -419,19 +418,17 @@
                     </template>
                     <template v-slot:cell(operation)="data">
                       <b-button size="sm" class="mr-1" variant="outline-primary"
+                        @click="KFK.shareDoc(data.item, data.index, $event.target)">
+                        <b-iconstack>
+                          <b-icon stacked icon="box-arrow-up" variant="info"></b-icon>
+                        </b-iconstack>邀请协作
+                      </b-button>
+                      <b-button size="sm" class="mr-1" variant="outline-primary"
                         @click="KFK.showResetPwdModal(data.item, data.index, $event.target)">
                         <b-iconstack>
                           <b-icon stacked icon="square" variant="info"></b-icon>
                           <b-icon stacked icon="three-dots" variant="danger" shift-v="-2.5"></b-icon>
-                        </b-iconstack>设置密码
-                      </b-button>
-                      <b-button size="sm" class="mr-1" variant="outline-primary"
-                        @click="KFK.showRemovePwdModal(data.item, data.index, $event.target)">
-                        <b-iconstack>
-                          <b-icon stacked icon="square" variant="info"></b-icon>
-                          <b-icon stacked icon="three-dots" variant="danger"></b-icon>
-                          <b-icon stacked icon="slash" variant="info"></b-icon>
-                        </b-iconstack>取消密码
+                        </b-iconstack>设置协作码
                       </b-button>
                       <b-button size="sm" class="mr-1" variant="outline-primary"
                         @click="deleteDocItem(data.item, data.index, $event.target)" class="mr-1"
@@ -452,11 +449,11 @@
             </b-tabs>
           </b-card>
         </div>
-        <b-modal @shown="focusOnPwdInput" @ok="KFK.getDocPwd" v-model="show.dialog.inputDocPasswordDialog"
-          title="请输入访问密码" button-size="sm" centered size="md">
+        <b-modal @shown="focusOnPwdInput" @ok="KFK.getDocPwd" @hide="KFK.onDocPwdHidden" @close="KFK.cancelDocPwd" @cancel="KFK.cancelDocPwd" v-model="show.dialog.inputDocPasswordDialog"
+          title="请输入协作码" button-size="sm" centered size="md">
           <b-container>
             <b-row>
-              <b-col cols="4">访问密码</b-col>
+              <b-col cols="4">协作码</b-col>
               <b-col cols="8">
                 <b-form-input trim :type="model.hidepassword?'password':'text'" v-model="model.opendocpwd"
                   ref="focusThis">
@@ -474,16 +471,16 @@
           </b-container>
         </b-modal>
         <b-modal @shown="focusOnOldPwdInput" @ok="KFK.resetDocPwd" v-model="show.dialog.resetDocPasswordDialog"
-          title="请输入访问密码" button-size="sm" centered size="md">
+          title="设置协作密码" button-size="sm" centered size="md">
           <b-container>
             <b-row>
-              <b-col cols="4">原密码</b-col>
+              <b-col cols="4">原协作码</b-col>
               <b-col cols="8">
                 <b-form-input trim :type="model.hidepassword?'password':'text'" v-model="model.docOldPwd"
                   ref="focusOldPwd">
                 </b-form-input>
               </b-col>
-              <b-col cols="4">新密码</b-col>
+              <b-col cols="4">新协作码</b-col>
               <b-col cols="8">
                 <b-form-input trim :type="model.hidepassword?'password':'text'" v-model="model.docNewPwd">
                 </b-form-input>
@@ -495,6 +492,7 @@
                 </b-button>
               </b-col>
             </b-row>
+            <a href="#" class="card-link" @click="KFK.toggleFromResetToRemovePwd">&lt; 如忘记原协作码，可输入用户密码予以清除</a>
           </b-container>
         </b-modal>
         <b-modal @shown="focusOnUserPwdInput" @ok="KFK.removeDocPwd" v-model="show.dialog.userPasswordDialog"
@@ -524,8 +522,18 @@
           </b-button>
         </b-button-group>
       </div>
+      <div id="share" v-show="show.form.share" class="shareItContainer p-4 text-center">
+        <div>点击下面的分享按钮后，{{show.form.share}} 到任何沟通工具中粘贴，把URL给到协作人即可</div>
+        <hr>
+        <b-button-group>
+          <b-button id="shareit" class="shareit" variant="outline-success" @click="KFK.shareDone">
+            <b-icon icon="box-arrow-up" scale=2></b-icon>
+          </b-button>
+        </b-button-group>
+      </div>
     </div> <!-- explorer -->
   </div>
+  <div id="copydiv" style="display: none; z-index: -99999"></div>
   <script src="./pad.js"></script>
 </body>
 
