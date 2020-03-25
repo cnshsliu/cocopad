@@ -33,32 +33,36 @@
     <div id="registerform" class="registerform" v-show="show.section.register" style="display:none;">
       <b-container class="my-3 ">
         <b-form class="w-100 px-2">
-          <div class="text-center pb-4"><img src="../assets/cocopad.svg" class="d-inline-block align-top cocologo"
-              alt="">
-          </div>
-          <div class="w-100 text-center">{{model.feedback.forRegister}}</div>
-          <b-form-group label-cols=3 label="新用户ID" label-for="regUserId">
+          <b-row>
+            <b-col class="text-right pb-3">
+              <img src="../assets/cocopad.svg" class="d-inline-block align-top cocologo" />
+            </b-col>
+            <b-col cols=9>
+              {{model.feedback.forRegister}}
+            </b-col>
+          </b-row>
+          <b-form-group label-cols=3 label="新用户ID" label-for="regUserId" label-align="right">
             <b-form-input id="regUserId" trim v-model="model.register.userid" :state="regUserIdState"
-              class="mb-2 mr-sm-2 mb-sm-0" required placeholder="Pls use email" class="w-50"></b-form-input>
+              class="mb-2 mr-sm-2 mb-sm-0" required placeholder="请使用正确的邮箱地址" class="w-50"></b-form-input>
             <b-form-invalid-feedback id="regUserId-feedback">
               一个正确的邮箱地址
             </b-form-invalid-feedback>
           </b-form-group>
-          <b-form-group label-cols=3 label="全名" label-for="regUserName">
+          <b-form-group label-cols=3 label="全名" label-for="regUserName" label-align="right">
             <b-form-input id="regUserName" trim v-model="model.register.name" :state="regUserNameState"
-              class="mb-2 mr-sm-2 mb-sm-0" required placeholder="Your full name" class="w-50"></b-form-input>
+              class="mb-2 mr-sm-2 mb-sm-0" required placeholder="您的全称" class="w-50"></b-form-input>
             <b-form-invalid-feedback id="regUserName-feedback">
               2-10个英文/数字/汉字
             </b-form-invalid-feedback>
           </b-form-group>
-          <b-form-group label-cols=3 label="用户密码" label-for="regUserPwd">
+          <b-form-group label-cols=3 label="用户密码" label-for="regUserPwd" label-align="right">
             <b-form-input id="regUserPwd" trim :type="model.hidepassword?'password':'text'" v-model="model.register.pwd"
               :state="regUserPwdState" class="mb-2 mr-sm-2 mb-sm-0" required placeholder="" class="w-50"></b-form-input>
             <b-form-invalid-feedback id="regUserPwd-feedback">
               密码至少8字符，<BR>必须含大小写字母数字和特殊字符
             </b-form-invalid-feedback>
           </b-form-group>
-          <b-form-group label-cols=3 label="再次录入" label-for="regUserPwd2">
+          <b-form-group label-cols=3 label="再次录入" label-for="regUserPwd2" label-align="right">
             <b-form-input id="regUserPwd2" trim :type="model.hidepassword?'password':'text'"
               v-model="model.register.pwd2" :state="regUserPwd2State" class="mb-2 mr-sm-2 mb-sm-0" required
               placeholder="" class="w-50"></b-form-input>
@@ -70,8 +74,15 @@
             </b-button>
           </b-form-group>
           <div class="bg-none text-right">
-            <b-button @click="KFK.registerUser" variant="outline-primary">注册账号 &gt;&gt;</b-button>
           </div>
+          <b-row>
+            <b-col cols=6>
+              <a href="#" class="card-link" @click="KFK.createDemoEnv" style='font-size:24px'>先不注册<BR>直接体验</a>
+            </b-col>
+            <b-col cols=6 class="bg-none text-right">
+              <b-button @click="KFK.registerUser" variant="outline-primary">注册账号 &gt;&gt;</b-button>
+            </b-col>
+          </b-row>
         </b-form>
         <hr>
         <a href="#" class="card-link" @click="KFK.showLoginForm">&lt; 已有账号？请登录</a>
@@ -83,17 +94,21 @@
     <div id="loginform" class="loginform" v-show="show.section.login" style="display:none;">
       <b-container class="my-3 ">
         <b-form class="w-100 px-2">
-          <div class="text-center pb-4"><img src="../assets/cocopad.svg" class="d-inline-block align-top cocologo"
-              alt="">
-          </div>
-          <div class="w-100 text-center">{{model.feedback.forLogin}}</div>
-          <b-form-group label-cols=3 label="用户ID" label-for="userId">
-            <b-form-input id="userId" trim v-model="model.login.userid" :state="userIdState"
-              class="mb-2 mr-sm-2 mb-sm-0" placeholder="" class="w-50"></b-form-input>
+          <b-row>
+            <b-col class="text-right pb-3">
+              <img src="../assets/cocopad.svg" class="d-inline-block align-top cocologo" />
+            </b-col>
+            <b-col cols=9>
+              {{model.feedback.forLogin}}
+            </b-col>
+          </b-row>
+          <b-form-group label-cols=3 label="用户ID" label-for="userId" label-align="right">
+            <b-form-input id="userId" trim v-model="model.login.userid" class="mb-2 mr-sm-2 mb-sm-0" placeholder=""
+              class="w-50"></b-form-input>
           </b-form-group>
-          <b-form-group label-cols="3" label="用户密码" label-for="userPwd">
+          <b-form-group label-cols="3" label="用户密码" label-for="userPwd" label-align="right">
             <b-form-input id="userPwd" trim :type="model.hidepassword?'password':'text'" v-model="model.login.pwd"
-              :state="userPwdState" class="mb-2 mr-sm-2 mb-sm-0" placeholder="" class="w-50"></b-form-input>
+              class="mb-2 mr-sm-2 mb-sm-0" placeholder="" class="w-50"></b-form-input>
             <b-button @click="toggleHidePassword" variant="outline-none">
               <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
             </b-button>
@@ -112,16 +127,18 @@
 
     <div v-show="show.section.designer" style="display:none;">
       <div id="scroll-container">
-        <div id="C3">
-          <div id="boundingrect" class="boundingrect"></div>
-          <div id="selectingrect" class="selectingrect"></div>
+        <div id="containermain">
+          <div id="C3">
+            <div id="boundingrect" class="boundingrect"></div>
+            <div id="selectingrect" class="selectingrect"></div>
+          </div>
         </div>
       </div>
       <div id="toplogo" class="padlayout">
         <b-navbar toggleable="lg" type="light">
           <b-navbar-brand>
             <img src="../assets/cocopad.svg" class="logo d-inline-block align-top" alt="COCOPAD">
-            <span class='lkh' id="greeting">网络白板</span>
+            <span class='lkh' id="greeting">在线协作白板</span>
           </b-navbar-brand>
         </b-navbar>
       </div>
@@ -281,6 +298,31 @@
       </div>
       <div id="rtcontrol" class="padlayout noshow">
         <b-button-group class="coco">
+          <b-button id="hislog" variant="outline-success" @click="KFK.showHisLog">
+            <b-avatar icon="people-fill" variant="success"></b-avatar>
+          </b-button>
+        </b-button-group>
+        <!-- <b-button-group class="coco">
+          <b-button id="zoom_in" variant="outline-success" @click="KFK.zoomIn">
+            <b-iconstack>
+              <b-icon icon="plus" shift-h="-1.1" shift-v="1.1"></b-icon>
+              <b-icon icon="search"></b-icon>
+            </b-iconstack>
+          </b-button>
+          <b-button id="zoom_1" variant="outline-success" @click="KFK.zoomNormal">
+            <b-iconstack>
+              <b-icon icon="x" shift-h="-1.1" shift-v="1.1"></b-icon>
+              <b-icon icon="search"></b-icon>
+            </b-iconstack>
+          </b-button>
+          <b-button id="zoom_out" variant="outline-success" @click="KFK.zoomOut">
+            <b-iconstack>
+              <b-icon icon="dash" shift-h="-1.1" shift-v="1.1"></b-icon>
+              <b-icon icon="search"></b-icon>
+            </b-iconstack>
+          </b-button>
+          </b-button-group> -->
+        <b-button-group class="coco">
           <b-button id="goto_explorer" variant="outline-success" @click="KFK.gotoExplorer">
             <b-icon icon="folder"></b-icon>
           </b-button>
@@ -291,6 +333,16 @@
             <b-icon icon="layout-sidebar-reverse"></b-icon>
           </b-button>
         </b-button-group>
+      </div>
+      <div id="hisloglist" v-show="show.hislog" style="overflow-y:scroll" class="p-3">
+        协作参与者
+        <b-list-group>
+          <b-list-group-item @click="KFK.viewHisLog(index)" v-for="(hislog,index) in model.hislog" href="#"
+            v-bind:index="index" v-bind:key="'hl'+index" class="d-flex justify-content-between align-items-center">
+            {{hislog.editor}}
+            <b-badge variant="primary" pill>{{hislog.hislog.length}}</b-badge>
+          </b-list-group-item>
+        </b-list-group>
       </div>
       <div class="docname">{{model.document.name}}</div>
       <div id="modeIndicator" style="position:absolute; top: 0px; left: 0px; display: none; ">
@@ -317,12 +369,15 @@
           </b-navbar-nav>
           <b-navbar-nav>
             <b-nav-item-dropdown text="我的" right>
+              <b-dropdown-item-button>{{model.user.name}}</b-dropdown-item-button>
               <b-dropdown-item-button @click="KFK.sayHello">账户信息</b-dropdown-item-button>
               <b-dropdown-divider></b-dropdown-divider>
               <b-dropdown-item-button @click="KFK.showPrjs">我的项目</b-dropdown-item-button>
               <b-dropdown-item-button @click="KFK.showDocs">我的白板</b-dropdown-item-button>
               <b-dropdown-divider></b-dropdown-divider>
-              <b-dropdown-item-button @click="KFK.signOut">退出登录状态</b-dropdown-item-button>
+              <b-dropdown-item-button v-if="isDemoEnv" @click="KFK.upgradeToStartAccount">注册为正式用户
+              </b-dropdown-item-button>
+              <b-dropdown-item-button v-else @click="KFK.signOut">退出登录状态</b-dropdown-item-button>
             </b-nav-item-dropdown>
           </b-navbar-nav>
         </b-navbar>
@@ -373,6 +428,7 @@
                       :per-page="model.perPage" aria-controls="my-prj-table" pills></b-pagination>
                   </div>
                 </div>
+                
               </b-tab>
               <b-tab title="我的白板" @click="KFK.selectDocTab">
                 <div v-show="show.form.newdoc">
@@ -405,7 +461,7 @@
                     <a href="#" class="card-link" @click="KFK.showDocs">&lt; 返回文档列表</a>
                   </b-card>
                 </div>
-                <div v-show="show.form.doclist">
+                <div v-show="show.form.doclist" style="overflow-y:scroll">
                   <div v-if="model.project.prjid === 'all' || model.project.prjid === 'mine'">
                     <B>{{model.project.name}}</B> 中的共创白板
                   </div>
@@ -417,24 +473,26 @@
                       <b-icon :icon="data.item.lock" size="sm" class="mr-1" />
                     </template>
                     <template v-slot:cell(operation)="data">
-                      <b-button size="sm" class="mr-1" variant="outline-primary"
-                        @click="KFK.shareDoc(data.item, data.index, $event.target)">
-                        <b-iconstack>
-                          <b-icon stacked icon="box-arrow-up" variant="info"></b-icon>
-                        </b-iconstack>邀请协作
-                      </b-button>
-                      <b-button size="sm" class="mr-1" variant="outline-primary"
-                        @click="KFK.showResetPwdModal(data.item, data.index, $event.target)">
-                        <b-iconstack>
-                          <b-icon stacked icon="square" variant="info"></b-icon>
-                          <b-icon stacked icon="three-dots" variant="danger" shift-v="-2.5"></b-icon>
-                        </b-iconstack>设置协作码
-                      </b-button>
-                      <b-button size="sm" class="mr-1" variant="outline-primary"
-                        @click="deleteDocItem(data.item, data.index, $event.target)" class="mr-1"
-                        variant="outline-primary">
-                        <b-icon icon="trash"></b-icon>删除
-                      </b-button>
+                      <div v-if="data.item.owner===model.user.userid">
+                        <b-button size="sm" class="mr-1" variant="outline-primary"
+                          @click="KFK.showResetPwdModal(data.item, data.index, $event.target)">
+                          <b-iconstack>
+                            <b-icon stacked icon="square" variant="info"></b-icon>
+                            <b-icon stacked icon="three-dots" variant="danger" shift-v="-2.5"></b-icon>
+                          </b-iconstack>设置协作码
+                        </b-button>
+                        <b-button size="sm" class="mr-1" variant="outline-primary"
+                          @click="KFK.shareDoc(data.item, data.index, $event.target)">
+                          <b-iconstack>
+                            <b-icon stacked icon="box-arrow-up" variant="info"></b-icon>
+                          </b-iconstack>邀请协作
+                        </b-button>
+                        <b-button size="sm" class="mr-1" variant="outline-primary"
+                          @click="deleteDocItem(data.item, data.index, $event.target)" class="mr-1"
+                          variant="outline-primary">
+                          <b-icon icon="trash"></b-icon>删除
+                        </b-button>
+                      </div>
                     </template>
                     <template v-slot:cell()="data">
                       <i>{{ data.value }}</i>
@@ -448,9 +506,13 @@
               </b-tab>
             </b-tabs>
           </b-card>
+          <b-row><b-col class="text-center mt-5 pt-5">
+          <a href="#" v-if="isDemoEnv" class="card-link" @click="KFK.upgradeToStartAccount">当前为演示账户，注册为正式用户，以便享有更多功能 </a>
+          </b-col></b-row>
         </div>
-        <b-modal @shown="focusOnPwdInput" @ok="KFK.getDocPwd" @hide="KFK.onDocPwdHidden" @close="KFK.cancelDocPwd" @cancel="KFK.cancelDocPwd" v-model="show.dialog.inputDocPasswordDialog"
-          title="请输入协作码" button-size="sm" centered size="md">
+        <b-modal @shown="focusOnPwdInput" @ok="KFK.getDocPwd" @hide="KFK.onDocPwdHidden" @close="KFK.cancelDocPwd"
+          @cancel="KFK.cancelDocPwd" v-model="show.dialog.inputDocPasswordDialog" title="请输入协作码" button-size="sm"
+          centered size="md">
           <b-container>
             <b-row>
               <b-col cols="4">协作码</b-col>
