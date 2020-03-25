@@ -40,11 +40,16 @@ const app = new Vue({
       'waitingws': true,
       'loginform': false,
       'explorer': true,
-      'form': { newdoc: false, newprj: false, prjlist: true, doclist: false, share:false, bottomlinks: false, explorerTabIndex: 0 },
+      'hislog': false,
+      'form': { newdoc: false, newprj: false, prjlist: true, doclist: false, share: false, bottomlinks: false, explorerTabIndex: 0 },
       'section': { login: false, register: false, explorer: false, designer: false, },
       'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false },
     },
     model: {
+      hislog: [
+        { editor: 'lkh', hislog: ['node1', 'node3'] },
+        { editor: 'lucas', hislog: ['node3', 'node1', 'node2'] }
+      ],
       hidepassword: true,
       inputUserPwd: '',
       docOldPwd: '',
@@ -63,8 +68,8 @@ const app = new Vue({
       register: { userid: '', pwd: '', pwd2: '', name: '' },
       login: { userid: '', pwd: '' },
       share: {},
-      feedback: {forRegister: '新用户注册', forLogin: '请登录'},
-      feedback_const: {forRegister: '新用户注册', forLogin: '请登录'},
+      feedback: { forRegister: '新用户注册', forLogin: '请登录' },
+      feedback_const: { forRegister: '新用户注册', forLogin: '请登录' },
       docfields: [{ key: 'name', label: '名称' }, { key: 'lock', label: '密保' }, { key: 'owner', label: '发起人' }, { key: 'operation', label: '操作' }],
       prjfields: [{ key: 'name', label: '名称' }, { key: 'operation', label: '操作' }],
       prjwarning: '',
@@ -74,6 +79,7 @@ const app = new Vue({
       currentPrjPage: 1,
       currentDocPage: 1,
       rightTabIndex: 2,
+      defaultGridWith: 20,
       gridWidth: 20,
       snap: true,
       oldSnap: true,
@@ -110,6 +116,9 @@ const app = new Vue({
     }
   },
   computed: {
+    isDemoEnv(){
+      return KFK.isDemoEnv();
+    },
     doccount() {
       return this.model.docs.length;
     },
@@ -141,24 +150,27 @@ const app = new Vue({
         return false;
     },
     regUserIdState() {
-      const schema = Joi.string().regex(
-        /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/
-        // 邮箱地址
-      ).required();
       let str = this.model.register.userid;
-      let { error, value } = schema.validate(str);
-      if (error === undefined) {
-        KFK.remoteCheckUserId(this.model.register.userid);
-        return true;
-      } else
-        return false;
+      if (str === '') return true;
+      else {
+        const schema = Joi.string().regex(
+          /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/
+          // 邮箱地址
+        ).required();
+        let { error, value } = schema.validate(str);
+        if (error === undefined) {
+          KFK.remoteCheckUserId(this.model.register.userid);
+          return true;
+        } else
+          return false;
+      }
     },
     regUserPwdState() {
+      let str = this.model.register.pwd;
       const schema = Joi.string().regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]{8,}/
         // 至少8个字符，至少1个大写字母，1个小写字母，1个数字和1个特殊字符：
       ).required();
-      let str = this.model.register.pwd;
       let { error, value } = schema.validate(str);
       if (error === undefined)
         return true;
@@ -174,13 +186,16 @@ const app = new Vue({
         return false;
     },
     regUserNameState() {
-      const schema = Joi.string().regex(/^[a-zA-Z0-9_\u4e00-\u9fa5]{2,10}$/).required();
       let str = this.model.register.name;
-      let { error, value } = schema.validate(str);
-      if (error === undefined)
-        return true;
-      else
-        return false;
+      if (str === '') return true;
+      else {
+        const schema = Joi.string().regex(/^[a-zA-Z0-9_\u4e00-\u9fa5]{2,10}$/).required();
+        let { error, value } = schema.validate(str);
+        if (error === undefined)
+          return true;
+        else
+          return false;
+      }
     },
     docNameState() {
       const schema = Joi.string().regex(/^[a-zA-Z0-9_\u4e00-\u9fa5]{3,20}$/).required();
