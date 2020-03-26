@@ -472,3 +472,17 @@ select:focus {
 .userbadge_11 { color: #D6DDE8; background-color: #AA3939; }
 .userbadge_12 { color: #0A0C00; background-color: #669999; }
 .userbadge_13 { color: #FFF4BE; background-color: #226666; }
+
+.locklabel{
+    position:absolute;
+    top: -10px;
+    left: calc(50%-8px);
+    width: 16px;
+    height: 16px;
+    border-radius: 10px;
+    background-image: url('../assets/lock.svg');
+}
+
+#modeIndicator{
+  z-index: 100000;
+}

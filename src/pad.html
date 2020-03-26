@@ -162,6 +162,9 @@
           <b-list-group-item class="d-flex align-items-center" @click="setMode('line');" :active="active['line']">
             <b-img :src="images['line'].src" fluid alt="" scale="2" class="cocotool" id='tool_line'></b-img>
           </b-list-group-item>
+          <b-list-group-item class="d-flex align-items-center" @click="setMode('lock');" :active="active['lock']">
+            <b-img :src="images['lock'].src" fluid alt="" scale="2" class="cocotool" id='tool_lock'></b-img>
+          </b-list-group-item>
 
         </b-list-group>
       </div>
@@ -344,7 +347,7 @@
           </b-list-group-item>
         </b-list-group>
       </div>
-      <div class="docname">{{model.document.name}}</div>
+      <div class="docname">{{model.cocodoc.name}}</div>
       <div id="modeIndicator" style="position:absolute; top: 0px; left: 0px; display: none; ">
         <img id="modeIndicatorImg" src="../assets/pointer.svg" style='width: 18px; height: 18px;' />
       </div>
@@ -375,7 +378,7 @@
               <b-dropdown-item-button @click="KFK.showPrjs">我的项目</b-dropdown-item-button>
               <b-dropdown-item-button @click="KFK.showDocs">我的白板</b-dropdown-item-button>
               <b-dropdown-divider></b-dropdown-divider>
-              <b-dropdown-item-button v-if="isDemoEnv" @click="KFK.upgradeToStartAccount">注册为正式用户
+              <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.upgradeToStartAccount">注册为正式用户
               </b-dropdown-item-button>
               <b-dropdown-item-button v-else @click="KFK.signOut">退出登录状态</b-dropdown-item-button>
             </b-nav-item-dropdown>
@@ -469,8 +472,8 @@
                   <b-table hover id="my-doc-table" :items="model.docs" :per-page="model.perPage"
                     :current-page="model.currentDocPage" small :fields="model.docfields"
                     @row-clicked="KFK.docRowClickHandler">
-                    <template v-slot:cell(lock)="data">
-                      <b-icon :icon="data.item.lock" size="sm" class="mr-1" />
+                    <template v-slot:cell(security_icon)="data">
+                      <b-icon :icon="data.item.security_icon" size="sm" class="mr-1" />
                     </template>
                     <template v-slot:cell(operation)="data">
                       <div v-if="data.item.owner===model.user.userid">
@@ -507,7 +510,7 @@
             </b-tabs>
           </b-card>
           <b-row><b-col class="text-center mt-5 pt-5">
-          <a href="#" v-if="isDemoEnv" class="card-link" @click="KFK.upgradeToStartAccount">当前为演示账户，注册为正式用户，以便享有更多功能 </a>
+          <a href="#" v-if="model.isDemoEnv" class="card-link" @click="KFK.upgradeToStartAccount">当前为演示账户，注册为正式用户，以便享有更多功能 </a>
           </b-col></b-row>
         </div>
         <b-modal @shown="focusOnPwdInput" @ok="KFK.getDocPwd" @hide="KFK.onDocPwdHidden" @close="KFK.cancelDocPwd"
