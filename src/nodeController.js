@@ -35,6 +35,15 @@ const NodeController = {
     jqNode.resizable('enable');
     jqNode.droppable('enable');
   },
+
+  removeEventListenerOnly: (jqNode) => {
+    if (!jqNode) {
+      return;
+    }
+    jqNode.draggable('disable');
+    jqNode.resizable('disable');
+    jqNode.droppable('disable');
+  },
 };
 
 export {NodeController};

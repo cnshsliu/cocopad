@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>Konva demo</title>
+  <title>COCOPAD</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="../my-styles/style.css">
@@ -129,9 +129,9 @@
       <div id="scroll-container">
         <div id="containermain">
           <div id="C3">
-            <div id="boundingrect" class="boundingrect"></div>
-            <div id="selectingrect" class="selectingrect"></div>
           </div>
+          <div id="boundingrect" class="boundingrect"></div>
+          <div id="selectingrect" class="selectingrect"></div>
         </div>
       </div>
       <div id="toplogo" class="padlayout">
@@ -229,7 +229,8 @@
                 </div>
               </div>
             </b-container>
-            <b-container v-show="show.custombacksvg">
+            <b-container v-show="show.custombacksvg" class='border-top'>
+              使用背景图片
               <b-row v-for="tips in tip_groups" v-bind:key="tips[0]">
                 <b-col class='p-1' v-for="tip in tips" v-bind:key="tip">
                   <b-img :src="images[tip].src" fluid alt="" scale="2" class="cocotool" @click="setTipVariant(tip)">
@@ -347,7 +348,14 @@
           </b-list-group-item>
         </b-list-group>
       </div>
-      <div class="docname">{{model.cocodoc.name}}</div>
+      <b-container class="docname">
+        <b-row>
+          <b-col v-show="model.cocodoc.readonly" md="auto">
+            <b-icon icon="lock" variant="secondary"></b-icon>
+          </b-col>
+          <b-col>{{model.cocodoc.name}}</b-col>
+        </b-row>
+      </b-container>
       <div id="modeIndicator" style="position:absolute; top: 0px; left: 0px; display: none; ">
         <img id="modeIndicatorImg" src="../assets/pointer.svg" style='width: 18px; height: 18px;' />
       </div>
@@ -372,7 +380,7 @@
           </b-navbar-nav>
           <b-navbar-nav>
             <b-nav-item-dropdown text="我的" right>
-              <b-dropdown-item-button>{{model.user.name}}</b-dropdown-item-button>
+              <b-dropdown-item-button>{{model.cocouser.name}}</b-dropdown-item-button>
               <b-dropdown-item-button @click="KFK.sayHello">账户信息</b-dropdown-item-button>
               <b-dropdown-divider></b-dropdown-divider>
               <b-dropdown-item-button @click="KFK.showPrjs">我的项目</b-dropdown-item-button>
@@ -385,7 +393,7 @@
           </b-navbar-nav>
         </b-navbar>
 
-        <div class="overflow-auto"
+        <div class="overflow: auto"
           v-show="show.form.newdoc || show.form.newprj || show.form.doclist || show.form.prjlist">
           <b-card no-body>
             <b-tabs card v-model="show.form.explorerTabIndex" vertical
@@ -423,7 +431,7 @@
                       </b-button>
                     </template>
                     <template v-slot:cell()="data">
-                      <i>{{ data.value }}</i>
+                      {{ data.value }}
                     </template>
                   </b-table>
                   <div>
@@ -431,7 +439,6 @@
                       :per-page="model.perPage" aria-controls="my-prj-table" pills></b-pagination>
                   </div>
                 </div>
-                
               </b-tab>
               <b-tab title="我的白板" @click="KFK.selectDocTab">
                 <div v-show="show.form.newdoc">
@@ -468,37 +475,53 @@
                   <div v-if="model.project.prjid === 'all' || model.project.prjid === 'mine'">
                     <B>{{model.project.name}}</B> 中的共创白板
                   </div>
-                  <div v-else> 项目 <B>{{model.project.name}}</B> 中的共创文档 </div>
+                  <div v-else> 项目 <B>{{model.project.name}}</B> 中的共创白板 </div>
                   <b-table hover id="my-doc-table" :items="model.docs" :per-page="model.perPage"
                     :current-page="model.currentDocPage" small :fields="model.docfields"
                     @row-clicked="KFK.docRowClickHandler">
                     <template v-slot:cell(security_icon)="data">
-                      <b-icon :icon="data.item.security_icon" size="sm" class="mr-1" />
+                      <b-button size="sm" class="mr-1" :variant="data.item.security_variant"
+                        @click="KFK.showResetPwdModal(data.item, data.index, $event.target)">
+                        <b-iconstack font-scale="1">
+                          <b-icon stacked icon="phone-landscape" scale="1.5" ></b-icon>
+                          <b-icon stacked :icon="data.item.security_icon" scale="0.85" shift-h="-2" shift-v="-1" ></b-icon>
+                        </b-iconstack>
+                      </b-button>
+                    </template>
+                    <template v-slot:cell(readonly_icon)="data">
+                      <b-button size="sm" class="mr-1" :variant="data.item.readonly_variant"
+                        @click="KFK.setDocReadonly(data.item, data.index, $event.target)">
+                        <b-iconstack v-if="data.item.readonly_icon==='lock'" font-scale="1">
+                          <b-icon stacked icon="laptop" flip-v scale="1.5"></b-icon>
+                          <b-icon stacked icon="pie-chart-fill" scale="0.55" shift-h="-3.5" shift-v="-2"></b-icon>
+                          <b-icon stacked icon="text-indent-left" scale="0.6" shift-h="5"></b-icon>
+                          <b-icon stacked icon="dash" rotate="90" scale="0.6" shift-v="-10"></b-icon>
+                        </b-iconstack>
+                        <b-icon v-else icon="pencil" size="sm" class="mr-1" />
+                      </b-button>
+                    </template>
+                    <template v-slot:cell(share_icon)="data">
+                      <b-button size="sm" class="mr-1 text-center" variant="outline-secondary"
+                        @click="KFK.shareDoc(data.item, data.index, $event.target)">
+                        <b-icon icon="box-arrow-up" size=" sm" class="mr-1" />
+                      </b-button>
                     </template>
                     <template v-slot:cell(operation)="data">
-                      <div v-if="data.item.owner===model.user.userid">
-                        <b-button size="sm" class="mr-1" variant="outline-primary"
-                          @click="KFK.showResetPwdModal(data.item, data.index, $event.target)">
-                          <b-iconstack>
-                            <b-icon stacked icon="square" variant="info"></b-icon>
-                            <b-icon stacked icon="three-dots" variant="danger" shift-v="-2.5"></b-icon>
-                          </b-iconstack>设置协作码
-                        </b-button>
-                        <b-button size="sm" class="mr-1" variant="outline-primary"
-                          @click="KFK.shareDoc(data.item, data.index, $event.target)">
-                          <b-iconstack>
-                            <b-icon stacked icon="box-arrow-up" variant="info"></b-icon>
-                          </b-iconstack>邀请协作
-                        </b-button>
-                        <b-button size="sm" class="mr-1" variant="outline-primary"
+                      <div v-if="data.item.owner===model.cocouser.userid">
+                        <b-button size="sm" class="mr-1" variant="outline-danger"
                           @click="deleteDocItem(data.item, data.index, $event.target)" class="mr-1"
                           variant="outline-primary">
                           <b-icon icon="trash"></b-icon>删除
                         </b-button>
                       </div>
                     </template>
+                    <template v-slot:cell(owner)="data">
+                      <div display="inline"
+                        style="width:140px; white-space:nowrap; overflow-x:scroll; overflow-y:hidden">{{ data.value }}
+                      </div>
+                    </template>
                     <template v-slot:cell()="data">
-                      <i>{{ data.value }}</i>
+                      {{ data.value }}
                     </template>
                   </b-table>
                   <div>
@@ -509,9 +532,12 @@
               </b-tab>
             </b-tabs>
           </b-card>
-          <b-row><b-col class="text-center mt-5 pt-5">
-          <a href="#" v-if="model.isDemoEnv" class="card-link" @click="KFK.upgradeToStartAccount">当前为演示账户，注册为正式用户，以便享有更多功能 </a>
-          </b-col></b-row>
+          <b-row>
+            <b-col class="text-center mt-5 pt-5">
+              <a href="#" v-if="model.isDemoEnv" class="card-link"
+                @click="KFK.upgradeToStartAccount">当前为演示账户，注册为正式用户，以便享有更多功能 </a>
+            </b-col>
+          </b-row>
         </div>
         <b-modal @shown="focusOnPwdInput" @ok="KFK.getDocPwd" @hide="KFK.onDocPwdHidden" @close="KFK.cancelDocPwd"
           @cancel="KFK.cancelDocPwd" v-model="show.dialog.inputDocPasswordDialog" title="请输入协作码" button-size="sm"
@@ -588,7 +614,7 @@
         </b-button-group>
       </div>
       <div id="share" v-show="show.form.share" class="shareItContainer p-4 text-center">
-        <div>点击下面的分享按钮后，{{show.form.share}} 到任何沟通工具中粘贴，把URL给到协作人即可</div>
+        <div>点击下面的分享按钮后，<BR> 到任何沟通工具中粘贴，<BR>把URL给到协作人即可</div>
         <hr>
         <b-button-group>
           <b-button id="shareit" class="shareit" variant="outline-success" @click="KFK.shareDone">
