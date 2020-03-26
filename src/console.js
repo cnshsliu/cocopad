@@ -3652,8 +3652,10 @@ KFK.addContainerMainEventHander = function () {
             }
             KFK.setMode('pointer');
         } else if (e.keyCode === 46 || e.keyCode === 8 || e.keyCode === 88) {  // key DELETE  key X
+            preventDefault = true;
             KFK.deleteHoverDiv(e);
         } else if (e.keyCode === 68) {  // key D
+            preventDefault = true;
             KFK.duplicateHoverDiv(e);
         } else if (e.keyCode === 90 && e.metaKey) { //Meta-Z
             if (e.shiftKey) {
