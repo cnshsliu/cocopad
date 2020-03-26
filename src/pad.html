@@ -11,7 +11,63 @@
 
 <body>
   <div id="containerbkg"></div>
-  <div id='app'>
+
+  <div id='app' class='fontFancyColor'>
+    <b-button v-show="show.section.login" pill variant='outline-success' class='reglogin' @click="KFK.showRegisterForm">
+      注 册</b-button>
+    <b-button v-show="show.section.register" pill variant='outline-success' class='reglogin' @click="KFK.showLoginForm">
+      登 录</b-button>
+    <img v-show="!show.section.designer" src="../assets/cocopad.svg" class='left_top_logo_image' />
+    <div class="cocoslogon" v-show="!show.section.designer">
+      <b-row class="text-center py-2">
+        <b-col style='font-size: 28px;'>共创白板</b-col>
+      </b-row>
+      <b-row class="text-center" v-show="show.section.register || show.section.login">
+        <b-col style='font-size:18px;'>在线协作 高效沟通</b-col>
+      </b-row>
+    </div>
+    <div class="leftbkg" v-show="!show.section.designer">
+      <div class='left_menu' id="left_menu">
+        <b-container v-show="show.section.register || show.section.login">
+          <b-row class="text-center mt-5">
+            <b-col> <img src="../assets/brainstorm.svg" class='left_top_image' /> </b-col>
+          </b-row>
+          <b-row class="text-center py-1">
+            <b-col style='font-size:18px;'> 头脑风暴 </b-col>
+          </b-row>
+          <b-row class="text-center mt-2">
+            <b-col> <img src="../assets/home_office.svg" class='left_top_image' /> </b-col>
+          </b-row>
+          <b-row class="text-center py-1">
+            <b-col style='font-size:18px;'> 远程办公 </b-col>
+          </b-row>
+          <b-row class="text-center mt-2">
+            <b-col> <img src="../assets/meetingroom.svg" class='left_top_image' /> </b-col>
+          </b-row>
+          <b-row class="text-center py-1">
+            <b-col style='font-size:18px;'> 在线会议 </b-col>
+          </b-row>
+          <b-row class="text-center mt-2">
+            <b-col> <img src="../assets/design.svg" class='left_top_image' /> </b-col>
+          </b-row>
+          <b-row class="text-center py-1">
+            <b-col style='font-size:18px;'> 联合设计 </b-col>
+          </b-row>
+          <b-row class="text-center mt-2">
+            <b-col> <img src="../assets/collaboration.svg" class='left_top_image' /> </b-col>
+          </b-row>
+          <b-row class="text-center py-1">
+            <b-col style='font-size:18px;'> 在线协作 </b-col>
+          </b-row>
+          <b-row class="text-center mt-2">
+            <b-col> <img src="../assets/classroom.svg" class='left_top_image' /> </b-col>
+          </b-row>
+          <b-row class="text-center py-1">
+            <b-col style='font-size:18px;'> 远程教学 </b-col>
+          </b-row>
+        </b-container>
+      </div>
+    </div>
     <div id="waiting" v-show="!show.wsready" class="waitinglogo">
       <b-container>
         <b-row cols="3" align-v='center'>
@@ -32,12 +88,9 @@
     </div>
     <div id="registerform" class="registerform" v-show="show.section.register" style="display:none;">
       <b-container class="my-3 ">
-        <b-form class="w-100 px-2">
+        <b-form autocomplete="off" class="w-100 px-2">
           <b-row>
-            <b-col class="text-right pb-3">
-              <img src="../assets/cocopad.svg" class="d-inline-block align-top cocologo" />
-            </b-col>
-            <b-col cols=9>
+            <b-col class="text-right pb-4" style="font-size:28px">
               {{model.feedback.forRegister}}
             </b-col>
           </b-row>
@@ -77,28 +130,33 @@
           </div>
           <b-row>
             <b-col cols=6>
-              <a href="#" class="card-link" @click="KFK.createDemoEnv" style='font-size:24px'>先不注册<BR>直接体验</a>
             </b-col>
             <b-col cols=6 class="bg-none text-right">
               <b-button @click="KFK.registerUser" variant="outline-primary">注册账号 &gt;&gt;</b-button>
             </b-col>
           </b-row>
         </b-form>
-        <hr>
-        <a href="#" class="card-link" @click="KFK.showLoginForm">&lt; 已有账号？请登录</a>
-        <div class="w-100"></div>
-        <a href="#" class="card-link" @click="KFK.showHelp">&lt; 帮助</a>
+      </b-container>
+      <b-container style="position: absolute; bottom: 20px;">
+        <b-row class="w-100 text-center">
+          <b-col><a href="#" class="card-link" @click="KFK.createDemoEnv" style='font-size:18px'>先不注册 直接体验</a>
+          </b-col>
+          <div class="w-100">
+            <hr>
+          </div>
+          <b-col class="pt-3"><a href="#" class="card-link" @click="KFK.showLoginForm">已有账号？请登录</a>
+          </b-col>
+          <div class="w-100"></div>
+          <b-col><a href="#" class="card-link" @click="KFK.showHelp">帮助</a></b-col>
+        </b-row>
         </b-form>
       </b-container>
     </div>
     <div id="loginform" class="loginform" v-show="show.section.login" style="display:none;">
       <b-container class="my-3 ">
-        <b-form class="w-100 px-2">
+        <b-form autocomplete="off" class="w-100 px-2">
           <b-row>
-            <b-col class="text-right pb-3">
-              <img src="../assets/cocopad.svg" class="d-inline-block align-top cocologo" />
-            </b-col>
-            <b-col cols=9>
+            <b-col class="text-right pb-4" style="font-size:28px">
               {{model.feedback.forLogin}}
             </b-col>
           </b-row>
@@ -117,10 +175,18 @@
             <b-button @click="KFK.signin" variant="outline-primary">登录 &gt;&gt;</b-button>
           </div>
         </b-form>
-        <hr>
-        <a href="#" class="card-link" @click="KFK.showRegisterForm">&lt; 新用户注册</a>
-        <div class="w-100"></div>
-        <a href="#" class="card-link" @click="KFK.showHelp">&lt; 帮助</a>
+      </b-container>
+      <b-container style="position: absolute; bottom: 20px;">
+        <b-row class="w-100 text-center">
+          <b-col><a href="#" class="card-link" @click="KFK.createDemoEnv" style='font-size:18px'>先不注册 直接体验</a>
+          </b-col>
+          <div class="w-100">
+            <hr>
+          </div>
+          <b-col class="pt-3"><a href="#" @click="KFK.showRegisterForm">还没有账号？新用户注册</a></b-col>
+          <div class="w-100"></div>
+          <b-col><a href="#" class="card-link" @click="KFK.showHelp">帮助</a></b-col>
+        </b-row>
         </b-form>
       </b-container>
     </div>
@@ -369,7 +435,6 @@
         <b-navbar type="light" variant="light">
           <b-navbar-nav class="mr-auto">
             <b-navbar-brand href="#">
-              <img src="../assets/cocopad.svg" class="d-inline-block align-top cocologo" alt="">
             </b-navbar-brand>
           </b-navbar-nav>
           <b-navbar-nav class="mr-auto">
@@ -379,6 +444,7 @@
             <b-nav-item @click="KFK.showCreateNewDoc">新建文档</b-nav-item>
           </b-navbar-nav>
           <b-navbar-nav>
+            <b-icon icon="people-circle" shift-v="-10" shift-h="-5" scale="2" variant="primary"></b-icon>
             <b-nav-item-dropdown text="我的" right>
               <b-dropdown-item-button>{{model.cocouser.name}}</b-dropdown-item-button>
               <b-dropdown-item-button @click="KFK.sayHello">账户信息</b-dropdown-item-button>
@@ -480,9 +546,12 @@
                     :current-page="model.currentDocPage" small :fields="model.docfields"
                     @row-clicked="KFK.docRowClickHandler">
                     <template v-slot:cell(copydoc)="data">
-                      <b-button size="sm" class="mr-1" variant="outline-success"
+                      <b-button size="sm" class="mr-1" variant="outline-primary"
                         @click="KFK.showCopyDocDialog(data.item, data.index, $event.target)">
-                        <b-icon icon="copy" scale="1"></b-icon>
+                        <b-iconstack>
+                          <b-icon stack icon="file" shift-h='-3' shift-v='3' scale="0.8"></b-icon>
+                          <b-icon stack icon="file" scale="0.8"></b-icon>
+                        </b-iconstack>
                       </b-button>
                     </template>
                     <template v-slot:cell(security_icon)="data">
@@ -629,7 +698,8 @@
                   </template>
                 </b-form-select>
               </b-form-group>
-              <b-form-group  v-if="model.showCopyOrMove" label-cols="3" label-align="right" label="" label-for="checkbox-1">
+              <b-form-group v-if="model.showCopyOrMove" label-cols="3" label-align="right" label=""
+                label-for="checkbox-1">
                 <b-form-checkbox id="checkbox-1" v-model="model.check.copyOrMove" name="checkbox-1" value="move"
                   unchecked-value="copy">
                   移动文档到新项目

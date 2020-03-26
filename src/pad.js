@@ -79,7 +79,7 @@ const app = new Vue({
       prjwarning: '',
       docs: [],
       prjs: [],
-      perPage: 10,
+      perPage: 9,
       currentPrjPage: 1,
       currentDocPage: 1,
       rightTabIndex: 2,

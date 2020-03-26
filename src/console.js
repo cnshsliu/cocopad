@@ -72,10 +72,8 @@ KFK.hislogToViewIndex = 0;
 KFK.expoloerRefreshed = false;
 
 
-//TODO: 文档COPY功能
 //TODO: ToolTips 在demo状态下每次进来分别提示一次
 //TODO: 背景DIV上显示小黄贴等动态
-//TODO: 登录，注册，explorer界面左侧显示图片
 //TODO: 演示账号转正式账号
 //TODO: 多个演示文档ID，随机选择给Demo用户使用
 //TODO: server端实现undo redo
@@ -4255,6 +4253,7 @@ KFK.loadImages(KFK.init);
 
 module.exports = KFK;
 
+//TODO: 非自己的文档不能改密保
 //TODO: 清理OSS图片
 // OSS路径名使用 tenant_id/doc_id/pic_name.png
 // 一开始生成文档的ID， 然后的OSS图片的目录使用这个ID， 最后保存时，检查真正剩余的图片，并与OSS中的对应，没有用到的从OSS中删除掉
