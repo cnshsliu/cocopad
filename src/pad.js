@@ -5,6 +5,8 @@ import events from 'events';
 
 import "../scss/custom.scss";
 import KFK from './console';
+import { NodeController } from './nodeController';
+import { DocController } from './docController';
 
 Vue.use(BootstrapVue);
 Vue.use(IconsPlugin);
@@ -43,13 +45,15 @@ const app = new Vue({
       'hislog': false,
       'form': { newdoc: false, newprj: false, prjlist: true, doclist: false, share: false, bottomlinks: false, explorerTabIndex: 0 },
       'section': { login: false, register: false, explorer: false, designer: false, },
-      'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false },
+      'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false, copyDocDialog: false },
     },
     model: {
+      copyToPrjId: null,
       hislog: [
         { editor: 'lkh', hislog: ['node1', 'node3'] },
         { editor: 'lucas', hislog: ['node3', 'node1', 'node2'] }
       ],
+      check: { copyOrMove: 'copy' },
       hidepassword: true,
       inputUserPwd: '',
       docOldPwd: '',
@@ -61,7 +65,7 @@ const app = new Vue({
       docLoaded: false,
       project: { prjid: '', name: '' },
       lastrealproject: { prjid: '', name: '' },
-      cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', readonly:false },
+      cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', readonly: false },
       cocouser: { userid: '', name: '' },
       listdocoption: {},
       listprjoption: {},
@@ -70,7 +74,7 @@ const app = new Vue({
       share: {},
       feedback: { forRegister: '新用户注册', forLogin: '请登录' },
       feedback_const: { forRegister: '新用户注册', forLogin: '请登录' },
-      docfields: [{ key: 'name', label: '名称' }, {key: 'readonly_icon', label:'模式'}, { key: 'security_icon', label: '密保' }, {key: 'share_icon', label:'分享'}, { key: 'owner', label: '发起人' }, { key: 'operation', label: '操作' }],
+      docfields: [{ key: 'name', label: '名称' }, { key: 'readonly_icon', label: '模式' }, { key: 'security_icon', label: '密保' }, { key: 'copydoc', label: '复制' }, { key: 'share_icon', label: '分享' }, { key: 'owner', label: '发起人' }, { key: 'operation', label: '操作' }],
       prjfields: [{ key: 'name', label: '名称' }, { key: 'operation', label: '操作' }],
       prjwarning: '',
       docs: [],
@@ -113,10 +117,23 @@ const app = new Vue({
         { value: 'last', text: '最后一个' },
         { value: 'all', text: '列出全部' }
       ],
-      isDemoEnv:true,
+      isDemoEnv: true,
     }
   },
   computed: {
+
+    prjListOptions() {
+      let ret = [];
+      this.model.prjs.forEach((prj, index) => {
+        if (prj.prjid !== 'all' && prj.prjid !== 'mine') {
+          ret.push({
+            value: prj.prjid,
+            text: prj.name,
+          })
+        }
+      })
+      return ret;
+    },
 
     doccount() {
       return this.model.docs.length;
@@ -199,6 +216,15 @@ const app = new Vue({
     docNameState() {
       const schema = Joi.string().regex(/^[a-zA-Z0-9_\u4e00-\u9fa5]{3,20}$/).required();
       let str = this.model.newdocname;
+      let { error, value } = schema.validate(str);
+      if (error === undefined)
+        return true;
+      else
+        return false;
+    },
+    copyToDocNameState() {
+      const schema = Joi.string().regex(/^[a-zA-Z0-9_\u4e00-\u9fa5]{3,20}$/).required();
+      let str = this.model.copyToDocName;
       let { error, value } = schema.validate(str);
       if (error === undefined)
         return true;
@@ -340,5 +366,8 @@ const app = new Vue({
 const emitter = new events.EventEmitter();
 emitter.setMaxListeners(0);
 // emitter.setMaxListeners(0);
-
+DocController.KFK = KFK;
+NodeController.KFK = KFK;
+KFK.DocController = DocController;
+KFK.NodeController = NodeController;
 KFK.APP = app;

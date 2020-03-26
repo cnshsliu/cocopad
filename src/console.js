@@ -1,8 +1,6 @@
 import url from "url";
 import path from "path";
 import Konva from "konva";
-import DocController from './docController';
-import { NodeController } from './nodeController';
 import suuid from 'short-uuid';
 import ClipboardJs from 'clipboard';
 import Demo from './demo';
@@ -50,7 +48,6 @@ const OSSClient = new OSS({
     accessKeySecret: 'xpilgsl4KQbfnFDZkRMy0Dp1KuoW8A',
     bucket: config.vault.bucket,
 });
-let JC3 = null;
 const KFK = {};
 KFK.mouseTimer = null;
 KFK.connectTime = 0;
@@ -75,15 +72,12 @@ KFK.hislogToViewIndex = 0;
 KFK.expoloerRefreshed = false;
 
 
-//TODO: clean designer between docs. load an old, then create new one, see what happens
-//TODO: only doc owner can share/change passwd/delete etc.
-//TODO: owner锁定node,不允许修改，但可以复制
+//TODO: 文档COPY功能
 //TODO: ToolTips 在demo状态下每次进来分别提示一次
 //TODO: 背景DIV上显示小黄贴等动态
 //TODO: 登录，注册，explorer界面左侧显示图片
 //TODO: 演示账号转正式账号
 //TODO: 多个演示文档ID，随机选择给Demo用户使用
-//TODO: 文档COPY功能
 //TODO: server端实现undo redo
 //TODO: 放开zoomin zoomout，提示为测试状态，功能有问题
 //TODO: 演示文档中，放入广告，招投资，招团队
@@ -218,7 +212,7 @@ $(document).mousemove(function (event) {
     KFK.dragToSelectTo = { x: KFK.scrollX(event.clientX), y: KFK.scrollY(event.clientY) };
 
 
-    if(KFK.docLocked()) return;
+    if (KFK.docLocked()) return;
 
     //支持按下鼠标， 框选多个node
     if (KFK.mode === 'pointer' && KFK.mouseIsDown) {
@@ -616,7 +610,7 @@ KFK.initC3 = function () {
         KFK.setJustCreated(null);
         KFK.pickedJqLine = null;
 
-        if(KFK.docLocked()) return;
+        if (KFK.docLocked()) return;
 
         if (KFK.tobeTransformJqLine)
             KFK.tobeTransformJqLine.removeClass('shadow2');
@@ -683,7 +677,7 @@ KFK.initC3 = function () {
     });
 
     KFK.C3 = c3;
-    KFK.JC3 = JC3 = $(KFK.C3);
+    KFK.JC3 = $(KFK.C3);
 }
 
 KFK.get13Number = function (str) {
@@ -916,7 +910,7 @@ KFK.drawLine = function (x1, y1, x2, y2, options) {
 
     let tmpid = myuid();
     let divid = `div_${tmpid}`;
-    let lineDIV = JC3.line(x1, y1, x2, y2, options);
+    let lineDIV = KFK.JC3.line(x1, y1, x2, y2, options);
     let jqLine = $(lineDIV);
     jqLine.attr("id", divid);
     jqLine.attr('options', KFK.codeToBase64(JSON.stringify(options)));
@@ -1533,8 +1527,8 @@ KFK.cleanNodeEventFootprint = function (jqNodeDIV) {
 }
 
 KFK.syncNodePut = async function (cmd, jqDIV, reason) {
-    if(KFK.docLocked()) return;
-    if(KFK.nodeLocked(jqDIV)) return;
+    if (KFK.docLocked()) return;
+    if (KFK.nodeLocked(jqDIV)) return;
     try {
         if (!(jqDIV instanceof jQuery)) {
             jqDIV = $(jqDIV);
@@ -2308,7 +2302,7 @@ KFK.deleteHoverDiv = function (e) {
 };
 
 KFK.duplicateHoverDiv = function (e) {
-    if(KFK.docLocked()) return;
+    if (KFK.docLocked()) return;
     let offset = { x: 0, y: 0 };
     if (KFK.jqHoverDIV) {
         KFK.divToCopy = el(KFK.jqHoverDIV);
@@ -2600,7 +2594,7 @@ KFK.refreshDesigner = function (doc_id, docpwd) {
     KFK.JC3.empty();
     KFK.showSection({ login: false, register: false, explorer: false, designer: true });
     KFK.tryToOpenDocId = doc_id;
-    KFK.APP.setData('model', 'cocodoc', DocController.getDummyDoc());
+    KFK.APP.setData('model', 'cocodoc', KFK.DocController.getDummyDoc());
     localStorage.removeItem('cocodoc');
     KFK.loadDoc(doc_id, docpwd);
 };
@@ -2635,9 +2629,7 @@ KFK.showConsole = function () {
                 KFK.showCreateNewPrj();
             }
         } else {
-            KFK.APP.setData('model', 'project', prj);
-            if (prj.prjid !== 'all' && prj.prjid !== 'mine')
-                KFK.APP.setData('model', 'lastrealproject', prj);
+            KFK.setCurrentPrj(prj);
             KFK.sendCmd("LISTDOC", { prjid: prj.prjid });
         }
     } else {
@@ -2645,6 +2637,14 @@ KFK.showConsole = function () {
     }
 
     KFK.sendCmd("LISTPRJ", { skip: 0 });
+};
+
+KFK.setCurrentPrj = function(prj){
+    KFK.APP.setData('model', 'project', prj);
+    if (prj.prjid !== 'all' && prj.prjid !== 'mine'){
+        KFK.APP.setData('model', 'lastrealproject', prj);
+    }
+    localStorage.setItem('cocoprj', JSON.stringify(prj));
 };
 
 KFK.signin = function () {
@@ -2718,7 +2718,7 @@ KFK.registerUser = function () {
     KFK.feedback("forRegister", "");
     KFK.feedback("forLogin", "");
     KFK.WS.put('REGUSER', { userid: userid, pwd: pwd, name: name });
-}
+};
 
 
 KFK.pickPrjForCreateDoc = function () {
@@ -2730,10 +2730,10 @@ KFK.showCreateNewPrj = function () {
 };
 KFK.selectPrjTab = function () {
     KFK.APP.setData('show', 'form', { newdoc: false, newprj: false, prjlist: true, doclist: true, explorerTabIndex: 0, bottomlinks: true });
-}
+};
 KFK.selectDocTab = function () {
     KFK.APP.setData('show', 'form', { newdoc: false, newprj: false, prjlist: true, doclist: true, explorerTabIndex: 1, bottomlinks: true });
-}
+};
 KFK.showPrjs = function (msg) {
     if (msg && typeof msg === 'string') {
         KFK.APP.setData("model", "prjwarning", msg);
@@ -2741,12 +2741,13 @@ KFK.showPrjs = function (msg) {
         KFK.APP.setData("model", "prjwarning", " ");
     }
     KFK.APP.setData('show', 'form', { newdoc: false, newprj: false, prjlist: true, doclist: true, bottomlinks: true, explorerTabIndex: 0 });
-}
+};
 KFK.showDocs = async function () {
     await KFK.APP.setData('show', 'form', { newdoc: false, newprj: false, prjlist: true, doclist: true, bottomlinks: true, explorerTabIndex: 1 });
-    // await new Promise(resolve => setTimeout(resolve, 100));
-    // await KFK.APP.setData('model', 'explorerTabIndex', 1);
-}
+};
+KFK.sleep = async function(miliseconds){
+    await new Promise(resolve => setTimeout(resolve, miliseconds));
+};
 
 KFK.createNewDoc = function () {
     let docName = KFK.APP.model.newdocname;
@@ -2795,12 +2796,12 @@ KFK._onDocLoaded = function () {
     KFK.initShowEditors('none');
     KFK.startPadDesigner();
     KFK.APP.setData('model', 'docLoaded', true);
-    if(KFK.APP.model.cocodoc.readonly){
+    if (KFK.APP.model.cocodoc.readonly) {
         $('#linetransformer').draggable('disable');
         $('#right').toggle("slide", { duration: 100, direction: "right" });
         $('#left').toggle("slide", { duration: 100, direction: "left" });
         $('#top').toggle("slide", { duration: 100, direction: "left" });
-    }else{
+    } else {
         $('#linetransformer').draggable('enable');
     }
 };
@@ -2932,9 +2933,7 @@ KFK.onWsMsg = function (data) {
                 prjid: data.payload.data[0].prjid,
                 name: data.payload.data[0].name
             };
-            KFK.APP.setData('model', 'project', cocoprj);
-            KFK.APP.setData('model', 'lastrealproject', cocoprj);
-            localStorage.setItem('cocoprj', JSON.stringify(cocoprj));
+            KFK.setCurrentPrj(cocoprj);
             if (KFK.isSettingupDemoEnv() === false) {
                 KFK.showConsole();
                 KFK.showPrjs();
@@ -2975,8 +2974,8 @@ KFK.onWsMsg = function (data) {
             // let count = option.count;
             let prjs = data.payload.data;
             console.log(prjs);
-            prjs.unshift({ _id: 'mine', prjid: 'mine', name: '我创建的所有白板', owner: 'me' });
-            prjs.unshift({ _id: 'all', prjid: 'all', name: '我参与过的所有白板', owner: 'me' });
+            prjs.unshift({ _id: 'mine', prjid: 'mine', name: '我创建的所有项目中的白板', owner: 'me' });
+            prjs.unshift({ _id: 'all', prjid: 'all', name: '我参与过的别人共享的白板', owner: 'me' });
             KFK.APP.setData('model', 'prjs', prjs);
             break;
 
@@ -2992,10 +2991,28 @@ KFK.onWsMsg = function (data) {
             KFK.resetNodeZIndex(data.payload.data);
             break;
         case 'LOCKNODE':
-            NodeController.lock($(`#${data.payload.data.nodeid}`));
+            KFK.NodeController.lock($(`#${data.payload.data.nodeid}`));
             break;
         case 'UNLOCKNODE':
-            NodeController.unlock($(`#${data.payload.data.nodeid}`));
+            KFK.NodeController.unlock($(`#${data.payload.data.nodeid}`));
+            break;
+        case 'COPYDOC':
+            KFK.onCopyDoc(data.paylaod.data);
+            break;
+        case 'GOTOPRJ':
+            let gotoPrjId = data.payload.prjid;
+            let found = -1;
+            for (let i = 2; i < KFK.APP.model.prjs.length; i++) {
+                if (gotoPrjId === KFK.APP.model.prjs[i].prjid) {
+                    found = i;
+                    break;
+                }
+            }
+            if(found > 1){
+                KFK.setCurrentPrj(KFK.APP.model.prjs[found]);
+            }
+            KFK.sendCmd("LISTDOC", { prjid: gotoPrjId });
+            KFK.showDocs();
             break;
     }
 };
@@ -3029,7 +3046,7 @@ KFK.deleteDoc = async function (doc_id) {
         KFK.APP.setData("model", "cocodoc", nextdoc);
         KFK.showDocs();
     } else {
-        KFK.APP.setData("model", "cocodoc", DocController.getDummyDoc())
+        KFK.APP.setData("model", "cocodoc", KFK.DocController.getDummyDoc())
     }
 };
 
@@ -3042,8 +3059,7 @@ KFK.prjRowClickHandler = function (record, index) {
     KFK.APP.setData('model', 'project', { prjid: record.prjid, name: record.name });
     if (record.prjid !== 'all' && record.prjid !== 'mine') {
         let cocoprj = { prjid: record.prjid, name: record.name };
-        KFK.APP.setData('model', 'lastrealproject', cocoprj);
-        localStorage.setItem('cocoprj', JSON.stringify(cocoprj));
+        KFK.setCurrentPrj(cocoprj);
     }
     KFK.sendCmd("LISTDOC", { prjid: record.prjid });
     if (KFK.onPrjSelected) {
@@ -3175,9 +3191,9 @@ KFK.recreateNodeFromHTML = function (html) {
         if (jqDIV.hasClass('kfknode')) {
             KFK.setNodeEventHandler(jqDIV);
             if (isALockedNode) {
-                NodeController.lock(jqDIV);
-            }else if(KFK.APP.model.cocodoc.readonly){
-                NodeController.removeEventListenerOnly(jqDIV);
+                KFK.NodeController.lock(jqDIV);
+            } else if (KFK.APP.model.cocodoc.readonly) {
+                KFK.NodeController.removeEventListenerOnly(jqDIV);
             }
         } else if (jqDIV.hasClass('kfkline'))
             KFK.setLineEventHandler(jqDIV);
@@ -3531,7 +3547,7 @@ KFK.drawGridlines = function (deltaX, deltaY) {
 
 
 KFK.setMode = function (mode) {
-    if(KFK.docLocked())
+    if (KFK.docLocked())
         mode = "pointer";
 
     let oldMode = KFK.mode;
@@ -3809,9 +3825,12 @@ KFK.toggleRight = function (flag) {
 };
 
 KFK.toggleFullScreen = function (flag) {
-    $('#right').toggle("slide", { duration: 100, direction: "right" });
+    let leftdisplay = $('#left').css("display");
+    let rightdisplay = $('#right').css("display");
     $('#left').toggle("slide", { duration: 100, direction: "left" });
     $('#top').toggle("slide", { duration: 100, direction: "left" });
+    if (leftdisplay === rightdisplay)
+        $('#right').toggle("slide", { duration: 100, direction: "right" });
 }
 
 KFK.gotoExplorer = function () {
@@ -4179,7 +4198,7 @@ KFK.createDemoEnv = async function () {
         KFK.setAppDatap('model', 'isDemoEnv', true);
         await KFK.WS.put('REGUSER', { userid: demoAccount.userid, pwd: myuid(), name: '测试用户' });
         await KFK.sendCmd('NEWPRJ', { name: '测试项目' });
-        KFK.refreshDesigner('5e7b85765cc6ca507fbda3a6','');
+        KFK.refreshDesigner('5e7b85765cc6ca507fbda3a6', '');
     } catch (e) { }
     finally {
         setTimeout(function () { localStorage.removeItem('settingupdemoenv'); }, 5000);
@@ -4197,10 +4216,34 @@ KFK.isSettingupDemoEnv = function () {
     let res = localStorage.getItem('settingupdemoenv');
     if (res && res === 'true') return true;
     else return false;
-}
+};
 KFK.isMyDoc = () => {
     return KFK.APP.model.cocouser.userid === KFK.APP.model.cocodoc.owner;
-}
+};
+
+KFK.showCopyDocDialog = (item, index, target) => {
+    KFK.tobeCopyDocId = item._id;
+    KFK.setAppData('model', 'copyToDocName', item.name);
+    KFK.setAppData('model', 'showCopyOrMove', item.owner === KFK.APP.model.cocouser.userid);
+    KFK.showDialog({ copyDocDialog: true });
+};
+
+KFK.copyDoc = () => {
+    let payload = {
+        fromDocId: KFK.tobeCopyDocId,
+        toPrjId: KFK.APP.model.copyToPrjId,
+        toName: KFK.APP.model.copyToDocName,
+        copyOrMove: KFK.APP.model.check.copyOrMove,
+    };
+    KFK.sendCmd('COPYDOC', payload);
+    // let payload = { from: from, to: to };
+    // KFK.sendCmd('COPYDOC', payload);
+};
+
+KFK.onCopyDoc = async function (data) {
+    console.log(data);
+};
+
 
 // localStorage.removeItem('cocouser');
 console.log(config.defaultDocBgcolor);
@@ -4220,3 +4263,4 @@ module.exports = KFK;
 //TODO: double click on line to add text label
 //TODO: 自动折现
 //TODO: LOCK but onlyme can edit, (record lockby?   owner can unlock all?)
+//TODO: Fix grid width when zoom/in out, 

@@ -427,7 +427,7 @@
                       <b-button v-if="data.item.prjid !== 'all' && data.item.prjid !== 'mine' " size="sm"
                         @click="deletePrjItem(data.item, data.index, $event.target)" class="mr-1"
                         variant="outline-primary">
-                        <b-icon icon="trash"></b-icon>删除
+                        <b-icon icon="trash"></b-icon>
                       </b-button>
                     </template>
                     <template v-slot:cell()="data">
@@ -479,12 +479,19 @@
                   <b-table hover id="my-doc-table" :items="model.docs" :per-page="model.perPage"
                     :current-page="model.currentDocPage" small :fields="model.docfields"
                     @row-clicked="KFK.docRowClickHandler">
+                    <template v-slot:cell(copydoc)="data">
+                      <b-button size="sm" class="mr-1" variant="outline-success"
+                        @click="KFK.showCopyDocDialog(data.item, data.index, $event.target)">
+                        <b-icon icon="copy" scale="1"></b-icon>
+                      </b-button>
+                    </template>
                     <template v-slot:cell(security_icon)="data">
                       <b-button size="sm" class="mr-1" :variant="data.item.security_variant"
                         @click="KFK.showResetPwdModal(data.item, data.index, $event.target)">
                         <b-iconstack font-scale="1">
-                          <b-icon stacked icon="phone-landscape" scale="1.5" ></b-icon>
-                          <b-icon stacked :icon="data.item.security_icon" scale="0.85" shift-h="-2" shift-v="-1" ></b-icon>
+                          <b-icon stacked icon="phone-landscape" scale="1.5"></b-icon>
+                          <b-icon stacked :icon="data.item.security_icon" scale="0.85" shift-h="-2" shift-v="-1">
+                          </b-icon>
                         </b-iconstack>
                       </b-button>
                     </template>
@@ -511,7 +518,7 @@
                         <b-button size="sm" class="mr-1" variant="outline-danger"
                           @click="deleteDocItem(data.item, data.index, $event.target)" class="mr-1"
                           variant="outline-primary">
-                          <b-icon icon="trash"></b-icon>删除
+                          <b-icon icon="trash"></b-icon>
                         </b-button>
                       </div>
                     </template>
@@ -603,6 +610,32 @@
                 </b-button>
               </b-col>
             </b-row>
+          </b-container>
+        </b-modal>
+        <b-modal @ok="KFK.copyDoc" v-model="show.dialog.copyDocDialog" title="拷贝白板" button-size="sm" centered size="md">
+          <b-container>
+            <b-form>
+              <b-form-group label-cols="3" label-align="right" label="新白板名" label-for="docName">
+                <b-form-input id="docName" trim v-model="model.copyToDocName" :state="copyToDocNameState"
+                  class="mb-2 mr-sm-2 mb-sm-0" placeholder=""></b-form-input>
+                <b-form-invalid-feedback id="docName-feedback">
+                  名称为3个以上英文或中文字符，不超过20个
+                </b-form-invalid-feedback>
+              </b-form-group>
+              <b-form-group label-cols="3" label-align="right" label="拷贝到项目" label-for="docPrj">
+                <b-form-select id="docPrj" v-model="model.copyToPrjId" :options="prjListOptions">
+                  <template v-slot:first>
+                    <b-form-select-option :value="null" disabled>-- 请选择项目 --</b-form-select-option>
+                  </template>
+                </b-form-select>
+              </b-form-group>
+              <b-form-group  v-if="model.showCopyOrMove" label-cols="3" label-align="right" label="" label-for="checkbox-1">
+                <b-form-checkbox id="checkbox-1" v-model="model.check.copyOrMove" name="checkbox-1" value="move"
+                  unchecked-value="copy">
+                  移动文档到新项目
+                </b-form-checkbox>
+              </b-form-group>
+            </b-form>
           </b-container>
         </b-modal>
       </div> <!-- explorer inner -->
