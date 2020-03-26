@@ -190,16 +190,15 @@ KFK.duringKuangXuan = false;
 
 
 KFK.currentMousePos = { x: -1, y: -1 };
-$('#C3').mousedown((event) => {
-    if (KFK.mode === 'pointer') {
+$(document).mousedown((event) => {
+    if (KFK.mode === 'pointer' && KFK.docLocked() === false) {
         KFK.mouseIsDown = true;
         KFK.dragToSelectFrom = { x: KFK.scrollX(event.clientX), y: KFK.scrollY(event.clientY) };
     }
 });
-$('#C3').mouseup((event) => {
-    console.log('===>C3 mouseup fired');
+$(document).mouseup((event) => {
     KFK.ignoreClick = false;
-    if (KFK.mode === 'pointer') {
+    if (KFK.mode === 'pointer' && KFK.docLocked() === false) {
         KFK.mouseIsDown = false;
         KFK.dragToSelectTo = { x: KFK.scrollX(event.clientX), y: KFK.scrollY(event.clientY) };
         if (KFK.duringKuangXuan) {
@@ -210,22 +209,26 @@ $('#C3').mouseup((event) => {
     }
 });
 $(document).mousemove(function (event) {
+
     KFK.currentMousePos.x = event.clientX;
     KFK.currentMousePos.y = event.clientY;
+
     el($('#modeIndicator')).style.left = px(KFK.currentMousePos.x + 10);
     el($('#modeIndicator')).style.top = px(KFK.currentMousePos.y + 10);
     KFK.dragToSelectTo = { x: KFK.scrollX(event.clientX), y: KFK.scrollY(event.clientY) };
 
+
+    if(KFK.docLocked()) return;
+
     //支持按下鼠标， 框选多个node
     if (KFK.mode === 'pointer' && KFK.mouseIsDown) {
-        KFK.APP.setData('model', 'msg', `框选 ${JSON.stringify(KFK.dragToSelectFrom)} - ${JSON.stringify(KFK.dragToSelectTo)}`);
+        KFK.log(`框选 ${JSON.stringify(KFK.dragToSelectFrom)} - ${JSON.stringify(KFK.dragToSelectTo)}`);
         KFK.kuangXuan(KFK.dragToSelectFrom, KFK.dragToSelectTo);
     }
 
     if (KFK.mode === 'line') {
         if (KFK.linkPos.length === 1) {
             KFK.lineTemping = true;
-            KFK.APP.setData('model', 'msg', 'click next please');
             let tmpPoint = { x: KFK.scrollX(KFK.currentMousePos.x), y: KFK.scrollY(KFK.currentMousePos.y) };
             let fromPoint = null;
             let toPoint = null;
@@ -250,8 +253,6 @@ $(document).mousemove(function (event) {
                 tmpPoint.y,
                 { color: '#888888', stroke: 1 }
             );
-        } else if (KFK.linkPos.length === 0) {
-            KFK.APP.setData('model', 'msg', '');
         }
     }
 });
@@ -610,15 +611,15 @@ KFK.initC3 = function () {
     //click c3  click C3 click canvas click background
     $(c3).on('click', function (e) {
         if (KFK.ignoreClick) return;
-        console.log('===>C3 click fired');
+
         KFK.focusOnNode(null);
         KFK.setJustCreated(null);
         KFK.pickedJqLine = null;
 
-        console.log('here');
+        if(KFK.docLocked()) return;
+
         if (KFK.tobeTransformJqLine)
             KFK.tobeTransformJqLine.removeClass('shadow2');
-        console.log('here2 ');
         $('#linetransformer').css('visibility', 'hidden');
         KFK.tobeTransformJqLine = null;
 
@@ -678,7 +679,7 @@ KFK.initC3 = function () {
     });
 
     $(c3).on('mousemove', function (event) {
-        KFK.showUserMovingBadge(KFK.APP.model.user, event.clientX, event.clientY);
+        KFK.showUserMovingBadge(KFK.APP.model.cocouser, event.clientX, event.clientY);
     });
 
     KFK.C3 = c3;
@@ -950,7 +951,7 @@ KFK.setLineEventHandler = function (jqLine) {
             // lineLayer.batchDraw();
             KFK.jqHoverLine = jqLine;
 
-            if (!jqLine.attr('fdiv') && !jqLine.attr('tdiv') && !KFK.lineTemping) {
+            if (!jqLine.attr('fdiv') && !jqLine.attr('tdiv') && !KFK.lineTemping && KFK.docLocked() === false) {
                 function mouseNear(p1, p2) {
                     if (Math.sqrt(Math.pow((p2.x - p1.x), 2) + Math.pow((p2.y - p1.y), 2)) <= 20) {
                         return true;
@@ -1532,19 +1533,21 @@ KFK.cleanNodeEventFootprint = function (jqNodeDIV) {
 }
 
 KFK.syncNodePut = async function (cmd, jqDIV, reason) {
+    if(KFK.docLocked()) return;
+    if(KFK.nodeLocked(jqDIV)) return;
     try {
         if (!(jqDIV instanceof jQuery)) {
             jqDIV = $(jqDIV);
         }
-        if (!(config.cocouser && config.cocouser.name)) {
+        if (!(KFK.APP.model.cocouser && KFK.APP.model.cocouser.name)) {
             console.error("userinfo was not configured");
             return;
         }
 
 
         if (cmd === 'C' || cmd === 'U') {
-            KFK.addEditorToNode(jqDIV, config.cocouser.name);
-            KFK.putHisLog(config.cocouser.name, jqDIV.attr("id"));
+            KFK.addEditorToNode(jqDIV, KFK.APP.model.cocouser.name);
+            KFK.putHisLog(KFK.APP.model.cocouser.name, jqDIV.attr("id"));
             KFK.APP.setData('model', 'hislog', KFK.getHisLog());
         } else if (cmd === 'D') {
             KFK.removeHisLog(jqDIV.attr("id"));
@@ -1565,7 +1568,7 @@ KFK.syncNodePut = async function (cmd, jqDIV, reason) {
         tobeSync.removeClass('offline');
 
         let payload = {
-            doc_id: config.cocodoc.doc_id,
+            doc_id: KFK.APP.model.cocodoc.doc_id,
             nodeid: nodeID,
             content: cmd === 'D' ? nodeID : tobeSync.prop('outerHTML'),
             offline: isOffline,
@@ -1626,8 +1629,8 @@ KFK.notAnyLocked = function (jqNode) {
     return !KFK.anyLocked(jqNode);
 };
 
-KFK.docLocked = function(){
-    return false;
+KFK.docLocked = function () {
+    return KFK.APP.model.cocodoc.readonly;
 };
 
 KFK.nodeLocked = function (jqNode) {
@@ -1984,9 +1987,9 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
         if (KFK.mode === 'lock') {
             if (KFK.isMyDoc() && KFK.docLocked() === false) {
                 if (KFK.nodeLocked(jqNodeDIV)) {
-                    KFK.sendCmd('UNLOCKNODE', { doc_id: config.cocodoc.doc_id, nodeid: jqNodeDIV.attr("id") });
+                    KFK.sendCmd('UNLOCKNODE', { doc_id: KFK.APP.model.cocodoc.doc_id, nodeid: jqNodeDIV.attr("id") });
                 } else {
-                    KFK.sendCmd('LOCKNODE', { doc_id: config.cocodoc.doc_id, nodeid: jqNodeDIV.attr("id") });
+                    KFK.sendCmd('LOCKNODE', { doc_id: KFK.APP.model.cocodoc.doc_id, nodeid: jqNodeDIV.attr("id") });
                 }
             }
             if (!e.shiftKey) {
@@ -2301,11 +2304,11 @@ KFK.deleteHoverDiv = function (e) {
         if (KFK.anyLocked(KFK.jqHoverLine)) return;
         KFK.deleteNode(KFK.jqHoverLine);
         KFK.jqHoverLine = null;
-        //TODO: here1111
     }
 };
 
 KFK.duplicateHoverDiv = function (e) {
+    if(KFK.docLocked()) return;
     let offset = { x: 0, y: 0 };
     if (KFK.jqHoverDIV) {
         KFK.divToCopy = el(KFK.jqHoverDIV);
@@ -2321,6 +2324,12 @@ KFK.duplicateHoverDiv = function (e) {
             offset = { x: 20, y: 20 };
             let jqNewNode = $(KFK.divToCopy).clone(false);
             jqNewNode.attr('id', myuid());
+            console.log(KFK.currentMousePos);
+            console.log(KFK.scrollX(KFK.currentMousePos.x), KFK.scrollY(KFK.currentMousePos.y));
+            console.log(parseInt(jqNewNode.css('width')), parseInt(jqNewNode.css('height')));
+            console.log(KFK.scrollX(KFK.currentMousePos.x) - parseInt(jqNewNode.css('width')) * 0.5);
+            console.log(KFK.scrollY(KFK.currentMousePos.y) - parseInt(jqNewNode.css('height')) * 0.5);
+
             jqNewNode.css('left', KFK.scrollX(KFK.currentMousePos.x) - parseInt(jqNewNode.css('width')) * 0.5);
             jqNewNode.css('top', KFK.scrollY(KFK.currentMousePos.y) - parseInt(jqNewNode.css('height')) * 0.5);
             KFK.cleanNodeEventFootprint(jqNewNode);
@@ -2560,9 +2569,8 @@ KFK.checkUser = function (isAfterLogin) {
         console.log("find cocouser in local " + cocouser);
         cocouser = JSON.parse(cocouser);
         cocouser.localSessionId = myuid();
-        KFK.APP.setData("model", "user", cocouser);
-        config.cocouser = cocouser;
-        KFK.setAppData('model', 'isDemoEnv', Demo.isDemoUser(config.cocouser));
+        KFK.APP.setData("model", "cocouser", cocouser);
+        KFK.setAppData('model', 'isDemoEnv', Demo.isDemoUser(cocouser));
         if (!isAfterLogin) //从localstorage中找到用户名
             KFK.sendCmd('COMEBACK', { userid: cocouser.userid });
         KFK.log("hello [" + cocouser.name + "]");
@@ -2573,7 +2581,7 @@ KFK.checkUser = function (isAfterLogin) {
                 KFK.refreshExplorer();
             } else {
                 //load demo point
-                KFK.refreshDesigner(doc_id);
+                KFK.refreshDesigner(doc_id, '');
             }
         } else {
             KFK.refreshExplorer();
@@ -2588,13 +2596,13 @@ KFK.checkUser = function (isAfterLogin) {
     }
 };
 
-KFK.refreshDesigner = function (doc_id) {
+KFK.refreshDesigner = function (doc_id, docpwd) {
+    KFK.JC3.empty();
     KFK.showSection({ login: false, register: false, explorer: false, designer: true });
     KFK.tryToOpenDocId = doc_id;
-    config.cocodoc = DocController.getDummyDoc();
-    KFK.APP.setData('model', 'cocodoc', config.cocodoc);
-    localStorage.removeItem('cocodoc', config.cocodoc);
-    KFK.loadDoc(doc_id, '');
+    KFK.APP.setData('model', 'cocodoc', DocController.getDummyDoc());
+    localStorage.removeItem('cocodoc');
+    KFK.loadDoc(doc_id, docpwd);
 };
 
 
@@ -2787,6 +2795,14 @@ KFK._onDocLoaded = function () {
     KFK.initShowEditors('none');
     KFK.startPadDesigner();
     KFK.APP.setData('model', 'docLoaded', true);
+    if(KFK.APP.model.cocodoc.readonly){
+        $('#linetransformer').draggable('disable');
+        $('#right').toggle("slide", { duration: 100, direction: "right" });
+        $('#left').toggle("slide", { duration: 100, direction: "left" });
+        $('#top').toggle("slide", { duration: 100, direction: "left" });
+    }else{
+        $('#linetransformer').draggable('enable');
+    }
 };
 
 KFK.startPadDesigner = function () {
@@ -2858,7 +2874,7 @@ KFK.onWsMsg = function (data) {
                         doc.security_icon = 'blank';
                         doc.pwd = '';
                     } else {
-                        doc.security_icon = "lock";
+                        doc.security_icon = "three-dots";
                         doc.pwd = '*********';
                     }
                 }
@@ -2872,7 +2888,7 @@ KFK.onWsMsg = function (data) {
                         doc.security_icon = 'blank';
                         doc.pwd = '';
                     } else {
-                        doc.security_icon = "lock";
+                        doc.security_icon = "three-dots";
                         doc.pwd = '*********';
                     }
                 }
@@ -2889,6 +2905,26 @@ KFK.onWsMsg = function (data) {
                     KFK.showSection({ login: false, register: false, explorer: true, designer: false });
                     KFK.showDocs();
                 }).catch(err => { })
+            break;
+        case 'TGLREAD':
+            KFK.APP.model.docs.forEach((doc) => {
+                if (doc._id === data.payload.doc_id) {
+                    doc.readonly = data.payload.readonly;
+                    if (doc.readonly === true) {
+                        doc.readonly_icon = 'lock';
+                        doc.readonly_variant = "primary";
+                    } else {
+                        doc.readonly_icon = 'blank';
+                        doc.readonly_variant = "outline-primary";
+                    }
+                }
+
+            });
+            if (data.payload.doc_id === KFK.APP.model.cocodoc.doc_id) {
+                KFK.APP.model.cocodoc.readonly = doc.readonly;
+                KFK.APP.setData("model", "cocodoc", KFK.APP.model.cocodoc);
+                localStorage.setItem('cocodoc', JSON.stringify(KFK.APP.model.cocodoc.doc_id));
+            }
             break;
         case 'NEWPRJ':
             console.log(data.payload);
@@ -2907,7 +2943,7 @@ KFK.onWsMsg = function (data) {
         case 'NEWDOC':
             console.log(data.payload);
             KFK.updatePrjDoclist(data.payload.data.prjid);
-            KFK.loadDoc(data.payload.data._id, KFK.APP.model.newdocpwd.trim());
+            KFK.refreshDesigner(data.payload.data._id, KFK.APP.model.newdocpwd.trim());
             break;
         case 'LISTDOC':
             KFK.APP.setData('model', 'listdocoption', data.payload.option);
@@ -2916,8 +2952,17 @@ KFK.onWsMsg = function (data) {
             docs.forEach((doc) => {
                 if (doc.pwd === '') {
                     doc.security_icon = 'blank';
+                    doc.security_variant = "outline-success";
                 } else {
-                    doc.security_icon = 'lock';
+                    doc.security_icon = 'three-dots';
+                    doc.security_variant = "success";
+                }
+                if (doc.readonly === true) {
+                    doc.readonly_icon = 'lock';
+                    doc.readonly_variant = "primary";
+                } else {
+                    doc.readonly_icon = 'blank';
+                    doc.readonly_variant = "outline-primary";
                 }
             })
             console.log(docs);
@@ -2972,7 +3017,7 @@ KFK.deletePrj = async function (prjid) {
 
 KFK.getCocouser = function () {
     // return JSON.parse(localStorage.getItem('cocouser'));
-    return KFK.APP.model.user;
+    return KFK.APP.model.cocouser;
 }
 
 KFK.deleteDoc = async function (doc_id) {
@@ -2987,6 +3032,10 @@ KFK.deleteDoc = async function (doc_id) {
         KFK.APP.setData("model", "cocodoc", DocController.getDummyDoc())
     }
 };
+
+KFK.setDocReadonly = async function (doc, index, event) {
+    KFK.sendCmd('TGLREAD', { doc_id: doc._id });
+}
 
 KFK.prjRowClickHandler = function (record, index) {
     console.log(record);
@@ -3021,13 +3070,13 @@ KFK.docRowClickHandler = function (record, index) {
         KFK.showDialog({ inputDocPasswordDialog: true });
         KFK.tryToOpenDocId = record._id;
     } else {
-        KFK.loadDoc(record._id, '');
+        KFK.refreshDesigner(record._id, '');
     }
 };
 
 KFK.getDocPwd = function () {
     KFK.APP.setData('model', 'passwordinputok', "ok");
-    KFK.loadDoc(KFK.tryToOpenDocId, KFK.APP.model.opendocpwd);
+    KFK.refreshDesigner(KFK.tryToOpenDocId, KFK.APP.model.opendocpwd);
 };
 KFK.cancelDocPwd = function () {
     KFK.APP.setData('model', 'passwordinputok', "cancel");
@@ -3104,12 +3153,11 @@ KFK.recreateNodeFromHTML = function (html) {
             doc_id: jqDIV.attr('doc_id'),
             name: jqDIV.attr('name'),
             prjid: jqDIV.attr('prjid'),
-            owner: jqDIV.attr('owner')
+            owner: jqDIV.attr('owner'),
+            readonly: getBoolean(jqDIV.attr('readflag'))
         };
-        config.cocodoc = docRet;
         KFK.APP.setData('model', "cocodoc", docRet);
         localStorage.setItem('cocodoc', JSON.stringify(docRet));
-        console.log(config.cocodoc);
         KFK._onDocLoaded();
     } else if (jqDIV.hasClass('notify')) {  //TODO: notification
     } else if (jqDIV.hasClass('ad')) {  //TODO: Advertisement
@@ -3128,6 +3176,8 @@ KFK.recreateNodeFromHTML = function (html) {
             KFK.setNodeEventHandler(jqDIV);
             if (isALockedNode) {
                 NodeController.lock(jqDIV);
+            }else if(KFK.APP.model.cocodoc.readonly){
+                NodeController.removeEventListenerOnly(jqDIV);
             }
         } else if (jqDIV.hasClass('kfkline'))
             KFK.setLineEventHandler(jqDIV);
@@ -3445,7 +3495,7 @@ KFK.setTenant = (tenant) => {
     config.tenant = tenant;
 }
 KFK.getOSSFileName = (basename) => {
-    return `${config.tenant.id} / ${config.cocodoc.doc_id} / ${basename}`;
+    return `${config.tenant.id} / ${KFK.APP.model.cocodoc.doc_id} / ${basename}`;
 }
 
 KFK.initGridLayer = function () {
@@ -3481,6 +3531,9 @@ KFK.drawGridlines = function (deltaX, deltaY) {
 
 
 KFK.setMode = function (mode) {
+    if(KFK.docLocked())
+        mode = "pointer";
+
     let oldMode = KFK.mode;
     KFK.mode = mode;
     for (let key in KFK.APP.active) {
@@ -3612,7 +3665,7 @@ KFK.addContainerMainEventHander = function () {
             preventDefault = true;
             let myZI = KFK.getZIndex(KFK.jqHoverDIV);
             let count = 0;
-            let zIndexChanger = { doc_id: config.cocodoc.doc_id, ZI: {} };
+            let zIndexChanger = { doc_id: KFK.APP.model.cocodoc.doc_id, ZI: {} };
             $(KFK.C3).find('.kfknode').each((index, aNodeDIV) => {
                 count += 1;
                 let jqNode = $(aNodeDIV);
@@ -3629,7 +3682,7 @@ KFK.addContainerMainEventHander = function () {
             preventDefault = true;
             let myZI = KFK.getZIndex(KFK.jqHoverDIV);
             let count = 0;
-            let zIndexChanger = { doc_id: config.cocodoc.doc_id, ZI: {} };
+            let zIndexChanger = { doc_id: KFK.APP.model.cocodoc.doc_id, ZI: {} };
             $(KFK.C3).find('.kfknode').each((index, aNodeDIV) => {
                 count += 1;
                 let jqNode = $(aNodeDIV);
@@ -3647,7 +3700,7 @@ KFK.addContainerMainEventHander = function () {
             let myZI = KFK.getZIndex(KFK.jqHoverDIV);
             let count = 0;
             let allnodes = $(KFK.C3).find('.kfknode');
-            let zIndexChanger = { doc_id: config.cocodoc.doc_id, ZI: {} };
+            let zIndexChanger = { doc_id: KFK.APP.model.cocodoc.doc_id, ZI: {} };
             if (myZI < allnodes.length) {
                 allnodes.each((index, aNodeDIV) => {
                     count += 1;
@@ -3664,7 +3717,7 @@ KFK.addContainerMainEventHander = function () {
             }
         } else if (e.keyCode === 34 && KFK.isKfkNode(KFK.jqHoverDIV)) { // key pagedown
             preventDefault = true;
-            let zIndexChanger = { doc_id: config.cocodoc.doc_id, ZI: {} };
+            let zIndexChanger = { doc_id: KFK.APP.model.cocodoc.doc_id, ZI: {} };
             let myZI = KFK.getZIndex(KFK.jqHoverDIV);
             if (myZI > 1) {
                 let count = 0;
@@ -3696,13 +3749,13 @@ KFK.addContainerMainEventHander = function () {
         } else if (e.keyCode == 76 && e.shiftKey) {  //key L key l
             if (KFK.jqHoverDIV && KFK.isMyDoc() && KFK.docLocked() === false) {
                 if (KFK.nodeLocked(KFK.jqHoverDIV)) {
-                    KFK.sendCmd('UNLOCKNODE', { doc_id: config.cocodoc.doc_id, nodeid: KFK.jqHoverDIV.attr("id") });
+                    KFK.sendCmd('UNLOCKNODE', { doc_id: KFK.APP.model.cocodoc.doc_id, nodeid: KFK.jqHoverDIV.attr("id") });
                 } else {
-                    KFK.sendCmd('LOCKNODE', { doc_id: config.cocodoc.doc_id, nodeid: KFK.jqHoverDIV.attr("id") });
+                    KFK.sendCmd('LOCKNODE', { doc_id: KFK.APP.model.cocodoc.doc_id, nodeid: KFK.jqHoverDIV.attr("id") });
                 }
             } else {
-                KFK.log("Not authed" + config.cocodoc.owner + " " + config.cocouser.userid);
-                console.log(config.cocodoc);
+                KFK.log("Not authed" + KFK.APP.model.cocodoc.owner + " " + KFK.APP.model.cocouser.userid);
+                console.log(KFK.APP.model.cocodoc);
             }
         } else if ((e.keyCode === 83 || e.keyCode === 87 || e.keyCode === 81) && e.metaKey) {
             preventDefault = true;
@@ -3807,7 +3860,7 @@ KFK.saveBlobToOSS = function (blob) {
 };
 
 KFK.save = async function () {
-    let docPath = `/${config.tenant.id}/${config.cocodoc.doc_id}/`;
+    let docPath = `/${config.tenant.id}/${KFK.APP.model.cocodoc.doc_id}/`;
     // let result = await OSSClient.list({
     //     prefix: 'lucas/',
     // });
@@ -4119,13 +4172,12 @@ KFK.createDemoEnv = async function () {
     localStorage.setItem('settingupdemoenv', 'true');
     try {
         let demoAccount = Demo.genearteDemoUser();
-        KFK.APP.setData("model", "user", demoAccount);
+        KFK.APP.setData("model", "cocouser", demoAccount);
         localStorage.setItem('cocouser', JSON.stringify(demoAccount));
-        config.cocouser = demoAccount;
         KFK.setAppDatap('model', 'isDemoEnv', true);
         await KFK.WS.put('REGUSER', { userid: demoAccount.userid, pwd: myuid(), name: '测试用户' });
         await KFK.sendCmd('NEWPRJ', { name: '测试项目' });
-        KFK.refreshDesigner('5e7b85765cc6ca507fbda3a6');
+        KFK.refreshDesigner('5e7b85765cc6ca507fbda3a6','');
     } catch (e) { }
     finally {
         setTimeout(function () { localStorage.removeItem('settingupdemoenv'); }, 5000);
@@ -4145,7 +4197,7 @@ KFK.isSettingupDemoEnv = function () {
     else return false;
 }
 KFK.isMyDoc = () => {
-    return config.cocouser.userid === config.cocodoc.owner;
+    return KFK.APP.model.cocouser.userid === KFK.APP.model.cocodoc.owner;
 }
 
 // localStorage.removeItem('cocouser');
@@ -4165,3 +4217,4 @@ module.exports = KFK;
 //TODO: RichText with QuilJS
 //TODO: double click on line to add text label
 //TODO: 自动折现
+//TODO: LOCK but onlyme can edit, (record lockby?   owner can unlock all?)
