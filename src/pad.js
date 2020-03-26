@@ -30,7 +30,7 @@ const app = new Vue({
       ['tip_circle3', 'tip_arrow', 'tip_arrow2', 'tip_arrow3', 'tip_arrow4'],
     ],
     //TODO: 没有用户信息时，显示注册页面而不是登录页面
-    active: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false },
+    active: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'lock': false },
     show: {
       'wsready': false,
       'arrange_multi_nodes': false,
@@ -61,7 +61,7 @@ const app = new Vue({
       docLoaded: false,
       project: { prjid: '', name: '' },
       lastrealproject: { prjid: '', name: '' },
-      document: { doc_id: '', name: ' ' },
+      cocodoc: { doc_id: 'dummydocnotallowed', name: 'dummydocnotallowed', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', },
       user: { userid: '', name: '' },
       listdocoption: {},
       listprjoption: {},
@@ -70,7 +70,7 @@ const app = new Vue({
       share: {},
       feedback: { forRegister: '新用户注册', forLogin: '请登录' },
       feedback_const: { forRegister: '新用户注册', forLogin: '请登录' },
-      docfields: [{ key: 'name', label: '名称' }, { key: 'lock', label: '密保' }, { key: 'owner', label: '发起人' }, { key: 'operation', label: '操作' }],
+      docfields: [{ key: 'name', label: '名称' }, { key: 'security_icon', label: '密保' }, { key: 'owner', label: '发起人' }, { key: 'operation', label: '操作' }],
       prjfields: [{ key: 'name', label: '名称' }, { key: 'operation', label: '操作' }],
       prjwarning: '',
       docs: [],
@@ -113,12 +113,11 @@ const app = new Vue({
         { value: 'last', text: '最后一个' },
         { value: 'all', text: '列出全部' }
       ],
+      isDemoEnv:true,
     }
   },
   computed: {
-    isDemoEnv(){
-      return KFK.isDemoEnv();
-    },
+
     doccount() {
       return this.model.docs.length;
     },
