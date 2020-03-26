@@ -2497,6 +2497,7 @@ KFK.init = async function () {
     s1 = KFK.base64ToCode(s1);
     console.log(s1);
 
+    $('#left_menu').removeClass('noshow');
     await WS.start(KFK.onWsConnected, KFK.onWsMsg, 500);
 };
 
