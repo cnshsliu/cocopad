@@ -37,7 +37,8 @@
     "babel-preset-env": "^1.7.0",
     "node-fetch": "^2.6.0",
     "node-minify": "^3.6.0",
-    "sass": "^1.26.2"
+    "sass": "^1.26.2",
+    "uglify-js": ">=2.6.0"
   },
   "alias": {
     "vue": "./node_modules/vue/dist/vue.common.js"
