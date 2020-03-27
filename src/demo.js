@@ -10,7 +10,8 @@ Demo.myuid = function () {
 Demo.genearteDemoUser = function () {
     return {
         userid: `demouser_${Demo.myuid()}@cocopad.com`,
-        name: '演示用户'
+        name: '演示用户',
+        avatar: 'avatar-0',
     };
 }
 Demo.genearteDemoPrj = function () {
@@ -23,11 +24,12 @@ Demo.isDemoUser = function (user) {
     let userid = "";
     if (typeof user === 'string') {
         userid = user;
-    } else if (user && user.userid) {
+    } else if (user) {
         userid = user.userid;
     } else {
         userid = "demouser_56789@cocopad.com";
     }
+    console.log('>>DEMO.isDemoUser ', userid);
     const schema = Joi.string().regex(
         /^demouser_([A-Za-z0-9_\-\.])+\@cocopad\.com$/
     ).required();

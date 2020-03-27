@@ -215,8 +215,8 @@ body {
     z-index: 100;
     color: rgb(83, 79, 79);
     position: absolute;
-    bottom: 0px;
-    left: 0px;
+    bottom: 5px;
+    width: 100vw;
 }
 
 .cocopadbg {
