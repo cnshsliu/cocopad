@@ -2987,6 +2987,9 @@ KFK.onWsMsg = function (data) {
                     doc.readonly_icon = 'blank';
                     doc.readonly_variant = "outline-primary";
                 }
+                if(doc.ownerAvatar !== ''){
+                    doc.ownerAvatarSrc = KFK.avatars[doc.ownerAvatar].src;
+                }
             })
             console.log(docs);
             KFK.APP.setData('model', 'docs', docs);

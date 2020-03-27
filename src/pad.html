@@ -600,8 +600,12 @@
                       </div>
                     </template>
                     <template v-slot:cell(owner)="data">
-                      <div display="inline"
-                        style="width:140px; white-space:nowrap; overflow-x:scroll; overflow-y:hidden">{{ data.value }}
+                      <div v-if="data.item.ownerAvatar">
+                        <img :src="data.item.ownerAvatarSrc" style="width:18px; height:18px;"/>
+                        {{data.item.ownerName}}
+                      </div>
+                      <div v-else class="roundInitial">
+                        {{data.item.ownerName}}
                       </div>
                     </template>
                     <template v-slot:cell()="data">
