@@ -14,6 +14,22 @@ Vue.use(ListGroupPlugin);
 Vue.use(VBHoverPlugin);
 const app = new Vue({
   data: {
+    state: {
+      profile:{
+          name: null,
+          oldpwd: null,
+          newpwd: null,
+          newpwd2: null,
+      },
+      reg: {
+        userid: null,
+        name: null,
+        pwd: null,
+        pwd2: null,
+      }
+    },
+    RegUserIdState: null,
+    RegUserNameState: null,
     KFK: KFK,
     seen: true,
     modalShow: false,
@@ -48,11 +64,18 @@ const app = new Vue({
       'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false, copyDocDialog: false },
     },
     model: {
+      avatarLoaded: false,
       copyToPrjId: null,
       hislog: [
         { editor: 'lkh', hislog: ['node1', 'node3'] },
         { editor: 'lucas', hislog: ['node3', 'node1', 'node2'] }
       ],
+      profileToSet: {
+        name: '',
+        avatar: 'avatar-0',
+        oldpwd: '',
+        newpwd: '',
+      },
       check: { copyOrMove: 'copy' },
       hidepassword: true,
       inputUserPwd: '',
@@ -66,20 +89,18 @@ const app = new Vue({
       project: { prjid: '', name: '' },
       lastrealproject: { prjid: '', name: '' },
       cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', readonly: false },
-      cocouser: { userid: '', name: '' },
+      cocouser: { userid: '', name: '', avatar: 'avatar-0', avatar_src: null },
       listdocoption: {},
       listprjoption: {},
       register: { userid: '', pwd: '', pwd2: '', name: '' },
       login: { userid: '', pwd: '' },
       share: {},
-      feedback: { forRegister: '新用户注册', forLogin: '请登录' },
-      feedback_const: { forRegister: '新用户注册', forLogin: '请登录' },
       docfields: [{ key: 'name', label: '名称' }, { key: 'readonly_icon', label: '模式' }, { key: 'security_icon', label: '密保' }, { key: 'copydoc', label: '复制' }, { key: 'share_icon', label: '分享' }, { key: 'owner', label: '发起人' }, { key: 'operation', label: '操作' }],
       prjfields: [{ key: 'name', label: '名称' }, { key: 'operation', label: '操作' }],
       prjwarning: '',
       docs: [],
       prjs: [],
-      perPage: 9,
+      perPage: 10,
       currentPrjPage: 1,
       currentDocPage: 1,
       rightTabIndex: 2,
@@ -90,7 +111,7 @@ const app = new Vue({
       showGrid: true,
       dragToCreate: true,
       lineToggleMode: false,
-      msg: 'hello',
+      msg: '',
       tipBkgColor: '#f7f7c6',
       shapeBkgColor: '#ffffff',
       lineColor: '#000000',
@@ -134,6 +155,16 @@ const app = new Vue({
       })
       return ret;
     },
+    avatarListOptions() {
+      let ret = [];
+      this.model.avatars.forEach((prj, index) => {
+          ret.push({
+            value: prj.prjid,
+            text: prj.name,
+          })
+      })
+      return ret;
+    },
 
     doccount() {
       return this.model.docs.length;
@@ -153,66 +184,8 @@ const app = new Vue({
       else
         return false;
     },
-    userPwdState() {
-      const schema = Joi.string().regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]{8,}/
-        // 至少8个字符，至少1个大写字母，1个小写字母，1个数字和1个特殊字符：
-      ).required();
-      let str = this.model.login.pwd;
-      let { error, value } = schema.validate(str);
-      if (error === undefined)
-        return true;
-      else
-        return false;
-    },
-    regUserIdState() {
-      let str = this.model.register.userid;
-      if (str === '') return true;
-      else {
-        const schema = Joi.string().regex(
-          /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/
-          // 邮箱地址
-        ).required();
-        let { error, value } = schema.validate(str);
-        if (error === undefined) {
-          KFK.remoteCheckUserId(this.model.register.userid);
-          return true;
-        } else
-          return false;
-      }
-    },
-    regUserPwdState() {
-      let str = this.model.register.pwd;
-      const schema = Joi.string().regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]{8,}/
-        // 至少8个字符，至少1个大写字母，1个小写字母，1个数字和1个特殊字符：
-      ).required();
-      let { error, value } = schema.validate(str);
-      if (error === undefined)
-        return true;
-      else
-        return false;
-    },
-    regUserPwd2State() {
-      let str = this.model.register.pwd;
-      let str2 = this.model.register.pwd2;
-      if (str === str2)
-        return true;
-      else
-        return false;
-    },
-    regUserNameState() {
-      let str = this.model.register.name;
-      if (str === '') return true;
-      else {
-        const schema = Joi.string().regex(/^[a-zA-Z0-9_\u4e00-\u9fa5]{2,10}$/).required();
-        let { error, value } = schema.validate(str);
-        if (error === undefined)
-          return true;
-        else
-          return false;
-      }
-    },
+    
+  
     docNameState() {
       const schema = Joi.string().regex(/^[a-zA-Z0-9_\u4e00-\u9fa5]{3,20}$/).required();
       let str = this.model.newdocname;
@@ -242,6 +215,13 @@ const app = new Vue({
     },
   },
   methods: {
+    getAvatarSrc(name) {
+      // console.log(">>GOt avatar: ", name);
+      if (this.model.avatars && this.model.avatars[name])
+        return this.model.avatars[name].src;
+      else
+        return $('#defaultavatar').attr('src');
+    },
     toggleHidePassword() {
       this.setData('model', 'hidepassword', !this.model.hidepassword);
     },
