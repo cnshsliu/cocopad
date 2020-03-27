@@ -11,21 +11,21 @@
 
 <body>
   <div id="containerbkg"></div>
-    <img style="display:none;" id='defaultavatar' src='../assets/avatar/avatar-0.svg'/>
-  
+  <img style="display:none;" id='defaultavatar' src='../assets/avatar/avatar-0.svg' />
+
 
   <div id='app' class='fontFancyColor'>
     <b-button v-show="show.section.login" pill variant='outline-success' class='reglogin' @click="KFK.showRegisterForm">
       注 册</b-button>
     <b-button v-show="show.section.register" pill variant='outline-success' class='reglogin' @click="KFK.showLoginForm">
       登 录</b-button>
-      <div class="msgarea">
-        <b-row class="w-100">
-          <b-col class="text-center">
-            <div id="MSG"></div>
-          </b-col>
-        </b-row>
-      </div>
+    <div class="msgarea">
+      <b-row class="w-100">
+        <b-col class="text-center">
+          <div id="MSG"></div>
+        </b-col>
+      </b-row>
+    </div>
     <img v-show="!show.section.designer" src="../assets/cocopad.svg" class='left_top_logo_image' />
     <div class="cocoslogon" v-show="!show.section.designer">
       <b-row class="text-center py-2">
@@ -126,8 +126,8 @@
           </b-form-group>
           <b-form-group label-cols=3 label="再次录入" label-for="regUserPwd2" label-align="right">
             <b-form-input id="regUserPwd2" trim :type="model.hidepassword?'password':'text'"
-              v-model="model.register.pwd2" :state="state.reg.pwd2" class="mb-2 mr-sm-2 mb-sm-0" required
-              placeholder="" class="w-50"></b-form-input>
+              v-model="model.register.pwd2" :state="state.reg.pwd2" class="mb-2 mr-sm-2 mb-sm-0" required placeholder=""
+              class="w-50"></b-form-input>
             <b-form-invalid-feedback id="regUserPwd2-feedback">
               两次密码输入需要一致
             </b-form-invalid-feedback>
@@ -148,15 +148,16 @@
       </b-container>
       <b-container style="position: absolute; bottom: 20px;">
         <b-row class="w-100 text-center">
-          <b-col class="pt-3"><a href="#" class="card-link" @click="KFK.showLoginForm" style='font-size:18px'>已有账号？请登录</a>
+          <b-col class="pt-3"><a href="#" class="card-link" @click="KFK.showLoginForm"
+              style='font-size:18px'>已有账号？请登录</a>
           </b-col>
           <div class="w-100">
             <hr>
           </div>
           </b-col>
-          <b-col><a href="#" class="card-link" @click="KFK.createDemoEnv" >先不注册 直接体验</a>
-          <div class="w-100"></div>
-          <b-col><a href="#" class="card-link" @click="KFK.showHelp">帮助</a></b-col>
+          <b-col><a href="#" class="card-link" @click="KFK.createDemoEnv">先不注册 直接体验</a>
+            <div class="w-100"></div>
+            <b-col><a href="#" class="card-link" @click="KFK.showHelp">帮助</a></b-col>
         </b-row>
         </b-form>
       </b-container>
@@ -373,12 +374,12 @@
           </b-tab>
         </b-tabs>
       </div>
+      <b-button-group class="coco padlayout" id='hislog_button'>
+        <b-button @click="KFK.showHisLog" class="" variant="outline-success">
+          <b-icon icon="people"></b-icon> 参与者
+        </b-button>
+      </b-button-group>
       <div id="rtcontrol" class="padlayout noshow">
-        <b-button-group class="coco">
-          <b-button id="hislog" variant="outline-success" @click="KFK.showHisLog">
-            <b-avatar icon="people-fill" variant="success"></b-avatar>
-          </b-button>
-        </b-button-group>
         <!-- <b-button-group class="coco">
           <b-button id="zoom_in" variant="outline-success" @click="KFK.zoomIn">
             <b-iconstack>
@@ -411,13 +412,13 @@
           </b-button>
         </b-button-group>
       </div>
-      <div id="hisloglist" v-show="show.hislog" style="overflow-y:scroll" class="p-3">
+      <div id="hisloglist" v-show="show.actionlog" style="overflow-y:scroll" class="p-3">
         协作参与者
         <b-list-group>
-          <b-list-group-item @click="KFK.viewHisLog(index)" v-for="(hislog,index) in model.hislog" href="#"
+          <b-list-group-item @click="KFK.viewHisLog(index)" v-for="(actionlog,index) in model.actionlog" href="#"
             v-bind:index="index" v-bind:key="'hl'+index" class="d-flex justify-content-between align-items-center">
-            {{hislog.editor}}
-            <b-badge variant="primary" pill>{{hislog.hislog.length}}</b-badge>
+            {{actionlog.editor}}
+            <b-badge variant="primary" pill>{{actionlog.actionlog.length}}</b-badge>
           </b-list-group-item>
         </b-list-group>
       </div>
@@ -451,7 +452,7 @@
           </b-navbar-nav>
           <b-navbar-nav>
             <div v-show="model.cocouser.avatar_src">
-            <img  :src="model.cocouser.avatar_src" style="width:40px; height: 40px;"/>
+              <img :src="model.cocouser.avatar_src" style="width:40px; height: 40px;" />
             </div>
             <b-nav-item-dropdown text="我的" right>
               <b-dropdown-item-button>{{model.cocouser.name}}</b-dropdown-item-button>
@@ -558,7 +559,7 @@
                         @click="KFK.showCopyDocDialog(data.item, data.index, $event.target)">
                         <b-iconstack>
                           <b-icon stack icon="file" shift-h='-3' shift-v='3' scale="0.5"></b-icon>
-                          <b-icon stack icon="file" scale="0.5" shift-h="-1" shift-v="1" ></b-icon>
+                          <b-icon stack icon="file" scale="0.5" shift-h="-1" shift-v="1"></b-icon>
                         </b-iconstack>
                       </b-button>
                     </template>
@@ -575,7 +576,7 @@
                     <template v-slot:cell(readonly_icon)="data">
                       <b-button size="sm" class="m-0 p-0" :variant="data.item.readonly_variant"
                         @click="KFK.setDocReadonly(data.item, data.index, $event.target)">
-                        <b-iconstack v-if="data.item.readonly_icon==='lock'"size="sm">
+                        <b-iconstack v-if="data.item.readonly_icon==='lock'" size="sm">
                           <b-icon stacked icon="laptop" flip-v scale="1"></b-icon>
                           <b-icon stacked icon="pie-chart-fill" scale="0.45" shift-h="-2.5" shift-v="-1"></b-icon>
                           <b-icon stacked icon="text-indent-left" scale="0.4" shift-h="3"></b-icon>
@@ -587,21 +588,20 @@
                     <template v-slot:cell(share_icon)="data">
                       <b-button size="sm" class="m-0 p-0 text-center" variant="outline-secondary"
                         @click="KFK.shareDoc(data.item, data.index, $event.target)">
-                        <b-icon icon="box-arrow-up" size=" sm"  />
+                        <b-icon icon="box-arrow-up" size=" sm" />
                       </b-button>
                     </template>
                     <template v-slot:cell(operation)="data">
                       <div v-if="data.item.owner===model.cocouser.userid">
                         <b-button size="sm" class="m-0 p-0" variant="outline-danger"
-                          @click="deleteDocItem(data.item, data.index, $event.target)"
-                          variant="outline-primary">
+                          @click="deleteDocItem(data.item, data.index, $event.target)" variant="outline-primary">
                           <b-icon icon="trash"></b-icon>
                         </b-button>
                       </div>
                     </template>
                     <template v-slot:cell(owner)="data">
                       <div v-if="data.item.ownerAvatar">
-                        <img :src="data.item.ownerAvatarSrc" style="width:18px; height:18px;"/>
+                        <img :src="data.item.ownerAvatarSrc" style="width:18px; height:18px;" />
                         {{data.item.ownerName}}
                       </div>
                       <div v-else class="roundInitial">
@@ -721,7 +721,8 @@
             </b-form>
           </b-container>
         </b-modal>
-        <b-modal id="modal-setuserprofile" @ok="KFK.setUserProfile" v-model="show.dialog.setProfileDialog" title="用户信息" button-size="sm" centered size="md">
+        <b-modal id="modal-setuserprofile" @ok="KFK.setUserProfile" v-model="show.dialog.setProfileDialog" title="用户信息"
+          button-size="sm" centered size="md">
           <b-container class="my-3 ">
             <b-form autocomplete="off" class="w-100 px-2" @submit.stop.prevent="KFK.handleProfileSubmit">
               <b-form-group label-cols=3 label="显示名" label-for="profile_name" label-align="right">
@@ -732,22 +733,25 @@
                 </b-form-invalid-feedback>
               </b-form-group>
               <b-form-group label-cols=3 label="原密码" label-for="profile_oldpwd" label-align="right">
-                <b-form-input id="profile_oldpwd" trim :type="model.hidepassword?'password':'text'" v-model="model.profileToSet.oldpwd"
-                :state="state.profile.oldpwd"  class="mb-2 mr-sm-2 mb-sm-0" required class="w-50"></b-form-input>
+                <b-form-input id="profile_oldpwd" trim :type="model.hidepassword?'password':'text'"
+                  v-model="model.profileToSet.oldpwd" :state="state.profile.oldpwd" class="mb-2 mr-sm-2 mb-sm-0"
+                  required class="w-50"></b-form-input>
                 <b-form-invalid-feedback id="profile_oldpwd-feedback">
                   密码至少8字符，<BR>必须含大小写字母数字和特殊字符
                 </b-form-invalid-feedback>
               </b-form-group>
-              <b-form-group  label-cols=3 label="新密码" label-for="profile_newpwd" label-align="right">
-                <b-form-input id="profile_newpwd" trim :type="model.hidepassword?'password':'text'" v-model="model.profileToSet.newpwd"
-                  :state="state.profile.newpwd" class="mb-2 mr-sm-2 mb-sm-0" required  class="w-50"></b-form-input>
+              <b-form-group label-cols=3 label="新密码" label-for="profile_newpwd" label-align="right">
+                <b-form-input id="profile_newpwd" trim :type="model.hidepassword?'password':'text'"
+                  v-model="model.profileToSet.newpwd" :state="state.profile.newpwd" class="mb-2 mr-sm-2 mb-sm-0"
+                  required class="w-50"></b-form-input>
                 <b-form-invalid-feedback id="profile_newpwd-feedback">
                   密码至少8字符，<BR>必须含大小写字母数字和特殊字符
                 </b-form-invalid-feedback>
               </b-form-group>
-              <b-form-group  label-cols=3 label="再输入一遍" label-for="profile_newpwd2" label-align="right">
-                <b-form-input id="profile_newpwd2" trim :type="model.hidepassword?'password':'text'" v-model="model.profileToSet.newpwd"
-                  :state="state.profile.newpwd2" class="mb-2 mr-sm-2 mb-sm-0" required  class="w-50"></b-form-input>
+              <b-form-group label-cols=3 label="再输入一遍" label-for="profile_newpwd2" label-align="right">
+                <b-form-input id="profile_newpwd2" trim :type="model.hidepassword?'password':'text'"
+                  v-model="model.profileToSet.newpwd" :state="state.profile.newpwd2" class="mb-2 mr-sm-2 mb-sm-0"
+                  required class="w-50"></b-form-input>
                 <b-form-invalid-feedback id="profile_newpwd2-feedback">
                   新密码两次输入必须一样
                 </b-form-invalid-feedback>
@@ -755,23 +759,21 @@
               <b-row>
                 <b-col cols="3"> 选择头像 </b-col>
                 <b-col cols="9" class="text-right">
-                <b-button @click="toggleHidePassword" variant="outline-none">
-                  <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
-                </b-button>
+                  <b-button @click="toggleHidePassword" variant="outline-none">
+                    <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
+                  </b-button>
                 </b-col>
               </b-row>
-              <div 
-              class="w-100" 
-              display="inline"
-              style="white-space:nowrap; overflow-x:scroll; overflow-y:hidden; ">
-              <b-button variant = "light"  size="lg" class="mx-1"  @click='KFK.setProfileAvatar(avatar.id)' v-for="avatar in model.avatars" v-bind:key="avatar.id">
-                <img :src="avatar.src" style="width:48px; height:48px"/>
-              </b-button> 
+              <div class="w-100" display="inline" style="white-space:nowrap; overflow-x:scroll; overflow-y:hidden; ">
+                <b-button variant="light" size="lg" class="mx-1" @click='KFK.setProfileAvatar(avatar.id)'
+                  v-for="avatar in model.avatars" v-bind:key="avatar.id">
+                  <img :src="avatar.src" style="width:48px; height:48px" />
+                </b-button>
               </div>
             </b-form>
           </b-container>
         </b-modal>
-       
+
       </div> <!-- explorer inner -->
       <div id="gotodesignercontrol" v-show="model.docLoaded" class="padlayout noshow">
         <b-button-group class="coco">

@@ -122,8 +122,13 @@ body {
     top: 5px;
     right: 5px;
 }
+#hislog_button{
+    position: absolute;
+    top: 5px;
+    right: 250px;
+}
 
-#hisloglist{
+#actionLoglist{
     padding: 5px;
     background: #FFFFFF;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
