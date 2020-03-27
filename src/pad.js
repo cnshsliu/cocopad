@@ -58,7 +58,7 @@ const app = new Vue({
       'waitingws': true,
       'loginform': false,
       'explorer': true,
-      'hislog': false,
+      'actionlog': false,
       'form': { newdoc: false, newprj: false, prjlist: true, doclist: false, share: false, bottomlinks: false, explorerTabIndex: 0 },
       'section': { login: false, register: false, explorer: false, designer: false, },
       'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false, copyDocDialog: false },
@@ -66,9 +66,9 @@ const app = new Vue({
     model: {
       avatarLoaded: false,
       copyToPrjId: null,
-      hislog: [
-        { editor: 'lkh', hislog: ['node1', 'node3'] },
-        { editor: 'lucas', hislog: ['node3', 'node1', 'node2'] }
+      actionlog: [
+        { editor: 'lkh', actionlog: ['node1', 'node3'] },
+        { editor: 'lucas', actionlog: ['node3', 'node1', 'node2'] }
       ],
       profileToSet: {
         name: '',

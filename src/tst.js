@@ -69,7 +69,7 @@ KFK.getHisLog = function(){
     KFK.hisLogArr.map((val, index)=>{
         ret.push({
             editor: val,
-            hislog: KFK.hisLogMap[val]
+            actionlog: KFK.hisLogMap[val]
         });
     });
     return ret;
