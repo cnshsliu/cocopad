@@ -1046,8 +1046,7 @@ KFK.drawLine = function (x1, y1, x2, y2, options) {
     y2 = p2.y;
   }
 
-  let tmpid = myuid();
-  let divid = `div_${tmpid}`;
+  let divid = myuid();
   let lineDIV = KFK.JC3.line(x1, y1, x2, y2, options);
   let jqLine = $(lineDIV);
   jqLine.attr("id", divid);
