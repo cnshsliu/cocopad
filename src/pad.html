@@ -374,8 +374,8 @@
           </b-tab>
         </b-tabs>
       </div>
-      <b-button-group class="coco padlayout" id='hislog_button'>
-        <b-button @click="KFK.showHisLog" class="" variant="outline-success">
+      <b-button-group class="coco padlayout" id='actionlog_button'>
+        <b-button @click="KFK.showActionLog" class="" variant="outline-success">
           <b-icon icon="people"></b-icon> 参与者
         </b-button>
       </b-button-group>
@@ -412,13 +412,43 @@
           </b-button>
         </b-button-group>
       </div>
-      <div id="hisloglist" v-show="show.actionlog" style="overflow-y:scroll" class="p-3">
+      <div id="actionloglist" v-show="show.actionlog" style="overflow-y:scroll" class="p-3">
         协作参与者
+        <div id='actionlog-refresh'>
+          <b-button @click="KFK.getActionLog" variant="link" class="m-0 p-0">刷新</b-button>
+        </div>
+        <div id='actionlog-close'>
+          <b-button @click="KFK.showActionLog" variant="link" class="m-0 p-0">关闭</b-button>
+        </div>
         <b-list-group>
-          <b-list-group-item @click="KFK.viewHisLog(index)" v-for="(actionlog,index) in model.actionlog" href="#"
-            v-bind:index="index" v-bind:key="'hl'+index" class="d-flex justify-content-between align-items-center">
-            {{actionlog.editor}}
-            <b-badge variant="primary" pill>{{actionlog.actionlog.length}}</b-badge>
+          <b-list-group-item v-for="(actionlog,index) in model.actionlog" v-bind:index="index" v-bind:key="'hl'+index"
+            class="d-flex flex-nowrap text-nowrap">
+            <b-container class="m-0 p-0">
+            <b-row class="pb-1">
+              <b-col cols="10" style="width:100px; white-space:nowrap; overflow-x:scroll; overflow-y:hidden;">
+                <img :src="actionlog.avatarSrc" class="avatar-in-line"/>
+                {{actionlog.name}}</b-col>
+              <b-col cols="2">
+                <b-badge variant="primary" pill>{{actionlog.logs.length}}</b-badge>
+              </b-col>
+            </b-row>
+            <b-row>
+              <b-button-group size="sm" class="w-100">
+                <b-button size="sm" @click="KFK.navActionLog(actionlog,  'first')" variant="outline-primary">
+                  <b-icon icon="skip-start-fill" variant="primary"> </b-icon>
+                </b-button>
+                <b-button size="sm" @click="KFK.navActionLog(actionlog,  'prev')" variant="outline-primary">
+                  <b-icon icon="caret-left-fill" variant="primary"> </b-icon>
+                </b-button>
+                <b-button size="sm" @click="KFK.navActionLog(actionlog,  'next')" variant="outline-primary">
+                  <b-icon icon="caret-right-fill" variant="primary"></b-icon>
+                </b-button>
+                <b-button size="sm" @click="KFK.navActionLog(actionlog,  'last')" variant="outline-primary">
+                  <b-icon icon="skip-end-fill" variant="primary"> </b-icon>
+                </b-button>
+              </b-button-group>
+            </b-row>
+            </b-container>
           </b-list-group-item>
         </b-list-group>
       </div>
