@@ -66,10 +66,7 @@ const app = new Vue({
     model: {
       avatarLoaded: false,
       copyToPrjId: null,
-      actionlog: [
-        { editor: 'lkh', actionlog: ['node1', 'node3'] },
-        { editor: 'lucas', actionlog: ['node3', 'node1', 'node2'] }
-      ],
+      actionlog: [],
       profileToSet: {
         name: '',
         avatar: 'avatar-0',

@@ -122,13 +122,13 @@ body {
     top: 5px;
     right: 5px;
 }
-#hislog_button{
+#actionlog_button{
     position: absolute;
     top: 5px;
     right: 250px;
 }
 
-#actionLoglist{
+#actionloglist{
     padding: 5px;
     background: #FFFFFF;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
@@ -140,6 +140,16 @@ body {
     border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 15px;;
     z-index: 999;
+}
+#actionlog-close{
+    position: absolute;
+    top: 5px;
+    right: 15px;
+}
+#actionlog-refresh{
+    position: absolute;
+    top: 5px;
+    right: 70px;
 }
 
 #gotodesignercontrol {
@@ -552,4 +562,8 @@ select:focus {
 
 #modeIndicator{
   z-index: 100000;
+}
+
+.avatar-in-line{
+    width:28px; height:28px;
 }
