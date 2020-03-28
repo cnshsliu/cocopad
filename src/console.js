@@ -169,9 +169,11 @@ KFK.removeActionLogByEntry = function (entries) {
     for (let i = 0; i < entries.length; i++) {
         let editor = entries[i].editor;
         let nodeid = entries[i].nodeid;
-        let index = KFK.ActionLogMap[editor].indexOf(nodeid);
-        if (index >= 0) {
-            KFK.ActionLogMap[editor].splice(index, 1);
+        if (KFK.ActionLogMap[editor]) {
+            let index = KFK.ActionLogMap[editor].indexOf(nodeid);
+            if (index >= 0) {
+                KFK.ActionLogMap[editor].splice(index, 1);
+            }
         }
     }
     for (editor in KFK.ActionLogMap) {
@@ -234,16 +236,14 @@ KFK.duringKuangXuan = false;
 
 KFK.currentMousePos = { x: -1, y: -1 };
 $(document).mousedown((event) => {
-    if (KFK.APP.show.section.designer !== true)
-        return;
+    if (KFK.inDesigner() === false) return;
     if (KFK.mode === 'pointer' && KFK.docLocked() === false) {
         KFK.mouseIsDown = true;
         KFK.dragToSelectFrom = { x: KFK.scrollX(event.clientX), y: KFK.scrollY(event.clientY) };
     }
 });
 $(document).mouseup((event) => {
-    if (KFK.APP.show.section.designer !== true)
-        return;
+    if (KFK.inDesigner() === false) return;
     KFK.ignoreClick = false;
     if (KFK.mode === 'pointer' && KFK.docLocked() === false) {
         KFK.mouseIsDown = false;
@@ -256,8 +256,7 @@ $(document).mouseup((event) => {
     }
 });
 $(document).mousemove(function (event) {
-    if (KFK.APP.show.section.designer !== true)
-        return;
+    if (KFK.inDesigner() === false) return;
     KFK.currentMousePos.x = event.clientX;
     KFK.currentMousePos.y = event.clientY;
 
@@ -659,27 +658,50 @@ KFK.undo = () => {
         return;
     }
     let ope = KFK.opstack[KFK.opz];
-    if (ope.to !== '') {
-        let jqTo = $($.parseHTML(ope.to));
-        let nodeid = jqTo.attr("id");
-        $(`#${nodeid}`).remove();
-    }
-    if (ope.from !== '') {
-        let jqFrom = $($.parseHTML(ope.from));
-        let nodeid = jqFrom.attr("id");
-        KFK.C3.appendChild(el(jqFrom));
-        let jqDIV = $(`#${nodeid}`);
-        if (jqDIV.hasClass('kfknode')) {
-            KFK.setNodeEventHandler(jqDIV);
+    if (ope.cmd === 'LOCK') {
+        KFK.sendCmd('UNLOCKNODE', { doc_id: KFK.APP.model.cocodoc.doc_id, nodeid: ope.from });
+    } else if (ope.cmd === 'UNLOCK') {
+        KFK.sendCmd('LOCKNODE', { doc_id: KFK.APP.model.cocodoc.doc_id, nodeid: ope.from });
+    } else {
+        x('here1');
+        if (ope.to !== '') {
+            x("here2");
+            let jqTo = $($.parseHTML(ope.to));
+            let nodeid = jqTo.attr("id");
+            jqTo = $(`#${nodeid}`);
+            if(jqTo.hasClass('kfknode')){
+                jqTo.draggable('disable');
+                jqTo.resizable('destroy');
+                jqTo.droppable('disable');
+            }
+            jqTo.remove();
+            console.log('to node', nodeid, 'was removed');
         }
-        if (jqDIV.hasClass('lock')) {
-            jqDIV.draggable('disable');
-            jqDIV.resizable('disable');
-            jqDIV.droppable('disable');
+        if (ope.from !== '') {
+            x("here3");
+            let jqFrom = $($.parseHTML(ope.from));
+            let nodeid = jqFrom.attr("id");
+            KFK.C3.appendChild(el(jqFrom));
+            x('from node', nodeid, 'was added back');
+            jqFrom = $(`#${nodeid}`);
+            if (jqFrom.hasClass('kfknode')) {
+                x(nodeid, 'is a kfknode, set eventhandler for it');
+                KFK.setNodeEventHandler(jqFrom);
+                jqFrom.addClass('liukehong1');
+            }
+            if (jqFrom.hasClass('lock')) {
+                x(nodeid, 'hasclass lock, disable draggable');
+                jqFrom.draggable('disable');
+                jqFrom.resizable('disable');
+                jqFrom.droppable('disable');
+            } else {
+                x(nodeid, 'NOT hasclass lock');
+            }
         }
+        x("here4");
+        KFK.removeActionLogByEntry(ope.actionLogAdded);
+        KFK.addActionLogByEntry(ope.actionLogRemoved);
     }
-    KFK.removeActionLogByEntry(ope.actionLogAdded);
-    KFK.addActionLogByEntry(ope.actionLogRemoved);
 
     KFK.opz = KFK.opz - 1;
     console.log(KFK.opz, KFK.opstack);
@@ -691,27 +713,33 @@ KFK.redo = () => {
     }
     KFK.opz = KFK.opz + 1;
     let ope = KFK.opstack[KFK.opz];
-    if (ope.from !== '') {
-        let jqFrom = $($.parseHTML(ope.from));
-        let nodeid = jqFrom.attr("id");
-        $(`#${nodeid}`).remove();
-    }
-    if (ope.to !== '') {
-        let jqTo = $($.parseHTML(ope.to));
-        let nodeid = jqTo.attr("id");
-        KFK.C3.appendChild(el(jqTo));
-        let jqDIV = $(`#${nodeid}`);
-        if (jqDIV.hasClass('kfknode')) {
-            KFK.setNodeEventHandler(jqDIV);
+    if (ope.cmd === 'LOCK') {
+        KFK.sendCmd('LOCKNODE', { doc_id: KFK.APP.model.cocodoc.doc_id, nodeid: ope.from });
+    } else if (ope.cmd === 'UNLOCK') {
+        KFK.sendCmd('UNLOCKNODE', { doc_id: KFK.APP.model.cocodoc.doc_id, nodeid: ope.from });
+    } else {
+        if (ope.from !== '') {
+            let jqFrom = $($.parseHTML(ope.from));
+            let nodeid = jqFrom.attr("id");
+            $(`#${nodeid}`).remove();
         }
-        if (jqDIV.hasClass('lock')) {
-            jqDIV.draggable('disable');
-            jqDIV.resizable('disable');
-            jqDIV.droppable('disable');
+        if (ope.to !== '') {
+            let jqTo = $($.parseHTML(ope.to));
+            let nodeid = jqTo.attr("id");
+            KFK.C3.appendChild(el(jqTo));
+            let jqDIV = $(`#${nodeid}`);
+            if (jqDIV.hasClass('kfknode')) {
+                KFK.setNodeEventHandler(jqDIV);
+            }
+            if (jqDIV.hasClass('lock')) {
+                jqDIV.draggable('disable');
+                jqDIV.resizable('disable');
+                jqDIV.droppable('disable');
+            }
         }
+        KFK.addActionLogByEntry(ope.actionLogAdded);
+        KFK.removeActionLogByEntry(ope.actionLogRemoved);
     }
-    KFK.addActionLogByEntry(ope.actionLogAdded);
-    KFK.removeActionLogByEntry(ope.actionLogRemoved);
     console.log(KFK.opz, KFK.opstack);
 };
 
@@ -738,6 +766,8 @@ KFK.initC3 = function () {
 
     //click c3  click C3 click canvas click background
     $(c3).on('click', function (e) {
+        if (KFK.inDesigner() === false) return;
+        // console.log('Click on C3');
         if (KFK.ignoreClick) return;
 
         KFK.focusOnNode(null);
@@ -796,8 +826,8 @@ KFK.initC3 = function () {
                 if (!e.shiftKey)
                     KFK.setMode('pointer');
                 KFK.syncNodePut('C', $(tmp), 'new node');
-            } else {
-                console.log(`${KFK.mode} is not supported`);
+                // } else {
+                //     console.log(`${KFK.mode} is not supported`);
             }
         }
 
@@ -807,6 +837,8 @@ KFK.initC3 = function () {
     });
 
     $(c3).on('mousemove', function (event) {
+        if (KFK.inDesigner() === false) return;
+        // console.log('C3 moving badge');
         KFK.showUserMovingBadge(KFK.APP.model.cocouser, event.clientX, event.clientY);
     });
 
@@ -1457,6 +1489,7 @@ function editTextNode(textnode, theDIV) {
         if (e.keyCode === 13 && !e.shiftKey) {
             textnode.innerText = textarea.value;
             removeTextarea(textarea.value !== oldText);
+            KFK.focusOnMainContainer();
         }
         // on esc do not set value back to node
         if (e.keyCode === 27) {
@@ -1464,6 +1497,7 @@ function editTextNode(textnode, theDIV) {
             e.stopImmediatePropagation();
             e.stopPropagation();
         }
+        KFK.focusOnMainContainer();
     });
 
     function handleOutsideClick(e) {
@@ -1471,9 +1505,11 @@ function editTextNode(textnode, theDIV) {
             textnode.innerText = textarea.value;
             removeTextarea(textarea.value !== oldText);
         }
+        KFK.focusOnMainContainer();
     }
     setTimeout(() => {
         window.addEventListener('click', handleOutsideClick);
+        KFK.focusOnMainContainer();
     });
 }
 
@@ -1710,9 +1746,11 @@ KFK.syncNodePut = async function (cmd, jqDIV, reason, jqFrom) {
         let fromContent = '';
         let toContent = '';
         if (cmd === 'U') {
-            if (jqFrom) // 参数传递过来
+            if (jqFrom){ // 参数传递过来
+                KFK.cleanNodeEventFootprint(jqFrom);
                 fromContent = jqFrom.prop('outerHTML');
-            else if (KFK.fromJQ && reason !== 'offline_not_undoable') { //全局赋值过来
+            }else if (KFK.fromJQ && reason !== 'offline_not_undoable') { //全局赋值过来
+                KFK.cleanNodeEventFootprint(KFK.fromJQ);
                 fromContent = KFK.fromJQ.prop('outerHTML');
                 KFK.fromJQ = null;
             }
@@ -1720,6 +1758,7 @@ KFK.syncNodePut = async function (cmd, jqDIV, reason, jqFrom) {
         } else if (cmd === 'C') {
             fromContent = '';
             if (reason === 'MARK_UNDOABLE') {
+                KFK.cleanNodeEventFootprint(KFK.fromJQ);
                 fromContent = KFK.fromJQ.prop('outerHTML');
             }
             toContent = tobeSync.prop('outerHTML');
@@ -1735,16 +1774,7 @@ KFK.syncNodePut = async function (cmd, jqDIV, reason, jqFrom) {
             actionLogRemoved: actionLogRemoved
         };
         if (reason !== 'offline_not_undoable') {
-            KFK.opstack.splice(KFK.opz + 1, KFK.opstacklen);
-            if (KFK.opstack.length >= KFK.opstacklen) {
-                KFK.opstack.shift();
-                KFK.opz = KFK.opz - 1;
-                if (KFK.opz < -1)
-                    KFK.opz = -1;
-            }
-            KFK.opstack.push(opEntry);
-            KFK.opz = KFK.opz + 1;
-            console.log('opstack is', KFK.opstack);
+            KFK.yarkOpEntry(opEntry);
         }
 
         jqDIV.removeClass('offline');
@@ -1758,6 +1788,19 @@ KFK.syncNodePut = async function (cmd, jqDIV, reason, jqFrom) {
     }
     //console.log(jqDIV.prop('outerHTML'));
 }
+
+KFK.yarkOpEntry = function (opEntry) {
+    KFK.opstack.splice(KFK.opz + 1, KFK.opstacklen);
+    if (KFK.opstack.length >= KFK.opstacklen) {
+        KFK.opstack.shift();
+        KFK.opz = KFK.opz - 1;
+        if (KFK.opz < -1)
+            KFK.opz = -1;
+    }
+    KFK.opstack.push(opEntry);
+    KFK.opz = KFK.opz + 1;
+    console.log('opstack is', KFK.opstack);
+};
 
 function getNull(value) {
     switch (value) {
@@ -1959,7 +2002,9 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
     jqNodeDIV.addClass('kfknode');
     let nodeDIV = el(jqNodeDIV);
     let jqNodeType = jqNodeDIV.attr('nodetype');
+    x("here A");
     if (config.node[jqNodeType].resizable) {
+    x("here B");
         jqNodeDIV.resizable({
             autoHide: true,
             start: () => {
@@ -1970,6 +2015,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
             resize: () => {
             },
             stop: () => {
+                x('Stop Resizing...');
                 if (KFK.APP.model.snap) {
                     let tmpRight = KFK.nodeRight(nodeDIV);
                     let tmpBottom = KFK.nodeBottom(nodeDIV);
@@ -2164,8 +2210,24 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
         if (KFK.mode === 'lock') {
             if (KFK.isMyDoc() && KFK.docLocked() === false) {
                 if (KFK.nodeLocked(jqNodeDIV)) {
+                    let opEntry = {
+                        cmd: 'UNLOCK',
+                        from: jqNodeDIV.attr("id"),
+                        to: jqNodeDIV.attr("id"),
+                        actionLogAdded: [],
+                        actionLogRemoved: [],
+                    };
+                    KFK.yarkOpEntry(opEntry);
                     KFK.sendCmd('UNLOCKNODE', { doc_id: KFK.APP.model.cocodoc.doc_id, nodeid: jqNodeDIV.attr("id") });
                 } else {
+                    let opEntry = {
+                        cmd: 'LOCK',
+                        from: jqNodeDIV.attr("id"),
+                        to: jqNodeDIV.attr("id"),
+                        actionLogAdded: [],
+                        actionLogRemoved: [],
+                    };
+                    KFK.yarkOpEntry(opEntry);
                     KFK.sendCmd('LOCKNODE', { doc_id: KFK.APP.model.cocodoc.doc_id, nodeid: jqNodeDIV.attr("id") });
                 }
             }
@@ -2973,6 +3035,7 @@ KFK.loadDoc = function (doc_id, pwd) {
 };
 
 KFK._onDocLoaded = function () {
+    console.log('>>>>>>._onDocLoaded');
     KFK.initShowEditors('none');
     KFK.startPadDesigner();
     KFK.APP.setData('model', 'docLoaded', true);
@@ -2987,7 +3050,8 @@ KFK._onDocLoaded = function () {
 };
 
 KFK.startPadDesigner = function () {
-    KFK.addContainerMainEventHander();
+    x('>>>>>>>.startPadDesigner');
+    KFK.addContainerMainEventHandler();
     KFK.focusOnMainContainer();
     KFK.selectNone();
 
@@ -3176,7 +3240,7 @@ KFK.onWsMsg = function (data) {
             KFK.resetNodeZIndex(data.payload.data);
             break;
         case 'LOCKNODE':
-            KFK.NodeController.lock($(`#${data.payload.data.nodeid}`));
+            KFK.NodeController.lock($(`#${data.payload.data.nodeid}`), KFK.putOpActionEntry);
             break;
         case 'UNLOCKNODE':
             KFK.NodeController.unlock($(`#${data.payload.data.nodeid}`));
@@ -3835,14 +3899,21 @@ KFK.size = function (w, h) {
 KFK.isKfkNode = function (jqdiv) {
     return (jqdiv && jqdiv.hasClass('kfknode'));
 };
-KFK.addContainerMainEventHander = function () {
+KFK.inDesigner = function () {
+    return KFK.APP.show.section.designer;
+};
+
+KFK.addContainerMainEventHandler = function () {
+    x('>>>>>>.addContainerMainEventHandler');
     let preventDefault = false;
     // $('#right').keydown(function (e) {
     //     // e.stopImmediatePropagation();
     //     // e.stopPropagation();
     // });
     $('#containermain').focus();
-    $('#containermain').keydown(function (e) {
+    $(document).keydown(function (e) {
+        if (KFK.inDesigner() === false) return;
+
         // console.log(e.keyCode);
         let preventDefault = false;
         if (KFK.editting) return;
@@ -3856,7 +3927,7 @@ KFK.addContainerMainEventHander = function () {
             }
         } else if (e.keyCode === 82 && e.ctrlKey) { //Ctrl-R  key R
             KFK.toggleRight();
-        } else if (e.keyCode === 17) { //Ctrl
+        } else if (e.keyCode === 17) { //Ctrl key ctrl
             KFK.ctrlDown = true;
         } else if (e.keyCode === 18) { //Option
             //按下option键，切换toggleMode
@@ -3977,8 +4048,24 @@ KFK.addContainerMainEventHander = function () {
         } else if (e.keyCode == 76 && e.shiftKey) {  //key L key l
             if (KFK.jqHoverDIV && KFK.isMyDoc() && KFK.docLocked() === false) {
                 if (KFK.nodeLocked(KFK.jqHoverDIV)) {
+                    let opEntry = {
+                        cmd: 'UNLOCK',
+                        from: KFK.jqHoverDIV.attr("id"),
+                        to: KFK.jqHoverDIV.attr("id"),
+                        actionLogAdded: [],
+                        actionLogRemoved: [],
+                    };
+                    KFK.yarkOpEntry(opEntry);
                     KFK.sendCmd('UNLOCKNODE', { doc_id: KFK.APP.model.cocodoc.doc_id, nodeid: KFK.jqHoverDIV.attr("id") });
                 } else {
+                    let opEntry = {
+                        cmd: 'LOCK',
+                        from: KFK.jqHoverDIV.attr("id"),
+                        to: KFK.jqHoverDIV.attr("id"),
+                        actionLogAdded: [],
+                        actionLogRemoved: [],
+                    };
+                    KFK.yarkOpEntry(opEntry);
                     KFK.sendCmd('LOCKNODE', { doc_id: KFK.APP.model.cocodoc.doc_id, nodeid: KFK.jqHoverDIV.attr("id") });
                 }
             } else {
@@ -3986,8 +4073,8 @@ KFK.addContainerMainEventHander = function () {
                 console.log(KFK.APP.model.cocodoc);
             }
         } else if ((e.keyCode === 83 || e.keyCode === 87 || e.keyCode === 81) && e.metaKey) {
+            //83: key s , 87: key w, 81: key q
             preventDefault = true;
-
         }
         if (preventDefault) {
             e.stopImmediatePropagation();
@@ -3996,21 +4083,21 @@ KFK.addContainerMainEventHander = function () {
         }
     });
     $(document).keyup(function (e) {
-        if (KFK.APP.show.section.designer !== true)
-            return;
-        if (e.keyCode === 17) { //Ctrl
+        if (KFK.inDesigner() === false) return;
+        if (e.keyCode === 17) { //Ctrl  key ctrl
             KFK.ctrlDown = false;
         }
+        //83: key s , 87: key w, 81: key q
         if ((e.keyCode === 83 || e.keyCode === 87 || e.keyCode === 81) && e.metaKey) {
             e.stopImmediatePropagation();
             e.stopPropagation();
             e.preventDefault();
         }
-        // key up log
     });
 
     let timer = null;
     $('#scroll-container').scroll(() => {
+        if (KFK.inDesigner() === false) return;
         console.log('scroll-container is scrolling');
         let sx = $('#scroll-container').scrollLeft();
         let sy = $('#scroll-container').scrollTop();
@@ -4129,9 +4216,9 @@ KFK.save = async function () {
 
 KFK.addTextToHoverDIV = function (text) {
     if (KFK.jqHoverDIV) {
-        if (config.node[jqHoverDIV.attr('nodetype')].edittable) {
+        if (config.node[KFK.jqHoverDIV.attr('nodetype')].edittable) {
             KFK.fromJQ = KFK.jqHoverDIV.clone();
-            let innerObj = jqHoverDIV.find('.innerobj');
+            let innerObj = KFK.jqHoverDIV.find('.innerobj');
             let oldText = innerObj.html();
             let newText = oldText + "<BR> " + text;
             innerObj.html(newText);
@@ -4579,6 +4666,8 @@ KFK.loadAvatars();
 module.exports = KFK;
 
 
+//TODO: event handler after undo/redo
+//TODO: action log is not shown
 //TODO: 清理OSS图片
 // OSS路径名使用 tenant_id/doc_id/pic_name.png
 // 一开始生成文档的ID， 然后的OSS图片的目录使用这个ID， 最后保存时，检查真正剩余的图片，并与OSS中的对应，没有用到的从OSS中删除掉
