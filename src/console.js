@@ -20,8 +20,8 @@ import "../lib/jquery.line/jquery.line";
 import WS from './ws';
 import config from './config';
 
-function x(msg, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10) {
-    console.log(msg, msg2, msg3, msg4, msg5, msg6, msg7, msg8, msg9, msg10);
+function x(msg) {
+    console.log(msg);
 }
 function myuid() {
     return suuid.generate();
@@ -110,110 +110,8 @@ KFK.toggleMode = false;
 KFK.tween = null;
 KFK.ctrlDown = false;
 KFK.originZIndex = 1;
-KFK.ActionLogArr = [];
-KFK.ActionLogMap = {};
 KFK.lastActionLogJqDIV = null;
 
-KFK.putActionLog = function (editor, nodeid) {
-    let arrIndex = KFK.ActionLogArr.indexOf(editor);
-    if (arrIndex >= 0) {
-        let subArr = KFK.ActionLogMap[editor];
-        let subIndex = subArr.indexOf(nodeid);
-        if (subIndex > 0) {
-            subArr.splice(subIndex, 1);
-            subArr.unshift(nodeid);
-        } else if (subIndex < 0) {
-            subArr.unshift(nodeid);
-        }
-        if (arrIndex > 0) {
-            KFK.ActionLogArr.splice(arrIndex, 1);
-            KFK.ActionLogArr.unshift(editor);
-        }
-    } else if (arrIndex < 0) {
-        KFK.ActionLogArr.unshift(editor);
-        KFK.ActionLogMap[editor] = [nodeid];
-    }
-};
-
-//从actionLog中删除所有与该节点相关的信息
-KFK.removeActionLog = function (nodeid) {
-    let actionLogChange = [];
-    let tobeRemoved = [];
-    for (editor in KFK.ActionLogMap) {
-        let entries = KFK.ActionLogMap[editor];
-        let index = entries.indexOf(nodeid);
-        if (index >= 0) {
-            entries.splice(index, 1);
-            this.actionLogChange.push({ nodeid: nodeid, editor: editor });
-            if (entries.length === 0) {
-                tobeRemoved.push(editor);
-            }
-        }
-    }
-    for (let i = 0; i < tobeRemoved.length; i++) {
-        let index = KFK.ActionLogArr.indexOf(tobeRemoved[i]);
-        if (index >= 0)
-            KFK.ActionLogArr.splice(index, 1);
-        delete KFK.ActionLogMap[tobeRemoved[i]];
-    }
-    return actionLogChange;
-};
-
-KFK.addActionLogByEntry = function (entries) {
-    for (let i = 0; i < entries.length; i++) {
-        KFK.putActionLog(entries[i].editor, entries[i].nodeid);
-    }
-    KFK.APP.setData('model', 'actionlog', KFK.getActionLog());
-};
-KFK.removeActionLogByEntry = function (entries) {
-    for (let i = 0; i < entries.length; i++) {
-        let editor = entries[i].editor;
-        let nodeid = entries[i].nodeid;
-        if (KFK.ActionLogMap[editor]) {
-            let index = KFK.ActionLogMap[editor].indexOf(nodeid);
-            if (index >= 0) {
-                KFK.ActionLogMap[editor].splice(index, 1);
-            }
-        }
-    }
-    for (editor in KFK.ActionLogMap) {
-        if (KFK.ActionLogMap[editor].length === 0) {
-            delete KFK.ActionLogMap[editor];
-            let index = KFK.ActionLogArr.indexOf(editor);
-            KFK.ActionLogArr.splice(index, 1);
-        }
-    }
-    KFK.APP.setData('model', 'actionlog', KFK.getActionLog());
-};
-
-KFK.getActionLog = function () {
-    let ret = [];
-    KFK.ActionLogArr.map((val, index) => {
-        ret.push({
-            editor: val,
-            actionlog: KFK.ActionLogMap[val]
-        });
-    });
-    return ret;
-};
-
-KFK.clearActionLog = function () {
-    for (let i = 0; i < KFK.ActionLogArr.length; i++) {
-        delete KFK.ActionLogMap[KFK.ActionLogArr[i]];
-    }
-    KFK.ActionLogArr.splice(0, KFK.ActionLogArr.length);
-    KFK.APP.setData('model', 'actionlog', KFK.getActionLog());
-}
-
-// 从云端下载下来的节点，从节点的编辑者信息中，把编辑者的编辑记录
-// 回复到actionLog中。根据.cocoeditors中的记录文件取得相关信息
-KFK.collectEditorHisotryFromNode = function (jqDIV) {
-    let nodeid = jqDIV.attr("id");
-    let editors = jqDIV.find('.cocoeditors').text();
-    editors.split(',').forEach((editor, index) => {
-        KFK.putActionLog(editor, nodeid);
-    });
-}
 
 KFK.dragStage = new Konva.Stage({ container: "containerbkg", width: window.innerWidth, height: window.innerHeight });
 KFK.containermain = document.getElementById('containermain'); KFK.containermain.tabIndex = 1;
@@ -663,9 +561,7 @@ KFK.undo = () => {
     } else if (ope.cmd === 'UNLOCK') {
         KFK.sendCmd('LOCKNODE', { doc_id: KFK.APP.model.cocodoc.doc_id, nodeid: ope.from });
     } else {
-        x('here1');
         if (ope.to !== '') {
-            x("here2");
             let jqTo = $($.parseHTML(ope.to));
             let nodeid = jqTo.attr("id");
             jqTo = $(`#${nodeid}`);
@@ -678,7 +574,6 @@ KFK.undo = () => {
             console.log('to node', nodeid, 'was removed');
         }
         if (ope.from !== '') {
-            x("here3");
             let jqFrom = $($.parseHTML(ope.from));
             let nodeid = jqFrom.attr("id");
             KFK.C3.appendChild(el(jqFrom));
@@ -698,9 +593,6 @@ KFK.undo = () => {
                 x(nodeid, 'NOT hasclass lock');
             }
         }
-        x("here4");
-        KFK.removeActionLogByEntry(ope.actionLogAdded);
-        KFK.addActionLogByEntry(ope.actionLogRemoved);
     }
 
     KFK.opz = KFK.opz - 1;
@@ -737,8 +629,6 @@ KFK.redo = () => {
                 jqDIV.droppable('disable');
             }
         }
-        KFK.addActionLogByEntry(ope.actionLogAdded);
-        KFK.removeActionLogByEntry(ope.actionLogRemoved);
     }
     console.log(KFK.opz, KFK.opstack);
 };
@@ -1709,17 +1599,8 @@ KFK.syncNodePut = async function (cmd, jqDIV, reason, jqFrom) {
             return;
         }
 
-        let actionLogAdded = [];
-        let actionLogRemoved = [];
-
         if (cmd === 'C' || cmd === 'U') {
             KFK.addEditorToNode(jqDIV, KFK.APP.model.cocouser.name);
-            KFK.putActionLog(KFK.APP.model.cocouser.name, jqDIV.attr("id"));
-            actionLogAdded.push({ nodeid: jqDIV.attr("id"), editor: KFK.APP.model.cocouser.name });
-            KFK.APP.setData('model', 'actionlog', KFK.getActionLog());
-        } else if (cmd === 'D') {
-            actionLogRemoved = KFK.removeActionLog(jqDIV.attr("id"));
-            KFK.APP.setData('model', 'actionlog', KFK.getActionLog());
         }
         //在服务端更新offline时，用lastupdate做比较
         jqDIV.attr('lastupdate', new Date().getTime());
@@ -1770,8 +1651,6 @@ KFK.syncNodePut = async function (cmd, jqDIV, reason, jqFrom) {
             cmd: cmd,
             from: fromContent,
             to: toContent,
-            actionLogAdded: actionLogAdded,
-            actionLogRemoved: actionLogRemoved
         };
         if (reason !== 'offline_not_undoable') {
             KFK.yarkOpEntry(opEntry);
@@ -2155,7 +2034,9 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
                         unpx(elSmall.style.top) + unpx(elSmall.style.height) < unpx(elBig.style.top) + unpx(elBig.style.height)
                     ) {
                         innerObj.html(newText);
+                        //删掉之前那个被拖动的 
                         KFK.deleteNode(el(ui.draggable));
+                        //更新这个被粘贴的
                         KFK.syncNodePut('U', jqNodeDIV, 'new text', fromJQ);
                     }
                 }
@@ -2214,8 +2095,6 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
                         cmd: 'UNLOCK',
                         from: jqNodeDIV.attr("id"),
                         to: jqNodeDIV.attr("id"),
-                        actionLogAdded: [],
-                        actionLogRemoved: [],
                     };
                     KFK.yarkOpEntry(opEntry);
                     KFK.sendCmd('UNLOCKNODE', { doc_id: KFK.APP.model.cocodoc.doc_id, nodeid: jqNodeDIV.attr("id") });
@@ -2224,8 +2103,6 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
                         cmd: 'LOCK',
                         from: jqNodeDIV.attr("id"),
                         to: jqNodeDIV.attr("id"),
-                        actionLogAdded: [],
-                        actionLogRemoved: [],
                     };
                     KFK.yarkOpEntry(opEntry);
                     KFK.sendCmd('LOCKNODE', { doc_id: KFK.APP.model.cocodoc.doc_id, nodeid: jqNodeDIV.attr("id") });
@@ -2532,6 +2409,7 @@ KFK.deleteNode = function (jqDIV) {
         KFK.selectedDIVs.splice(nodeIndex, 1);
         KFK.selectedLINs.splice(nodeIndex, 1);
     }
+    x("sync D to delete this node");
     KFK.syncNodePut('D', jqDIV, 'delete node');
     jqDIV.remove();
 };
@@ -3443,7 +3321,6 @@ KFK.recreateNodeFromHTML = function (html) {
     } else {
         KFK.cleanNodeEventFootprint(jqDIV);
         KFK.setNodeShowEditor(jqDIV);
-        KFK.collectEditorHisotryFromNode(jqDIV);
         if ($(`#${nodeid}`).length > 0) {
             $(`#${nodeid}`).prop('outerHTML', jqDIV.prop('outerHTML'));
         } else {
@@ -4052,8 +3929,6 @@ KFK.addContainerMainEventHandler = function () {
                         cmd: 'UNLOCK',
                         from: KFK.jqHoverDIV.attr("id"),
                         to: KFK.jqHoverDIV.attr("id"),
-                        actionLogAdded: [],
-                        actionLogRemoved: [],
                     };
                     KFK.yarkOpEntry(opEntry);
                     KFK.sendCmd('UNLOCKNODE', { doc_id: KFK.APP.model.cocodoc.doc_id, nodeid: KFK.jqHoverDIV.attr("id") });
@@ -4062,8 +3937,6 @@ KFK.addContainerMainEventHandler = function () {
                         cmd: 'LOCK',
                         from: KFK.jqHoverDIV.attr("id"),
                         to: KFK.jqHoverDIV.attr("id"),
-                        actionLogAdded: [],
-                        actionLogRemoved: [],
                     };
                     KFK.yarkOpEntry(opEntry);
                     KFK.sendCmd('LOCKNODE', { doc_id: KFK.APP.model.cocodoc.doc_id, nodeid: KFK.jqHoverDIV.attr("id") });
@@ -4410,6 +4283,10 @@ KFK.showActionLog = function () {
     KFK.APP.setData('show', 'actionlog', !KFK.APP.show.actionlog);
 };
 
+KFK.clearActionLog = function(){
+    //TODO: clear action log
+    x("todo clear action log");
+};
 KFK.viewActionLog = function (index) {
     console.log('view actionlog for ', KFK.APP.model.actionlog[index]);
     KFK.APP.setData('show', 'actionlog', false);
