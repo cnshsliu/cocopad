@@ -48,7 +48,7 @@ const app = new Vue({
       ['tip_circle3', 'tip_arrow', 'tip_arrow2', 'tip_arrow3', 'tip_arrow4'],
     ],
     //TODO: 没有用户信息时，显示注册页面而不是登录页面
-    active: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'lock': false },
+    active: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'lock': false, 'minimap':false },
     show: {
       'wsready': false,
       'arrange_multi_nodes': false,
@@ -60,7 +60,7 @@ const app = new Vue({
       'explorer': true,
       'actionlog': false,
       'form': { newdoc: false, newprj: false, prjlist: true, doclist: false, share: false, bottomlinks: false, explorerTabIndex: 0 },
-      'section': { login: false, register: false, explorer: false, designer: false, },
+      'section': { login: false, register: false, explorer: false, designer: false, minimap:true },
       'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false, copyDocDialog: false },
     },
     model: {
