@@ -380,14 +380,14 @@
         </b-button>
       </b-button-group>
       <div id="rtcontrol" class="padlayout noshow">
-        <!-- <b-button-group class="coco">
+        <b-button-group class="coco">
           <b-button id="zoom_in" variant="outline-success" @click="KFK.zoomIn">
             <b-iconstack>
               <b-icon icon="plus" shift-h="-1.1" shift-v="1.1"></b-icon>
               <b-icon icon="search"></b-icon>
             </b-iconstack>
           </b-button>
-          <b-button id="zoom_1" variant="outline-success" @click="KFK.zoomNormal">
+          <b-button id="zoom_1" variant="outline-success" @click="KFK.zoomStop">
             <b-iconstack>
               <b-icon icon="x" shift-h="-1.1" shift-v="1.1"></b-icon>
               <b-icon icon="search"></b-icon>
@@ -399,7 +399,7 @@
               <b-icon icon="search"></b-icon>
             </b-iconstack>
           </b-button>
-          </b-button-group> -->
+        </b-button-group>
         <b-button-group class="coco">
           <b-button id="goto_explorer" variant="outline-success" @click="KFK.gotoExplorer">
             <b-icon icon="folder"></b-icon>
@@ -424,30 +424,30 @@
           <b-list-group-item v-for="(actionlog,index) in model.actionlog" v-bind:index="index" v-bind:key="'hl'+index"
             class="d-flex flex-nowrap text-nowrap">
             <b-container class="m-0 p-0">
-            <b-row class="pb-1">
-              <b-col cols="10" style="width:100px; white-space:nowrap; overflow-x:scroll; overflow-y:hidden;">
-                <img :src="actionlog.avatarSrc" class="avatar-in-line"/>
-                {{actionlog.name}}</b-col>
-              <b-col cols="2">
-                <b-badge variant="primary" pill>{{actionlog.logs.length}}</b-badge>
-              </b-col>
-            </b-row>
-            <b-row>
-              <b-button-group size="sm" class="w-100">
-                <b-button size="sm" @click="KFK.navActionLog(actionlog,  'first')" variant="outline-primary">
-                  <b-icon icon="skip-start-fill" variant="primary"> </b-icon>
-                </b-button>
-                <b-button size="sm" @click="KFK.navActionLog(actionlog,  'prev')" variant="outline-primary">
-                  <b-icon icon="caret-left-fill" variant="primary"> </b-icon>
-                </b-button>
-                <b-button size="sm" @click="KFK.navActionLog(actionlog,  'next')" variant="outline-primary">
-                  <b-icon icon="caret-right-fill" variant="primary"></b-icon>
-                </b-button>
-                <b-button size="sm" @click="KFK.navActionLog(actionlog,  'last')" variant="outline-primary">
-                  <b-icon icon="skip-end-fill" variant="primary"> </b-icon>
-                </b-button>
-              </b-button-group>
-            </b-row>
+              <b-row class="pb-1">
+                <b-col cols="10" style="width:100px; white-space:nowrap; overflow-x:scroll; overflow-y:hidden;">
+                  <img :src="actionlog.avatarSrc" class="avatar-in-line" />
+                  {{actionlog.name}}</b-col>
+                <b-col cols="2">
+                  <b-badge variant="primary" pill>{{actionlog.logs.length}}</b-badge>
+                </b-col>
+              </b-row>
+              <b-row>
+                <b-button-group size="sm" class="w-100">
+                  <b-button size="sm" @click="KFK.navActionLog(actionlog,  'first')" variant="outline-primary">
+                    <b-icon icon="skip-start-fill" variant="primary"> </b-icon>
+                  </b-button>
+                  <b-button size="sm" @click="KFK.navActionLog(actionlog,  'prev')" variant="outline-primary">
+                    <b-icon icon="caret-left-fill" variant="primary"> </b-icon>
+                  </b-button>
+                  <b-button size="sm" @click="KFK.navActionLog(actionlog,  'next')" variant="outline-primary">
+                    <b-icon icon="caret-right-fill" variant="primary"></b-icon>
+                  </b-button>
+                  <b-button size="sm" @click="KFK.navActionLog(actionlog,  'last')" variant="outline-primary">
+                    <b-icon icon="skip-end-fill" variant="primary"> </b-icon>
+                  </b-button>
+                </b-button-group>
+              </b-row>
             </b-container>
           </b-list-group-item>
         </b-list-group>
@@ -824,6 +824,7 @@
     </div> <!-- explorer -->
   </div>
   <div id="copydiv" style="display: none; z-index: -99999"></div>
+  <did id="centerpoint" class='centerpoint noshow' />
   <script src="./pad.js"></script>
 </body>
 

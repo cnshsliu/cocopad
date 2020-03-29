@@ -52,6 +52,8 @@ const OSSClient = new OSS({
   bucket: config.vault.bucket
 });
 const KFK = {};
+KFK.isZooming = false;
+KFK.designerConf = { scaleX: 1, scaleY: 1, left: 0, top: 0 };
 KFK.opstack = [];
 KFK.opstacklen = 10;
 KFK.opz = -1;
@@ -178,7 +180,11 @@ $(document).mousemove(function (event) {
   if (KFK.docLocked()) return;
 
   //支持按下鼠标， 框选多个node
-  if (KFK.mode === "pointer" && KFK.mouseIsDown && (KFK.lineMoverDragging=== false)) {
+  if (
+    KFK.mode === "pointer" &&
+    KFK.mouseIsDown &&
+    KFK.lineMoverDragging === false
+  ) {
     KFK.warn(
       `框选 ${JSON.stringify(KFK.dragToSelectFrom)} - ${JSON.stringify(
         KFK.dragToSelectTo
@@ -397,15 +403,15 @@ KFK.log = function (msg) {
 };
 
 KFK.warn = function (msg) {
-  let parent = $('#MSG').parent();
-  let msgDIV = $('#MSG');
-  let cloneDIV = $('#fadeoutmsg');
-  if(cloneDIV.length>0){
+  let parent = $("#MSG").parent();
+  let msgDIV = $("#MSG");
+  let cloneDIV = $("#fadeoutmsg");
+  if (cloneDIV.length > 0) {
     cloneDIV.remove();
   }
 
   cloneDIV = msgDIV.clone().appendTo(parent);
-  cloneDIV.attr('id', 'fadeoutmsg');
+  cloneDIV.attr("id", "fadeoutmsg");
   cloneDIV.html(msg);
   cloneDIV.fadeOut(4000, function () {
     cloneDIV.remove();
@@ -618,11 +624,11 @@ KFK.undo = () => {
       let nodeid = jqTo.attr("id");
       jqTo = $(`#${nodeid}`);
       if (jqTo.hasClass("kfknode")) {
-        jqTo.draggable("disable");
-        jqTo.resizable("destroy");
-        jqTo.droppable("disable");
+        KFK.setNodeEvent(jqTo, "resizable", "destroy");
+        KFK.setNodeEvent(jqTo, "droppable", "destroy");
+        KFK.setNodeEvent(jqTo, "draggable", "destroy");
       }
-      KFK.syncNodePut('D', jqTo, 'undo', null, true);
+      KFK.syncNodePut("D", jqTo, "undo", null, true);
       jqTo.remove();
       console.log("to node", nodeid, "was removed");
     }
@@ -637,14 +643,13 @@ KFK.undo = () => {
         KFK.setNodeEventHandler(jqFrom);
       }
       if (jqFrom.hasClass("lock")) {
-        x(nodeid, "hasclass lock, disable draggable");
-        jqFrom.draggable("disable");
-        jqFrom.resizable("disable");
-        jqFrom.droppable("disable");
+        KFK.setNodeEvent(jqFrom, "draggable", "destroy");
+        KFK.setNodeEvent(jqFrom, "resizable", "destroy");
+        KFK.setNodeEvent(jqFrom, "droppable", "destroy");
       } else {
         x(nodeid, "NOT hasclass lock");
       }
-      KFK.syncNodePut('C', jqFrom, 'undo', null, true);
+      KFK.syncNodePut("C", jqFrom, "undo", null, true);
     }
   }
 
@@ -672,7 +677,7 @@ KFK.redo = () => {
       let jqFrom = $($.parseHTML(ope.from));
       let nodeid = jqFrom.attr("id");
       jqFrom = $(`#${nodeid}`);
-      KFK.syncNodePut('D', jqFrom, 'redo', null, true);
+      KFK.syncNodePut("D", jqFrom, "redo", null, true);
       jqFrom.remove();
     }
     if (ope.to !== "") {
@@ -688,7 +693,7 @@ KFK.redo = () => {
         jqTo.resizable("disable");
         jqTo.droppable("disable");
       }
-      KFK.syncNodePut('C', jqTo, 'redo', null, true);
+      KFK.syncNodePut("C", jqTo, "redo", null, true);
     }
   }
 };
@@ -715,8 +720,17 @@ KFK.initC3 = function () {
   // c3Stages.style.zIndex = "10";
 
   //click c3  click C3 click canvas click background
+  $(c3).dblclick(function (e) {
+    if (KFK.isZooming === true) {
+      KFK.zoomStop();
+    }
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    e.stopPropagation();
+  });
   $(c3).on("click", function (e) {
     if (KFK.inDesigner() === false) return;
+    e.preventDefault();
     KFK.closeActionLog();
     if (KFK.ignoreClick) return;
 
@@ -786,8 +800,9 @@ KFK.initC3 = function () {
     e.preventDefault();
   });
 
-  $(c3).on("mousemove", function (event) {
+  $(c3).on("mousemove", function (e) {
     if (KFK.inDesigner() === false) return;
+    e.preventDefault();
     // console.log('C3 moving badge');
     KFK.showUserMovingBadge(
       KFK.APP.model.cocouser,
@@ -1325,7 +1340,13 @@ KFK.initLineMover = function () {
             options
           );
         }
-        KFK.syncNodePut("D", KFK.tobeTransformJqLine, " delete old line", null, false);
+        KFK.syncNodePut(
+          "D",
+          KFK.tobeTransformJqLine,
+          " delete old line",
+          null,
+          false
+        );
         KFK.tobeTransformJqLine.remove();
         KFK.tobeTransformJqLine = tmp;
         KFK.tobeTransformJqLine.addClass("shadow2");
@@ -1765,7 +1786,7 @@ KFK.syncNodePut = async function (cmd, jqDIV, reason, jqFrom, isUndoRedo) {
       if (reason !== "offline_not_undoable") {
         KFK.yarkOpEntry(opEntry);
       }
-    }else{
+    } else {
       x("syncNodePut undoredo", payload);
     }
 
@@ -1828,7 +1849,7 @@ KFK.getLastSelectedNode = function () {
 };
 
 KFK.anyLocked = function (jqNode) {
-  return KFK.docLocked() || KFK.nodeLocked(jqNode);
+  return KFK.docLocked() || KFK.nodeLocked(jqNode) || KFK.isZooming;
 };
 
 KFK.notAnyLocked = function (jqNode) {
@@ -1879,7 +1900,8 @@ KFK._setTipBkgImage = function (nodeDIV, svgid, svgcolor) {
 KFK.setTipBkgColor = function (theNode, bgColor) {
   KFK.fromJQ = $(theNode).clone();
   let ret = KFK._setTipBkgColor(theNode, bgColor);
-  if (ret) KFK.syncNodePut("U", $(theNode), "change bkg color", KFK.fromJQ, false);
+  if (ret)
+    KFK.syncNodePut("U", $(theNode), "change bkg color", KFK.fromJQ, false);
 };
 
 KFK._setTipBkgColor = function (theNode, bgColor) {
@@ -1887,7 +1909,12 @@ KFK._setTipBkgColor = function (theNode, bgColor) {
     console.warn("setTipBkgColor to null nodeDIV");
     return;
   }
-   console.log('setTipBkgColor for ' + theNode.getAttribute('nodetype') + " " + theNode.getAttribute("variant"));
+  console.log(
+    "setTipBkgColor for " +
+      theNode.getAttribute("nodetype") +
+      " " +
+      theNode.getAttribute("variant")
+  );
   let svgImg = $(theNode).find(".tip_bkg .svg_main_path");
   if (svgImg.length > 0) {
     svgImg.attr("fill", bgColor);
@@ -2009,6 +2036,20 @@ KFK.getShapeDynamicDefaultSize = function (nodeType, variant) {
   return ret;
 };
 
+KFK.setNodeEvent = function (jqNode, type, cmd) {
+  if (type === "resizable") {
+    if (config.node[jqNode.attr("nodetype")].resizable) {
+      jqNode.resizable(cmd);
+    }
+  } else if (type === "droppable") {
+    if (config.node[jqNode.attr("nodetype")].droppable) {
+      jqNode.droppable(cmd);
+    }
+  } else if (type === "draggable") {
+    jqNode.draggable(cmd);
+  }
+};
+//TODO: do not send mouse in zoom mode
 KFK.setNodeEventHandler = function (jqNodeDIV) {
   jqNodeDIV.addClass("kfknode");
   let nodeDIV = el(jqNodeDIV);
@@ -2017,12 +2058,14 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
     jqNodeDIV.resizable({
       autoHide: true,
       start: () => {
+        if (KFK.isZooming) return;
         console.log("Start Resizing...");
         KFK.fromJQ = jqNodeDIV.clone();
         KFK.resizing = true;
       },
       resize: () => {},
       stop: () => {
+        if (KFK.isZooming) return;
         x("Stop Resizing...");
         if (KFK.APP.model.snap) {
           let tmpRight = KFK.nodeRight(nodeDIV);
@@ -2096,6 +2139,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
   jqNodeDIV.draggable({
     scroll: true,
     start: (event, ui) => {
+      if (KFK.isZooming) return;
       // console.log('Start node dragging...')
       KFK.fromJQ = jqNodeDIV.clone();
       event.stopImmediatePropagation();
@@ -2110,6 +2154,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
     },
     drag: (event, ui) => {},
     stop: (event, ui) => {
+      if (KFK.isZooming) return;
       KFK.dragging = false;
       if (KFK.APP.model.snap) {
         let tmpLeft = KFK.nodeLeft(el(jqNodeDIV));
@@ -2188,6 +2233,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
       hoverClass: "ui-state-active",
       accept: ".kfknode",
       drop: (event, ui) => {
+        if (KFK.isZooming) return;
         // console.log(`dropped, locMode = ${KFK.lockMode}`);
         //lockMode时可以Marge
         if (KFK.lockMode === false) return;
@@ -2212,7 +2258,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
           ) {
             innerObj.html(newText);
             //删掉之前那个被拖动的
-            KFK.deleteNode(el(ui.draggable));
+            KFK._deleteNode(el(ui.draggable));
             //更新这个被粘贴的
             KFK.syncNodePut("U", jqNodeDIV, "new text", fromJQ, false);
           }
@@ -2246,6 +2292,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
   //click node
   jqNodeDIV.click(e => {
     // console.log('click on nodeDIV');
+    if (KFK.isZooming) return;
     KFK.afterDragging = false;
     KFK.afterResizing = false;
     let selDIV = el(jqNodeDIV);
@@ -2301,6 +2348,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
   });
 
   jqNodeDIV.dblclick(function (e) {
+    if (KFK.isZooming) return;
     if (
       getBoolean(jqNodeDIV.attr("edittable")) &&
       KFK.notAnyLocked(jqNodeDIV)
@@ -2359,6 +2407,7 @@ KFK.nodeRect = function (aNode) {
 };
 
 KFK.alignNodes = function (direction) {
+  if (KFK.isZooming) return;
   if (KFK.selectedDIVs.length < 2) return;
   let hasOneLocked = false;
   KFK.selectedDIVs.forEach(aNode => {
@@ -2549,6 +2598,7 @@ KFK.offsetLineDataAttr = function (lineDIV, offset) {
 };
 
 KFK.moveNodeByArrowKey = function (e) {
+  if (KFK.isZooming) return;
   let DELTA = 5;
   if (e.shiftKey && e.ctrlKey) DELTA = 20;
   else if (e.shiftKey) DELTA = 1;
@@ -2577,7 +2627,7 @@ KFK.moveNodeByArrowKey = function (e) {
   e.stopPropagation();
 };
 
-KFK.deleteNode = function (jqDIV) {
+KFK._deleteNode = function (jqDIV) {
   $(KFK.C3)
     .find(".kfkline")
     .each((index, aLinkDiv) => {
@@ -2587,7 +2637,13 @@ KFK.deleteNode = function (jqDIV) {
         aLinkDiv.getAttribute("tdiv") === jqDIV.attr("id")
       ) {
         //link div不会放入selectedDIVs, 因此也不用去从中删除
-        KFK.syncNodePut("D", $(aLineDiv), "delete line for deleting node", null, false);
+        KFK.syncNodePut(
+          "D",
+          $(aLineDiv),
+          "delete line for deleting node",
+          null,
+          false
+        );
         $(aLinkDiv).remove();
       }
     });
@@ -2627,19 +2683,21 @@ KFK.deleteNode = function (jqDIV) {
 };
 
 KFK.deleteHoverDiv = function (e) {
+  if (KFK.isZooming) return;
   if (KFK.jqHoverDIV) {
     if (KFK.anyLocked(KFK.jqHoverDIV)) return;
-    KFK.deleteNode(KFK.jqHoverDIV);
+    KFK._deleteNode(KFK.jqHoverDIV);
     KFK.jqHoverDIV = null;
   } else if (KFK.jqHoverLine) {
     if (KFK.anyLocked(KFK.jqHoverLine)) return;
-    KFK.deleteNode(KFK.jqHoverLine);
+    KFK._deleteNode(KFK.jqHoverLine);
     KFK.jqHoverLine = null;
   }
 };
 
 KFK.duplicateHoverDiv = function (e) {
   if (KFK.docLocked()) return;
+  if (KFK.isZooming) return;
   let offset = { x: 0, y: 0 };
   if (KFK.jqHoverDIV) {
     KFK.divToCopy = el(KFK.jqHoverDIV);
@@ -2800,42 +2858,6 @@ KFK.createConnect = function (link) {
   return connect;
 };
 
-KFK.removeLink = function (from, to) {
-  let foundOneDirection = false;
-  for (var i = 0; i < KFK.links.length; i++) {
-    if (
-      (from === null && KFK.links[i].to === to) ||
-      (KFK.links[i].from === from && to === null) ||
-      (KFK.links[i].from === from && KFK.links[i].to === to)
-    ) {
-      let theConn = KFK.findConnect(KFK.links[i].id);
-      theConn.destroy();
-      KFK.links.splice(i, 1);
-      foundOneDirection = true;
-      break;
-    }
-  }
-  return foundOneDirection;
-};
-
-KFK.removeTipLink = function (from, to) {
-  let foundOneDirection = false;
-  for (var i = 0; i < KFK.tipLinks.length; i++) {
-    if (
-      (from === null && KFK.tipLinks[i].to === to) ||
-      (KFK.tipLinks[i].from === from && to === null) ||
-      (KFK.tipLinks[i].from === from && KFK.tipLinks[i].to === to)
-    ) {
-      let theConn = KFK.findConnect(KFK.tipLinks[i].id);
-      theConn.destroy();
-      KFK.tipLinks.splice(i, 1);
-      foundOneDirection = true;
-      break;
-    }
-  }
-  return foundOneDirection;
-};
-
 KFK.scrollX = function (x) {
   return x + KFK.scrollContainer.scrollLeft();
 };
@@ -2859,14 +2881,6 @@ KFK.init = async function () {
     }
   });
 
-  let s1 = "hello <p>大家好</p>world";
-  console.log(s1);
-  s1 = KFK.codeToBase64(s1);
-  console.log(s1);
-  s1 = KFK.base64ToCode(s1);
-  console.log(s1);
-  console.log(KFK.avatars);
-
   $("#left_menu").removeClass("noshow");
   await WS.start(KFK.onWsConnected, KFK.onWsMsg, 500);
 };
@@ -2882,6 +2896,7 @@ KFK.onWsConnected = function () {
     KFK.initPropertyForm();
     KFK.initLineMover();
     KFK.initColorPicker();
+    KFK.showCenterIndicator();
     // clear footprint
     // localStorage.removeItem('cocouser');
     // localStorage.removeItem('cocoprj');
@@ -2924,7 +2939,6 @@ KFK.showDialog = function (options) {
 KFK.checkUser = function (isAfterLogin) {
   let cocouser = localStorage.getItem("cocouser");
   if (cocouser) {
-    console.log("find cocouser in local " + cocouser);
     cocouser = JSON.parse(cocouser);
     cocouser.localSessionId = myuid();
     KFK.APP.setData("model", "cocouser", cocouser);
@@ -2956,10 +2970,13 @@ KFK.checkUser = function (isAfterLogin) {
 
 KFK.refreshDesigner = function (doc_id, docpwd) {
   KFK.JC3.empty();
+  let main = $("#containermain");
+  main.css("transform", "scale(1, 1)");
+  KFK.isZooming = false;
 
   KFK.opstack.splice(0, KFK.opstacklen);
   KFK.opz = -1;
-  KFK.clearActionLog();
+  KFK.setAppData("model", "actionlog", []);
 
   KFK.showSection({
     login: false,
@@ -2998,7 +3015,7 @@ KFK.showConsole = function () {
   let currentprj = localStorage.getItem("cocoprj");
   if (!getNull(currentprj)) {
     let prj = JSON.parse(currentprj);
-    console.log("Find local project " + prj.prjid + " " + prj.name);
+    // console.log("Find local project " + prj.prjid + " " + prj.name);
     let found = -1;
     for (let i = 2; i < KFK.APP.model.prjs.length; i++) {
       if (prj.prjid === KFK.APP.model.prjs[i].prjid) {
@@ -3257,14 +3274,18 @@ KFK._onDocLoaded = function () {
   KFK.initShowEditors("none");
   KFK.startPadDesigner();
   KFK.APP.setData("model", "docLoaded", true);
+  console.log("here1");
   if (KFK.APP.model.cocodoc.readonly) {
+    console.log("here2");
     $("#linetransformer").draggable("disable");
     $("#right").toggle("slide", { duration: 100, direction: "right" });
     $("#left").toggle("slide", { duration: 100, direction: "left" });
     $("#top").toggle("slide", { duration: 100, direction: "left" });
   } else {
+    console.log("here3");
     $("#linetransformer").draggable("enable");
   }
+  console.log("here4");
 };
 
 KFK.startPadDesigner = function () {
@@ -3278,6 +3299,7 @@ KFK.startPadDesigner = function () {
   $(".padlayout").fadeIn(1000, function () {
     // Animation complete
   });
+  x(">>>>>>padDesigner done");
 };
 
 KFK.onWsMsg = function (data) {
@@ -3288,7 +3310,7 @@ KFK.onWsMsg = function (data) {
   if (!data.payload) {
     return;
   }
-
+  console.log(data.payload.cmd);
   switch (data.payload.cmd) {
     case "IFEXIST-TRUE":
       console.log("IFEXIST-TRUE");
@@ -3395,12 +3417,9 @@ KFK.onWsMsg = function (data) {
         }
       });
       if (data.payload.doc_id === KFK.APP.model.cocodoc.doc_id) {
-        KFK.APP.model.cocodoc.readonly = doc.readonly;
+        KFK.APP.model.cocodoc.readonly = data.payload.readonly;
         KFK.APP.setData("model", "cocodoc", KFK.APP.model.cocodoc);
-        localStorage.setItem(
-          "cocodoc",
-          JSON.stringify(KFK.APP.model.cocodoc.doc_id)
-        );
+        localStorage.setItem("cocodoc", JSON.stringify(KFK.APP.model.cocodoc));
       }
       break;
     case "NEWPRJ":
@@ -3426,7 +3445,6 @@ KFK.onWsMsg = function (data) {
     case "LISTDOC":
       KFK.APP.setData("model", "listdocoption", data.payload.option);
       let docs = data.payload.data;
-      console.log("LISTDOC");
       docs.forEach(doc => {
         if (doc.pwd === "") {
           doc.security_icon = "blank";
@@ -3446,18 +3464,17 @@ KFK.onWsMsg = function (data) {
           doc.ownerAvatarSrc = KFK.avatars[doc.ownerAvatar].src;
         }
       });
-      console.log(docs);
       KFK.APP.setData("model", "docs", docs);
       break;
-    case 'GETBLKOPS':
+    case "GETBLKOPS":
       let blkops = data.payload.data;
-      blkops.forEach(blkop=>{
-        if(blkop.avatar !== ""){
+      blkops.forEach(blkop => {
+        if (blkop.avatar !== "") {
           blkop.avatarSrc = KFK.avatars[blkop.avatar].src;
         }
         blkop.pos = -1;
       });
-      KFK.setAppData('model',  'actionlog', blkops);
+      KFK.setAppData("model", "actionlog", blkops);
       break;
     case "LISTPRJ":
       KFK.APP.setData("model", "listprjoption", data.payload.option);
@@ -3465,7 +3482,6 @@ KFK.onWsMsg = function (data) {
       // let skip = option.skip;
       // let count = option.count;
       let prjs = data.payload.data;
-      console.log(prjs);
       prjs.unshift({
         _id: "mine",
         prjid: "mine",
@@ -3493,10 +3509,8 @@ KFK.onWsMsg = function (data) {
       KFK.resetNodeZIndex(data.payload.data);
       break;
     case "LOCKNODE":
-      KFK.NodeController.lock(
-        $(`#${data.payload.data.nodeid}`),
-        KFK.putOpActionEntry
-      );
+      console.log("------------GOT LOCKNODE, LOCK IT-----");
+      KFK.NodeController.lock($(`#${data.payload.data.nodeid}`));
       break;
     case "UNLOCKNODE":
       KFK.NodeController.unlock($(`#${data.payload.data.nodeid}`));
@@ -3574,7 +3588,6 @@ KFK.setDocReadonly = async function (doc, index, event) {
 };
 
 KFK.prjRowClickHandler = function (record, index) {
-  console.log(record);
   KFK.APP.setData("model", "project", {
     prjid: record.prjid,
     name: record.name
@@ -3601,7 +3614,6 @@ KFK.sendCmd = async function (cmd, payload) {
 };
 
 KFK.docRowClickHandler = function (record, index) {
-  console.log(record);
   if (record.pwd === "*********") {
     console.log("ask for password");
     KFK.APP.setData("model", "opendocpwd", "");
@@ -3683,8 +3695,6 @@ KFK.recreateNodeFromHTML = function (html) {
   let nodeid = jqDIV.attr("id");
   if (nodeid === "document") {
     //在handlers.js 中，第一个进入doc时，返回document的doc_id和name
-    console.log("GOT DOCUMENT");
-    console.log(html);
     let docRet = {
       doc_id: jqDIV.attr("doc_id"),
       name: jqDIV.attr("name"),
@@ -3710,11 +3720,13 @@ KFK.recreateNodeFromHTML = function (html) {
     jqDIV = $(`#${nodeid}`);
 
     if (jqDIV.hasClass("kfknode")) {
-      KFK.setNodeEventHandler(jqDIV);
       if (isALockedNode) {
         KFK.NodeController.lock(jqDIV);
-      } else if (KFK.APP.model.cocodoc.readonly) {
-        KFK.NodeController.removeEventListenerOnly(jqDIV);
+      }
+      if (KFK.APP.model.cocodoc.readonly) {
+        //KFK.NodeController.removeEventListenerOnly(jqDIV);
+      } else {
+        KFK.setNodeEventHandler(jqDIV);
       }
     } else if (jqDIV.hasClass("kfkline")) KFK.setLineEventHandler(jqDIV);
   }
@@ -3791,7 +3803,13 @@ KFK.initPropertyForm = function () {
         let options = KFK.getLineOptions(KFK.pickedJqLine);
         options.stroke = ui.value;
         KFK.setLineOptions(KFK.pickedJqLine, options);
-        KFK.syncNodePut("U", KFK.pickedJqLine, "set line width", KFK.fromJQ, false);
+        KFK.syncNodePut(
+          "U",
+          KFK.pickedJqLine,
+          "set line width",
+          KFK.fromJQ,
+          false
+        );
       }
     }
   });
@@ -3960,7 +3978,13 @@ KFK.initColorPicker = function () {
       if (jqNode != null && KFK.notAnyLocked(jqNode)) {
         KFK.fromJQ = jqNode.clone();
         jqNode.css("border-color", color.toRgbString());
-        KFK.syncNodePut("U", jqNode, "set node border-color", KFK.fromJQ, false);
+        KFK.syncNodePut(
+          "U",
+          jqNode,
+          "set node border-color",
+          KFK.fromJQ,
+          false
+        );
       }
     }
   });
@@ -3983,7 +4007,13 @@ KFK.initColorPicker = function () {
         let options = KFK.getLineOptions(KFK.pickedJqLine);
         options.color = rgb;
         KFK.setLineOptions(KFK.pickedJqLine, options);
-        KFK.syncNodePut("U", KFK.pickedJqLine, "set line color", KFK.fromJQ, false);
+        KFK.syncNodePut(
+          "U",
+          KFK.pickedJqLine,
+          "set line color",
+          KFK.fromJQ,
+          false
+        );
       }
     }
   });
@@ -4026,7 +4056,13 @@ KFK.initColorPicker = function () {
       if (theNode != null && KFK.notAnyLocked($(theNode))) {
         KFK.fromJQ = $(theNode).clone();
         KFK.setTipBkgColor(theNode, rgb);
-        KFK.syncNodePut("U", $(theNode), "set tip bkg color", KFK.fromJQ, false);
+        KFK.syncNodePut(
+          "U",
+          $(theNode),
+          "set tip bkg color",
+          KFK.fromJQ,
+          false
+        );
       }
     }
   });
@@ -4207,10 +4243,12 @@ KFK.addContainerMainEventHandler = function () {
   $("#containermain").focus();
   $(document).keydown(function (e) {
     if (KFK.inDesigner() === false) return;
-
     // console.log(e.keyCode);
     let preventDefault = false;
     if (KFK.editting) return;
+    if (KFK.isZooming) return;
+
+    e.preventDefault();
     if (e.keyCode === 16) {
       //Shift
       KFK.lockMode = KFK.lockMode ? false : true;
@@ -4235,6 +4273,9 @@ KFK.addContainerMainEventHandler = function () {
       }
     } else if (e.keyCode === 27) {
       //ESC
+      if (KFK.isZooming === true) {
+        KFK.zoomStop();
+      }
       KFK.selectNone();
       if (!KFK.editting && KFK.mode !== "line") KFK.setMode("pointer");
       if (KFK.lineTemping) {
@@ -4428,7 +4469,6 @@ KFK.addContainerMainEventHandler = function () {
         );
         let deltaX = tmp.x - KFK.scrollContainer.scrollLeft();
         let deltaY = tmp.y - KFK.scrollContainer.scrollTop();
-        // KFK.drawGridlines(deltaX, deltaY);
         timer = null;
       }, 500);
     }
@@ -4439,13 +4479,23 @@ KFK.toggleRight = function (flag) {
   $("#right").toggle("slide", { duration: 100, direction: "right" });
 };
 
-KFK.toggleFullScreen = function (flag) {
+KFK.toggleFullScreen = function (event) {
   let leftdisplay = $("#left").css("display");
   let rightdisplay = $("#right").css("display");
+  KFK.log(leftdisplay + " " + rightdisplay);
   $("#left").toggle("slide", { duration: 100, direction: "left" });
   $("#top").toggle("slide", { duration: 100, direction: "left" });
   if (leftdisplay === rightdisplay)
     $("#right").toggle("slide", { duration: 100, direction: "right" });
+};
+KFK.showHidePanel = function (flag) {
+  if (flag === true) {
+    $("#left").css("display", "block");
+    $("#right").css("display", "block");
+  } else {
+    $("#left").css("display", "none");
+    $("#right").css("display", "none");
+  }
 };
 
 KFK.gotoExplorer = function () {
@@ -4543,19 +4593,29 @@ KFK.save = async function () {
 };
 
 KFK.addTextToHoverDIV = function (text) {
-  if (KFK.jqHoverDIV) {
+  if (KFK.jqHoverDIV ) {
+    if(KFK.anyLocked(KFK.jqHoverDIV)) return;
+    if(KFK.isZooming) return;
+
     if (config.node[KFK.jqHoverDIV.attr("nodetype")].edittable) {
       KFK.fromJQ = KFK.jqHoverDIV.clone();
       let innerObj = KFK.jqHoverDIV.find(".innerobj");
       let oldText = innerObj.html();
       let newText = oldText + "<BR> " + text;
       innerObj.html(newText);
-      KFK.syncNodePut("U", KFK.jqHoverDIV, "add text to hover div", KFK.fromJQ, false);
+      KFK.syncNodePut(
+        "U",
+        KFK.jqHoverDIV,
+        "add text to hover div",
+        KFK.fromJQ,
+        false
+      );
     }
   }
 };
 
 document.onpaste = function (event) {
+  if(KFK.docLocked() || KFK.isZooming) return;
   var items = (event.clipboardData || event.originalEvent.clipboardData).items;
   if (items[1]) {
     if (items[0].kind === "string" && items[1].kind === "string") {
@@ -4633,95 +4693,191 @@ KFK.getNodeEditors = function (jqNode) {
 };
 
 KFK.changeSVGFill = function () {};
-
+KFK.scrCenter = function () {
+  return { x: $(window).width() * 0.5, y: $(window).height() * 0.5 };
+};
+KFK.showCenterIndicator = function (cx, cy) {
+  let center = KFK.scrCenter();
+  let centerX = cx ? cx : center.x;
+  let centerY = cy ? cy : center.y;
+  $("#centerpoint").css("left", centerX - 10);
+  $("#centerpoint").css("top", centerY - 10);
+};
 KFK.zoomIn = function () {
-  if (KFK.zoomFactor >= 15) return;
-  let ratio = 0.2;
-  KFK.zoomFactor += 1;
-  let tmp = 1 + KFK.zoomFactor * ratio;
-  console.log("zoom ratio ", KFK.zoomFactor, tmp);
-  KFK.APP.setData("model", "gridWidth", KFK.APP.model.defaultGridWidth * tmp);
+  KFK.zoomStart("in");
+  if (KFK.designerConf.scaleX > 4) return;
   let main = $("#containermain");
   let scroller = $("#scroll-container");
-  let scaledW = tmp * 8420;
-  let scaledH = tmp * 5950;
-  let deltaW = KFK.zoomFactor * ratio * 8420;
-  let deltaH = KFK.zoomFactor * ratio * 5950;
-  let newLeft = deltaW * 0.5;
-  let newTop = deltaH * 0.5;
 
-  let scrCenterX = scroller.width() * 0.5 + scroller.scrollLeft();
-  let scrCenterY = scroller.height() * 0.5 + scroller.scrollTop();
-  console.log(scroller.width(), scroller.height(), scrCenterX, scrCenterY);
-  let dx = scrCenterX * ratio;
-  let dy = scrCenterY * ratio;
-  offX = scroller.scrollLeft() + dx;
-  offY = scroller.scrollTop() + dy;
+  let scaleBy = 1.1;
+  let oldScaleX = KFK.designerConf.scaleX;
+  let oldScaleY = KFK.designerConf.scaleY;
+  let newScaleX = oldScaleX * scaleBy;
+  let newScaleY = oldScaleY * scaleBy;
+  KFK.designerConf.scaleX = newScaleX;
+  KFK.designerConf.scaleY = newScaleY;
+  let scrCenter = KFK.scrCenter();
 
-  main.css("left", newLeft);
-  main.css("top", newTop);
-  main.css("transform", `scale(${tmp}, ${tmp})`);
-  console.log(offX, offY);
+  KFK.showCenterIndicator(scrCenter.x, scrCenter.y);
+  if (newScaleX >= 1) {
+    let physicalX = (scroller.scrollLeft() + scrCenter.x) / oldScaleX;
+    let physicalY = (scroller.scrollTop() + scrCenter.y) / oldScaleY;
 
-  scroller.scrollLeft(offX);
-  scroller.scrollTop(offY);
+    let newLeft = (newScaleX - 1) * 8420 * 0.5;
+    let newTop = (newScaleY - 1) * 5950 * 0.5;
+    main.css("left", newLeft);
+    main.css("top", newTop);
+    main.css("transform", `scale(${newScaleX}, ${newScaleY})`);
+    KFK.designerConf.left = newLeft;
+    KFK.designerConf.top = newTop;
+
+    let tmpX = physicalX * newScaleX - scrCenter.x;
+    let tmpY = physicalY * newScaleY - scrCenter.y;
+    scroller.scrollLeft(tmpX);
+    scroller.scrollTop(tmpY);
+  } else {
+    let tmpX =
+      (1 - newScaleX) * 8420 * 0.5 +
+      $(window).width() * newScaleX * 0.5 -
+      $(window).width() * 1 * 0.5;
+    let tmpY =
+      (1 - newScaleY) * 5950 * 0.5 +
+      $(window).height() * newScaleY * 0.5 -
+      $(window).height() * 1 * 0.5;
+    main.css("left", -tmpX);
+    main.css("top", -tmpY);
+    main.css("transform", `scale(${newScaleX}, ${newScaleY})`);
+    let sx = (scroller.scrollLeft() / oldScaleX) * newScaleX;
+    let sy = (scroller.scrollTop() / oldScaleY) * newScaleY;
+    scroller.scrollLeft(sx);
+    scroller.scrollTop(sy);
+  }
 };
-
-KFK.zoomNormal = function () {
-  let main = $("#containermain");
-  let tmp = 1 + KFK.zoomFactor * 0.1;
-  KFK.APP.setData("model", "gridWidth", KFK.APP.model.defaultGridWidth);
-  let scroller = $("#scroll-container");
-  let scaledW = tmp * 8420;
-  let scaledH = tmp * 5950;
-  let newLeft = 0;
-  let newTop = 0;
-
-  let scrCenterX = scroller.width() * 0.5 + scroller.scrollLeft();
-  let scrCenterY = scroller.height() * 0.5 + scroller.scrollTop();
-
-  let offX = (scrCenterX / scaledW) * 8420 - scroller.width() * 0.5;
-  let offY = (scrCenterY / scaledH) * 5950 - scroller.height() * 0.5;
-
-  main.css("left", newLeft);
-  main.css("top", newTop);
-  main.css("transform", `scale(1, 1)`);
-
-  scroller.scrollLeft(offX);
-  scroller.scrollTop(offY);
-
-  KFK.zoomFactor = 0;
-};
-
 KFK.zoomOut = function () {
-  if (KFK.zoomFactor <= -8) return;
-  KFK.zoomFactor -= 1;
-  let tmp = 1 + KFK.zoomFactor * 0.1;
-  KFK.APP.setData("model", "gridWidth", KFK.APP.model.defaultGridWidth * tmp);
+  KFK.zoomStart("out");
+  if (KFK.designerConf.scaleX < 0.25) return;
   let main = $("#containermain");
   let scroller = $("#scroll-container");
-  let scaledW = tmp * 8420;
-  let scaledH = tmp * 5950;
-  let deltaW = KFK.zoomFactor * 0.1 * 8420;
-  let deltaH = KFK.zoomFactor * 0.1 * 5950;
-  let newLeft = deltaW * 0.5;
-  let newTop = deltaH * 0.5;
 
-  let scrCenterX = scroller.width() * 0.5 + scroller.scrollLeft();
-  let scrCenterY = scroller.height() * 0.5 + scroller.scrollTop();
-  console.log(scroller.width(), scroller.height(), scrCenterX, scrCenterY);
-  let dx = scrCenterX * 0.1;
-  let dy = scrCenterY * 0.1;
-  offX = scroller.scrollLeft() - dx;
-  offY = scroller.scrollTop() - dy;
+  let scaleBy = 1.1;
+  let oldScaleX = KFK.designerConf.scaleX;
+  let oldScaleY = KFK.designerConf.scaleY;
+  let newScaleX = oldScaleX / scaleBy;
+  let newScaleY = oldScaleY / scaleBy;
+  KFK.designerConf.scaleX = newScaleX;
+  KFK.designerConf.scaleY = newScaleY;
+  let scrCenter = KFK.scrCenter();
 
-  main.css("left", newLeft);
-  main.css("top", newTop);
-  main.css("transform", `scale(${tmp}, ${tmp})`);
-  console.log(offX, offY);
+  KFK.showCenterIndicator(scrCenter.x, scrCenter.y);
+  if (newScaleX >= 1) {
+    let physicalX = (scroller.scrollLeft() + scrCenter.x) / oldScaleX;
+    let physicalY = (scroller.scrollTop() + scrCenter.y) / oldScaleY;
 
-  scroller.scrollLeft(offX);
-  scroller.scrollTop(offY);
+    let newLeft = (newScaleX - 1) * 8420 * 0.5;
+    let newTop = (newScaleY - 1) * 5950 * 0.5;
+    main.css("left", newLeft);
+    main.css("top", newTop);
+    main.css("transform", `scale(${newScaleX}, ${newScaleY})`);
+    KFK.designerConf.left = newLeft;
+    KFK.designerConf.top = newTop;
+
+    let tmpX = physicalX * newScaleX - scrCenter.x;
+    let tmpY = physicalY * newScaleY - scrCenter.y;
+    if (newScaleX === 1 && tmpX !== 0) {
+      console.error("something wrong tmpX should be 0, but got", tmpX);
+      tmpX = 0;
+      tmpY = 0;
+    }
+    scroller.scrollLeft(tmpX);
+    scroller.scrollTop(tmpY);
+  } else {
+    let tmpX =
+      (1 - newScaleX) * 8420 * 0.5 +
+      $(window).width() * newScaleX * 0.5 -
+      $(window).width() * 1 * 0.5;
+    let tmpY =
+      (1 - newScaleY) * 5950 * 0.5 +
+      $(window).height() * newScaleY * 0.5 -
+      $(window).height() * 1 * 0.5;
+    main.css("left", -tmpX);
+    main.css("top", -tmpY);
+    main.css("transform", `scale(${newScaleX}, ${newScaleY})`);
+    let sx = (scroller.scrollLeft() / oldScaleX) * newScaleX;
+    let sy = (scroller.scrollTop() / oldScaleY) * newScaleY;
+    scroller.scrollLeft(sx);
+    scroller.scrollTop(sy);
+  }
+};
+
+KFK.zoomStart = function (inOrOut) {
+  KFK.isZooming = true;
+  KFK.lastZoomTool = inOrOut;
+  KFK.showHidePanel(false);
+  $("#centerpoint").removeClass("noshow");
+  $('.ui-resizable').resizable('disable');
+  $('.ui-draggable').draggable('disable');
+  $('.ui-droppable').droppable('disable');
+};
+KFK.printCallStack = function () {
+  console.log(new Error().stack);
+};
+
+KFK.zoomStop = function () {
+  $("#centerpoint").addClass("noshow");
+  $('.ui-resizable').resizable('enable');
+  $('.ui-draggable').draggable('enable');
+  $('.ui-droppable').droppable('enable');
+  KFK.showHidePanel(!KFK.APP.model.cocodoc.readonly);
+  try {
+    let main = $("#containermain");
+    let scroller = $("#scroll-container");
+
+    let scaleBy = 1.1;
+    let oldScaleX = KFK.designerConf.scaleX;
+    let oldScaleY = KFK.designerConf.scaleY;
+    let newScaleX = 1;
+    let newScaleY = 1;
+    KFK.designerConf.scaleX = newScaleX;
+    KFK.designerConf.scaleY = newScaleY;
+    let scrCenter = KFK.scrCenter();
+
+    KFK.showCenterIndicator(scrCenter.x, scrCenter.y);
+    if (oldScaleX > 1) {
+      let physicalX = (scroller.scrollLeft() + scrCenter.x) / oldScaleX;
+      let physicalY = (scroller.scrollTop() + scrCenter.y) / oldScaleY;
+
+      let newLeft = (newScaleX - 1) * 8420 * 0.5;
+      let newTop = (newScaleY - 1) * 5950 * 0.5;
+      main.css("left", newLeft);
+      main.css("top", newTop);
+      main.css("transform", `scale(${newScaleX}, ${newScaleY})`);
+      KFK.designerConf.left = newLeft;
+      KFK.designerConf.top = newTop;
+
+      let tmpX = physicalX * newScaleX - scrCenter.x;
+      let tmpY = physicalY * newScaleY - scrCenter.y;
+      scroller.scrollLeft(tmpX);
+      scroller.scrollTop(tmpY);
+    } else if (oldScaleX < 1) {
+      let tmpX =
+        (1 - newScaleX) * 8420 * 0.5 +
+        $(window).width() * newScaleX * 0.5 -
+        $(window).width() * 1 * 0.5;
+      let tmpY =
+        (1 - newScaleY) * 5950 * 0.5 +
+        $(window).height() * newScaleY * 0.5 -
+        $(window).height() * 1 * 0.5;
+      main.css("left", -tmpX);
+      main.css("top", -tmpY);
+      main.css("transform", `scale(${newScaleX}, ${newScaleY})`);
+      let sx = (scroller.scrollLeft() / oldScaleX) * newScaleX;
+      let sy = (scroller.scrollTop() / oldScaleY) * newScaleY;
+      scroller.scrollLeft(sx);
+      scroller.scrollTop(sy);
+    }
+  } finally {
+    KFK.isZooming = false;
+  }
 };
 
 KFK.closeActionLog = function () {
@@ -4736,33 +4892,31 @@ KFK.showActionLog = function () {
   KFK.APP.setData("show", "actionlog", !KFK.APP.show.actionlog);
 };
 
-KFK.getActionLog = function(){
-  KFK.sendCmd('GETBLKOPS', {doc_id: KFK.APP.model.cocodoc.doc_id});
+KFK.getActionLog = function () {
+  KFK.sendCmd("GETBLKOPS", { doc_id: KFK.APP.model.cocodoc.doc_id });
 };
 
-KFK.clearActionLog = function () {
-  //TODO: clear action log
-  x("todo clear action log");
-};
 KFK.navActionLog = function (item, direction) {
-  if(item.logs.length===0) {
-    x('no logs');
+  if (item.logs.length === 0) {
+    x("no logs");
     return;
   }
-  if(direction === 'first'){ //go left
+  if (direction === "first") {
+    //go left
     item.pos = 0;
-  }else if(direction === 'prev'){ //go left
-    item.pos = item.pos -1;
-    if(item.pos < 0){
-      item.pos = item.logs.length-1;
+  } else if (direction === "prev") {
+    //go left
+    item.pos = item.pos - 1;
+    if (item.pos < 0) {
+      item.pos = item.logs.length - 1;
     }
-  }else if(direction === 'next'){
+  } else if (direction === "next") {
     item.pos = item.pos + 1;
-    if(item.pos >= item.logs.length){
+    if (item.pos >= item.logs.length) {
       item.pos = 0;
     }
-  }else if(direction === 'last'){
-    item.pos = item.logs.length-1;
+  } else if (direction === "last") {
+    item.pos = item.logs.length - 1;
   }
   let nodeid = item.logs[item.pos];
   KFK.scrollToNode(nodeid);
@@ -5007,18 +5161,19 @@ KFK.validateUserId = function (str) {
 };
 
 // localStorage.removeItem('cocouser');
-console.log(config.defaultDocBgcolor);
+// console.log(config.defaultDocBgcolor);
 config.defaultDocBgcolor = "#ABABAB";
-console.log(config.defaultDocBgcolor);
-console.log("console.js begin loadimages");
+// console.log(config.defaultDocBgcolor);
+// console.log("console.js begin loadimages");
 //Start the APP
 KFK.loadImages();
 KFK.loadAvatars();
 
 module.exports = KFK;
 
-//TODO: event handler after undo/redo
-//TODO: action log is not shown
+//TODO: Add Link, paste link
+//TODO: add Picture by URL
+//TODO: Paste link, auto check, if URL, add href, if image, show it.
 //TODO: 清理OSS图片
 // OSS路径名使用 tenant_id/doc_id/pic_name.png
 // 一开始生成文档的ID， 然后的OSS图片的目录使用这个ID， 最后保存时，检查真正剩余的图片，并与OSS中的对应，没有用到的从OSS中删除掉

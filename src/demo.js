@@ -29,7 +29,7 @@ Demo.isDemoUser = function (user) {
     } else {
         userid = "demouser_56789@cocopad.com";
     }
-    console.log('>>DEMO.isDemoUser ', userid);
+    // console.log('>>DEMO.isDemoUser ', userid);
     const schema = Joi.string().regex(
         /^demouser_([A-Za-z0-9_\-\.])+\@cocopad\.com$/
     ).required();
