@@ -13,7 +13,6 @@
   <div id="containerbkg"></div>
   <img style="display:none;" id='defaultavatar' src='../assets/avatar/avatar-0.svg' />
 
-
   <div id='app' class='fontFancyColor'>
     <b-button v-show="show.section.login" pill variant='outline-success' class='reglogin' @click="KFK.showRegisterForm">
       注 册</b-button>
@@ -73,6 +72,12 @@
           </b-row>
           <b-row class="text-center py-1">
             <b-col style='font-size:18px;'> 远程教学 </b-col>
+          </b-row>
+          <b-row class="text-center mt-2">
+            <b-col> <img src="../assets/km.svg" class='left_top_image' /> </b-col>
+          </b-row>
+          <b-row class="text-center py-1">
+            <b-col style='font-size:18px;'> 知识管理 </b-col>
           </b-row>
         </b-container>
       </div>
@@ -219,25 +224,36 @@
 
       <div id="left" class="bg-white padlayout noshow">
         <b-list-group>
-          <b-list-group-item class="d-flex align-items-center" @click="setMode('pointer');" :active="active['pointer']">
+          <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('pointer');"
+            :active="active['pointer']">
             <b-img :src="images['pointer'].src" fluid alt="" scale="2" class="cocotool"></b-img>
           </b-list-group-item>
-          <b-list-group-item class="d-flex align-items-center" @click="setMode('text');" :active="active['text']">
+          <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('text');"
+            :active="active['text']">
             <b-img :src="images['text'].src" fluid alt="" scale="2" class="cocotool"></b-img>
           </b-list-group-item>
-          <b-list-group-item class="d-flex align-items-center" @click="setMode('textblock');"
+          <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('textblock');"
             :active="active['textblock']">
             <b-img :src="images['textblock'].src" fluid alt="" scale="2" class="cocotool"></b-img>
           </b-list-group-item>
-          <b-list-group-item class="d-flex align-items-center" @click="setMode('yellowtip');"
+          <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('yellowtip');"
             :active="active['yellowtip']">
             <b-img :src="images['tip'].src" fluid alt="" scale="2" class="cocotool"></b-img>
           </b-list-group-item>
-          <b-list-group-item class="d-flex align-items-center" @click="setMode('line');" :active="active['line']">
+          <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('line');"
+            :active="active['line']">
             <b-img :src="images['line'].src" fluid alt="" scale="2" class="cocotool" id='tool_line'></b-img>
           </b-list-group-item>
-          <b-list-group-item class="d-flex align-items-center" @click="setMode('lock');" :active="active['lock']">
+          <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('lock');"
+            :active="active['lock']">
             <b-img :src="images['lock'].src" fluid alt="" scale="2" class="cocotool" id='tool_lock'></b-img>
+          </b-list-group-item>
+          <b-list-group-item class="m-0 p-0">
+            <b-icon icon="blank" scale="0.5"></b-icon>
+          </b-list-group-item>
+          <b-list-group-item href="#" class="d-flex align-items-center" @click="KFK.toggleMinimap();"
+            :active="active['minimap']">
+            <b-icon icon="map" scale="1.5" shift-h="4" fluid alt="" class="cocotool" id='tool_minimap'></b-icon>
           </b-list-group-item>
 
         </b-list-group>
@@ -378,24 +394,27 @@
         <b-button @click="KFK.showActionLog" class="" variant="outline-success">
           <b-icon icon="people"></b-icon> 参与者
         </b-button>
+        <b-button id='sharethisbutton' @click="KFK.shareThisDoc" class="" variant="outline-success">
+          <b-icon icon="box-arrow-up"></b-icon>分享
+        </b-button>
       </b-button-group>
       <div id="rtcontrol" class="padlayout noshow">
         <b-button-group class="coco">
           <b-button id="zoom_in" variant="outline-success" @click="KFK.zoomIn">
-            <b-iconstack>
-              <b-icon icon="plus" shift-h="-1.1" shift-v="1.1"></b-icon>
+            <b-iconstack scale="0.6">
+              <b-icon icon="plus" shift-h="-1.2" shift-v="1.1"></b-icon>
               <b-icon icon="search"></b-icon>
             </b-iconstack>
           </b-button>
           <b-button id="zoom_1" variant="outline-success" @click="KFK.zoomStop">
-            <b-iconstack>
-              <b-icon icon="x" shift-h="-1.1" shift-v="1.1"></b-icon>
+            <b-iconstack scale="0.6">
+              <b-icon icon="x" shift-h="-1.2" shift-v="1.1"></b-icon>
               <b-icon icon="search"></b-icon>
             </b-iconstack>
           </b-button>
           <b-button id="zoom_out" variant="outline-success" @click="KFK.zoomOut">
-            <b-iconstack>
-              <b-icon icon="dash" shift-h="-1.1" shift-v="1.1"></b-icon>
+            <b-iconstack scale="0.6">
+              <b-icon icon="dash" shift-h="-1.2" shift-v="1.1"></b-icon>
               <b-icon icon="search"></b-icon>
             </b-iconstack>
           </b-button>
@@ -404,10 +423,12 @@
           <b-button id="goto_explorer" variant="outline-success" @click="KFK.gotoExplorer">
             <b-icon icon="folder"></b-icon>
           </b-button>
-          <b-button id="toggle_all" variant="outline-success" @click="KFK.toggleFullScreen">
+          <b-button v-show="!model.cocodoc.readonly" id="toggle_all" variant="outline-success"
+            @click="KFK.toggleFullScreen">
             <b-icon icon="arrows-fullscreen"></b-icon>
           </b-button>
-          <b-button id="toggle-right" variant="outline-success" @click="KFK.toggleRight">
+          <b-button v-show="!model.cocodoc.readonly" id="toggle-right" variant="outline-success"
+            @click="KFK.toggleRight">
             <b-icon icon="layout-sidebar-reverse"></b-icon>
           </b-button>
         </b-button-group>
@@ -812,19 +833,23 @@
           </b-button>
         </b-button-group>
       </div>
-      <div id="share" v-show="show.form.share" class="shareItContainer p-4 text-center">
-        <div>点击下面的分享按钮后，<BR> 到任何沟通工具中粘贴，<BR>把URL给到协作人即可</div>
-        <hr>
-        <b-button-group>
-          <b-button id="shareit" class="shareit" variant="outline-success" @click="KFK.shareDone">
-            <b-icon icon="box-arrow-up" scale=2></b-icon>
-          </b-button>
-        </b-button-group>
-      </div>
     </div> <!-- explorer -->
+    <div id="minimap" v-show="show.section.designer && show.section.minimap"></div>
+    <div id="share" v-show="show.form.share" class="shareItContainer py-2 text-center">
+      <b-card :title="'分享文档 ' + model.docNameToShare">
+        <b-card-text>
+          点击下面的分享按钮后，<BR> 到任何沟通工具中粘贴，<BR>把URL给到协作人即可<BR>
+          如果该文档已设置分享码，<BR>打开时需要提供分享码
+        </b-card-text>
+        <b-button id="shareit" class="shareit" variant="outline-success" @click="KFK.shareDone">
+          <b-icon icon="box-arrow-up" scale=2></b-icon>
+        </b-button>
+      </b-card>
+    </div>
   </div>
+  <!--app-->
   <div id="copydiv" style="display: none; z-index: -99999"></div>
-  <did id="centerpoint" class='centerpoint noshow' />
+  <div id="centerpoint" class="centerpoint noshow"></div>
   <script src="./pad.js"></script>
 </body>
 

@@ -26,7 +26,7 @@ body {
 }
 .left_menu {
   position: absolute;
-  top: 150px;
+  top: 100px;
   left: 50px;
   width: 200px;
   height: 100%;
@@ -189,8 +189,8 @@ body {
   background-color: rgba(0, 0, 0, 0.1);
   /* width: 100%;
     height: 100vh; */
-  width: 8420px;
-  height: 5950px;
+  width: 3368px;
+  height: 2380px;
   overflow: auto;
   margin: 0px;
   position: absolute;
@@ -623,4 +623,37 @@ select:focus {
   border-radius: 20px;
   background-color: red;
   z-index: 999999;
+}
+
+.child {
+  position: absolute;
+  height: 200px;
+  width: 100px;
+  background-color: #afbbc6;
+  cursor: move;
+}
+
+#minimap {
+  position: absolute;
+  width: 125px;
+  height: 125px;
+  bottom: 5px;
+  right: 5px;
+  background-color: #eee;
+  border: 1px solid #aaa;
+  opacity: 0.9;
+  z-index: 10000000;
+}
+
+.minimap-node {
+  position: absolute;
+  background-color: rgb(96, 122, 134);
+}
+
+.minimap-viewport {
+  position: absolute;
+  box-sizing: border-box;
+  background-color: rgba(79, 111, 126, 0.4);
+  z-index: 1000000000;
+  cursor: move;
 }

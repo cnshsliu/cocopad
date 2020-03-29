@@ -17,6 +17,7 @@ import "jquery-ui-dist/jquery-ui.js";
 import "spectrum-colorpicker2/dist/spectrum.min";
 import "../lib/fontpicker-jquery-plugin/dist/jquery.fontpicker";
 import "../lib/jquery.line/jquery.line";
+import "../lib/jquery-minimap/jquery-minimap";
 import WS from "./ws";
 import config from "./config";
 
@@ -53,6 +54,7 @@ const OSSClient = new OSS({
 });
 const KFK = {};
 KFK.isZooming = false;
+KFK.zoomlevel = 1;
 KFK.designerConf = { scaleX: 1, scaleY: 1, left: 0, top: 0 };
 KFK.opstack = [];
 KFK.opstacklen = 10;
@@ -78,6 +80,8 @@ KFK.scrollFixed = false;
 KFK.actionLogToView = { editor: "", actionlog: [] };
 KFK.actionLogToViewIndex = 0;
 KFK.expoloerRefreshed = false;
+KFK.numberOfNodeToCreate = 0;
+KFK.numberOfNodeCreated = 0;
 
 //TODO: 流量计费
 //TODO: 放开zoomin zoomout，提示为测试状态，功能有问题
@@ -88,8 +92,8 @@ KFK.expoloerRefreshed = false;
 // KFK._width = window.innerWidth; KFK._height = window.innerHeight;
 // KFK._width = window.innerWidth * 6; KFK._height = window.innerHeight * 6;
 // A4
-KFK._width = 842 * 10;
-KFK._height = 595 * 10;
+KFK._width = 842 * 4;
+KFK._height = 595 * 4;
 
 KFK.nodes = [];
 KFK.defaultNodeWidth = 40;
@@ -813,6 +817,14 @@ KFK.initC3 = function () {
 
   KFK.C3 = c3;
   KFK.JC3 = $(KFK.C3);
+  KFK.zoomlevel = 1;
+  KFK.addMinimap();
+};
+
+KFK.addMinimap = function () {
+  KFK.refreshC3event = new CustomEvent("refreshC3");
+  KFK.zoomEvent = new CustomEvent("zoomC3");
+  $("#minimap").minimap(KFK, $("#scroll-container"), KFK.JC3);
 };
 
 KFK.get13Number = function (str) {
@@ -1798,6 +1810,8 @@ KFK.syncNodePut = async function (cmd, jqDIV, reason, jqFrom, isUndoRedo) {
     }
   } catch (e) {
     console.log(e);
+  } finally {
+    KFK.C3.dispatchEvent(KFK.refreshC3event);
   }
   //console.log(jqDIV.prop('outerHTML'));
 };
@@ -2036,16 +2050,16 @@ KFK.getShapeDynamicDefaultSize = function (nodeType, variant) {
   return ret;
 };
 
-KFK.setNodeEvent = function (jqNode, type, cmd) {
-  if (type === "resizable") {
+KFK.setNodeEvent = function (jqNode, action, cmd) {
+  if (action === "resizable") {
     if (config.node[jqNode.attr("nodetype")].resizable) {
       jqNode.resizable(cmd);
     }
-  } else if (type === "droppable") {
+  } else if (action === "droppable") {
     if (config.node[jqNode.attr("nodetype")].droppable) {
       jqNode.droppable(cmd);
     }
-  } else if (type === "draggable") {
+  } else if (action === "draggable") {
     jqNode.draggable(cmd);
   }
 };
@@ -3274,18 +3288,14 @@ KFK._onDocLoaded = function () {
   KFK.initShowEditors("none");
   KFK.startPadDesigner();
   KFK.APP.setData("model", "docLoaded", true);
-  console.log("here1");
   if (KFK.APP.model.cocodoc.readonly) {
-    console.log("here2");
     $("#linetransformer").draggable("disable");
     $("#right").toggle("slide", { duration: 100, direction: "right" });
     $("#left").toggle("slide", { duration: 100, direction: "left" });
     $("#top").toggle("slide", { duration: 100, direction: "left" });
   } else {
-    console.log("here3");
     $("#linetransformer").draggable("enable");
   }
-  console.log("here4");
 };
 
 KFK.startPadDesigner = function () {
@@ -3345,6 +3355,8 @@ KFK.onWsMsg = function (data) {
     case "OPEN":
     case "SYNC":
     case "UPD":
+      KFK.numberOfNodeToCreate = data.payload.data.length;
+      KFK.numberOfNodeCreated = 0;
       data.payload.data.forEach(html => {
         KFK.recreateNodeFromHTML(html);
       });
@@ -3637,11 +3649,18 @@ KFK.onDocPwdHidden = function (bvModalEvt) {
 };
 
 KFK.shareDoc = function (item, index, button) {
+  KFK.setAppData("model", "docNameToShare", item.name);
   KFK.dataToShare = `http://localhost:1234/doc/${item._id}`;
+  KFK.showForm({ share: true });
+};
+KFK.shareThisDoc = function () {
+  KFK.setAppData("model", "docNameToShare", KFK.APP.model.cocodoc.name);
+  KFK.dataToShare = `http://localhost:1234/doc/${KFK.APP.model.cocodoc.doc_id}`;
   KFK.showForm({ share: true });
 };
 KFK.shareDone = function () {
   KFK.showForm({ share: false });
+  KFK.log('分享地址以放入剪贴板，请粘贴给其他人');
 };
 
 KFK.showResetPwdModal = function (item, index, button) {
@@ -3686,49 +3705,57 @@ KFK.resetDocPwd = function () {
 
 KFK.recreateNodeFromHTML = function (html) {
   // console.log(html);
-  let isALockedNode = false;
-  if (html.startsWith("[LOCK]")) {
-    isALockedNode = true;
-    html = html.substring(6);
-  }
-  let jqDIV = $($.parseHTML(html));
-  let nodeid = jqDIV.attr("id");
-  if (nodeid === "document") {
-    //在handlers.js 中，第一个进入doc时，返回document的doc_id和name
-    let docRet = {
-      doc_id: jqDIV.attr("doc_id"),
-      name: jqDIV.attr("name"),
-      prjid: jqDIV.attr("prjid"),
-      owner: jqDIV.attr("owner"),
-      readonly: getBoolean(jqDIV.attr("readflag"))
-    };
-    KFK.APP.setData("model", "cocodoc", docRet);
-    localStorage.setItem("cocodoc", JSON.stringify(docRet));
-    KFK._onDocLoaded();
-  } else if (jqDIV.hasClass("notify")) {
-    //TODO: notification
-  } else if (jqDIV.hasClass("ad")) {
-    //TODO: Advertisement
-  } else {
-    KFK.cleanNodeEventFootprint(jqDIV);
-    KFK.setNodeShowEditor(jqDIV);
-    if ($(`#${nodeid}`).length > 0) {
-      $(`#${nodeid}`).prop("outerHTML", jqDIV.prop("outerHTML"));
-    } else {
-      KFK.C3.appendChild(el(jqDIV));
+  try {
+    let isALockedNode = false;
+    if (html.startsWith("[LOCK]")) {
+      isALockedNode = true;
+      html = html.substring(6);
     }
-    jqDIV = $(`#${nodeid}`);
-
-    if (jqDIV.hasClass("kfknode")) {
-      if (isALockedNode) {
-        KFK.NodeController.lock(jqDIV);
-      }
-      if (KFK.APP.model.cocodoc.readonly) {
-        //KFK.NodeController.removeEventListenerOnly(jqDIV);
+    let jqDIV = $($.parseHTML(html));
+    let nodeid = jqDIV.attr("id");
+    if (nodeid === "document") {
+      //在handlers.js 中，第一个进入doc时，返回document的doc_id和name
+      let docRet = {
+        doc_id: jqDIV.attr("doc_id"),
+        name: jqDIV.attr("name"),
+        prjid: jqDIV.attr("prjid"),
+        owner: jqDIV.attr("owner"),
+        readonly: getBoolean(jqDIV.attr("readflag"))
+      };
+      KFK.APP.setData("model", "cocodoc", docRet);
+      localStorage.setItem("cocodoc", JSON.stringify(docRet));
+      KFK._onDocLoaded();
+    } else if (jqDIV.hasClass("notify")) {
+      //TODO: notification
+    } else if (jqDIV.hasClass("ad")) {
+      //TODO: Advertisement
+    } else {
+      //需要先清理，否则在替换已有node时，会导致无法resize
+      KFK.cleanNodeEventFootprint(jqDIV);
+      KFK.setNodeShowEditor(jqDIV);
+      if ($(`#${nodeid}`).length > 0) {
+        $(`#${nodeid}`).prop("outerHTML", jqDIV.prop("outerHTML"));
       } else {
-        KFK.setNodeEventHandler(jqDIV);
+        KFK.C3.appendChild(el(jqDIV));
       }
-    } else if (jqDIV.hasClass("kfkline")) KFK.setLineEventHandler(jqDIV);
+      jqDIV = $(`#${nodeid}`);
+
+      if (jqDIV.hasClass("kfknode")) {
+        if (KFK.APP.model.cocodoc.readonly === false) {
+          KFK.setNodeEventHandler(jqDIV);
+          if (isALockedNode) {
+            KFK.NodeController.lock(jqDIV);
+          }
+        }
+      } else if (jqDIV.hasClass("kfkline")) KFK.setLineEventHandler(jqDIV);
+    }
+  } catch (error) {
+    console.log(error);
+  } finally {
+    KFK.numberOfNodeCreated += 1;
+    if (KFK.numberOfNodeCreated >= KFK.numberOfNodeToCreate) {
+      KFK.C3.dispatchEvent(KFK.refreshC3event);
+    }
   }
 };
 
@@ -4202,6 +4229,16 @@ KFK.setMode = function (mode) {
 
   KFK.focusOnMainContainer();
 };
+
+KFK.toggleMinimap = function(){
+  for (let key in KFK.APP.active) {
+    KFK.APP.active[key] = false;
+  }
+  KFK.APP.active['minimap'] = true;
+  KFK.showSection({minimap: !KFK.APP.show.section.minimap});
+  KFK.setMode('pointer');
+};
+
 //用在index.js中的boostrapevue
 KFK.isActive = function (mode) {
   return KFK.mode === mode;
@@ -4593,9 +4630,9 @@ KFK.save = async function () {
 };
 
 KFK.addTextToHoverDIV = function (text) {
-  if (KFK.jqHoverDIV ) {
-    if(KFK.anyLocked(KFK.jqHoverDIV)) return;
-    if(KFK.isZooming) return;
+  if (KFK.jqHoverDIV) {
+    if (KFK.anyLocked(KFK.jqHoverDIV)) return;
+    if (KFK.isZooming) return;
 
     if (config.node[KFK.jqHoverDIV.attr("nodetype")].edittable) {
       KFK.fromJQ = KFK.jqHoverDIV.clone();
@@ -4615,7 +4652,7 @@ KFK.addTextToHoverDIV = function (text) {
 };
 
 document.onpaste = function (event) {
-  if(KFK.docLocked() || KFK.isZooming) return;
+  if (KFK.docLocked() || KFK.isZooming) return;
   var items = (event.clipboardData || event.originalEvent.clipboardData).items;
   if (items[1]) {
     if (items[0].kind === "string" && items[1].kind === "string") {
@@ -4719,38 +4756,43 @@ KFK.zoomIn = function () {
   let scrCenter = KFK.scrCenter();
 
   KFK.showCenterIndicator(scrCenter.x, scrCenter.y);
-  if (newScaleX >= 1) {
-    let physicalX = (scroller.scrollLeft() + scrCenter.x) / oldScaleX;
-    let physicalY = (scroller.scrollTop() + scrCenter.y) / oldScaleY;
+  try {
+    if (newScaleX >= 1) {
+      let physicalX = (scroller.scrollLeft() + scrCenter.x) / oldScaleX;
+      let physicalY = (scroller.scrollTop() + scrCenter.y) / oldScaleY;
 
-    let newLeft = (newScaleX - 1) * 8420 * 0.5;
-    let newTop = (newScaleY - 1) * 5950 * 0.5;
-    main.css("left", newLeft);
-    main.css("top", newTop);
-    main.css("transform", `scale(${newScaleX}, ${newScaleY})`);
-    KFK.designerConf.left = newLeft;
-    KFK.designerConf.top = newTop;
+      let newLeft = (newScaleX - 1) * KFK._width * 0.5;
+      let newTop = (newScaleY - 1) * KFK._height * 0.5;
+      main.css("left", newLeft);
+      main.css("top", newTop);
+      main.css("transform", `scale(${newScaleX}, ${newScaleY})`);
+      KFK.designerConf.left = newLeft;
+      KFK.designerConf.top = newTop;
 
-    let tmpX = physicalX * newScaleX - scrCenter.x;
-    let tmpY = physicalY * newScaleY - scrCenter.y;
-    scroller.scrollLeft(tmpX);
-    scroller.scrollTop(tmpY);
-  } else {
-    let tmpX =
-      (1 - newScaleX) * 8420 * 0.5 +
-      $(window).width() * newScaleX * 0.5 -
-      $(window).width() * 1 * 0.5;
-    let tmpY =
-      (1 - newScaleY) * 5950 * 0.5 +
-      $(window).height() * newScaleY * 0.5 -
-      $(window).height() * 1 * 0.5;
-    main.css("left", -tmpX);
-    main.css("top", -tmpY);
-    main.css("transform", `scale(${newScaleX}, ${newScaleY})`);
-    let sx = (scroller.scrollLeft() / oldScaleX) * newScaleX;
-    let sy = (scroller.scrollTop() / oldScaleY) * newScaleY;
-    scroller.scrollLeft(sx);
-    scroller.scrollTop(sy);
+      let tmpX = physicalX * newScaleX - scrCenter.x;
+      let tmpY = physicalY * newScaleY - scrCenter.y;
+      scroller.scrollLeft(tmpX);
+      scroller.scrollTop(tmpY);
+    } else {
+      let tmpX =
+        (1 - newScaleX) * KFK._width * 0.5 +
+        $(window).width() * newScaleX * 0.5 -
+        $(window).width() * 1 * 0.5;
+      let tmpY =
+        (1 - newScaleY) * KFK._height * 0.5 +
+        $(window).height() * newScaleY * 0.5 -
+        $(window).height() * 1 * 0.5;
+      main.css("left", -tmpX);
+      main.css("top", -tmpY);
+      main.css("transform", `scale(${newScaleX}, ${newScaleY})`);
+      let sx = (scroller.scrollLeft() / oldScaleX) * newScaleX;
+      let sy = (scroller.scrollTop() / oldScaleY) * newScaleY;
+      scroller.scrollLeft(sx);
+      scroller.scrollTop(sy);
+    }
+  } finally {
+    KFK.zoomlevel = newScaleX;
+    KFK.C3.dispatchEvent(KFK.zoomEvent);
   }
 };
 KFK.zoomOut = function () {
@@ -4769,43 +4811,48 @@ KFK.zoomOut = function () {
   let scrCenter = KFK.scrCenter();
 
   KFK.showCenterIndicator(scrCenter.x, scrCenter.y);
-  if (newScaleX >= 1) {
-    let physicalX = (scroller.scrollLeft() + scrCenter.x) / oldScaleX;
-    let physicalY = (scroller.scrollTop() + scrCenter.y) / oldScaleY;
+  try {
+    if (newScaleX >= 1) {
+      let physicalX = (scroller.scrollLeft() + scrCenter.x) / oldScaleX;
+      let physicalY = (scroller.scrollTop() + scrCenter.y) / oldScaleY;
 
-    let newLeft = (newScaleX - 1) * 8420 * 0.5;
-    let newTop = (newScaleY - 1) * 5950 * 0.5;
-    main.css("left", newLeft);
-    main.css("top", newTop);
-    main.css("transform", `scale(${newScaleX}, ${newScaleY})`);
-    KFK.designerConf.left = newLeft;
-    KFK.designerConf.top = newTop;
+      let newLeft = (newScaleX - 1) * KFK._width * 0.5;
+      let newTop = (newScaleY - 1) * KFK._height * 0.5;
+      main.css("left", newLeft);
+      main.css("top", newTop);
+      main.css("transform", `scale(${newScaleX}, ${newScaleY})`);
+      KFK.designerConf.left = newLeft;
+      KFK.designerConf.top = newTop;
 
-    let tmpX = physicalX * newScaleX - scrCenter.x;
-    let tmpY = physicalY * newScaleY - scrCenter.y;
-    if (newScaleX === 1 && tmpX !== 0) {
-      console.error("something wrong tmpX should be 0, but got", tmpX);
-      tmpX = 0;
-      tmpY = 0;
+      let tmpX = physicalX * newScaleX - scrCenter.x;
+      let tmpY = physicalY * newScaleY - scrCenter.y;
+      if (newScaleX === 1 && tmpX !== 0) {
+        console.error("something wrong tmpX should be 0, but got", tmpX);
+        tmpX = 0;
+        tmpY = 0;
+      }
+      scroller.scrollLeft(tmpX);
+      scroller.scrollTop(tmpY);
+    } else {
+      let tmpX =
+        (1 - newScaleX) * KFK._width * 0.5 +
+        $(window).width() * newScaleX * 0.5 -
+        $(window).width() * 1 * 0.5;
+      let tmpY =
+        (1 - newScaleY) * KFK._height * 0.5 +
+        $(window).height() * newScaleY * 0.5 -
+        $(window).height() * 1 * 0.5;
+      main.css("left", -tmpX);
+      main.css("top", -tmpY);
+      main.css("transform", `scale(${newScaleX}, ${newScaleY})`);
+      let sx = (scroller.scrollLeft() / oldScaleX) * newScaleX;
+      let sy = (scroller.scrollTop() / oldScaleY) * newScaleY;
+      scroller.scrollLeft(sx);
+      scroller.scrollTop(sy);
     }
-    scroller.scrollLeft(tmpX);
-    scroller.scrollTop(tmpY);
-  } else {
-    let tmpX =
-      (1 - newScaleX) * 8420 * 0.5 +
-      $(window).width() * newScaleX * 0.5 -
-      $(window).width() * 1 * 0.5;
-    let tmpY =
-      (1 - newScaleY) * 5950 * 0.5 +
-      $(window).height() * newScaleY * 0.5 -
-      $(window).height() * 1 * 0.5;
-    main.css("left", -tmpX);
-    main.css("top", -tmpY);
-    main.css("transform", `scale(${newScaleX}, ${newScaleY})`);
-    let sx = (scroller.scrollLeft() / oldScaleX) * newScaleX;
-    let sy = (scroller.scrollTop() / oldScaleY) * newScaleY;
-    scroller.scrollLeft(sx);
-    scroller.scrollTop(sy);
+  } finally {
+    KFK.zoomlevel = newScaleX;
+    KFK.C3.dispatchEvent(KFK.zoomEvent);
   }
 };
 
@@ -4814,9 +4861,9 @@ KFK.zoomStart = function (inOrOut) {
   KFK.lastZoomTool = inOrOut;
   KFK.showHidePanel(false);
   $("#centerpoint").removeClass("noshow");
-  $('.ui-resizable').resizable('disable');
-  $('.ui-draggable').draggable('disable');
-  $('.ui-droppable').droppable('disable');
+  $(".ui-resizable").resizable("disable");
+  $(".ui-draggable").draggable("disable");
+  $(".ui-droppable").droppable("disable");
 };
 KFK.printCallStack = function () {
   console.log(new Error().stack);
@@ -4824,9 +4871,9 @@ KFK.printCallStack = function () {
 
 KFK.zoomStop = function () {
   $("#centerpoint").addClass("noshow");
-  $('.ui-resizable').resizable('enable');
-  $('.ui-draggable').draggable('enable');
-  $('.ui-droppable').droppable('enable');
+  $(".ui-resizable").resizable("enable");
+  $(".ui-draggable").draggable("enable");
+  $(".ui-droppable").droppable("enable");
   KFK.showHidePanel(!KFK.APP.model.cocodoc.readonly);
   try {
     let main = $("#containermain");
@@ -4846,8 +4893,8 @@ KFK.zoomStop = function () {
       let physicalX = (scroller.scrollLeft() + scrCenter.x) / oldScaleX;
       let physicalY = (scroller.scrollTop() + scrCenter.y) / oldScaleY;
 
-      let newLeft = (newScaleX - 1) * 8420 * 0.5;
-      let newTop = (newScaleY - 1) * 5950 * 0.5;
+      let newLeft = (newScaleX - 1) * KFK._width * 0.5;
+      let newTop = (newScaleY - 1) * KFK._height * 0.5;
       main.css("left", newLeft);
       main.css("top", newTop);
       main.css("transform", `scale(${newScaleX}, ${newScaleY})`);
@@ -4860,11 +4907,11 @@ KFK.zoomStop = function () {
       scroller.scrollTop(tmpY);
     } else if (oldScaleX < 1) {
       let tmpX =
-        (1 - newScaleX) * 8420 * 0.5 +
+        (1 - newScaleX) * KFK._width * 0.5 +
         $(window).width() * newScaleX * 0.5 -
         $(window).width() * 1 * 0.5;
       let tmpY =
-        (1 - newScaleY) * 5950 * 0.5 +
+        (1 - newScaleY) * KFK._height * 0.5 +
         $(window).height() * newScaleY * 0.5 -
         $(window).height() * 1 * 0.5;
       main.css("left", -tmpX);
@@ -4876,6 +4923,8 @@ KFK.zoomStop = function () {
       scroller.scrollTop(sy);
     }
   } finally {
+    KFK.zoomlevel = 1;
+    KFK.C3.dispatchEvent(KFK.zoomEvent);
     KFK.isZooming = false;
   }
 };
