@@ -1,569 +1,626 @@
 .lkh {
-    font-size: large;
+  font-size: large;
 }
 
 html {
-    overscroll-behavior-x: none;
+  overscroll-behavior-x: none;
 }
 
 body {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    background-color: #f0f0f0;
-    overscroll-behavior-x: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #f0f0f0;
+  overscroll-behavior-x: none;
 }
-.leftbkg{
-    position: absolute;
-    top:0px;
-    left:0px;
-    width: 500px;
-    height: 100vh;
-    /* background-color: red; */
-    background-repeat: no-repeat;
+.leftbkg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 500px;
+  height: 100vh;
+  /* background-color: red; */
+  background-repeat: no-repeat;
   background-size: 100% 100%;
-    background-image: url('../assets/leftbkg.svg');
+  background-image: url("../assets/leftbkg.svg");
 }
-.left_menu{
-    position:absolute;
-    top: 150px;
-    left: 50px;
-    width: 200px;
-    height: 100%;
+.left_menu {
+  position: absolute;
+  top: 150px;
+  left: 50px;
+  width: 200px;
+  height: 100%;
 }
-.left_top_logo_image{
-    position: absolute;
-    left: 20px;
-    top: 20px;
-    width: 80px;
-    height:80px;
-    border-radius: 10px;
-    z-index:10;
+.left_top_logo_image {
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  z-index: 10;
 }
-.cocoslogon{
-    position: absolute;
-    left: 120px;
-    top: 15px;
-    width: 200px;
-    height:80px;
-    border-radius: 10px;
-    z-index:10; 
+.cocoslogon {
+  position: absolute;
+  left: 120px;
+  top: 15px;
+  width: 200px;
+  height: 80px;
+  border-radius: 10px;
+  z-index: 10;
 }
-.left_top_image{
-    width: 40px;
-    height:40px;
-    border-radius: 5px;
-    opacity: 0.3;
+.left_top_image {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+  opacity: 0.3;
 }
-.reglogin{
-    position:absolute;
-    top:10px;
-    right:10px;
-    z-index: 100;
+.reglogin {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 100;
 }
-.fontFancyColor{
-    color: #20201fc9;
+.fontFancyColor {
+  color: #20201fc9;
 }
 
 #toplogo {
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    width: 100%;
-    padding-right: 10px;
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 100%;
+  padding-right: 10px;
 }
 
 #top {
-    position: absolute;
-    top: 5px;
-    left: 120px;
-    width: 100%;
-    padding-right: 10px;
+  position: absolute;
+  top: 5px;
+  left: 120px;
+  width: 100%;
+  padding-right: 10px;
 }
 
 #left {
-    position: absolute;
-    top: 100px;
-    left: 5px;
-    width: 70px;
-    height: calc(100vh - 200px);
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-    border-radius: 15px;
+  position: absolute;
+  top: 100px;
+  left: 5px;
+  width: 70px;
+  height: calc(100vh - 200px);
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  border-radius: 15px;
 }
 
 #right {
-    padding: 5px;
-    background: #FFFFFF;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-    position: absolute;
-    top: 100px;
-    right: 5px;
-    width: 240px;
-    height: calc(100vh - 200px);
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 15px;
+  padding: 5px;
+  background: #ffffff;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  position: absolute;
+  top: 100px;
+  right: 5px;
+  width: 240px;
+  height: calc(100vh - 200px);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 15px;
 }
 
 .stayright {
-    text-align: right;
-    justify-content: right;
-    right: 300px;
-    position: absolute;
-    top: 0px;
+  text-align: right;
+  justify-content: right;
+  right: 300px;
+  position: absolute;
+  top: 0px;
 }
 
 .toolbar {
-    width: 16px;
-    height: 16px;
+  width: 16px;
+  height: 16px;
 }
 
 #rtcontrol {
-    position: absolute;
-    top: 5px;
-    right: 5px;
+  position: absolute;
+  top: 5px;
+  right: 5px;
 }
-#actionlog_button{
-    position: absolute;
-    top: 5px;
-    right: 250px;
+#actionlog_button {
+  position: absolute;
+  top: 5px;
+  right: 350px;
 }
 
-#actionloglist{
-    padding: 5px;
-    background: #FFFFFF;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-    position: absolute;
-    top: 100px;
-    right: 5px;
-    width: 240px;
-    height: calc(100vh - 200px);
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 15px;;
-    z-index: 999;
+#actionloglist {
+  padding: 5px;
+  background: #ffffff;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  position: absolute;
+  top: 100px;
+  right: 5px;
+  width: 240px;
+  height: calc(100vh - 200px);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 15px;
+  z-index: 999;
 }
-#actionlog-close{
-    position: absolute;
-    top: 5px;
-    right: 15px;
+#actionlog-close {
+  position: absolute;
+  top: 5px;
+  right: 15px;
 }
-#actionlog-refresh{
-    position: absolute;
-    top: 5px;
-    right: 70px;
+#actionlog-refresh {
+  position: absolute;
+  top: 5px;
+  right: 70px;
 }
 
 #gotodesignercontrol {
-    position: absolute;
-    top: 5px;
-    left: calc(100vw - 142px);
+  position: absolute;
+  top: 5px;
+  left: calc(100vw - 142px);
 }
 
 .logo {
-    width: 24px;
-    height: 24px;
+  width: 24px;
+  height: 24px;
 }
 
 .cocologo {
-    width: 36px;
-    height: 36px;
+  width: 36px;
+  height: 36px;
 }
 
 #large-container {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 #scroll-container {
-    width: 100%;
-    height: 100vh;
-    overflow: auto;
-    margin: 0px;
-    border: 0px solid grey;
-    position: absolute;
-    left: 0px;
-    top: 0px;
+  width: 100%;
+  height: 100vh;
+  overflow: auto;
+  margin: 0px;
+  border: 0px solid grey;
+  position: absolute;
+  left: 0px;
+  top: 0px;
 }
 
-#containermain{
-    background-color: rgba(0,0,0,0.1);
-    /* width: 100%;
+#containermain {
+  background-color: rgba(0, 0, 0, 0.1);
+  /* width: 100%;
     height: 100vh; */
-    width: 8420px;
-    height: 5950px;
-    overflow: auto;
-    margin: 0px;
-    position: absolute;
-    left: 0px;
-    top: 0px;
+  width: 8420px;
+  height: 5950px;
+  overflow: auto;
+  margin: 0px;
+  position: absolute;
+  left: 0px;
+  top: 0px;
 }
 
 #containerbkg {
-    width: 100%;
-    height: 100vh;
-    overflow: hidden;
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    z-index: -10;
-    background-color: rgb(208, 224, 227);
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: -10;
+  background-color: rgb(208, 224, 227);
 }
 
 .liukehong1 {
-    background: red;
+  background: red;
 }
 
 .ui-resizable-se {
-    bottom: 17px;
+  bottom: 17px;
 }
 
 .ui-state-hover {
-    color: blueviolet;
+  color: blueviolet;
 }
 
 .ui-state-active {
-    color: blueviolet;
+  color: blueviolet;
 }
 
 .msgarea {
-    font-size: 24px;
-    z-index: 100;
-    color: rgb(83, 79, 79);
-    position: absolute;
-    bottom: 5px;
-    width: 100vw;
+  font-size: 24px;
+  z-index: 100;
+  color: rgb(83, 79, 79);
+  position: absolute;
+  bottom: 5px;
+  width: 100vw;
 }
 
 .cocopadbg {
-    background: red;
+  background: red;
 }
 
 .btn.btn-outline-primary.sharp {
-    background-color: #C2FFFB !important;
-    border-color: #C2FFFB !important;
+  background-color: #c2fffb !important;
+  border-color: #c2fffb !important;
 }
 
 .boundingrect {
-    z-index: -1;
-    border-radius: 20px;
-    background-color: rgba(0, 0, 0, 0.2);
-    border-color: red;
-    border-width: 0px;
-    border-style: dotted;
-    position: absolute;
-    left: 300px;
-    top: 300px;
-    width: 300px;
-    height: 300px;
-    display: none;
+  z-index: -1;
+  border-radius: 20px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-color: red;
+  border-width: 0px;
+  border-style: dotted;
+  position: absolute;
+  left: 300px;
+  top: 300px;
+  width: 300px;
+  height: 300px;
+  display: none;
 }
 
 .selectingrect {
-    z-index: -1;
-    border-radius: 00px;
-    background-color: transparent;
-    border-color: red;
-    border-width: 1px;
-    border-style: dotted;
-    position: absolute;
-    left: 300px;
-    top: 300px;
-    width: 300px;
-    height: 300px;
-    display: none;
+  z-index: -1;
+  border-radius: 00px;
+  background-color: transparent;
+  border-color: red;
+  border-width: 1px;
+  border-style: dotted;
+  position: absolute;
+  left: 300px;
+  top: 300px;
+  width: 300px;
+  height: 300px;
+  display: none;
 }
 
 .cocoproperty .col {
-    font-size: 14px;
-    background-color: '#333333';
-    padding-left: 0px;
+  font-size: 14px;
+  background-color: "#333333";
+  padding-left: 0px;
 }
 
 .coco select {
-    width: 100px !important;
-    height: 24px !important;
-    font-size: 14px;
+  width: 100px !important;
+  height: 24px !important;
+  font-size: 14px;
 }
 
 .coco {
-    padding-left: 0px !important;
-    padding-right: 0px !important;
+  padding-left: 0px !important;
+  padding-right: 0px !important;
 }
 
 .coco .col {
-    padding-left: 0px !important;
-    padding-right: 0px !important;
+  padding-left: 0px !important;
+  padding-right: 0px !important;
 }
 
 .coco .sp-replacer {
-    width: 100px !important;
-    height: 24px !important;
+  width: 100px !important;
+  height: 24px !important;
 }
 
 .coco .ui-spinner {
-    width: 100px !important;
-    height: 24px !important;
+  width: 100px !important;
+  height: 24px !important;
 }
 
 .coco .font-picker {
-    width: 100px !important;
-    height: 24px !important;
-    font-size: 12px !important;
-    padding: 0px 30px 0px 0px !important;
+  width: 100px !important;
+  height: 24px !important;
+  font-size: 12px !important;
+  padding: 0px 30px 0px 0px !important;
 }
 
 .btn-group.coco {
-    background-color: white;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-    border-radius: 10px;
+  background-color: white;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  border-radius: 10px;
 }
 
 svg path {
-    fill: '#000000';
+  fill: "#000000";
 }
 
 .yellowtip {
-    fill: '#000000';
+  fill: "#000000";
 }
 
 .editors_none {
-    display: none;
+  display: none;
 }
 
 .editors_last {
-    position: absolute;
-    font-size: 10px;
-    bottom: -18px;
-    /* - height */
-    left: 10px;
-    height: 18px;
-    overflow: hidden;
+  position: absolute;
+  font-size: 10px;
+  bottom: -18px;
+  /* - height */
+  left: 10px;
+  height: 18px;
+  overflow: hidden;
 }
 
 .cocoeditors {
-    font-family: 'monospace';
-    font-weight: 'normal';
-    font-size: 10px;
-    position: absolute;
-    bottom: -20px;
-    /* - height */
-    left: 0px;
-    width: 100%;
-    height: 18px;
-    overflow: show;
-    text-align: right;
-    color: black;
-    background-color: rgb(194, 194, 243);
-    border-radius: 5px;
-    padding: 0px 2px 0px 2px;
+  font-family: "monospace";
+  font-weight: "normal";
+  font-size: 10px;
+  position: absolute;
+  bottom: -20px;
+  /* - height */
+  left: 0px;
+  width: 100%;
+  height: 18px;
+  overflow: show;
+  text-align: right;
+  color: black;
+  background-color: rgb(194, 194, 243);
+  border-radius: 5px;
+  padding: 0px 2px 0px 2px;
 }
 
 .lastcocoeditor {
-    font-family: 'monospace';
-    font-weight: 'normal';
-    font-size: 10px;
-    position: absolute;
-    bottom: -20px;
-    /* - height */
-    right: 0px;
-    height: 18px;
-    overflow: hidden;
-    text-align: right;
-    color: black;
-    background-color: #E5DBFF;
-    border-radius: 5px;
-    padding: 0px 2px 0px 2px;
+  font-family: "monospace";
+  font-weight: "normal";
+  font-size: 10px;
+  position: absolute;
+  bottom: -20px;
+  /* - height */
+  right: 0px;
+  height: 18px;
+  overflow: hidden;
+  text-align: right;
+  color: black;
+  background-color: #e5dbff;
+  border-radius: 5px;
+  padding: 0px 2px 0px 2px;
 }
 
-
 .shadow1 {
-    box-shadow: -1px 0 5px #8E8EFF, 0 1px 5px #8E8EFF, 1px 0 5px #8E8EFF, 0 -1px 5px #8E8EFF;
+  box-shadow: -1px 0 5px #8e8eff, 0 1px 5px #8e8eff, 1px 0 5px #8e8eff,
+    0 -1px 5px #8e8eff;
 }
 
 .shadow2 {
-    box-shadow: -1px 0 5px #8E8EFF, 0 1px 5px #8E8EFF, 1px 0 5px #8E8EFF, 0 -1px 5px #8E8EFF;
+  box-shadow: -1px 0 5px #8e8eff, 0 1px 5px #8e8eff, 1px 0 5px #8e8eff,
+    0 -1px 5px #8e8eff;
 }
 
 .selected {
-    box-shadow: -1px 0 5px #FF8E8F, 0 1px 5px #FF8E8F, 1px 0 5px #FF8E8F, 0 -1px 5px #FF8E8F;
+  box-shadow: -1px 0 5px #ff8e8f, 0 1px 5px #ff8e8f, 1px 0 5px #ff8e8f,
+    0 -1px 5px #ff8e8f;
 }
 
 .hover {
-    box-shadow: inset 0px 0px 5px 2px #8E8EFF;
+  box-shadow: inset 0px 0px 5px 2px #8e8eff;
 }
 
 .waitinglogo {
-    width: 100px;
-    height: 100px;
-    background-color: transparent;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: auto;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  width: 100px;
+  height: 100px;
+  background-color: transparent;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
-.waitinglogo .logo{
-    width: 64px;
-    height: 64px;
+.waitinglogo .logo {
+  width: 64px;
+  height: 64px;
 }
 .padlayout {
-    z-index: 999;
+  z-index: 999;
 }
 
 .padlogo {
-    z-index: 999;
+  z-index: 999;
 }
-
 
 .noshow {
-    visibility: hidden;
+  visibility: hidden;
 }
 
-.loginform{
-    position: absolute;
-    width: 400px;
-    height: 600px;
-    background-color: transparent;
-    /* background-color: white;
+.loginform {
+  position: absolute;
+  width: 400px;
+  height: 600px;
+  background-color: transparent;
+  /* background-color: white;
     box-shadow: -1px 0 15px #686868, 0 1px 15px #686868, 1px 0 15px #686868, 0 -1px 15px #686868; */
-    top: calc(50vh - 300px);
-    left: calc(50vw - 200px);
-    z-index: 99999;
-    border-radius: 20px;
+  top: calc(50vh - 300px);
+  left: calc(50vw - 200px);
+  z-index: 99999;
+  border-radius: 20px;
 }
-.registerform{
-    position: absolute;
-    width: 400px;
-    height: 600px;
-    background-color: transparent;
-    /* background-color: white; */
-    /* box-shadow: -1px 0 15px #686868, 0 1px 15px #686868, 1px 0 15px #686868, 0 -1px 15px #686868; */
-    top: calc(50vh - 300px);
-    left: calc(50vw - 200px);
-    z-index: 99999;
-    border-radius: 20px;
+.registerform {
+  position: absolute;
+  width: 400px;
+  height: 600px;
+  background-color: transparent;
+  /* background-color: white; */
+  /* box-shadow: -1px 0 15px #686868, 0 1px 15px #686868, 1px 0 15px #686868, 0 -1px 15px #686868; */
+  top: calc(50vh - 300px);
+  left: calc(50vw - 200px);
+  z-index: 99999;
+  border-radius: 20px;
 }
-.registerform input{
-    border-radius: 20px;
-    /* background-color: rgba(110, 223, 104, 0.056); */
+.registerform input {
+  border-radius: 20px;
+  /* background-color: rgba(110, 223, 104, 0.056); */
 }
-.loginform input{
-    border-radius: 20px;
-    /* background-color: rgba(110, 223, 104, 0.056); */
+.loginform input {
+  border-radius: 20px;
+  /* background-color: rgba(110, 223, 104, 0.056); */
 }
 
 .explorer {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    width: 100vw;
-    height: 100vh;
-    display: flex;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
 }
 
 .explorer .inner {
-    margin: 100px auto;
-    background-color: #FFFFFF;
-    width: min(90vw, 1000px);
-    padding: 20px;
-    box-shadow: -1px 0 15px #686868, 0 1px 15px #686868, 1px 0 15px #686868, 0 -1px 15px #686868;
-    border-radius: 20px;
+  margin: 100px auto;
+  background-color: #ffffff;
+  width: min(90vw, 1000px);
+  padding: 20px;
+  box-shadow: -1px 0 15px #686868, 0 1px 15px #686868, 1px 0 15px #686868,
+    0 -1px 15px #686868;
+  border-radius: 20px;
 }
 
 .custom-select {
-    background: #FFFFFF !important;
+  background: #ffffff !important;
 }
 
 .borderless {
-    border-top-style: hidden;
-    border-right-style: hidden;
-    border-left-style: hidden;
-    border-bottom-style: groove;
-    border-width: 0px;
-    -moz-appearance: none;
-    -webkit-appearance: none;
-    appearance: none;
-    border: none !important;
-    outline: none !important;
-    background: transparent !important;
+  border-top-style: hidden;
+  border-right-style: hidden;
+  border-left-style: hidden;
+  border-bottom-style: groove;
+  border-width: 0px;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  appearance: none;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
 }
 
 .borderless:focus {
-    outline: none !important;
+  outline: none !important;
 }
 
 select:focus {
-    border: none !important;
-    outline: none !important;
+  border: none !important;
+  outline: none !important;
 }
 
-.docname{
-    position:absolute;
-    top: 14px;
-    left: 200px;
-    font-size: 24px;
-    color: #777777;
+.docname {
+  position: absolute;
+  top: 14px;
+  left: 200px;
+  font-size: 24px;
+  color: #777777;
 }
 
-.btn.focus, .btn:focus {
-    outline: 0;
-    box-shadow: none!important;
+.btn.focus,
+.btn:focus {
+  outline: 0;
+  box-shadow: none !important;
 }
 
-.shareItContainer{
-    position: absolute;
-    width: 400px;
-    background-color: white;
-    box-shadow: -1px 0 15px #686868, 0 1px 15px #686868, 1px 0 15px #686868, 0 -1px 15px #686868;
-    top: calc(50vh - 300px);
-    left: calc(50vw - 200px);
-    border-radius: 20px;
-    z-index: 100;
-    
+.shareItContainer {
+  position: absolute;
+  width: 400px;
+  background-color: white;
+  box-shadow: -1px 0 15px #686868, 0 1px 15px #686868, 1px 0 15px #686868,
+    0 -1px 15px #686868;
+  top: calc(50vh - 300px);
+  left: calc(50vw - 200px);
+  border-radius: 20px;
+  z-index: 100;
 }
 
 .userbadge {
-    font-family: 'monospace';
-    font-size: 10px;
-    position: absolute;
-    z-index: 998;
-    background-color: #E5DBFF;
-    border-radius: 10px;
-    padding: 0px 2px 0px 2px;
+  font-family: "monospace";
+  font-size: 10px;
+  position: absolute;
+  z-index: 998;
+  background-color: #e5dbff;
+  border-radius: 10px;
+  padding: 0px 2px 0px 2px;
 }
-.userbadge_0 { color: #FFAAAA; background-color: #AA3939; }
-.userbadge_1 { color: #669999; background-color: #226666; }
-.userbadge_2 { color: #D6DBE8; background-color: #7887AB; }
-.userbadge_3 { color: #554700; background-color: #AA9738; }
-.userbadge_4 { color: #FFE3A9; background-color: #AA8538; }
-.userbadge_5 { color: #CDC0F8; background-color: #AA8538; }
-.userbadge_6 { color: #CDC0F8; background-color: #691B6F; }
-.userbadge_7 { color: #FFF4BE; background-color: #A99328; }
-.userbadge_8 { color: #0A0C00; background-color: #91A426; }
-.userbadge_9 { color: #0A0C00; background-color: #CBB80C; }
-.userbadge_10 { color: #FFF4BE; background-color: #7887AB; }
-.userbadge_11 { color: #D6DDE8; background-color: #AA3939; }
-.userbadge_12 { color: #0A0C00; background-color: #669999; }
-.userbadge_13 { color: #FFF4BE; background-color: #226666; }
-
-.locklabel{
-    position:absolute;
-    top: -10px;
-    left: calc(50%-8px);
-    width: 16px;
-    height: 16px;
-    border-radius: 10px;
-    background-image: url('../assets/lock.svg');
+.userbadge_0 {
+  color: #ffaaaa;
+  background-color: #aa3939;
+}
+.userbadge_1 {
+  color: #669999;
+  background-color: #226666;
+}
+.userbadge_2 {
+  color: #d6dbe8;
+  background-color: #7887ab;
+}
+.userbadge_3 {
+  color: #554700;
+  background-color: #aa9738;
+}
+.userbadge_4 {
+  color: #ffe3a9;
+  background-color: #aa8538;
+}
+.userbadge_5 {
+  color: #cdc0f8;
+  background-color: #aa8538;
+}
+.userbadge_6 {
+  color: #cdc0f8;
+  background-color: #691b6f;
+}
+.userbadge_7 {
+  color: #fff4be;
+  background-color: #a99328;
+}
+.userbadge_8 {
+  color: #0a0c00;
+  background-color: #91a426;
+}
+.userbadge_9 {
+  color: #0a0c00;
+  background-color: #cbb80c;
+}
+.userbadge_10 {
+  color: #fff4be;
+  background-color: #7887ab;
+}
+.userbadge_11 {
+  color: #d6dde8;
+  background-color: #aa3939;
+}
+.userbadge_12 {
+  color: #0a0c00;
+  background-color: #669999;
+}
+.userbadge_13 {
+  color: #fff4be;
+  background-color: #226666;
 }
 
-#modeIndicator{
+.locklabel {
+  position: absolute;
+  top: -10px;
+  left: calc(50%-8px);
+  width: 16px;
+  height: 16px;
+  border-radius: 10px;
+  background-image: url("../assets/lock.svg");
+}
+
+#modeIndicator {
   z-index: 100000;
 }
 
-.avatar-in-line{
-    width:28px; height:28px;
+.avatar-in-line {
+  width: 28px;
+  height: 28px;
+}
+
+.centerpoint {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 20px;
+  height: 20px;
+  border-radius: 20px;
+  background-color: red;
+  z-index: 999999;
 }

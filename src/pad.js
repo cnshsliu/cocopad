@@ -101,7 +101,7 @@ const app = new Vue({
       currentPrjPage: 1,
       currentDocPage: 1,
       rightTabIndex: 2,
-      defaultGridWith: 20,
+      defaultGridWidth: 20,
       gridWidth: 20,
       snap: true,
       oldSnap: true,
