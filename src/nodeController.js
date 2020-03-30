@@ -18,7 +18,7 @@ const NodeController = {
     // }else{
     //   console.log('locklabel exist..', lockLabel);
     }
-    console.log("After", jqNode.prop('outerHTML'));
+    // console.log("After", jqNode.prop('outerHTML'));
     
     NodeController.safeNodeEventModify(jqNode, "draggable", 'disable');
     NodeController.safeNodeEventModify(jqNode, "resizable", 'disable');
