@@ -18,6 +18,7 @@ import "spectrum-colorpicker2/dist/spectrum.min";
 import "../lib/fontpicker-jquery-plugin/dist/jquery.fontpicker";
 import "../lib/jquery.line/jquery.line";
 import "../lib/jquery-minimap/jquery-minimap";
+import { SVG } from "@svgdotjs/svg.js";
 import WS from "./ws";
 import config from "./config";
 
@@ -52,6 +53,7 @@ const OSSClient = new OSS({
   accessKeySecret: "xpilgsl4KQbfnFDZkRMy0Dp1KuoW8A",
   bucket: config.vault.bucket
 });
+let draw = null;
 const KFK = {};
 KFK.isZooming = false;
 KFK.zoomlevel = 1;
@@ -1611,7 +1613,9 @@ KFK._createNode = function (node) {
   } else if (node.type === "textblock") {
     nodeObj = document.createElement("div");
     nodeObj.style.fontSize = "18px";
-    nodeObj.innerHTML = node.attach?node.attach:config.node.textblock.content;
+    nodeObj.innerHTML = node.attach
+      ? node.attach
+      : config.node.textblock.content;
     // nodeObj.style.width = px(node.width - textPadding * 2);
     // nodeObj.style.height = px(node.height - textPadding * 2);
     nodeObj.style.padding = px(2);
@@ -2892,7 +2896,6 @@ KFK.init = async function () {
 
   $("#left_menu").removeClass("noshow");
   await WS.start(KFK.onWsConnected, KFK.onWsMsg, 500);
-
 };
 
 KFK.onWsConnected = function () {
@@ -2916,6 +2919,7 @@ KFK.onWsConnected = function () {
       explorer: false,
       designer: false
     });
+    KFK.initSvgLayer();
     KFK.checkUser(false);
   } else {
     //重新连接
@@ -2929,7 +2933,6 @@ KFK.onWsConnected = function () {
       });
     console.log(`There are ${count} offline nodes `);
   }
-
 };
 
 KFK.showSection = function (options) {
@@ -4661,21 +4664,21 @@ KFK.save = async function () {
 KFK.checkUrl = function (str_url) {
   const schema = Joi.string()
     .regex(
-  /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/
-      )
+      /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/
+    )
     .required();
   let { error, value } = schema.validate(str_url);
-  return (error === undefined);
+  return error === undefined;
 };
 
-KFK.replaceHTMLTarget = function(html){
+KFK.replaceHTMLTarget = function (html) {
   html = `<div>${html}</div>`;
-  console.log('to be replaced', html);
-  try{
+  console.log("to be replaced", html);
+  try {
     let jq = $($.parseHTML(html));
-    jq.find('a').prop('target', '_blank');
-    ret = jq.prop('innerHTML');
-  }catch(err){
+    jq.find("a").prop("target", "_blank");
+    ret = jq.prop("innerHTML");
+  } catch (err) {
     ret = "";
   }
   console.log("repalce target ret", ret);
@@ -4686,12 +4689,12 @@ KFK.addTextToHoverDIV = function (content) {
   let toAdd = content.text;
   if (content.html === "") {
     toAdd = content.text;
-    if(KFK.checkUrl(toAdd)){
+    if (KFK.checkUrl(toAdd)) {
       toAdd = `<a href="${toAdd}">${toAdd}</a>`;
     }
     toAdd = KFK.replaceHTMLTarget(toAdd);
     console.log("past text", toAdd);
-  }else{
+  } else {
     toAdd = content.html;
     toAdd = KFK.replaceHTMLTarget(toAdd);
     console.log("past html", toAdd);
@@ -4705,7 +4708,7 @@ KFK.addTextToHoverDIV = function (content) {
       let innerObj = KFK.jqHoverDIV.find(".innerobj");
       let oldText = innerObj.html();
       let newText = oldText + "<BR> " + toAdd;
-      if(KFK.KEYDOWN.shift === false){
+      if (KFK.KEYDOWN.shift === false) {
         newText = toAdd;
       }
       innerObj.html(newText);
@@ -5292,6 +5295,29 @@ config.defaultDocBgcolor = "#ABABAB";
 //Start the APP
 KFK.loadImages();
 KFK.loadAvatars();
+
+KFK.initSvgLayer = function () {
+  KFK.svgDraw = SVG().addTo("body").size("1000", "1000");
+  draw = KFK.svgDraw;
+  KFK.playWithSVGdotJS();
+};
+KFK.playWithSVGdotJS = function () {
+  var path = draw.path("M0 0 H50 A20 20 0 1 0 100 50 v25 C50 125 0 85 0 85 z");
+  path.fill("none").move(20, 20);
+  path.stroke({ color: "#f06", width: 4, linecap: "round", linejoin: "round" });
+  path.text("SVG.js is rock, yes, rock and roll");
+
+  var text = draw.text(function (add) {
+    add.tspan("Lorem ipsum dolor sit amet ").newLine();
+    add.tspan("consectetur").fill("#f06");
+    add.tspan(".");
+    add.tspan("Cras sodales imperdiet auctor.").newLine().dx(20);
+    add.tspan("Nunc ultrices lectus at erat").newLine();
+    add.tspan("dictum pharetra elementum ante").newLine();
+  });
+
+  
+};
 
 module.exports = KFK;
 
