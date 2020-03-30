@@ -83,17 +83,12 @@ KFK.expoloerRefreshed = false;
 KFK.numberOfNodeToCreate = 0;
 KFK.numberOfNodeCreated = 0;
 
-//TODO: 流量计费
-//TODO: 放开zoomin zoomout，提示为测试状态，功能有问题
-//TODO: 多个演示文档ID，随机选择给Demo用户使用
-//TODO: 演示文档中，放入广告，招投资，招团队
-//TODO: ToolTips 在demo状态下每次进来分别提示一次
-
 // KFK._width = window.innerWidth; KFK._height = window.innerHeight;
 // KFK._width = window.innerWidth * 6; KFK._height = window.innerHeight * 6;
 // A4
-KFK._width = 842 * 4;
-KFK._height = 595 * 4;
+KFK._width = 842 * 6;
+KFK._height = 595 * 6;
+KFK.minimapMouseDown = false;
 
 KFK.nodes = [];
 KFK.defaultNodeWidth = 40;
@@ -115,7 +110,7 @@ KFK.afterResizing = false;
 KFK.linkPos = [];
 KFK.toggleMode = false;
 KFK.tween = null;
-KFK.ctrlDown = false;
+KFK.KEYDOWN = { ctrl: false, shift: false, alt: false, meta: false };
 KFK.originZIndex = 1;
 KFK.lastActionLogJqDIV = null;
 
@@ -187,7 +182,8 @@ $(document).mousemove(function (event) {
   if (
     KFK.mode === "pointer" &&
     KFK.mouseIsDown &&
-    KFK.lineMoverDragging === false
+    KFK.lineMoverDragging === false &&
+    KFK.minimapMouseDown === false
   ) {
     KFK.warn(
       `框选 ${JSON.stringify(KFK.dragToSelectFrom)} - ${JSON.stringify(
@@ -1597,7 +1593,7 @@ KFK._createNode = function (node) {
   } else if (node.type === "text") {
     nodeObj = document.createElement("span");
     nodeObj.style.fontSize = "18px";
-    nodeObj.innerText = config.node.text.content;
+    nodeObj.innerHTML = node.attach ? node.attach : config.node.text.content;
     nodeObj.style.padding = px(2);
   } else if (node.type === "yellowtip") {
     nodeObj = document.createElement("span");
@@ -1615,7 +1611,7 @@ KFK._createNode = function (node) {
   } else if (node.type === "textblock") {
     nodeObj = document.createElement("div");
     nodeObj.style.fontSize = "18px";
-    nodeObj.innerText = config.node.textblock.content;
+    nodeObj.innerHTML = node.attach?node.attach:config.node.textblock.content;
     // nodeObj.style.width = px(node.width - textPadding * 2);
     // nodeObj.style.height = px(node.height - textPadding * 2);
     nodeObj.style.padding = px(2);
@@ -2063,7 +2059,6 @@ KFK.setNodeEvent = function (jqNode, action, cmd) {
     jqNode.draggable(cmd);
   }
 };
-//TODO: do not send mouse in zoom mode
 KFK.setNodeEventHandler = function (jqNodeDIV) {
   jqNodeDIV.addClass("kfknode");
   let nodeDIV = el(jqNodeDIV);
@@ -2250,7 +2245,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
         if (KFK.isZooming) return;
         // console.log(`dropped, locMode = ${KFK.lockMode}`);
         //lockMode时可以Marge
-        if (KFK.lockMode === false) return;
+        if (KFK.KEYDOWN.ctrl === false && KFK.KEYDOWN.meta === false) return;
         let parent_node_type = jqNodeDIV.attr("nodetype");
         let child_node_type = ui.draggable.attr("nodetype");
         //同种类型可以merge
@@ -2259,7 +2254,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
           let fromJQ = jqNodeDIV.clone();
           let innerObj = jqNodeDIV.find(".innerobj");
           let oldText = innerObj.html();
-          let newText = oldText + "<BR> " + ui.draggable.html();
+          let newText = oldText + ui.draggable.html();
           let elBig = el(jqNodeDIV);
           let elSmall = el(ui.draggable);
           if (
@@ -2272,7 +2267,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
           ) {
             innerObj.html(newText);
             //删掉之前那个被拖动的
-            KFK._deleteNode(el(ui.draggable));
+            KFK._deleteNode(ui.draggable);
             //更新这个被粘贴的
             KFK.syncNodePut("U", jqNodeDIV, "new text", fromJQ, false);
           }
@@ -2897,6 +2892,7 @@ KFK.init = async function () {
 
   $("#left_menu").removeClass("noshow");
   await WS.start(KFK.onWsConnected, KFK.onWsMsg, 500);
+
 };
 
 KFK.onWsConnected = function () {
@@ -2933,6 +2929,7 @@ KFK.onWsConnected = function () {
       });
     console.log(`There are ${count} offline nodes `);
   }
+
 };
 
 KFK.showSection = function (options) {
@@ -3660,7 +3657,7 @@ KFK.shareThisDoc = function () {
 };
 KFK.shareDone = function () {
   KFK.showForm({ share: false });
-  KFK.log('分享地址以放入剪贴板，请粘贴给其他人');
+  KFK.log("分享地址以放入剪贴板，请粘贴给其他人");
 };
 
 KFK.showResetPwdModal = function (item, index, button) {
@@ -4230,13 +4227,13 @@ KFK.setMode = function (mode) {
   KFK.focusOnMainContainer();
 };
 
-KFK.toggleMinimap = function(){
+KFK.toggleMinimap = function () {
   for (let key in KFK.APP.active) {
     KFK.APP.active[key] = false;
   }
-  KFK.APP.active['minimap'] = true;
-  KFK.showSection({minimap: !KFK.APP.show.section.minimap});
-  KFK.setMode('pointer');
+  KFK.APP.active["minimap"] = true;
+  KFK.showSection({ minimap: !KFK.APP.show.section.minimap });
+  KFK.setMode("pointer");
 };
 
 //用在index.js中的boostrapevue
@@ -4279,211 +4276,127 @@ KFK.addContainerMainEventHandler = function () {
   // });
   $("#containermain").focus();
   $(document).keydown(function (e) {
-    if (KFK.inDesigner() === false) return;
-    // console.log(e.keyCode);
-    let preventDefault = false;
-    if (KFK.editting) return;
-    if (KFK.isZooming) return;
-
-    e.preventDefault();
-    if (e.keyCode === 16) {
-      //Shift
-      KFK.lockMode = KFK.lockMode ? false : true;
-      KFK.APP.lockMode = KFK.lockMode;
-      KFK.pickedNode = null;
-      preventDefault = true;
-      if (KFK.linkPos.length === 1) {
-        KFK.linkPos = [];
-      }
-    } else if (e.keyCode === 82 && e.ctrlKey) {
-      //Ctrl-R  key R
-      KFK.toggleRight();
-    } else if (e.keyCode === 17) {
-      //Ctrl key ctrl
-      KFK.ctrlDown = true;
-    } else if (e.keyCode === 18) {
-      //Option
-      //按下option键，切换toggleMode
-      KFK.toggleMode = !KFK.toggleMode;
-      if (KFK.mode === "line") {
-        KFK.APP.setData("model", "lineToggleMode", KFK.toggleMode);
-      }
-    } else if (e.keyCode === 27) {
-      //ESC
-      if (KFK.isZooming === true) {
-        KFK.zoomStop();
-      }
-      KFK.selectNone();
-      if (!KFK.editting && KFK.mode !== "line") KFK.setMode("pointer");
-      if (KFK.lineTemping) {
-        KFK.lineTemping = false;
-      }
-      if (KFK.tmpJQLine) {
-        KFK.tmpJQLine.remove();
-        KFK.tmpJQLine = null;
-        KFK.linkPos.clear();
-      }
-      KFK.setMode("pointer");
-    } else if (e.keyCode === 46 || e.keyCode === 8 || e.keyCode === 88) {
-      // key DELETE  key X
-      preventDefault = true;
-      KFK.deleteHoverDiv(e);
-    } else if (e.keyCode === 68) {
-      // key D
-      preventDefault = true;
-      KFK.duplicateHoverDiv(e);
-    } else if (e.keyCode === 90 && e.metaKey) {
-      //Meta-Z
-      if (e.shiftKey) {
-        KFK.redo();
-      } else {
-        KFK.undo();
-      }
-    } else if (e.keyCode === 35 && KFK.isKfkNode(KFK.jqHoverDIV)) {
-      // key end
-      preventDefault = true;
-      let myZI = KFK.getZIndex(KFK.jqHoverDIV);
-      let count = 0;
-      let zIndexChanger = { doc_id: KFK.APP.model.cocodoc.doc_id, ZI: {} };
-      $(KFK.C3)
-        .find(".kfknode")
-        .each((index, aNodeDIV) => {
-          count += 1;
-          let jqNode = $(aNodeDIV);
-          let tmp = KFK.getZIndex(jqNode);
-          if (tmp > myZI) {
-            KFK.setZIndex(jqNode, tmp - 1);
-            zIndexChanger.ZI[jqNode.attr("id")] = tmp - 1;
-          }
-        });
-      KFK.setZIndex(KFK.jqHoverDIV, count);
-      zIndexChanger.ZI[KFK.jqHoverDIV.attr("id")] = count;
-      KFK.WS.put("ZI", zIndexChanger);
-    } else if (e.keyCode === 36 && KFK.isKfkNode(KFK.jqHoverDIV)) {
-      // key home
-      preventDefault = true;
-      let myZI = KFK.getZIndex(KFK.jqHoverDIV);
-      let count = 0;
-      let zIndexChanger = { doc_id: KFK.APP.model.cocodoc.doc_id, ZI: {} };
-      $(KFK.C3)
-        .find(".kfknode")
-        .each((index, aNodeDIV) => {
-          count += 1;
-          let jqNode = $(aNodeDIV);
-          let tmp = KFK.getZIndex(jqNode);
-          if (tmp < myZI) {
-            KFK.setZIndex(jqNode, tmp + 1);
-            zIndexChanger.ZI[jqNode.attr("id")] = tmp + 1;
-          }
-        });
-      KFK.setZIndex(KFK.jqHoverDIV, 1);
-      zIndexChanger.ZI[KFK.jqHoverDIV.attr("id")] = 1;
-      KFK.sendCmd("ZI", zIndexChanger);
-    } else if (e.keyCode === 33 && KFK.isKfkNode(KFK.jqHoverDIV)) {
-      // key pageup
-      preventDefault = true;
-      let myZI = KFK.getZIndex(KFK.jqHoverDIV);
-      let count = 0;
-      let allnodes = $(KFK.C3).find(".kfknode");
-      let zIndexChanger = { doc_id: KFK.APP.model.cocodoc.doc_id, ZI: {} };
-      if (myZI < allnodes.length) {
-        allnodes.each((index, aNodeDIV) => {
-          count += 1;
-          let jqNode = $(aNodeDIV);
-          let tmp = KFK.getZIndex(jqNode);
-          if (tmp === myZI + 1) {
-            KFK.setZIndex(jqNode, myZI);
-            zIndexChanger.ZI[jqNode.attr("id")] = myZI;
-          }
-        });
-        KFK.setZIndex(KFK.jqHoverDIV, myZI + 1);
-        zIndexChanger.ZI[KFK.jqHoverDIV.attr("id")] = myZI + 1;
-        KFK.sendCmd("ZI", zIndexChanger);
-      }
-    } else if (e.keyCode === 34 && KFK.isKfkNode(KFK.jqHoverDIV)) {
-      // key pagedown
-      preventDefault = true;
-      let zIndexChanger = { doc_id: KFK.APP.model.cocodoc.doc_id, ZI: {} };
-      let myZI = KFK.getZIndex(KFK.jqHoverDIV);
-      if (myZI > 1) {
-        let count = 0;
-        $(KFK.C3)
-          .find(".kfknode")
-          .each((index, aNodeDIV) => {
-            count += 1;
-            let jqNode = $(aNodeDIV);
-            let tmp = KFK.getZIndex(jqNode);
-            if (tmp === myZI - 1) {
-              KFK.setZIndex(jqNode, myZI);
-              zIndexChanger.ZI[jqNode.attr("id")] = myZI;
-            }
-          });
-        KFK.setZIndex(KFK.jqHoverDIV, myZI - 1);
-        zIndexChanger.ZI[KFK.jqHoverDIV.attr("id")] = myZI - 1;
-        KFK.sendCmd("ZI", zIndexChanger);
-      }
-    } else if (e.keyCode == 76 && e.shiftKey) {
-      //key L key l
-      if (KFK.jqHoverDIV && KFK.isMyDoc() && KFK.docLocked() === false) {
-        if (KFK.nodeLocked(KFK.jqHoverDIV)) {
-          let opEntry = {
-            cmd: "UNLOCK",
-            from: KFK.jqHoverDIV.attr("id"),
-            to: KFK.jqHoverDIV.attr("id")
-          };
-          KFK.yarkOpEntry(opEntry);
-          KFK.sendCmd("UNLOCKNODE", {
-            doc_id: KFK.APP.model.cocodoc.doc_id,
-            nodeid: KFK.jqHoverDIV.attr("id")
-          });
-        } else {
-          let opEntry = {
-            cmd: "LOCK",
-            from: KFK.jqHoverDIV.attr("id"),
-            to: KFK.jqHoverDIV.attr("id")
-          };
-          KFK.yarkOpEntry(opEntry);
-          KFK.sendCmd("LOCKNODE", {
-            doc_id: KFK.APP.model.cocodoc.doc_id,
-            nodeid: KFK.jqHoverDIV.attr("id")
-          });
+    switch (e.keyCode) {
+      case 16:
+        //Shift
+        KFK.lockMode = KFK.lockMode ? false : true;
+        KFK.APP.lockMode = KFK.lockMode;
+        KFK.pickedNode = null;
+        preventDefault = true;
+        if (KFK.linkPos.length === 1) {
+          KFK.linkPos = [];
         }
-      } else {
-        KFK.log(
-          "Not authed" +
-            KFK.APP.model.cocodoc.owner +
-            " " +
-            KFK.APP.model.cocouser.userid
-        );
-        console.log(KFK.APP.model.cocodoc);
-      }
-    } else if (
-      (e.keyCode === 83 || e.keyCode === 87 || e.keyCode === 81) &&
-      e.metaKey
-    ) {
-      //83: key s , 87: key w, 81: key q
-      preventDefault = true;
-    }
-    if (preventDefault) {
-      e.stopImmediatePropagation();
-      e.stopPropagation();
-      e.preventDefault();
+        KFK.KEYDOWN.shift = true;
+        break;
+      case 17:
+        //Ctrl key ctrl
+        KFK.KEYDOWN.ctrl = true;
+        break;
+      case 18:
+        //Option
+        //按下option键，切换toggleMode
+        KFK.toggleMode = !KFK.toggleMode;
+        if (KFK.mode === "line") {
+          KFK.APP.setData("model", "lineToggleMode", KFK.toggleMode);
+        }
+        KFK.KEYDOWN.alt = true;
+        break;
+      case 91:
+        KFK.KEYDOWN.meta = true;
+        break;
+      case 27:
+        //ESC
+        if (KFK.isZooming === true) {
+          KFK.zoomStop();
+        }
+        KFK.selectNone();
+        if (!KFK.editting && KFK.mode !== "line") KFK.setMode("pointer");
+        if (KFK.lineTemping) {
+          KFK.lineTemping = false;
+        }
+        if (KFK.tmpJQLine) {
+          KFK.tmpJQLine.remove();
+          KFK.tmpJQLine = null;
+          KFK.linkPos.clear();
+        }
+        KFK.setMode("pointer");
+        break;
+      case 90:
+        if (e.metaKey && e.shiftKey) KFK.redo();
+        if (e.metaKey && !e.shiftKey) KFK.undo();
+        break;
     }
   });
   $(document).keyup(function (e) {
     if (KFK.inDesigner() === false) return;
-    if (e.keyCode === 17) {
-      //Ctrl  key ctrl
-      KFK.ctrlDown = false;
+    console.log(e.keyCode);
+    let preventDefault = true;
+    if (KFK.editting) return;
+    if (KFK.isZooming) return;
+
+    switch (e.keyCode) {
+      case 16:
+        KFK.KEYDOWN.shift = false;
+        break;
+      case 17:
+        KFK.KEYDOWN.ctrl = false;
+        break;
+      case 18:
+        KFK.KEYDOWN.alt = false;
+        break;
+      case 91:
+        KFK.KEYDOWN.meta = false;
+        break;
+      case 82:
+        if (e.ctrlKey)
+          //Ctrl-R  key R
+          KFK.toggleRight();
+        break;
+      case 46:
+      case 8:
+      case 88:
+        // key DELETE  key X
+        preventDefault = true;
+        KFK.deleteHoverDiv(e);
+        break;
+      case 68:
+        // key D
+        preventDefault = true;
+        KFK.duplicateHoverDiv(e);
+        break;
+      case 35:
+        // key end
+        preventDefault = true;
+        KFK.ZiToTop();
+        break;
+      case 36:
+        // key home
+        preventDefault = true;
+        KFK.ZiToBottom();
+        break;
+      case 33:
+        // key pageup
+        preventDefault = true;
+        KFK.ZiToHigher();
+        break;
+      case 34:
+        // key pagedown
+        preventDefault = true;
+        KFK.ZiToLower();
+        break;
+      case 76:
+        if (e.shiftKey) {
+          //key L key l
+          KFK.tryToLockUnlock();
+        }
+        break;
+      default:
+        preventDefault = false;
     }
-    //83: key s , 87: key w, 81: key q
-    if (
-      (e.keyCode === 83 || e.keyCode === 87 || e.keyCode === 81) &&
-      e.metaKey
-    ) {
+    if (preventDefault) {
+      e.preventDefault();
       e.stopImmediatePropagation();
       e.stopPropagation();
-      e.preventDefault();
     }
   });
 
@@ -4512,6 +4425,122 @@ KFK.addContainerMainEventHandler = function () {
   });
 };
 
+KFK.ZiToTop = function () {
+  if (KFK.isKfkNode(KFK.jqHoverDIV) === false) return;
+  let myZI = KFK.getZIndex(KFK.jqHoverDIV);
+  let count = 0;
+  let zIndexChanger = { doc_id: KFK.APP.model.cocodoc.doc_id, ZI: {} };
+  $(KFK.C3)
+    .find(".kfknode")
+    .each((index, aNodeDIV) => {
+      count += 1;
+      let jqNode = $(aNodeDIV);
+      let tmp = KFK.getZIndex(jqNode);
+      if (tmp > myZI) {
+        KFK.setZIndex(jqNode, tmp - 1);
+        zIndexChanger.ZI[jqNode.attr("id")] = tmp - 1;
+      }
+    });
+  KFK.setZIndex(KFK.jqHoverDIV, count);
+  zIndexChanger.ZI[KFK.jqHoverDIV.attr("id")] = count;
+  KFK.WS.put("ZI", zIndexChanger);
+};
+
+KFK.ZiToBottom = function () {
+  if (KFK.isKfkNode(KFK.jqHoverDIV) === false) return;
+
+  let myZI = KFK.getZIndex(KFK.jqHoverDIV);
+  let count = 0;
+  let zIndexChanger = { doc_id: KFK.APP.model.cocodoc.doc_id, ZI: {} };
+  $(KFK.C3)
+    .find(".kfknode")
+    .each((index, aNodeDIV) => {
+      count += 1;
+      let jqNode = $(aNodeDIV);
+      let tmp = KFK.getZIndex(jqNode);
+      if (tmp < myZI) {
+        KFK.setZIndex(jqNode, tmp + 1);
+        zIndexChanger.ZI[jqNode.attr("id")] = tmp + 1;
+      }
+    });
+  KFK.setZIndex(KFK.jqHoverDIV, 1);
+  zIndexChanger.ZI[KFK.jqHoverDIV.attr("id")] = 1;
+  KFK.sendCmd("ZI", zIndexChanger);
+};
+KFK.ZiToHigher = function () {
+  if (KFK.isKfkNode(KFK.jqHoverDIV) === false) return;
+  let myZI = KFK.getZIndex(KFK.jqHoverDIV);
+  let count = 0;
+  let allnodes = $(KFK.C3).find(".kfknode");
+  let zIndexChanger = { doc_id: KFK.APP.model.cocodoc.doc_id, ZI: {} };
+  if (myZI < allnodes.length) {
+    allnodes.each((index, aNodeDIV) => {
+      count += 1;
+      let jqNode = $(aNodeDIV);
+      let tmp = KFK.getZIndex(jqNode);
+      if (tmp === myZI + 1) {
+        KFK.setZIndex(jqNode, myZI);
+        zIndexChanger.ZI[jqNode.attr("id")] = myZI;
+      }
+    });
+    KFK.setZIndex(KFK.jqHoverDIV, myZI + 1);
+    zIndexChanger.ZI[KFK.jqHoverDIV.attr("id")] = myZI + 1;
+    KFK.sendCmd("ZI", zIndexChanger);
+  }
+};
+
+KFK.ZiToLower = function () {
+  if (KFK.isKfkNode(KFK.jqHoverDIV) === false) return;
+  let zIndexChanger = { doc_id: KFK.APP.model.cocodoc.doc_id, ZI: {} };
+  let myZI = KFK.getZIndex(KFK.jqHoverDIV);
+  if (myZI > 1) {
+    let count = 0;
+    $(KFK.C3)
+      .find(".kfknode")
+      .each((index, aNodeDIV) => {
+        count += 1;
+        let jqNode = $(aNodeDIV);
+        let tmp = KFK.getZIndex(jqNode);
+        if (tmp === myZI - 1) {
+          KFK.setZIndex(jqNode, myZI);
+          zIndexChanger.ZI[jqNode.attr("id")] = myZI;
+        }
+      });
+    KFK.setZIndex(KFK.jqHoverDIV, myZI - 1);
+    zIndexChanger.ZI[KFK.jqHoverDIV.attr("id")] = myZI - 1;
+    KFK.sendCmd("ZI", zIndexChanger);
+  }
+};
+
+KFK.tryToLockUnlock = function () {
+  if (KFK.jqHoverDIV && KFK.isMyDoc() && KFK.docLocked() === false) {
+    if (KFK.nodeLocked(KFK.jqHoverDIV)) {
+      let opEntry = {
+        cmd: "UNLOCK",
+        from: KFK.jqHoverDIV.attr("id"),
+        to: KFK.jqHoverDIV.attr("id")
+      };
+      KFK.yarkOpEntry(opEntry);
+      KFK.sendCmd("UNLOCKNODE", {
+        doc_id: KFK.APP.model.cocodoc.doc_id,
+        nodeid: KFK.jqHoverDIV.attr("id")
+      });
+    } else {
+      let opEntry = {
+        cmd: "LOCK",
+        from: KFK.jqHoverDIV.attr("id"),
+        to: KFK.jqHoverDIV.attr("id")
+      };
+      KFK.yarkOpEntry(opEntry);
+      KFK.sendCmd("LOCKNODE", {
+        doc_id: KFK.APP.model.cocodoc.doc_id,
+        nodeid: KFK.jqHoverDIV.attr("id")
+      });
+    }
+  } else {
+    console.log("lock bypass");
+  }
+};
 KFK.toggleRight = function (flag) {
   $("#right").toggle("slide", { duration: 100, direction: "right" });
 };
@@ -4577,13 +4606,13 @@ KFK.saveBlobToOSS = function (blob) {
         let tmp = KFK.placeNode(
           false, //shiftKey
           tmpid,
-          "image",
+          "textblock",
           "default",
           KFK.currentMousePos.x + KFK.scrollContainer.scrollLeft(),
           KFK.currentMousePos.y + KFK.scrollContainer.scrollTop(),
           100,
           100,
-          res.res.requestUrls[0]
+          `<img src='${res.res.requestUrls[0]}'/>`
         );
         KFK.syncNodePut("C", $(tmp), "create image node", null, false);
       })
@@ -4629,7 +4658,44 @@ KFK.save = async function () {
   // console.log(result.objects);
 };
 
-KFK.addTextToHoverDIV = function (text) {
+KFK.checkUrl = function (str_url) {
+  const schema = Joi.string()
+    .regex(
+  /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/
+      )
+    .required();
+  let { error, value } = schema.validate(str_url);
+  return (error === undefined);
+};
+
+KFK.replaceHTMLTarget = function(html){
+  html = `<div>${html}</div>`;
+  console.log('to be replaced', html);
+  try{
+    let jq = $($.parseHTML(html));
+    jq.find('a').prop('target', '_blank');
+    ret = jq.prop('innerHTML');
+  }catch(err){
+    ret = "";
+  }
+  console.log("repalce target ret", ret);
+  return ret;
+};
+
+KFK.addTextToHoverDIV = function (content) {
+  let toAdd = content.text;
+  if (content.html === "") {
+    toAdd = content.text;
+    if(KFK.checkUrl(toAdd)){
+      toAdd = `<a href="${toAdd}">${toAdd}</a>`;
+    }
+    toAdd = KFK.replaceHTMLTarget(toAdd);
+    console.log("past text", toAdd);
+  }else{
+    toAdd = content.html;
+    toAdd = KFK.replaceHTMLTarget(toAdd);
+    console.log("past html", toAdd);
+  }
   if (KFK.jqHoverDIV) {
     if (KFK.anyLocked(KFK.jqHoverDIV)) return;
     if (KFK.isZooming) return;
@@ -4638,7 +4704,10 @@ KFK.addTextToHoverDIV = function (text) {
       KFK.fromJQ = KFK.jqHoverDIV.clone();
       let innerObj = KFK.jqHoverDIV.find(".innerobj");
       let oldText = innerObj.html();
-      let newText = oldText + "<BR> " + text;
+      let newText = oldText + "<BR> " + toAdd;
+      if(KFK.KEYDOWN.shift === false){
+        newText = toAdd;
+      }
       innerObj.html(newText);
       KFK.syncNodePut(
         "U",
@@ -4648,38 +4717,44 @@ KFK.addTextToHoverDIV = function (text) {
         false
       );
     }
+  } else {
+    let tmp = KFK.placeNode(
+      false, //shiftKey
+      myuid(),
+      "textblock",
+      "default",
+      KFK.currentMousePos.x + KFK.scrollContainer.scrollLeft(),
+      KFK.currentMousePos.y + KFK.scrollContainer.scrollTop(),
+      100,
+      100,
+      toAdd
+    );
+    KFK.syncNodePut("C", $(tmp), "create text node", null, false);
   }
 };
 
-document.onpaste = function (event) {
+KFK.onPaste = function (event) {
+  console.log("here0");
   if (KFK.docLocked() || KFK.isZooming) return;
+  let content = { html: "", text: "", image: null };
+  content.html = event.clipboardData.getData("text/html");
+  content.text = event.clipboardData.getData("Text");
   var items = (event.clipboardData || event.originalEvent.clipboardData).items;
+  console.log(items[1] ? "items[1]" : "items[0]");
+  console.log(content);
   if (items[1]) {
-    if (items[0].kind === "string" && items[1].kind === "string") {
-      items[0].getAsString(text => {
-        KFK.addTextToHoverDIV(text);
-      });
-      items[1].getAsString(text => {
-        // console.log(`items[1] ${ text }`);
-      });
-    } else if (items[0].kind === "string" && items[1].kind === "file") {
-      items[0].getAsString(text => {
-        // console.log(`items[0] ${ text }`);
-      });
-      var blob = items[1].getAsFile();
-      KFK.saveBlobToOSS(blob);
-    }
+    KFK.addTextToHoverDIV(content);
   } else if (items[0]) {
     if (items[0].kind === "string") {
-      items[0].getAsString(text => {
-        KFK.addTextToHoverDIV(text);
-      });
+      KFK.addTextToHoverDIV(content);
     } else if (items[0].kind === "file") {
       var blob = items[0].getAsFile();
       KFK.saveBlobToOSS(blob);
     }
   }
 };
+
+document.onpaste = KFK.onPaste;
 
 KFK.addEditorToNode = function (jqNode, editor) {
   let editors = jqNode.attr("editors");
@@ -5223,12 +5298,15 @@ module.exports = KFK;
 //TODO: Add Link, paste link
 //TODO: add Picture by URL
 //TODO: Paste link, auto check, if URL, add href, if image, show it.
+//TODO: 流量计费
+//TODO: 多个演示文档ID，随机选择给Demo用户使用
+//TODO: do not send mouse in zoom mode
+//TODO: 演示文档中，放入广告，招投资，招团队
+//TODO: ToolTips 在demo状态下每次进来分别提示一次
 //TODO: 清理OSS图片
 // OSS路径名使用 tenant_id/doc_id/pic_name.png
 // 一开始生成文档的ID， 然后的OSS图片的目录使用这个ID， 最后保存时，检查真正剩余的图片，并与OSS中的对应，没有用到的从OSS中删除掉
-//TODO: Zoom in / Zoom out
 //TODO: RichText with QuilJS
 //TODO: double click on line to add text label
 //TODO: 自动折现
-//TODO: LOCK but onlyme can edit, (record lockby?   owner can unlock all?)
-//TODO: Fix grid width when zoom/in out,
+//TODO: replace Konva draw grid with SVG repeatable img?

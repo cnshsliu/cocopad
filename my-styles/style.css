@@ -189,8 +189,8 @@ body {
   background-color: rgba(0, 0, 0, 0.1);
   /* width: 100%;
     height: 100vh; */
-  width: 3368px;
-  height: 2380px;
+  width: 5052px;
+  height: 3570px;
   overflow: auto;
   margin: 0px;
   position: absolute;
@@ -635,8 +635,8 @@ select:focus {
 
 #minimap {
   position: absolute;
-  width: 125px;
-  height: 125px;
+  width: 168px;
+  height: 119px;
   bottom: 5px;
   right: 5px;
   background-color: #eee;
@@ -656,4 +656,9 @@ select:focus {
   background-color: rgba(79, 111, 126, 0.4);
   z-index: 1000000000;
   cursor: move;
+}
+
+.kfknode img{
+  width: 100%;
+  height: 100%;
 }
