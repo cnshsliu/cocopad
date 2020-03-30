@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@hapi/joi": "^17.1.1",
+    "@svgdotjs/svg.js": "^3.0.16",
     "bootstrap": "^4.4.1",
     "bootstrap-vue": "^2.8.0",
     "clipboard": "^2.0.6",
