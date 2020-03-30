@@ -472,14 +472,14 @@ KFK.yarkLinkPoint = function (x, y, shiftKey) {
   KFK.procLink(shiftKey);
 };
 
-KFK.yarkLinkNode = function (theDIV, shiftKey) {
-  let divLeft = unpx(theDIV.style.left);
-  let divTop = unpx(theDIV.style.top);
-  let divWidth = unpx(theDIV.style.width);
-  let divHeight = unpx(theDIV.style.height);
+KFK.yarkLinkNode = function (jqDIV, shiftKey) {
+  let divLeft = unpx(jqDIV.css("left"));
+  let divTop = unpx(jqDIV.css("top"));
+  let divWidth = unpx(jqDIV.css("width"));
+  let divHeight = unpx(jqDIV.css("height"));
   if (KFK.lineDragging) return;
   let pos = {
-    div: theDIV,
+    div: jqDIV,
     type: "box",
     center: {
       x: divLeft + divWidth * 0.5,
@@ -487,20 +487,20 @@ KFK.yarkLinkNode = function (theDIV, shiftKey) {
     },
     points: [
       {
-        x: unpx(theDIV.style.left),
-        y: unpx(theDIV.style.top) + unpx(theDIV.style.height) * 0.5
+        x: unpx(jqDIV.css("left")),
+        y: unpx(jqDIV.css("top")) + unpx(jqDIV.css("height")) * 0.5
       },
       {
-        x: unpx(theDIV.style.left) + unpx(theDIV.style.width) * 0.5,
-        y: unpx(theDIV.style.top)
+        x: unpx(jqDIV.css("left")) + unpx(jqDIV.css("width")) * 0.5,
+        y: unpx(jqDIV.css("top"))
       },
       {
-        x: unpx(theDIV.style.left) + unpx(theDIV.style.width),
-        y: unpx(theDIV.style.top) + unpx(theDIV.style.height) * 0.5
+        x: unpx(jqDIV.css("left")) + unpx(jqDIV.css("width")),
+        y: unpx(jqDIV.css("top")) + unpx(jqDIV.css("height")) * 0.5
       },
       {
-        x: unpx(theDIV.style.left) + unpx(theDIV.style.width) * 0.5,
-        y: unpx(theDIV.style.top) + unpx(theDIV.style.height)
+        x: unpx(jqDIV.css("left")) + unpx(jqDIV.css("width")) * 0.5,
+        y: unpx(jqDIV.css("top")) + unpx(jqDIV.css("height"))
       }
     ]
   };
@@ -539,6 +539,17 @@ KFK.procLink = function (shiftKey) {
       }
     }
   }
+  let svgLine = KFK.svgLinkNode(
+    KFK.linkPos[0].div.attr("id"),
+    KFK.linkPos[1].div.attr("id"),
+    selectedFromIndex,
+    selectedToIndex,
+    KFK.linkPos[0].points[selectedFromIndex].x,
+    KFK.linkPos[0].points[selectedFromIndex].y,
+    KFK.linkPos[1].points[selectedToIndex].x,
+    KFK.linkPos[1].points[selectedToIndex].y,
+    {}
+  );
   let jqLine = KFK.drawLine(
     KFK.linkPos[0].points[selectedFromIndex].x,
     KFK.linkPos[0].points[selectedFromIndex].y,
@@ -553,10 +564,10 @@ KFK.procLink = function (shiftKey) {
   jqLine.attr("ty", KFK.linkPos[1].points[selectedToIndex].y);
   //在连接到nodeDIV时，再加两个属性
   if (KFK.linkPos[0].type === "box") {
-    jqLine.attr("fdiv", KFK.linkPos[0].div.getAttribute("id"));
+    jqLine.attr("fdiv", KFK.linkPos[0].div.attr("id"));
   }
   if (KFK.linkPos[1].type === "box") {
-    jqLine.attr("tdiv", KFK.linkPos[1].div.getAttribute("id"));
+    jqLine.attr("tdiv", KFK.linkPos[1].div.attr("id"));
   }
   //有一端连在nodeDIV上，则，不允许拖动和改变大小
   // if (KFK.linkPos[0].type === 'box' || KFK.linkPos[1].type === 'box') {
@@ -1925,9 +1936,9 @@ KFK._setTipBkgColor = function (theNode, bgColor) {
   }
   console.log(
     "setTipBkgColor for " +
-      theNode.getAttribute("nodetype") +
-      " " +
-      theNode.getAttribute("variant")
+    theNode.getAttribute("nodetype") +
+    " " +
+    theNode.getAttribute("variant")
   );
   let svgImg = $(theNode).find(".tip_bkg .svg_main_path");
   if (svgImg.length > 0) {
@@ -1970,16 +1981,9 @@ KFK.reArrangeLinks = function (jqNodeDIV) {
         KFK.linkPos = [];
         //如果结束点也是一个nodediv
         if (aLineDiv.getAttribute("tdiv")) {
-          KFK.yarkLinkNode(el(jqNodeDIV));
+          KFK.yarkLinkNode(jqNodeDIV);
           let divFilter = `#${aLineDiv.getAttribute("tdiv")}`;
-          KFK.yarkLinkNode($(divFilter)[0]);
-        } else {
-          //如果结束点是一个 point
-          KFK.yarkLinkNode(el(jqNodeDIV));
-          KFK.yarkLinkPoint(
-            aLineDiv.getAttribute("tx"),
-            aLineDiv.getAttribute("ty")
-          );
+          KFK.yarkLinkNode($(divFilter));
         }
         //老的link line不用从selectedDIVs中删除
         //因为link line不放入selectedDIVs
@@ -1993,14 +1997,8 @@ KFK.reArrangeLinks = function (jqNodeDIV) {
         KFK.linkPos = [];
         if (aLineDiv.getAttribute("fdiv")) {
           let divFilter = `#${aLineDiv.getAttribute("fdiv")}`;
-          KFK.yarkLinkNode($(divFilter)[0]);
-          KFK.yarkLinkNode(el(jqNodeDIV));
-        } else {
-          KFK.yarkLinkPoint(
-            aLineDiv.getAttribute("fx"),
-            aLineDiv.getAttribute("fy")
-          );
-          KFK.yarkLinkNode(el(jqNodeDIV));
+          KFK.yarkLinkNode($(divFilter));
+          KFK.yarkLinkNode(jqNodeDIV);
         }
         //老的link line不用从selectedDIVs中删除
         //因为link line不放入selectedDIVs
@@ -2076,7 +2074,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
         KFK.fromJQ = jqNodeDIV.clone();
         KFK.resizing = true;
       },
-      resize: () => {},
+      resize: () => { },
       stop: () => {
         if (KFK.isZooming) return;
         x("Stop Resizing...");
@@ -2165,7 +2163,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
         y: KFK.nodeTop(el(jqNodeDIV))
       };
     },
-    drag: (event, ui) => {},
+    drag: (event, ui) => { },
     stop: (event, ui) => {
       if (KFK.isZooming) return;
       KFK.dragging = false;
@@ -2265,9 +2263,9 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
             unpx(elSmall.style.left) > unpx(elBig.style.left) &&
             unpx(elSmall.style.top) > unpx(elBig.style.top) &&
             unpx(elSmall.style.left) + unpx(elSmall.style.width) <
-              unpx(elBig.style.left) + unpx(elBig.style.width) &&
+            unpx(elBig.style.left) + unpx(elBig.style.width) &&
             unpx(elSmall.style.top) + unpx(elSmall.style.height) <
-              unpx(elBig.style.top) + unpx(elBig.style.height)
+            unpx(elBig.style.top) + unpx(elBig.style.height)
           ) {
             innerObj.html(newText);
             //删掉之前那个被拖动的
@@ -2314,7 +2312,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
     if (KFK.mode === "line") {
       if (KFK.afterDragging === false) {
         // console.log('yark link node')
-        KFK.yarkLinkNode(el(jqNodeDIV), e.shiftKey);
+        KFK.yarkLinkNode(jqNodeDIV, e.shiftKey);
       } else {
         // console.log('NO yark link node because afterDragging');
         KFK.afterDragging = true;
@@ -2736,22 +2734,22 @@ KFK.duplicateHoverDiv = function (e) {
       );
       console.log(
         KFK.scrollX(KFK.currentMousePos.x) -
-          parseInt(jqNewNode.css("width")) * 0.5
+        parseInt(jqNewNode.css("width")) * 0.5
       );
       console.log(
         KFK.scrollY(KFK.currentMousePos.y) -
-          parseInt(jqNewNode.css("height")) * 0.5
+        parseInt(jqNewNode.css("height")) * 0.5
       );
 
       jqNewNode.css(
         "left",
         KFK.scrollX(KFK.currentMousePos.x) -
-          parseInt(jqNewNode.css("width")) * 0.5
+        parseInt(jqNewNode.css("width")) * 0.5
       );
       jqNewNode.css(
         "top",
         KFK.scrollY(KFK.currentMousePos.y) -
-          parseInt(jqNewNode.css("height")) * 0.5
+        parseInt(jqNewNode.css("height")) * 0.5
       );
       KFK.cleanNodeEventFootprint(jqNewNode);
       jqNewNode.appendTo(KFK.C3);
@@ -3413,7 +3411,7 @@ KFK.onWsMsg = function (data) {
           });
           KFK.showDocs();
         })
-        .catch(err => {});
+        .catch(err => { });
       break;
     case "TGLREAD":
       KFK.APP.model.docs.forEach(doc => {
@@ -4807,7 +4805,7 @@ KFK.getNodeEditors = function (jqNode) {
   return editorsArr;
 };
 
-KFK.changeSVGFill = function () {};
+KFK.changeSVGFill = function () { };
 KFK.scrCenter = function () {
   return { x: $(window).width() * 0.5, y: $(window).height() * 0.5 };
 };
@@ -5297,26 +5295,106 @@ KFK.loadImages();
 KFK.loadAvatars();
 
 KFK.initSvgLayer = function () {
-  KFK.svgDraw = SVG().addTo("body").size("1000", "1000");
+  KFK.svgDraw = SVG().addTo("body").size(KFK._width, KFK._height);
   draw = KFK.svgDraw;
   KFK.playWithSVGdotJS();
 };
 KFK.playWithSVGdotJS = function () {
-  var path = draw.path("M0 0 H50 A20 20 0 1 0 100 50 v25 C50 125 0 85 0 85 z");
-  path.fill("none").move(20, 20);
-  path.stroke({ color: "#f06", width: 4, linecap: "round", linejoin: "round" });
-  path.text("SVG.js is rock, yes, rock and roll");
+  let p1 = { x: 100, y: 100 };
+  let p2 = { x: 500, y: 300 };
+  let line = draw.path(KFK.makePath(p1, p2));
+  line.fill("none").stroke({ width: 3, color: "#FF0000" });
+};
+KFK.makePath = function (p1, p2) {
+  let rad = 10;
+  let c1 = { x: p2.x - rad, y: p1.y };
+  let c2 = { x: p2.x, y: p1.y + rad };
 
-  var text = draw.text(function (add) {
-    add.tspan("Lorem ipsum dolor sit amet ").newLine();
-    add.tspan("consectetur").fill("#f06");
-    add.tspan(".");
-    add.tspan("Cras sodales imperdiet auctor.").newLine().dx(20);
-    add.tspan("Nunc ultrices lectus at erat").newLine();
-    add.tspan("dictum pharetra elementum ante").newLine();
-  });
+  let pStr = `M${p1.x} ${p1.y} H${c1.x} S${c2.x} ${c1.y} ${c2.x} ${c2.y} V${p2.y}`;
+  console.log(pStr);
+  return pStr;
+};
+KFK.svgDrawLinkNode = function (lineClass, pstr) {
+  let oldLine = draw.findOne(`.${lineClass}`);
+  if(oldLine){
+    oldLine.animate(200).plot(pstr);
+  }else{
+    draw.path(pstr).addClass(lineClass).fill("none").stroke({ width: 3, color: "#FF0000" });
+  }
+};
 
-  
+KFK.svgLinkNode = function (fid, tid, fbp, tbp, fx, fy, tx, ty) {
+  console.log('from', fid, 'to', tid);
+  let lineClass=`line_${fid}_${tid}`;
+  let pstr = "";
+  let rad = 20;
+  switch (fbp) {
+    case 0:
+      switch (tbp) {
+        case 0:
+          pstr = `M${fx} ${fy} C${fx - rad} ${fy} ${tx - rad} ${ty} ${tx} ${ty}`;
+          break;
+        case 1:
+          pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
+          break;
+        case 2:
+          pstr = `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`;
+          break;
+        case 3:
+          pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
+          break;
+      }
+      break;
+    case 1:
+      switch (tbp) {
+        case 0:
+          pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
+          break;
+        case 1:
+          pstr = `M${fx} ${fy} C${fx} ${ty - rad} ${tx} ${ty - rad} ${tx} ${ty}`;
+          break;
+        case 2:
+          pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
+          break;
+        case 3:
+          pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${fy} ${tx} ${ty}`;
+          break;
+      }
+      break;
+    case 2:
+      switch (tbp) {
+        case 0:
+          pstr = `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`;
+          break;
+        case 1:
+          pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
+          break;
+        case 2:
+          pstr = `M${fx} ${fy} C${fx + rad} ${fy} ${tx + rad} ${ty} ${tx} ${ty}`;
+          break;
+        case 3:
+          pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
+          break;
+      }
+      break;
+    case 3:
+      switch (tbp) {
+        case 0:
+          pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
+          break;
+        case 1:
+          pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${fy} ${tx} ${ty}`;
+          break;
+        case 2:
+          pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
+          break;
+        case 3:
+          pstr = `M${fx} ${fy} C${fx} ${fy+rad} ${tx} ${ty+rad} ${tx} ${ty}`;
+          break;
+      }
+      break;
+  }
+  KFK.svgDrawLinkNode(lineClass, pstr);
 };
 
 module.exports = KFK;
