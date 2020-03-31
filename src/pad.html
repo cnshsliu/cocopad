@@ -244,6 +244,10 @@
             :active="active['line']">
             <b-img :src="images['line'].src" fluid alt="" scale="2" class="cocotool" id='tool_line'></b-img>
           </b-list-group-item>
+          <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('connect');"
+            :active="active['connect']">
+            <b-img :src="images['connect'].src" fluid alt="" scale="2" class="cocotool" id='tool_connect'></b-img>
+          </b-list-group-item>
           <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('lock');"
             :active="active['lock']">
             <b-img :src="images['lock'].src" fluid alt="" scale="2" class="cocotool" id='tool_lock'></b-img>
@@ -334,7 +338,25 @@
             </b-container>
           </b-tab>
           <b-tab title="排列">
+            <b-button-toolbar v-show="show.layercontrol" key-nav class="w-100 justify-content-md-center">
+            <p>图层设置</p>
+              <b-button-group class="d-flex w-100" title="hello">
+                <b-button variant="light" title="到最上(T)" class="flex-fill p-0" @click="KFK.ZiToTop()">
+                  <b-icon icon="chevron-double-up"/>
+                </b-button>
+                <b-button variant="light" title="上一层(H)" class="flex-fill p-0" @click="KFK.ZiToHigher()">
+                  <b-icon icon="chevron-up"/>
+                </b-button>
+                <b-button variant="light" title="下一层(G)" class="flex-fill p-0" @click="KFK.ZiToLower()">
+                  <b-icon icon="chevron-down"/>
+                </b-button>
+                <b-button variant="light" title="到最下(B)" class="flex-fill p-0" @click="KFK.ZiToBottom()">
+                  <b-icon icon="chevron-double-down"/>
+                </b-button>
+              </b-button-group>
+            </b-button-toolbar>
             <b-button-toolbar v-show="show.arrange_multi_nodes" key-nav class="w-100 justify-content-md-center">
+              <p>对齐设置</p>
               <b-button-group class="d-flex w-100">
                 <b-button variant="light" title="对齐左侧" class="flex-fill p-0" @click="KfkAlign('left')"><img
                     src="../assets/align_left.svg" class="toolbar"></b-button>

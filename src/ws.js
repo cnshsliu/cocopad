@@ -47,7 +47,6 @@ WS.put = async (cmd, payload) => {
     // console.log('readystate=' + WS.ws.readyState);
     let ret = false;
     if (WS.ws.readyState === 1) {
-        console.log('~~~~~WS SENDING:', cmd);
         await WS.ws.send(JSON.stringify(payload));
         ret = true;
     }

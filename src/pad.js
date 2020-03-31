@@ -48,7 +48,7 @@ const app = new Vue({
       ['tip_circle3', 'tip_arrow', 'tip_arrow2', 'tip_arrow3', 'tip_arrow4'],
     ],
     //TODO: 没有用户信息时，显示注册页面而不是登录页面
-    active: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'lock': false, 'minimap':false },
+    active: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'lock': false, 'minimap':false, 'connect':false },
     show: {
       'wsready': false,
       'arrange_multi_nodes': false,
@@ -234,8 +234,6 @@ const app = new Vue({
     },
     setData(data, key, value) {
       this.$set(this[data], key, value);
-      if (key === 'lineToggleMode')
-        $('#tool_line').attr('src', this.model.lineToggleMode ? app.images['hvline'].src : app.images['line'].src);
     },
 
     setMode(mode) {
