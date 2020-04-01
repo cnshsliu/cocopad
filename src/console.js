@@ -677,9 +677,9 @@ KFK.procLinkLine = function (shiftKey) {
 KFK.addLinkTo = function (jq1, idToAdd) {
   let linksArr = KFK.stringToArray(jq1.attr("linkto"));
   //过滤掉不存在的节点
-  linksArr = linksArr.filter((aId) => {
-    return ($(`#${aId}`).length > 0) && aId !== jq1.attr("id");
-  })
+  // linksArr = linksArr.filter((aId) => {
+  //   return ($(`#${aId}`).length > 0) && aId !== jq1.attr("id");
+  // })
   //把新的对手节点放进去
   if (linksArr.indexOf(idToAdd) < 0) {
     linksArr.push(idToAdd);
@@ -764,6 +764,7 @@ KFK.undo = () => {
         if (jqFrom.hasClass("kfknode")) {
           KFK.setNodeEventHandler(jqFrom);
         }
+        KFK.redrawLinkLines(jqFrom, 'undo');
         if (jqFrom.hasClass("lock")) {
           KFK.setNodeEvent(jqFrom, "draggable", "destroy");
           KFK.setNodeEvent(jqFrom, "resizable", "destroy");
@@ -792,16 +793,16 @@ KFK.undo = () => {
         let toId = ope.toId;
         let toLine = draw.findOne(`.${toId}`);
         KFK.syncLinePut("D", toLine, "undo", null, true);
-      }else if (ope.from !== "" && ope.to === "") { //ope is D
+      } else if (ope.from !== "" && ope.to === "") { //ope is D
         let fromId = ope.fromId;
         let fromLine = KFK.restoreSvgLine(fromId, ope.from);
         KFK.syncLinePut("C", fromLine, "undo", null, true);
-      }else if (ope.from !== "" && ope.to !== "") { //ope is U
+      } else if (ope.from !== "" && ope.to !== "") { //ope is U
         let toLine = draw.findOne(`.${ope.toId}`);
-        let fromLine = KFK.restoreSvgLine(ope.fromId, ope.from); 
+        let fromLine = KFK.restoreSvgLine(ope.fromId, ope.from);
         //fromLine与toLine的ID相同，因此在restoreSvgLine时，就自动把toLine换成了fromLine
         //不用删除toLine
-        KFK.syncLinePut("U", fromLine, 'undo', toLine, true );
+        KFK.syncLinePut("U", fromLine, 'undo', toLine, true);
       }
     }
   }
@@ -850,10 +851,10 @@ KFK.redo = () => {
           x(nodeid, "NOT hasclass lock");
         }
         KFK.syncNodePut("C", jqTo, "redo", null, true);
-      }else if(ope.from !== '' && ope.to === ''){ //ope is D
+      } else if (ope.from !== '' && ope.to === '') { //ope is D
         let jqFrom = $(`#${ope.fromId}`);
         KFK.syncNodePut("D", jqFrom, "redo", null, true);
-      }else if (ope.from != "" && ope.to !== "") { //ope is U
+      } else if (ope.from != "" && ope.to !== "") { //ope is U
         let jqFrom = $(`#${ope.fromId}`);
         jqFrom.prop('outerHTML', ope.to);
         jqFrom = $(`#${ope.fromId}`);
@@ -873,16 +874,16 @@ KFK.redo = () => {
         let toId = ope.toId;
         let toLine = KFK.restoreSvgLine(toId, ope.to);
         KFK.syncLinePut("C", toLine, "redo", null, true);
-      }else if (ope.from !== "" && ope.to === "") { //ope is D
+      } else if (ope.from !== "" && ope.to === "") { //ope is D
         let fromId = ope.fromId;
         let fromLine = draw.findOne(`.${fromId}`);
         KFK.syncLinePut("D", fromLine, "redo", null, true);
-      }else if (ope.from !== "" && ope.to !== "") { //ope is U
+      } else if (ope.from !== "" && ope.to !== "") { //ope is U
         let fromLine = draw.findOne(`.${ope.fromId}`);
-        let toLine = KFK.restoreSvgLine(ope.toId, ope.to); 
+        let toLine = KFK.restoreSvgLine(ope.toId, ope.to);
         //fromLine与toLine的ID相同，因此在restoreSvgLine时，就自动把fromLine换成了toLine
         //不用删除fromLine
-        KFK.syncLinePut("U", toLine, 'redo', fromLine, true );
+        KFK.syncLinePut("U", toLine, 'redo', fromLine, true);
       }
     }
   }
@@ -1903,13 +1904,13 @@ KFK.getNodeLinkIds = function (jq1, direction) {
   let linksStr = jq1.attr(direction);
   let linksArr = KFK.stringToArray(linksStr);
   //过滤掉不存在的节点
-  linksArr = linksArr.filter((aId) => {
-    return $(`#${aId}`).length > 0;
-  })
+  // linksArr = linksArr.filter((aId) => {
+  //   return $(`#${aId}`).length > 0;
+  // })
   return linksArr;
 }
 
-KFK.redrawLinkLines = function (jqNode, reason) {
+KFK.redrawLinkLines = function (jqNode, reason = 'unknown', bothside = true) {
   KFK.debug('Redrawlinks', reason);
   let myId = jqNode.attr("id");
   let toIds = KFK.getNodeLinkIds(jqNode, 'linkto');
@@ -1919,14 +1920,16 @@ KFK.redrawLinkLines = function (jqNode, reason) {
       KFK.drawLineBetween(jqNode, jqTo);
     }
   });
-  KFK.JC3.find('.kfknode').each((index, aNode) => {
-    let jqFrom = $(aNode);
-    if (jqFrom.attr("id") !== myId) {
-      let arr = KFK.stringToArray(jqFrom.attr('linkto'));
-      if (arr.indexOf(myId) >= 0)
-        KFK.drawLineBetween(jqFrom, jqNode);
-    }
-  });
+  if (bothside) {
+    KFK.JC3.find('.kfknode').each((index, aNode) => {
+      let jqFrom = $(aNode);
+      if (jqFrom.attr("id") !== myId) {
+        let arr = KFK.stringToArray(jqFrom.attr('linkto'));
+        if (arr.indexOf(myId) >= 0)
+          KFK.drawLineBetween(jqFrom, jqNode);
+      }
+    });
+  }
 };
 
 //resize node时，记下当前shape variant的size，下次创建同样shape时，使用这个size
@@ -2574,8 +2577,8 @@ KFK.deleteNode_exec = function (jqDIV) {
   toIds.forEach((toId) => {
     let lineClassSelector = `.line_${myId}_${toId}`;
     let triClassSelector = `.line_${myId}_${toId}_triangle`;
-    try { draw.findOne(lineClassSelector).remove(); } finally { };
-    try { draw.findOne(triClassSelector).remove(); } finally { };
+    try { draw.findOne(lineClassSelector).remove(); } catch (err) { } finally { };
+    try { draw.findOne(triClassSelector).remove(); } catch (err) { } finally { };
   });
   //重置全局ZIndex 同时，删除那些链接到当前节点的连接线
   let myZI = KFK.getZIndex(jqDIV);
@@ -2592,17 +2595,24 @@ KFK.deleteNode_exec = function (jqDIV) {
       KFK.setZIndex(jqDIV, tmp - 1);
     }
     tmp1 = jqDIV.attr("linkto");
-    KFK.removeLinkTo(jqDIV, myId);
-    tmp2 = jqDIV.attr("linkto");
-    if (tmp1 !== tmp2) {
-      KFK.debug("remove link for ", fromId);
+    let arr = KFK.stringToArray(tmp1);
+    if (arr.indexOf(myId) >= 0) {
       let lineClassSelector = `.line_${fromId}_${myId}`;
       let triClassSelector = `.line_${fromId}_${myId}_triangle`;
-      try { draw.findOne(lineClassSelector).remove(); } finally { };
-      try { draw.findOne(triClassSelector).remove(); } finally { };
-    } else {
-      KFK.debug(fromId, ' has no link to me');
+      try { draw.findOne(lineClassSelector).remove(); } catch (err) { } finally { };
+      try { draw.findOne(triClassSelector).remove(); } catch (err) { } finally { };
     }
+    // KFK.removeLinkTo(jqDIV, myId);
+    // tmp2 = jqDIV.attr("linkto");
+    // if (tmp1 !== tmp2) {
+    //   KFK.debug("remove link for ", fromId);
+    //   let lineClassSelector = `.line_${fromId}_${myId}`;
+    //   let triClassSelector = `.line_${fromId}_${myId}_triangle`;
+    //   try { draw.findOne(lineClassSelector).remove(); }catch(err){} finally { };
+    //   try { draw.findOne(triClassSelector).remove(); }catch(err){} finally { };
+    // } else {
+    //   KFK.debug(fromId, ' has no link to me');
+    // }
   });
   let divid = jqDIV.attr("id");
   let nodetype = jqDIV.attr("nodetype");
@@ -3185,8 +3195,8 @@ KFK.loadDoc = function (doc_id, pwd) {
   }
 };
 
-KFK._onDocLoaded = function () {
-  console.log(">>>>>>._onDocLoaded");
+KFK._onDocFullyLoaded = function () {
+  console.log(">>>>>>._onDocFullyLoaded");
   KFK.initShowEditors("none");
   KFK.startPadDesigner();
   KFK.APP.setData("model", "docLoaded", true);
@@ -3219,8 +3229,26 @@ KFK._onDesignerReady = function () {
   KFK.info(">>>>>>Designer is fully ready");
   KFK.JC3.find('.kfknode').each((index, node) => {
     let jqNode = $(node);
-    KFK.redrawLinkLines(jqNode, ' after designer ready');
+    let str = jqNode.attr("linkto");
+    let arr = KFK.stringToArray(str);
+    let tmp1 = arr.length;
+    arr = arr.filter((aId) => {
+      return $(`#${aId}`).length > 0;
+    });
+    let tmp2 = arr.length;
+    if (tmp1 !== tmp2) {
+      if (tmp2 === 0) {
+        jqNode.removeAttr('linkto');
+      } else {
+        jqNode.attr('linkto', arr.join(','));
+      }
+    }
+    KFK.redrawLinkLines(jqNode, ' after designer ready', false);
   });
+  // KFK.JC3.find('.kfknode').each((index, node) => {
+  //   let jqNode = $(node);
+  //   KFK.redrawLinkLines(jqNode, ' after designer ready');
+  // });
   KFK.C3.dispatchEvent(KFK.refreshC3event);
 }
 
@@ -3706,7 +3734,7 @@ KFK.recreateNode = function (obj, callback) {
           KFK.debug("RECREATE node...");
           //不能有下面这个判断，因为即便一个节点没有linkTo, 但可能还有节点的linkTO指向这个节点
           // if (jqDIV.attr("linkto") && jqDIV.attr("linkto").length > 0)
-            KFK.redrawLinkLines(jqDIV, 'server update');
+          KFK.redrawLinkLines(jqDIV, 'server update');
         }
       } else if (jqDIV.hasClass("kfkline")) {
         console.error("Old code, change it");
@@ -3725,7 +3753,7 @@ KFK.checkDocLoaded = function (num) {
   KFK.numberOfNodeCreated += num;
   if (KFK.numberOfNodeCreated >= KFK.numberOfNodeToCreate) {
     console.log("loaded: ", KFK.numberOfNodeCreated, "of", KFK.numberOfNodeToCreate);
-    KFK._onDocLoaded();
+    KFK._onDocFullyLoaded();
   }
 };
 KFK.deleteObject_for_Response = function (obj) {
@@ -5673,6 +5701,9 @@ KFK.svgLinkNode = function (fid, tid, fbp, tbp, fx, fy, tx, ty) {
 
 module.exports = KFK;
 
+//TODO: line color and width
+//TODO: remove connect
+//TODO: connet colors, and width
 //TODO: Add Link, paste link
 //TODO: add Picture by URL
 //TODO: Paste link, auto check, if URL, add href, if image, show it.
