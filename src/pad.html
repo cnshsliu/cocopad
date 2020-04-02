@@ -293,6 +293,12 @@
                 <b-col>线条粗细</b-col>
                 <b-col class='coco'><input class='selector' size=3 id="spinner_line_width" name="value_lw" /></b-col>
               </b-row>
+              <b-row class="mx-auto my-1">
+                <b-checkbox id="cb-linecap" v-model="model.line.linecap" name="cb-linecap" switch
+                  @change="KFK.lineCapChanged">
+                  圆头线条
+                </b-checkbox>
+              </b-row>
             </b-container>
 
             <b-container v-show="show.text_property" class='border-top'>
@@ -339,19 +345,19 @@
           </b-tab>
           <b-tab title="排列">
             <b-button-toolbar v-show="show.layercontrol" key-nav class="w-100 justify-content-md-center">
-            <p>图层设置</p>
+              <p>图层设置</p>
               <b-button-group class="d-flex w-100" title="hello">
                 <b-button variant="light" title="到最上(T)" class="flex-fill p-0" @click="KFK.ZiToTop()">
-                  <b-icon icon="chevron-double-up"/>
+                  <b-icon icon="chevron-double-up" />
                 </b-button>
                 <b-button variant="light" title="上一层(H)" class="flex-fill p-0" @click="KFK.ZiToHigher()">
-                  <b-icon icon="chevron-up"/>
+                  <b-icon icon="chevron-up" />
                 </b-button>
                 <b-button variant="light" title="下一层(G)" class="flex-fill p-0" @click="KFK.ZiToLower()">
-                  <b-icon icon="chevron-down"/>
+                  <b-icon icon="chevron-down" />
                 </b-button>
                 <b-button variant="light" title="到最下(B)" class="flex-fill p-0" @click="KFK.ZiToBottom()">
-                  <b-icon icon="chevron-double-down"/>
+                  <b-icon icon="chevron-double-down" />
                 </b-button>
               </b-button-group>
             </b-button-toolbar>
@@ -383,16 +389,23 @@
           </b-tab>
           <b-tab title="COCO" active class='cocoproperty'>
             <p>欢迎使用</p>
-            <b-checkbox id="cb-showgrid" v-model="model.showGrid" name="cb-showgrid" switch @change="showGridChanged">
+            <b-checkbox id="cb-showgrid" v-model="model.cococonfig.showgrid" name="cb-showgrid" switch
+              @change="showGridChanged">
               显示网格线
             </b-checkbox>
-            <b-checkbox v-model="model.snap" switch @change="snapChanged">对齐到网格
+            <b-checkbox v-model="model.cococonfig.snap" switch @change="snapChanged">
+              对齐到网格
+            </b-checkbox>
+            <b-checkbox v-model="model.cococonfig.showlock" switch @change="KFK.showLockChanged">
+              显示锁定标志
             </b-checkbox>
             <p> </p>
             <b-container class="coco">
               <b-row class="mx-auto my-1">
                 <b-col>背景颜色</b-col>
-                <b-col class="coco"><input name="cocoBkgColor" id="cocoBkgColor" /></b-col>
+                <b-col class="coco">
+                  <b-form-input v-model="model.cococonfig.bgcolor" name="cocoBkgColor" id="cocoBkgColor" />
+                </b-col>
               </b-row>
             </b-container>
             <b-container class="coco">
@@ -868,6 +881,36 @@
         </b-button>
       </b-card>
     </div>
+    <b-modal @ok="KFK.pasteContent" v-model="show.dialog.pasteContentDialog" title="请选择显示方式" button-size="sm" centered
+      size="md">
+      <b-container>
+        <b-row v-show="model.paste.showcontent">
+          <b-col cols="12">粘贴内容
+            <b-form-input disabled trim type="text" v-model="model.paste.content"> </b-form-input>
+          </b-col>
+        </b-row>
+        <b-row v-show="model.paste.showdisplay">
+          <b-col cols="12">显示文字
+            <b-form-input trim type="text" v-model="model.paste.display"> </b-form-input>
+          </b-col>
+        </b-row>
+        <b-row>
+          <b-col cols="12">
+            是否显示边框及底色
+          </b-col>
+          <b-col cols="4">
+            <b-form-radio v-model="model.paste.box" name="box-radios" value="none">无</b-form-radio>
+          </b-col>
+          <b-col cols="4">
+            <b-form-radio v-model="model.paste.box" name="box-radios" value="border">仅边框</b-form-radio>
+          </b-col>
+          <b-col cols="4">
+            <b-form-radio v-model="model.paste.box" name="box-radios" value="all">边框及底色</b-form-radio>
+          </b-col>
+          </b-col>
+        </b-row>
+      </b-container>
+    </b-modal>
   </div>
   <!--app-->
   <div id="copydiv" style="display: none; z-index: -99999"></div>
