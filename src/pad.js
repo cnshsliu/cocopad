@@ -61,9 +61,26 @@ const app = new Vue({
       'actionlog': false,
       'form': { newdoc: false, newprj: false, prjlist: true, doclist: false, share: false, bottomlinks: false, explorerTabIndex: 0 },
       'section': { login: false, register: false, explorer: false, designer: false, minimap:true },
-      'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false, copyDocDialog: false },
+      'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false, copyDocDialog: false, pasteContentDialog: true },
     },
     model: {
+      connect:{
+        color:'red', width: 3,
+        triangle:{
+          width: 1,
+          color: 'blue',
+          fill: 'blue'
+        }
+      },
+      line:{
+        color:'#306EF6', width: 3,linecap:false,
+      },
+      paste: {
+        content: 'inputDocPasswordDialoginputDocPasswordDialoginputDocPasswordDialoginputDocPasswordDialoginputDocPasswordDialog',
+        display:'inputDocPasswordDialoginputDocPasswordDialoginputDocPasswordDialoginputDocPasswordDialoginputDocPasswordDialog',
+        box: 'none',
+        ctype: 'text',
+      },
       avatarLoaded: false,
       copyToPrjId: null,
       actionlog: [],
@@ -103,9 +120,13 @@ const app = new Vue({
       rightTabIndex: 2,
       defaultGridWidth: 20,
       gridWidth: 20,
-      snap: true,
       oldSnap: true,
-      showGrid: true,
+      cococonfig: {
+        bgcolor: '#ABABAB',
+        snap: true,
+        showgrid: true,
+        showlock: true,
+      },
       dragToCreate: true,
       lineToggleMode: false,
       msg: '',
@@ -242,6 +263,7 @@ const app = new Vue({
     KfkAlign(direction) {
       KFK.alignNodes(direction);
     },
+    
     showGridChanged(checked) {
       console.log(`showGrid ${checked}`);
       // if (!checked) { app.setData('model', 'oldSnap', app.model.snap); app.setData('model', 'snap', false); }

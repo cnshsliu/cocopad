@@ -19,6 +19,7 @@ import "../lib/fontpicker-jquery-plugin/dist/jquery.fontpicker";
 import "../lib/jquery.line/jquery.line";
 import "../lib/jquery-minimap/jquery-minimap";
 import { SVG } from "@svgdotjs/svg.js";
+import {RegHelper} from './reghelper';
 import WS from "./ws";
 import config from "./config";
 
@@ -161,7 +162,7 @@ $(document).mouseup(event => {
   KFK.ignoreClick = false;
   if (KFK.lineDragging) {
     let parr = KFK.lineToDrag.array();
-    if (KFK.APP.model.snap) {
+    if (KFK.APP.model.cococonfig.snap) {
       let p1 = { x: parr[0][0], y: parr[0][1] };
       let p2 = { x: parr[1][0], y: parr[1][1] };
       p1 = KFK.getNearGridPoint(p1.x, p1.y);
@@ -173,6 +174,7 @@ $(document).mouseup(event => {
     }
     KFK.lineDragging = false;
     KFK.lineToDrag = null;
+    $(document.body).css("cursor", "default");
   }
   if (KFK.mode === "pointer" && KFK.docLocked() === false) {
     KFK.mouseIsDown = false;
@@ -201,6 +203,13 @@ $(document).mousemove(function (event) {
 
   if (KFK.docLocked()) return;
 
+  if (KFK.lineToDrag && KFK.lineLocked(KFK.lineToDrag) === false) {
+    if (KFK.distance(KFK.mousePosToRemember, KFK.currentMousePos) > 5) {
+      KFK.lineDragging = true;
+    }
+  } else {
+    KFK.lineToDrag = null;
+  }
   //支持按下鼠标， 框选多个node
   if (
     KFK.mode === "pointer" &&
@@ -265,7 +274,7 @@ $(document).mousemove(function (event) {
       );
     }
   }
-  if (KFK.lineDragging) {
+  if (KFK.lineDragging && KFK.lineLocked(KFK.lineToDrag) === false) {
     let realX = KFK.scrollX(event.clientX);
     let realY = KFK.scrollY(event.clientY);
     let deltaX = realX - KFK.lineDraggingStartPoint.x;
@@ -340,7 +349,7 @@ class Node {
     this.x = x;
     this.y = y;
     this.attach = attach;
-    if (KFK.APP.model.snap) {
+    if (KFK.APP.model.cococonfig.snap) {
       let tmpLeft = this.x - this.width * 0.5;
       let tmpTop = this.y - this.height * 0.5;
       let newLeft = tmpLeft;
@@ -402,7 +411,6 @@ KFK.updatePropertyFormWithNode = function (jqNodeDIV) {
   if (KFK.selectedDIVs.length < 2 && KFK.APP.model.rightTabIndex === 2) {
     KFK.APP.setData("model", "rightTabIndex", 0);
   }
-
   KFK.APP.setData("show", "customline", false);
   KFK.APP.setData("show", "shape_property", jqNodeDIV != null);
   KFK.APP.setData(
@@ -549,13 +557,13 @@ KFK.calculateNodeConnectPoints = function (jqDIV) {
   return pos;
 };
 
-KFK.drawLineBetween = function (A, B) {
+KFK.drawPathBetween = function (A, B) {
   let APos = KFK.calculateNodeConnectPoints(A);
   let BPos = KFK.calculateNodeConnectPoints(B);
   let fromPoint = null;
   let toPoint = null;
-  let Aindex = 0;
-  let Bindex = 0;
+  let AIndex = 0;
+  let BIndex = 0;
   let shortestDistance = KFK.distance(
     APos.points[0],
     BPos.points[0]
@@ -572,7 +580,7 @@ KFK.drawLineBetween = function (A, B) {
       }
     }
   }
-  let svgLine = KFK.svgLinkNode(
+  let svgLine = KFK.svgConnectNode(
     A.attr("id"),
     B.attr("id"),
     AIndex,
@@ -587,6 +595,7 @@ KFK.drawLineBetween = function (A, B) {
 
 KFK.yarkLinkNode = function (jqDIV, shiftKey, text) {
   if (KFK.lineDragging) return;
+  if (KFK.nodeLocked(jqDIV)) return;
   KFK.tmpPos = KFK.calculateNodeConnectPoints(jqDIV);
   KFK.linkPosNode.push(jqDIV);
   KFK.procLinkNode(shiftKey, text);
@@ -602,7 +611,7 @@ KFK.procLinkNode = function (shiftKey, text) {
   if (KFK.tempSvgLine) KFK.tempSvgLine.hide();
   KFK.lineTemping = false;
   KFK.cancelAlreadySelected();
-  KFK.drawLineBetween(KFK.linkPosNode[0], KFK.linkPosNode[1]);
+  KFK.drawPathBetween(KFK.linkPosNode[0], KFK.linkPosNode[1]);
   //记录在本地
   let tmp1 = KFK.linkPosNode[0].attr('linkto');
   let tmp2 = KFK.linkPosNode[0].attr('linkto');
@@ -659,11 +668,9 @@ KFK.procLinkLine = function (shiftKey) {
     KFK.linkPosLine[0].center.y,
     KFK.linkPosLine[1].center.x,
     KFK.linkPosLine[1].center.y,
-    { color: 'blue', width: 1 }
+    { color: KFK.APP.model.line.color, width: KFK.APP.model.line.width }
   );
   KFK.syncLinePut("C", svgLine, "create new", null, false);
-  //TODO: Change to notify, then draw on every other's screen
-  // KFK.syncNodePut("C", jqLine, "link node", null, false);
   if (!shiftKey) {
     KFK.linkPosLine.splice(0, 2);
     KFK.setMode("pointer");
@@ -751,6 +758,16 @@ KFK.undo = () => {
       doc_id: KFK.APP.model.cocodoc.doc_id,
       nodeid: ope.from
     });
+  } else if (ope.cmd === "LOCKLINE") {
+    KFK.sendCmd("UNLOCKLINE", {
+      doc_id: KFK.APP.model.cocodoc.doc_id,
+      nodeid: ope.from
+    });
+  } else if (ope.cmd === "UNLOCKLINE") {
+    KFK.sendCmd("LOCKLINE", {
+      doc_id: KFK.APP.model.cocodoc.doc_id,
+      nodeid: ope.from
+    });
   } else {
     if (ope.etype === 'DIV') {
       if (ope.from === '' && ope.to !== "") { //ope is C
@@ -830,6 +847,16 @@ KFK.redo = () => {
     });
   } else if (ope.cmd === "UNLOCK") {
     KFK.sendCmd("UNLOCKNODE", {
+      doc_id: KFK.APP.model.cocodoc.doc_id,
+      nodeid: ope.from
+    });
+  } else if (ope.cmd === "LOCKLINE") {
+    KFK.sendCmd("LOCKLINE", {
+      doc_id: KFK.APP.model.cocodoc.doc_id,
+      nodeid: ope.from
+    });
+  } else if (ope.cmd === "UNLOCKLINE") {
+    KFK.sendCmd("UNLOCKLINE", {
       doc_id: KFK.APP.model.cocodoc.doc_id,
       nodeid: ope.from
     });
@@ -926,9 +953,10 @@ KFK.initC3 = function () {
     KFK.closeActionLog();
     if (KFK.ignoreClick) return;
 
+    KFK.debug('click c3');
     KFK.focusOnNode(null);
     KFK.setJustCreated(null);
-    KFK.pickedJqLine = null;
+    KFK.pickedSvgLine = null;
 
     if (KFK.docLocked()) return;
 
@@ -1708,7 +1736,6 @@ KFK.syncLinePut = async function (cmd, svgLine, reason, svgFrom, isUndoRedo) {
       lastupdate: svgLine.attr("lastupdate")
     };
     //TODO: Add Recent doc list, which should be display on logon
-    //TODO: disable Kuangxuan on linemover dragging
     console.log(payload);
 
     let formContent = toContent = fromId = toId = "";
@@ -1797,6 +1824,7 @@ function getBoolean(value) {
   }
 }
 
+//jqNode can be a node or even a svgline
 KFK.anyLocked = function (jqNode) {
   return KFK.docLocked() || KFK.nodeLocked(jqNode) || KFK.isZooming;
 };
@@ -1810,8 +1838,13 @@ KFK.docLocked = function () {
 };
 
 KFK.nodeLocked = function (jqNode) {
+  //Even works for svline, because svg line has .hasClass function as well
   return jqNode.hasClass("lock");
 };
+KFK.lineLocked = function (svgLine) {
+  return svgLine.hasClass("lock");
+};
+
 
 KFK.setTipVariant = function (tipvariant) {
   config.node.yellowtip.defaultTip = tipvariant;
@@ -1910,14 +1943,29 @@ KFK.getNodeLinkIds = function (jq1, direction) {
   return linksArr;
 }
 
+KFK.removeConnectById = function (connect_id) {
+  try { draw.find(`.${connect_id}`).remove(); } catch (err) { }
+  let triangle_id = connect_id + "_triangle";
+  try { draw.find(`.${triangle_id}`).remove(); } catch (err) { }
+};
+
 KFK.redrawLinkLines = function (jqNode, reason = 'unknown', bothside = true) {
-  KFK.debug('Redrawlinks', reason);
+  KFK.debug('Redrawlinks', reason, 'bothside', bothside);
   let myId = jqNode.attr("id");
   let toIds = KFK.getNodeLinkIds(jqNode, 'linkto');
+  let list = draw.find('.connect');
+  list.each((connect) => {
+    if (connect.attr('fid') === myId) {
+      let connect_id = connect.attr("id");
+      connect.remove();
+      let triangle_id = connect_id + "_triangle";
+      draw.find(`.${triangle_id}`).remove();
+    }
+  });
   toIds.forEach((toId, index) => {
     if (toId !== myId) {
       let jqTo = $(`#${toId}`);
-      KFK.drawLineBetween(jqNode, jqTo);
+      KFK.drawPathBetween(jqNode, jqTo);
     }
   });
   if (bothside) {
@@ -1926,7 +1974,7 @@ KFK.redrawLinkLines = function (jqNode, reason = 'unknown', bothside = true) {
       if (jqFrom.attr("id") !== myId) {
         let arr = KFK.stringToArray(jqFrom.attr('linkto'));
         if (arr.indexOf(myId) >= 0)
-          KFK.drawLineBetween(jqFrom, jqNode);
+          KFK.drawPathBetween(jqFrom, jqNode);
       }
     });
   }
@@ -2003,7 +2051,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
       stop: () => {
         if (KFK.isZooming) return;
         x("Stop Resizing...");
-        if (KFK.APP.model.snap) {
+        if (KFK.APP.model.cococonfig.snap) {
           let tmpRight = KFK.nodeRight(nodeDIV);
           let tmpBottom = KFK.nodeBottom(nodeDIV);
           let newRight = tmpRight;
@@ -2094,7 +2142,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
     stop: (event, ui) => {
       if (KFK.isZooming) return;
       KFK.dragging = false;
-      if (KFK.APP.model.snap) {
+      if (KFK.APP.model.cococonfig.snap) {
         let tmpLeft = KFK.nodeLeft(el(jqNodeDIV));
         let tmpTop = KFK.nodeTop(el(jqNodeDIV));
         let newLeft = tmpLeft;
@@ -2231,6 +2279,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
   jqNodeDIV.click(evt => {
     // console.log('click on nodeDIV');
     if (KFK.isZooming) return;
+    KFK.pickedSvgLine = null;
     KFK.afterDragging = false;
     KFK.afterResizing = false;
     let selDIV = el(jqNodeDIV);
@@ -2645,6 +2694,13 @@ KFK._deleteLine = function (svgLine) {
   KFK.syncLinePut("D", svgLine, "delete node", null, false);
 };
 
+KFK.getNodeIdsFromConnectId = function (cid) {
+  let nid = tid = cid;
+  nid = nid.substr(nid.indexOf('_') + 1);
+  nid = nid.substr(0, nid.indexOf('_'));
+  tid = tid.substr(tid.lastIndexOf('_') + 1);
+  return [nid, tid];
+};
 KFK.deleteHoverDiv = function (evt) {
   if (KFK.isZooming) return;
   if (KFK.hoverJqDiv()) {
@@ -2655,6 +2711,21 @@ KFK.deleteHoverDiv = function (evt) {
     if (KFK.anyLocked(KFK.svgHoverLine)) return;
     KFK._deleteLine(KFK.svgHoverLine);
     KFK.svgHoverLine = null;
+  } else if (KFK.hoveredConnectId) {
+    if (KFK.docLocked()) return;
+    let tmp = KFK.getNodeIdsFromConnectId(KFK.hoveredConnectId);
+    nid = tmp[0];
+    tid = tmp[1];
+    let jqFrom = $(`#${nid}`);
+    let jqTo = $(`#${tid}`);
+    if (KFK.anyLocked(jqFrom)) return;
+    if (KFK.anyLocked(jqTo)) return;
+    let oldJq = jqFrom.clone();
+    KFK.removeLinkTo(jqFrom, tid);
+    let connect_id = `line_${nid}_${tid}`;
+    KFK.removeConnectById(connect_id);
+    KFK.syncNodePut("U", jqFrom, "remove connect", oldJq, false);
+    KFK.debug(KFK.hoveredConnectId, nid, tid);
   }
 };
 
@@ -2781,6 +2852,31 @@ KFK.scrollY = function (y) {
 
 KFK.showGridChanged = function (checked) {
   KFK.gridLayer.visible(checked);
+};
+
+
+KFK.showLockChanged = function (checked) {
+  if(checked){
+    $('.locklabel').removeClass('noshow');
+  }else{
+    $('.locklabel').addClass('noshow'); 
+  }
+};
+
+KFK.lineCapChanged = function (checked) {
+  if (KFK.pickedSvgLine === null || KFK.anyLocked(KFK.pickedSvgLine)) return;
+  let tmp = KFK.pickedSvgLine.clone();
+  tmp.attr("id", KFK.pickedSvgLine.attr("id"));
+  KFK.pickedSvgLine.attr({
+    "stroke-linecap": checked ? 'round' : 'square',
+  });
+  KFK.syncLinePut(
+    "U",
+    KFK.pickedSvgLine,
+    "set line color",
+    tmp,
+    false
+  );
 };
 
 KFK.init = async function () {
@@ -3468,11 +3564,18 @@ KFK.onWsMsg = function (data) {
       KFK.resetNodeZIndex(data.payload.data);
       break;
     case "LOCKNODE":
-      console.log("------------GOT LOCKNODE, LOCK IT-----");
       KFK.NodeController.lock($(`#${data.payload.data.nodeid}`));
       break;
     case "UNLOCKNODE":
       KFK.NodeController.unlock($(`#${data.payload.data.nodeid}`));
+      break;
+    case "LOCKLINE":
+      KFK.debug("------------GOT LOCKLINE, LOCK IT-----");
+      KFK.NodeController.lockline(KFK, draw.findOne(`.${data.payload.data.nodeid}`));
+      break;
+    case "UNLOCKLINE":
+      KFK.debug("------------GOT UNLOCKLINE, LOCK IT-----");
+      KFK.NodeController.unlockline(KFK, draw.findOne(`.${data.payload.data.nodeid}`));
       break;
     case "COPYDOC":
       KFK.onCopyDoc(data.paylaod.data);
@@ -3689,10 +3792,21 @@ KFK.recreateDoc = function (obj, callback) {
 };
 KFK.recreateSLine = function (obj, callback) {
   try {
-    let content = KFK.base64ToCode(obj.html);
-    console.log('Recreate', content);
+    let isALockedNode = false;
+    let html = obj.html;
+    if (html.startsWith("[LOCK]")) {
+      isALockedNode = true;
+      html = html.substring(6);
+    }
+    let content = KFK.base64ToCode(html);
+    console.log('Recreate', content, "with lock", isALockedNode);
     let line_id = obj.nodeid;
-    KFK.restoreSvgLine(line_id, content);
+    let theLine = KFK.restoreSvgLine(line_id, content);
+    if(isALockedNode){
+      KFK.NodeController.lockline(KFK, theLine);
+    }else{
+      KFK.NodeController.unlockline(KFK, theLine); 
+    }
   } catch (err) {
     console.error(err);
   } finally {
@@ -3703,11 +3817,13 @@ KFK.recreateSLine = function (obj, callback) {
 KFK.recreateNode = function (obj, callback) {
   try {
     let isALockedNode = false;
-    let html = KFK.base64ToCode(obj.html);
+    let html = obj.html;
     if (html.startsWith("[LOCK]")) {
       isALockedNode = true;
       html = html.substring(6);
     }
+    html = KFK.base64ToCode(html);
+
     let jqDIV = $($.parseHTML(html));
     let nodeid = jqDIV.attr("id");
     if (jqDIV.hasClass("notify")) {
@@ -3724,12 +3840,16 @@ KFK.recreateNode = function (obj, callback) {
         KFK.C3.appendChild(el(jqDIV));
       }
       jqDIV = $(`#${nodeid}`);
+      KFK.debug('jqDIV linkto', jqDIV.attr('linkto'));
 
       if (jqDIV.hasClass("kfknode")) {
         if (KFK.APP.model.cocodoc.readonly === false) {
           KFK.setNodeEventHandler(jqDIV);
           if (isALockedNode) {
+            KFK.debug('is a locked');
             KFK.NodeController.lock(jqDIV);
+          } else {
+            KFK.debug('is not locked');
           }
           KFK.debug("RECREATE node...");
           //不能有下面这个判断，因为即便一个节点没有linkTo, 但可能还有节点的linkTO指向这个节点
@@ -3845,20 +3965,18 @@ KFK.initPropertyForm = function () {
     step: 1,
     start: 1,
     spin: function (event, ui) {
-      if (KFK.pickedJqLine != null && KFK.docLocked() === false) {
-        KFK.fromJQ = KFK.pickedJqLine.clone();
-        KFK.pickedJqLine.css("border-bottom-width", ui.value);
-        let options = KFK.getLineOptions(KFK.pickedJqLine);
-        options.stroke = ui.value;
-        KFK.setLineOptions(KFK.pickedJqLine, options);
-        KFK.syncNodePut(
-          "U",
-          KFK.pickedJqLine,
-          "set line width",
-          KFK.fromJQ,
-          false
-        );
-      }
+      if (KFK.pickedSvgLine === null || KFK.anyLocked(KFK.pickedSvgLine)) return;
+      KFK.pickedSvgLine.attr({
+        "stroke-width": ui.value,
+        "origin-width": ui.value
+      });
+      KFK.syncLinePut(
+        "U",
+        KFK.pickedSvgLine,
+        "set line color",
+        KFK.lineToRemember,
+        false
+      );
     }
   });
   spinnerLineWidth.spinner("value", 1);
@@ -3973,7 +4091,7 @@ KFK.setNodeShowEditor = function (jqNode) {
 KFK.initColorPicker = function () {
   $("#cocoBkgColor").spectrum({
     type: "color",
-    color: config.defaultDocBgcolor,
+    color: KFK.APP.model.cococonfig.bgcolor,
     localStorageKey: "color.cocoBkgColor",
     showPaletteOnly: "true",
     togglePaletteOnly: "true",
@@ -4049,20 +4167,15 @@ KFK.initColorPicker = function () {
       var rgb = color.toRgbString();
       var hex = color.toHexString();
       // KFK.APP.setBGto(color.toRgbString());
-      if (KFK.pickedJqLine != null && KFK.docLocked() === false) {
-        KFK.fromJQ = KFK.pickedJqLine.clone();
-        KFK.pickedJqLine.css("border-color", color.toRgbString());
-        let options = KFK.getLineOptions(KFK.pickedJqLine);
-        options.color = rgb;
-        KFK.setLineOptions(KFK.pickedJqLine, options);
-        KFK.syncNodePut(
-          "U",
-          KFK.pickedJqLine,
-          "set line color",
-          KFK.fromJQ,
-          false
-        );
-      }
+      if (KFK.pickedSvgLine === null || KFK.anyLocked(KFK.pickedSvgLine)) return;
+      KFK.pickedSvgLine.attr("stroke", color.toRgbString());
+      KFK.syncLinePut(
+        "U",
+        KFK.pickedSvgLine,
+        "set line color",
+        KFK.lineToRemember,
+        false
+      );
     }
   });
   $("#fontColor").spectrum({
@@ -4573,8 +4686,33 @@ KFK.tryToLockUnlock = function () {
         nodeid: KFK.hoverJqDiv().attr("id")
       });
     }
+  } else if (KFK.svgHoverLine && KFK.isMyDoc() && KFK.docLocked() === false) {
+    if (KFK.lineLocked(KFK.svgHoverLine)) {
+      KFK.lineToDrag = null;
+      let opEntry = {
+        cmd: "UNLOCKLINE",
+        from: KFK.svgHoverLine.attr("id"),
+        to: KFK.svgHoverLine.attr("id")
+      };
+      KFK.yarkOpEntry(opEntry);
+      KFK.sendCmd("UNLOCKLINE", {
+        doc_id: KFK.APP.model.cocodoc.doc_id,
+        nodeid: KFK.svgHoverLine.attr("id")
+      });
+    } else {
+      let opEntry = {
+        cmd: "LOCKLINE",
+        from: KFK.svgHoverLine.attr("id"),
+        to: KFK.svgHoverLine.attr("id")
+      };
+      KFK.yarkOpEntry(opEntry);
+      KFK.sendCmd("LOCKLINE", {
+        doc_id: KFK.APP.model.cocodoc.doc_id,
+        nodeid: KFK.svgHoverLine.attr("id")
+      });
+    }
   } else {
-    console.log("lock bypass");
+    KFK.info("lock bypass, not your doc or doc is locked");
   }
 };
 KFK.toggleRight = function (flag) {
@@ -4717,21 +4855,35 @@ KFK.replaceHTMLTarget = function (html) {
   console.log("repalce target ret", ret);
   return ret;
 };
-
-KFK.addTextToHoverDIV = function (content) {
+KFK.pasteContent = function(){
+  let paste = KFK.APP.model.paste;
+  console.log(paste);
+};
+KFK.addTextToHoverOrNewDIV = function (content) {
   let toAdd = content.text;
-  if (content.html === "") {
+  if (content.html === "") { //Plain Text
     toAdd = content.text;
-    if (KFK.checkUrl(toAdd)) {
-      toAdd = `<a href="${toAdd}">${toAdd}</a>`;
+    if (RegHelper.isUrl(toAdd)) {
+      KFK.setAppData("model", "paste", {
+        showcontent:true, showdisplay:true, 
+        content: toAdd, display: '请点击访问',
+        ctype: 'url',
+      });
+      KFK.showDialog({pasteContentDialog: true});
+    }else{
+      KFK.setAppData("model", "paste", {
+        showcontent:false, showdisplay:false, 
+        content: toAdd, display: toAdd,
+        ctype: 'text',
+      });
+      KFK.showDialog({pasteContentDialog: true});
     }
-    toAdd = KFK.replaceHTMLTarget(toAdd);
-    console.log("past text", toAdd);
   } else {
-    toAdd = content.html;
+    toAdd = RegHelper.removeMeta(content.html);
     toAdd = KFK.replaceHTMLTarget(toAdd);
     console.log("past html", toAdd);
   }
+  //TODO: continue here.  move following code to a separate function
   if (KFK.hoverJqDiv()) {
     if (KFK.anyLocked(KFK.hoverJqDiv())) return;
     if (KFK.isZooming) return;
@@ -4779,10 +4931,10 @@ KFK.onPaste = function (event) {
   console.log(items[1] ? "items[1]" : "items[0]");
   console.log(content);
   if (items[1]) {
-    KFK.addTextToHoverDIV(content);
+    KFK.addTextToHoverOrNewDIV(content);
   } else if (items[0]) {
     if (items[0].kind === "string") {
-      KFK.addTextToHoverDIV(content);
+      KFK.addTextToHoverOrNewDIV(content);
     } else if (items[0].kind === "file") {
       var blob = items[0].getAsFile();
       KFK.saveBlobToOSS(blob);
@@ -5212,7 +5364,7 @@ KFK.onLinkConnect = async function (data) {
   let nodeFrom = $(selectorFrom);
   let nodeTo = $(selectorTo);
   if (nodeFrom.length > 0 && nodeTo.length > 0) {
-    KFK.drawLineBetween(nodeFrom, nodeTo);
+    KFK.drawPathBetween(nodeFrom, nodeTo);
     KFK.updateLocalNodeLinkIds(nodeFrom, nodeTo);
   }
 };
@@ -5360,7 +5512,6 @@ KFK.restoreSvgLine = function (line_id, html) {
   KFK.addSvgLineEventListner(aLine);
   return aLine;
 };
-//TODO: delete SVGLine
 
 KFK.makePath = function (p1, p2) {
   let rad = 10;
@@ -5372,8 +5523,9 @@ KFK.makePath = function (p1, p2) {
   return pStr;
 };
 
-KFK._svgDrawNodesLink = function (lineClass, lineClassReverse, pstr, triangle) {
+KFK._svgDrawNodesConnect = function (fid, tid, lineClass, lineClassReverse, pstr, triangle) {
   console.log(pstr);
+  let theLine = null;
   let reverseLine = draw.findOne(`.${lineClassReverse}`);
   let oldLine = draw.findOne(`.${lineClass}`);
   let reverseTriangle = draw.findOne(`.${lineClassReverse}_triangle`);
@@ -5383,6 +5535,7 @@ KFK._svgDrawNodesLink = function (lineClass, lineClassReverse, pstr, triangle) {
     // oldLine.animate(KFK.svgAnimDuration).plot(pstr);
     oldLine.plot(pstr);
     oldTriangle.plot(triangle);
+    theLine = oldLine;
   } else {
     if (reverseLine) {
       reverseLine.removeClass(lineClassReverse);
@@ -5392,14 +5545,51 @@ KFK._svgDrawNodesLink = function (lineClass, lineClassReverse, pstr, triangle) {
       reverseTriangle.removeClass(lineClassReverse + "_triangle");
       reverseTriangle.addClass(lineClass + "_triangle");
       reverseTriangle.plot(triangle);
+      theLine = reverseLine;
     } else {
-      draw.path(pstr).addClass(lineClass).addClass('connect').fill("none").stroke({ width: 3, color: "#FF0000" });
-      draw.polygon(triangle).addClass(lineClass + "_triangle").addClass('connect').fill("red").stroke({ width: 1, color: "#FF0000" });
+      theLine = draw.path(pstr);
+      theLine.addClass(lineClass).addClass('connect').fill("none").stroke({ width: KFK.APP.model.connect.width, color: KFK.APP.model.connect.color });
+      draw.polygon(triangle).addClass(lineClass + "_triangle").addClass('connect').fill(KFK.APP.model.connect.triangle.fill).stroke({ width: KFK.APP.model.connect.triangle.width, color: KFK.APP.model.connect.triangle.color });
+      theLine.attr({
+        "id": lineClass,
+        "origin-width": KFK.APP.model.connect.width
+      });
     }
   }
+  theLine.attr({
+    fid: fid,
+    tid: tid
+  });
+  theLine.off('mouseover mouseout');
+  theLine.on('mouseover', () => {
+    theLine.attr('stroke-width', KFK.APP.model.connect.width * 2);
+    KFK.hoveredConnectId = theLine.attr("id");
+    KFK.debug('hover connect id', KFK.hoveredConnectId);
+  });
+  theLine.on('mouseout', () => {
+    theLine.attr('stroke-width', KFK.APP.model.connect.width);
+    KFK.hoveredConnectId = null;
+  });
 };
+KFK.lockLine = function (line, lock = true) {
+  if (lock) {
+    let arr = line.array();
+    let x1 = arr[0][0], y1 = arr[0][1], x2 = arr[1][0], y2 = arr[1][1];
+    let r = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+    let d = 10;
+    let y3 = (d * (y2 - y1)) / r + y1;
+    let x3 = (d * (x2 - x1)) / r + x1;
+    let dot = draw.circle(10);
+    dot.center(x3, y3).fill('red').addClass(line.attr('id') + "_lock").addClass('locklabel');
+    dot.addTo(line.parent());
+    return dot;
+  } else {
+    try { draw.findOne('.' + line.attr('id') + '_lock').remove(); } catch (err) { }
+  }
+};
+
 KFK.svgDrawLine = function (id, fx, fy, tx, ty, option) {
-  if (KFK.APP.model.snap) {
+  if (KFK.APP.model.cococonfig.snap) {
     let p1 = { x: fx, y: fy };
     let p2 = { x: tx, y: ty };
     p1 = KFK.getNearGridPoint(p1.x, p1.y);
@@ -5444,10 +5634,12 @@ KFK.ScreenMousePos = function (pos) {
 KFK.addSvgLineEventListner = function (theLine) {
   theLine.on('mouseover', (evt) => {
     console.log('mouse over svg line');
-    let originWidth = theLine.attr('origin-width');
-    let newWidth = originWidth > 10 ? originWidth : 10;
-    theLine.attr({ 'stroke-width': newWidth });
     KFK.svgHoverLine = theLine;
+    let originWidth = theLine.attr('origin-width');
+    let newWidth = originWidth > 10 ? originWidth * 1.2 : Math.max(originWidth * 1.2, 5);
+    theLine.attr({ 'stroke-width': newWidth });
+    if (KFK.lineLocked(theLine)) { $("#linetransformer").css("visibility", "hidden"); return; }
+
     $(document.body).css("cursor", "pointer");
     let parr = theLine.array();
     if (KFK.mouseNear(
@@ -5479,35 +5671,47 @@ KFK.addSvgLineEventListner = function (theLine) {
     }
   });
   theLine.on('mouseout', () => {
-    KFK.svgHoverLine = null;
-    $(document.body).css("cursor", "default");
-    theLine.attr({ 'stroke-width': theLine.attr('origin-width') });
+    if (KFK.lineDragging === false) {
+      KFK.svgHoverLine = null;
+      $(document.body).css("cursor", "default");
+      theLine.attr({ 'stroke-width': theLine.attr('origin-width') });
+    }
   });
   theLine.on('mousedown', (evt) => {
     KFK.closeActionLog();
-    KFK.lineDragging = true;
+
     KFK.lineToDrag = theLine;
+    KFK.mousePosToRemember = {
+      x: KFK.currentMousePos.x,
+      y: KFK.currentMousePos.y,
+    };
     KFK.lineToRemember = theLine.clone();
     KFK.lineToRemember.attr("id", theLine.attr("id"));
     KFK.lineToRemember.attr("stroke-width", theLine.attr("origin-width"));
-    //TODO: don't drag when docLocked = true;
     KFK.lineDraggingStartPoint = {
       x: KFK.scrollX(evt.clientX),
       y: KFK.scrollY(evt.clientY)
     }
-    console.log(theLine.x(), theLine.y());
+  });
+  theLine.on("click", (evt) => {
+    KFK.debug("click line");
+    evt.stopImmediatePropagation();
+    evt.stopPropagation();
+    evt.preventDefault();
+    if (KFK.anyLocked(theLine)) return;
+
+    KFK.lineToDrag = null;
     KFK.focusOnNode(null);
     KFK.APP.setData("show", "shape_property", true);
     KFK.APP.setData("show", "customshape", false);
     KFK.APP.setData("show", "customline", true);
     KFK.pickedSvgLine = theLine;
     let color = theLine.attr("stroke");
-    let width = theLine.attr("stroke-width");
+    let width = theLine.attr("origin-width");
     $("#lineColor").spectrum("set", color);
     $("#spinner_line_width").spinner("value", width);
   });
-  theLine.on('mouseup', () => {
-  });
+
   // theLine.on('mousemove', (evt) => {
   //   if (KFK.lineDragging === false) return;
   //   let realX = KFK.scrollX(evt.clientX);
@@ -5559,7 +5763,7 @@ KFK.initLineMover = function () {
       if (KFK.lineToResize === null) return;
       let parr = KFK.lineToResize.array();
       let stopAtPos = KFK.C3MousePos(evt);
-      if (KFK.APP.model.snap) {
+      if (KFK.APP.model.cococonfig.snap) {
         stopAtPos = KFK.getNearGridPoint(stopAtPos);
         let smp = KFK.ScreenMousePos(stopAtPos);
         KFK.moveDIVCenterToPos($('#linetransformer'), smp);
@@ -5570,14 +5774,12 @@ KFK.initLineMover = function () {
           parr[1]
         ]
         );
-        tmp.stroke({ color: 'red' });
       } else {
         let tmp = KFK.lineToResize.plot([
           parr[0],
           [stopAtPos.x, stopAtPos.y],
         ]
         );
-        tmp.stroke({ color: 'blue' });
       }
       KFK.syncLinePut('U', KFK.lineToResize, 'resize', KFK.lineToRemember, false);
     }
@@ -5601,8 +5803,11 @@ KFK.svgDrawTmpLine = function (fx, fy, tx, ty, option) {
   }
 };
 
-KFK.svgLinkNode = function (fid, tid, fbp, tbp, fx, fy, tx, ty) {
-  console.log('from', fid, 'to', tid);
+KFK.svgConnectNode = function (fid, tid, fbp, tbp, fx, fy, tx, ty) {
+  if (!(fid && tid)) {
+    KFK.debug('svgConnectNode between, from', fid, 'to', tid);
+    return;
+  }
   let lineClass = `line_${fid}_${tid}`;
   let lineClassReverse = `line_${tid}_${fid}`;
   let pstr = "";
@@ -5696,13 +5901,11 @@ KFK.svgLinkNode = function (fid, tid, fbp, tbp, fx, fy, tx, ty) {
       }
       break;
   }
-  KFK._svgDrawNodesLink(lineClass, lineClassReverse, pstr, triangle);
+  KFK._svgDrawNodesConnect(fid, tid, lineClass, lineClassReverse, pstr, triangle);
 };
 
 module.exports = KFK;
 
-//TODO: line color and width
-//TODO: remove connect
 //TODO: connet colors, and width
 //TODO: Add Link, paste link
 //TODO: add Picture by URL

@@ -24,6 +24,16 @@ const NodeController = {
     NodeController.safeNodeEventModify(jqNode, "resizable", 'disable');
     NodeController.safeNodeEventModify(jqNode, "droppable", 'disable');
   },
+  lockline: (KFK,line) => {
+    if (!line) { console.warn('lock a no existing line'); return; }
+    line.addClass('lock');
+    KFK.lockLine(line);
+  },
+  unlockline: (KFK,line) => {
+    if (!line) { console.warn('unlock a no existing line'); return; }
+    line.removeClass('lock');
+    KFK.lockLine(line, false);
+  },
   safeNodeEventModify: (jqNode, action, flag)=>{
     if(jqNode === undefined){
       console.log(new Error().stack);
