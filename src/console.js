@@ -2585,9 +2585,17 @@ KFK.alignNodes = async function (direction) {
         let tmp = KFK.nodeTop(aNode);
         top = tmp < top ? tmp : top;
       });
-      KFK.selectedDIVs.forEach(aNode => {
-        aNode.style.top = px(top);
-      });
+      movedSer = 0;
+      movedCount  = KFK.getUnlockedCount();
+      for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+        let jqDIV = $(KFK.selectedDIVs[i]);
+        let jqOld = jqDIV.clone();
+        if (KFK.anyLocked(jqDIV) === false) {
+          jqDIV.css("top", top);
+          await KFK.syncNodePut("U", jqDIV, "after align center", jqOld, false, movedSer, movedCount);
+          movedSer = movedSer + 1;
+        }
+      }
       break;
     case "middle":
       let centerY =
