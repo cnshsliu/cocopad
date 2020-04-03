@@ -2550,7 +2550,7 @@ KFK.alignNodes = async function (direction) {
         KFK.nodeLeft(KFK.selectedDIVs[0]) +
         KFK.nodeWidth(KFK.selectedDIVs[0]) * 0.5;
       movedSer = 0;
-      movedCount  = KFK.getUnlockedCount();
+      movedCount = KFK.getUnlockedCount();
       for (let i = 0; i < KFK.selectedDIVs.length; i++) {
         let jqDIV = $(KFK.selectedDIVs[i]);
         let jqOld = jqDIV.clone();
@@ -2568,7 +2568,7 @@ KFK.alignNodes = async function (direction) {
         right = tmp > right ? tmp : right;
       });
       movedSer = 0;
-      movedCount  = KFK.getUnlockedCount();
+      movedCount = KFK.getUnlockedCount();
       for (let i = 0; i < KFK.selectedDIVs.length; i++) {
         let jqDIV = $(KFK.selectedDIVs[i]);
         let jqOld = jqDIV.clone();
@@ -2586,13 +2586,13 @@ KFK.alignNodes = async function (direction) {
         top = tmp < top ? tmp : top;
       });
       movedSer = 0;
-      movedCount  = KFK.getUnlockedCount();
+      movedCount = KFK.getUnlockedCount();
       for (let i = 0; i < KFK.selectedDIVs.length; i++) {
         let jqDIV = $(KFK.selectedDIVs[i]);
         let jqOld = jqDIV.clone();
         if (KFK.anyLocked(jqDIV) === false) {
           jqDIV.css("top", top);
-          await KFK.syncNodePut("U", jqDIV, "after align center", jqOld, false, movedSer, movedCount);
+          await KFK.syncNodePut("U", jqDIV, "after align top", jqOld, false, movedSer, movedCount);
           movedSer = movedSer + 1;
         }
       }
@@ -2601,9 +2601,18 @@ KFK.alignNodes = async function (direction) {
       let centerY =
         KFK.nodeTop(KFK.selectedDIVs[0]) +
         KFK.nodeHeight(KFK.selectedDIVs[0]) * 0.5;
-      KFK.selectedDIVs.forEach(aNode => {
-        aNode.style.top = px(centerY - KFK.nodeHeight(aNode) * 0.5);
-      });
+
+      movedSer = 0;
+      movedCount = KFK.getUnlockedCount();
+      for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+        let jqDIV = $(KFK.selectedDIVs[i]);
+        let jqOld = jqDIV.clone();
+        if (KFK.anyLocked(jqDIV) === false) {
+          jqDIV.css("top", centerY - KFK.nodeHeight(KFK.selectedDIVs[i]) * 0.5);
+          await KFK.syncNodePut("U", jqDIV, "after align middle", jqOld, false, movedSer, movedCount);
+          movedSer = movedSer + 1;
+        }
+      }
       break;
     case "bottom":
       let bottom = KFK.nodeBottom(KFK.selectedDIVs[0]);
