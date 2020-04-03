@@ -1,7 +1,5 @@
-//TODO: align nodes when there is a locked one
 //TODO: add loading progress 
 //TODO: Delete all
-//TODO: hide lock indicator
 //TODO: update liukehong@gmail.com password
-//TODO: fix Decryptor deprecation error
 //TODO: minimize can't cover all.
+//DOTO: chat mode
