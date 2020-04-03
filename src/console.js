@@ -2620,9 +2620,19 @@ KFK.alignNodes = async function (direction) {
         let tmp = KFK.nodeBottom(aNode);
         bottom = tmp > bottom ? tmp : bottom;
       });
-      KFK.selectedDIVs.forEach(aNode => {
-        aNode.style.top = px(bottom - KFK.nodeHeight(aNode));
-      });
+
+
+      movedSer = 0;
+      movedCount = KFK.getUnlockedCount();
+      for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+        let jqDIV = $(KFK.selectedDIVs[i]);
+        let jqOld = jqDIV.clone();
+        if (KFK.anyLocked(jqDIV) === false) {
+          jqDIV.css("top", bottom - KFK.nodeHeight(KFK.selectedDIVs[i]));
+          await KFK.syncNodePut("U", jqDIV, "after align middle", jqOld, false, movedSer, movedCount);
+          movedSer = movedSer + 1;
+        }
+      }
       break;
     case "hori":
       let nodeLeftMost = KFK.selectedDIVs[0];
