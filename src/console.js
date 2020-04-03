@@ -684,40 +684,38 @@ KFK.undo = () => {
     });
   } else {
     if (ope.etype === 'DIV') {
-      if (ope.from === '' && ope.to !== "") { //ope is C
-        jqTo = $(`#${ope.toId}`);
-        KFK.syncNodePut("D", jqTo, "undo", null, true);
-      } else if (ope.from !== "" && ope.to === '') { //ope is D
-        let jqFrom = $($.parseHTML(ope.from));
-        let nodeid = jqFrom.attr("id");
-        KFK.C3.appendChild(el(jqFrom));
-        jqFrom = $(`#${nodeid}`);
-        if (jqFrom.hasClass("kfknode")) {
+      for (let i = 0; i < ope.from.length; i++) {
+        if (ope.from[i] === '' && ope.to[i] !== "") { //ope is C
+          jqTo = $(`#${ope.toId[i]}`);
+          KFK.syncNodePut("D", jqTo, "undo", null, true);
+        } else if (ope.from[i] !== "" && ope.to[i] === '') { //ope is D
+          let jqFrom = $($.parseHTML(ope.from[i]));
+          let nodeid = jqFrom.attr("id");
+          KFK.C3.appendChild(el(jqFrom));
+          jqFrom = $(`#${nodeid}`);
           KFK.setNodeEventHandler(jqFrom);
-        }
-        KFK.redrawLinkLines(jqFrom, 'undo');
-        if (jqFrom.hasClass("lock")) {
-          KFK.setNodeEvent(jqFrom, "draggable", "destroy");
-          KFK.setNodeEvent(jqFrom, "resizable", "destroy");
-          KFK.setNodeEvent(jqFrom, "droppable", "destroy");
-        } else {
-          KFK.debug(nodeid, "NOT hasclass lock");
-        }
-        KFK.syncNodePut("C", jqFrom, "undo", null, true);
-      } else if (ope.from !== '' && ope.to !== '') { //ope is U
-        let jqTo = $(`#${ope.toId}`);
-        jqTo.prop('outerHTML', ope.from);
-        jqTo = $(`#${ope.toId}`);
-        if (jqTo.hasClass("kfknode")) {
+          KFK.redrawLinkLines(jqFrom, 'undo');
+          if (jqFrom.hasClass("lock")) {
+            KFK.setNodeEvent(jqFrom, "draggable", "destroy");
+            KFK.setNodeEvent(jqFrom, "resizable", "destroy");
+            KFK.setNodeEvent(jqFrom, "droppable", "destroy");
+          } else {
+            KFK.debug(nodeid, "NOT hasclass lock");
+          }
+          KFK.syncNodePut("C", jqFrom, "undo", null, true, 0, 1);
+        } else if (ope.from[i] !== '' && ope.to[i] !== '') { //ope is U
+          let jqTo = $(`#${ope.toId[i]}`);
+          jqTo.prop('outerHTML', ope.from[i]);
+          jqTo = $(`#${ope.toId[i]}`); //yes, re-select
           KFK.setNodeEventHandler(jqTo);
+          KFK.redrawLinkLines(jqTo, 'undo');
+          if (jqTo.hasClass("lock")) {
+            KFK.setNodeEvent(jqTo, "draggable", "destroy");
+            KFK.setNodeEvent(jqTo, "resizable", "destroy");
+            KFK.setNodeEvent(jqTo, "droppable", "destroy");
+          }
+          KFK.syncNodePut('U', jqTo, 'undo', null, true);
         }
-        KFK.redrawLinkLines(jqTo, 'undo');
-        if (jqTo.hasClass("lock")) {
-          KFK.setNodeEvent(jqTo, "draggable", "destroy");
-          KFK.setNodeEvent(jqTo, "resizable", "destroy");
-          KFK.setNodeEvent(jqTo, "droppable", "destroy");
-        }
-        KFK.syncNodePut('U', jqTo, 'undo', null, true);
       }
     } else if (ope.etype === 'SLINE') {
       KFK.hideLineTransformer();
@@ -777,39 +775,39 @@ KFK.redo = () => {
     });
   } else {
     if (ope.etype === 'DIV') {
-      if (ope.from === "" && ope.to !== "") { // ope is C
-        let jqTo = $($.parseHTML(ope.to));
-        let nodeid = jqTo.attr("id");
-        KFK.C3.appendChild(el(jqTo));
-        jqTo = $(`#${nodeid}`);
-        if (jqTo.hasClass("kfknode")) {
+      for (let i = 0; i < ope.from.length; i++) {
+        if (ope.from[i] === "" && ope.to[i] !== "") { // ope is C
+          let jqTo = $($.parseHTML(ope.to[i]));
+          let nodeid = jqTo.attr("id");
+          KFK.C3.appendChild(el(jqTo));
+          jqTo = $(`#${nodeid}`);
           KFK.setNodeEventHandler(jqTo);
+          if (jqTo.hasClass("lock")) {
+            KFK.setNodeEvent(jqTo, "draggable", "destroy");
+            KFK.setNodeEvent(jqTo, "resizable", "destroy");
+            KFK.setNodeEvent(jqTo, "droppable", "destroy");
+          } else {
+            KFK.debug(nodeid, "NOT hasclass lock");
+          }
+          KFK.syncNodePut("C", jqTo, "redo", null, true, 0, 1);
+        } else if (ope.from[i] !== '' && ope.to[i] === '') { //ope is D
+          let jqFrom = $(`#${ope.fromId[i]}`);
+          KFK.syncNodePut("D", jqFrom, "redo", null, true);
+        } else if (ope.from[i] != "" && ope.to[i] !== "") { //ope is U
+          let jqFrom = $(`#${ope.fromId[i]}`);
+          jqFrom.prop('outerHTML', ope.to[i]);
+          jqFrom = $(`#${ope.fromId[i]}`);
+          if (jqFrom.hasClass("kfknode")) {
+            KFK.setNodeEventHandler(jqFrom);
+          }
+          KFK.redrawLinkLines(jqFrom, 'redo');
+          if (jqFrom.hasClass("lock")) {
+            KFK.setNodeEvent(jqFrom, "draggable", "destroy");
+            KFK.setNodeEvent(jqFrom, "resizable", "destroy");
+            KFK.setNodeEvent(jqFrom, "droppable", "destroy");
+          }
+          KFK.syncNodePut('U', jqFrom, 'redo', null, true, 0, 1);
         }
-        if (jqTo.hasClass("lock")) {
-          KFK.setNodeEvent(jqTo, "draggable", "destroy");
-          KFK.setNodeEvent(jqTo, "resizable", "destroy");
-          KFK.setNodeEvent(jqTo, "droppable", "destroy");
-        } else {
-          KFK.debug(nodeid, "NOT hasclass lock");
-        }
-        KFK.syncNodePut("C", jqTo, "redo", null, true);
-      } else if (ope.from !== '' && ope.to === '') { //ope is D
-        let jqFrom = $(`#${ope.fromId}`);
-        KFK.syncNodePut("D", jqFrom, "redo", null, true);
-      } else if (ope.from != "" && ope.to !== "") { //ope is U
-        let jqFrom = $(`#${ope.fromId}`);
-        jqFrom.prop('outerHTML', ope.to);
-        jqFrom = $(`#${ope.fromId}`);
-        if (jqFrom.hasClass("kfknode")) {
-          KFK.setNodeEventHandler(jqFrom);
-        }
-        KFK.redrawLinkLines(jqFrom, 'redo');
-        if (jqFrom.hasClass("lock")) {
-          KFK.setNodeEvent(jqFrom, "draggable", "destroy");
-          KFK.setNodeEvent(jqFrom, "resizable", "destroy");
-          KFK.setNodeEvent(jqFrom, "droppable", "destroy");
-        }
-        KFK.syncNodePut('U', jqFrom, 'redo', null, true);
       }
     } else if (ope.etype === 'SLINE') {
       if (ope.from === '' && ope.to !== "") { //ope is C
@@ -926,7 +924,7 @@ KFK.initC3 = function () {
           realY
         );
         if (!evt.shiftKey) KFK.setMode("pointer");
-        KFK.syncNodePut("C", jqDIV, "new node", null, false);
+        KFK.syncNodePut("C", jqDIV, "new node", null, false, 0, 1);
       }
     }
 
@@ -1362,10 +1360,10 @@ KFK.endKuangXuan = function (pt1, pt2) {
         KFK.selectNode(div, undefined);
       }
     });
-    console.log(KFK.selectedDIVs.length, "node selected");
-    if(KFK.selectedDIVs.length>1){
-      KFK.resetPropertyOnMultipleNodesSelected();
-    }
+  console.log(KFK.selectedDIVs.length, "node selected");
+  if (KFK.selectedDIVs.length > 1) {
+    KFK.resetPropertyOnMultipleNodesSelected();
+  }
 };
 
 KFK.deselectNode = function (theDIV, theLine) {
@@ -1752,7 +1750,7 @@ KFK.cleanNodeEventFootprint = function (jqNodeDIV) {
   );
 };
 
-KFK.syncNodePut = async function (cmd, jqDIV, reason, jqFrom, isUndoRedo) {
+KFK.syncNodePut = async function (cmd, jqDIV, reason, jqFrom, isUndoRedo, ser, count) {
   if (KFK.docLocked()) return;
   if (KFK.nodeLocked(jqDIV)) return;
   try {
@@ -1818,16 +1816,30 @@ KFK.syncNodePut = async function (cmd, jqDIV, reason, jqFrom, isUndoRedo) {
         toContent = "";
         toId = "";
       }
-      let opEntry = {
-        cmd: cmd,
-        etype: 'DIV',
-        from: fromContent,
-        to: toContent,
-        fromId: fromId,
-        toId: toId
-      };
+      if (ser === 0) {
+        KFK.opArr_from = [];
+        KFK.opArr_to = [];
+        KFK.opArr_fromId = [];
+        KFK.opArr_toId = [];
+      }
+      KFK.opArr_from.push(fromContent);
+      KFK.opArr_to.push(toContent);
+      KFK.opArr_fromId.push(fromId);
+      KFK.opArr_toId.push(toId);
+
+
       if (reason !== "offline_not_undoable") {
-        KFK.yarkOpEntry(opEntry);
+        if (ser === count - 1) {
+          let opEntry = {
+            cmd: cmd,
+            etype: 'DIV',
+            from: KFK.opArr_from,
+            to: KFK.opArr_to,
+            fromId: KFK.opArr_fromId,
+            toId: KFK.opArr_toId
+          };
+          KFK.yarkOpEntry(opEntry);
+        }
       }
     }
 
@@ -2293,21 +2305,17 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
             x: KFK.nodeLeft(el(jqNodeDIV)) - KFK.positionBeforeDrag.x,
             y: KFK.nodeTop(el(jqNodeDIV)) - KFK.positionBeforeDrag.y
           };
+          let opeArrItemCount = KFK.selectedDIVs.length - 1;
           for (let i = 0; i < KFK.selectedDIVs.length; i++) {
             let tmpFromJQ = $(KFK.selectedDIVs[i]).clone();
             if (i === index) continue;
-            $(KFK.selectedDIVs[i]).css(
-              "left",
-              KFK.nodeLeft(KFK.selectedDIVs[i]) + delta.x
-            );
-            $(KFK.selectedDIVs[i]).css(
-              "top",
-              KFK.nodeTop(KFK.selectedDIVs[i]) + delta.y
-            );
-            if (KFK.selectedDIVs[i].getAttribute("nodetype") === "kfkline") {
-              KFK.offsetLineDataAttr(KFK.selectedDIVs[i], delta);
-            }
-            KFK.syncNodePut("U", $(KFK.selectedDIVs[i]), "move following selected", tmpFromJQ, false);
+            $(KFK.selectedDIVs[i]).css("left", KFK.nodeLeft(KFK.selectedDIVs[i]) + delta.x);
+            $(KFK.selectedDIVs[i]).css("top", KFK.nodeTop(KFK.selectedDIVs[i]) + delta.y);
+            //TODO: batch undo here
+            KFK.syncNodePut("U", $(KFK.selectedDIVs[i]), "move following selected", tmpFromJQ, false, opeArrItemCount);
+          }
+          for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+            KFK.redrawLinkLines($(KFK.selectedDIVs[i]), "codrag", true);
           }
         }
       }
@@ -2637,6 +2645,9 @@ KFK.alignNodes = function (direction) {
       break;
   }
   this.setSelectedNodesBoundingRect();
+  KFK.selectedDIVs.forEach(aNode => {
+    KFK.redrawLinkLines($(aNode), 'align', true);
+  });
 };
 
 KFK.scroll_posX = function (x) {
@@ -2825,7 +2836,7 @@ KFK.duplicateHoverObject = function (evt) {
       jqNewNode.appendTo(KFK.C3);
       KFK.setNodeEventHandler(jqNewNode);
       KFK.focusOnNode(jqNewNode);
-      KFK.syncNodePut("C", jqNewNode, "duplicate node", null, false);
+      KFK.syncNodePut("C", jqNewNode, "duplicate node", null, false, 0, 1);
     }
   } else if (KFK.svgHoverLine) {
     KFK.svgHoverLine.attr({ 'stroke-width': KFK.svgHoverLine.attr('origin-width') });
@@ -4899,7 +4910,7 @@ KFK.saveBlobToOSS = function (blob) {
           100,
           `<img src='${res.res.requestUrls[0]}'/>`
         );
-        KFK.syncNodePut("C", jqDIV, "create image node", null, false);
+        KFK.syncNodePut("C", jqDIV, "create image node", null, false, 0, 1);
       })
       .catch(err => {
         KFK.error(err);
@@ -5054,7 +5065,7 @@ KFK.placePastedContent = function () {
         jBox.css("border-color", "rgba(51,51,51,255)");
         break;
     }
-    KFK.syncNodePut("C", $(tmp), "create text node", null, false);
+    KFK.syncNodePut("C", $(tmp), "create text node", null, false, 0, 1);
   }
 };
 
