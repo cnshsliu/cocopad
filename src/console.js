@@ -2499,6 +2499,19 @@ KFK.nodeRect = function (aNode) {
   };
 };
 
+
+KFK.getUnlockedCount = function () {
+  let numberOfNotLocked = 0;
+  for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+    let jqDIV = $(KFK.selectedDIVs[i]);
+    if (KFK.anyLocked(jqDIV) === false) {
+      numberOfNotLocked = numberOfNotLocked + 1;
+    }
+  }
+  return numberOfNotLocked;
+};
+
+
 KFK.alignNodes = async function (direction) {
   if (KFK.isZooming) return;
   if (KFK.selectedDIVs.length < 2) return;
@@ -2519,15 +2532,9 @@ KFK.alignNodes = async function (direction) {
         let tmp = KFK.nodeLeft(KFK.selectedDIVs[i]);
         left = tmp < left ? tmp : left;
       }
-      numberOfNotLocked = 0;
-      for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-        let jqDIV = $(KFK.selectedDIVs[i]);
-        if (KFK.anyLocked(jqDIV) === false) {
-          numberOfNotLocked = numberOfNotLocked + 1;
-        }
-      }
       movedSer = 0;
-      movedCount = numberOfNotLocked;
+      movedCount = KFK.getUnlockedCount();
+
       for (let i = 0; i < KFK.selectedDIVs.length; i++) {
         let jqDIV = $(KFK.selectedDIVs[i]);
         let jqOld = jqDIV.clone();
@@ -2542,16 +2549,8 @@ KFK.alignNodes = async function (direction) {
       let centerX =
         KFK.nodeLeft(KFK.selectedDIVs[0]) +
         KFK.nodeWidth(KFK.selectedDIVs[0]) * 0.5;
-
-      numberOfNotLocked = 0;
-      for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-        let jqDIV = $(KFK.selectedDIVs[i]);
-        if (KFK.anyLocked(jqDIV) === false) {
-          numberOfNotLocked = numberOfNotLocked + 1;
-        }
-      }
       movedSer = 0;
-      movedCount = numberOfNotLocked;
+      movedCount  = KFK.getUnlockedCount();
       for (let i = 0; i < KFK.selectedDIVs.length; i++) {
         let jqDIV = $(KFK.selectedDIVs[i]);
         let jqOld = jqDIV.clone();
@@ -2568,9 +2567,17 @@ KFK.alignNodes = async function (direction) {
         let tmp = KFK.nodeRight(aNode);
         right = tmp > right ? tmp : right;
       });
-      KFK.selectedDIVs.forEach(aNode => {
-        aNode.style.left = px(right - KFK.nodeWidth(aNode));
-      });
+      movedSer = 0;
+      movedCount  = KFK.getUnlockedCount();
+      for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+        let jqDIV = $(KFK.selectedDIVs[i]);
+        let jqOld = jqDIV.clone();
+        if (KFK.anyLocked(jqDIV) === false) {
+          jqDIV.css("left", right - KFK.nodeWidth(KFK.selectedDIVs[i]));
+          await KFK.syncNodePut("U", jqDIV, "after align right", jqOld, false, movedSer, movedCount);
+          movedSer = movedSer + 1;
+        }
+      }
       break;
     case "top":
       let top = KFK.nodeTop(KFK.selectedDIVs[0]);
