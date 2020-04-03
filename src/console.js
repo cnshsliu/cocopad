@@ -68,6 +68,7 @@ KFK.opstacklen = 1000;
 KFK.opz = -1;
 KFK.mouseTimer = null;
 KFK.connectTime = 0;
+KFK.currentView = "unknown";
 KFK.WS = null;
 KFK.C3 = null;
 KFK.JC3 = null;
@@ -2521,7 +2522,7 @@ KFK.alignNodes = async function (direction) {
       hasOneLocked = true;
     }
   });
-  if (hasOneLocked) return;
+  // if (hasOneLocked) return;
   let numberOfNotLocked = 0;
   let movedSer = 0;
   let movedCount = 0;
@@ -2674,7 +2675,7 @@ KFK.alignNodes = async function (direction) {
       let posX = KFK.nodeRight(nodeLeftMost);
       movedSer = 0;
       //这里要减去一，因为最左边的一个不移动
-      movedCount = KFK.getUnlockedCount()-1;
+      movedCount = KFK.getUnlockedCount() - 1;
       while (centerArr.length > 0) {
         //找到剩余Node中最靠右边的一个
         let min = Math.min.apply(null, centerArr);
@@ -2731,7 +2732,7 @@ KFK.alignNodes = async function (direction) {
       let posY = KFK.nodeBottom(nodeTopMost);
       movedSer = 0;
       //这里要减去一，因为最上面一个不移动
-      movedCount = KFK.getUnlockedCount()-1;
+      movedCount = KFK.getUnlockedCount() - 1;
       while (middleArr.length > 0) {
         let min = Math.min.apply(null, middleArr);
         let index = middleArr.indexOf(min);
@@ -3049,7 +3050,7 @@ KFK.showGridChanged = function (checked) {
 };
 
 
-KFK.showLockChanged = function (checked) {
+KFK.toggleShowLock = function (checked) {
   if (checked) {
     $('.locklabel').removeClass('noshow');
   } else {
@@ -3586,6 +3587,7 @@ KFK.startPadDesigner = function () {
 
 KFK._onDesignerReady = function () {
   KFK.debug(">>>>>>Designer is fully ready");
+  KFK.currentView = "designer";
   KFK.JC3.find('.kfknode').each((index, node) => {
     let jqNode = $(node);
     let str = jqNode.attr("linkto");
@@ -4712,6 +4714,9 @@ KFK.addContainerMainEventHandler = function () {
   // });
   $("#containermain").focus();
   $(document).keydown(function (evt) {
+    if (KFK.inDesigner === false) return;
+    //下面的按键判断，全部是对designer模式下的，因此，如果不是inDesigner，则不用处理
+    //之所以没有使用C3.keydown, 是因为C3有可能获得不到焦点
     switch (evt.keyCode) {
       case 16:
         //Shift
@@ -4748,6 +4753,26 @@ KFK.addContainerMainEventHandler = function () {
       case 90:
         if (evt.metaKey && evt.shiftKey) KFK.redo();
         if (evt.metaKey && !evt.shiftKey) KFK.undo();
+        break;
+    }
+  });
+
+  $(document).keyup(function (evt) {
+    // if(KFK.inDesigner === false) return;
+    switch (evt.keyCode) {
+      case 69: //key E  key e
+        if (evt.shiftKey && evt.ctrlKey) {
+          if (KFK.inDesigner()) //在Desinger中时，可切换到explorer
+            KFK.gotoExplorer();
+          else if (KFK.currentView === 'explorer')
+            KFK.gotoDesigner();
+            //这里不能用 KFK.inDesigner===false来判断
+            //因为即便不在designer中，如果designer没有被显示过，不能切换过去
+            //因为不知道designer中显示什么，只有designer打开过一次后，才能切换过去
+            //程序中， KFK.currentView的初始值为unknown, 当第一次显示designer后，
+            //KFK.currentView的值变为designer, 切换回到explorer时，KFK.currentView的值是explorer
+            //这时，用KFK.currentView === 'explorer'进行判断是可以的
+        }
         break;
     }
   });
@@ -4882,6 +4907,7 @@ KFK.ZiToLower = function () {
 };
 
 KFK.tryToLockUnlock = function (shiftKey) {
+  //对于节点，只有文档未锁定，以及这是当前用户为发起人时才能执行加解锁
   if (KFK.hoverJqDiv() && KFK.isMyDoc() && KFK.docLocked() === false) {
     if (KFK.nodeLocked(KFK.hoverJqDiv())) {
       let opEntry = {
@@ -4907,6 +4933,7 @@ KFK.tryToLockUnlock = function (shiftKey) {
       });
     }
   } else if (KFK.svgHoverLine && KFK.isMyDoc() && KFK.docLocked() === false) {
+    //对于直线，只有文档未锁定，以及这是当前用户为发起人时才能执行加解锁
     if (KFK.lineLocked(KFK.svgHoverLine)) {
       KFK.lineToDrag = null;
       let opEntry = {
@@ -4931,6 +4958,8 @@ KFK.tryToLockUnlock = function (shiftKey) {
         nodeid: KFK.svgHoverLine.attr("id")
       });
     }
+  } else {
+    KFK.scrLog("只有发起人能够进行加解锁");
   }
   if (!shiftKey) {
     KFK.setMode('pointer');
@@ -4947,13 +4976,17 @@ KFK.toggleRight = function (flag) {
 KFK.toggleFullScreen = function (evt) {
   KFK.fullScreen = !KFK.fullScreen;
   if (KFK.APP.model.cocodoc.doclocked) {
+    //文档锁定时，依然可以对minimap切换显示与否
     KFK.showSection({ minimap: !KFK.fullScreen });
     return;
   }
+  //左侧和右侧的工具栏，可进行切换
   let display = KFK.fullScreen ? 'none' : 'block';
   $("#left").css("display", display);
   $("#right").css("display", display);
+  //actionlog总是关闭
   KFK.APP.setData('show', 'actionlog', false);
+  //切换minimap
   KFK.showSection({ minimap: !KFK.fullScreen });
 };
 KFK.showHidePanel = function (flag) {
@@ -4981,10 +5014,12 @@ KFK.gotoExplorer = function () {
   } else {
     KFK.refreshExplorer();
   }
+  KFK.currentView = "explorer";
 };
 
 KFK.gotoDesigner = function () {
   KFK.showSection({ explorer: false, designer: true });
+  KFK.currentView = "designer";
 };
 
 KFK.dataURLtoFile = function (dataurl, filename) {
