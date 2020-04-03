@@ -412,6 +412,13 @@ KFK.findConnect = function (linkid) {
   return conn;
 };
 
+KFK.replaceNodeInSelectedDIVs = function (jqDIV) {
+  for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+    if (KFK.selectedDIVs[i].getAttribute("id") === jqDIV.attr("id")) {
+      KFK.selectedDIVs[i] = el(jqDIV);
+    }
+  }
+}
 
 KFK.calculateNodeConnectPoints = function (jqDIV) {
   let divLeft = unpx(jqDIV.css("left"));
@@ -508,11 +515,11 @@ KFK.procLinkNode = function (shiftKey, text) {
   let tmp4 = KFK.linkPosNode[0].attr('linkto');
   if (tmp1 !== tmp3) {
     KFK.debug('The first node linkto has been changed');
-    KFK.syncNodePut('U', KFK.linkPosNode[0], 'connect nodes', null, false);
+    KFK.syncNodePut("U", KFK.linkPosNode[0], 'connect nodes', null, false, 0, 1);
   }
   if (tmp2 !== tmp4) {
     KFK.debug('The second node linkto has been changed');
-    KFK.syncNodePut('U', KFK.linkPosNode[1], 'connect nodes', null, false);
+    KFK.syncNodePut("U", KFK.linkPosNode[1], 'connect nodes', null, false, 0, 1);
   }
 
   if (!shiftKey) {
@@ -714,8 +721,13 @@ KFK.undo = async () => {
             KFK.setNodeEvent(jqTo, "resizable", "destroy");
             KFK.setNodeEvent(jqTo, "droppable", "destroy");
           }
-          await KFK.syncNodePut('U', jqTo, 'undo', null, true);
+          KFK.replaceNodeInSelectedDIVs(jqTo);
+          await KFK.syncNodePut("U", jqTo, 'undo', null, true, 0, 1);
         }
+      }
+      if (ope.from.length > 1) {
+        KFK.debug('selected count after undo', KFK.selectedDIVs.length);
+        KFK.setSelectedNodesBoundingRect();
       }
     } else if (ope.etype === 'SLINE') {
       KFK.hideLineTransformer();
@@ -797,17 +809,20 @@ KFK.redo = async () => {
           let jqFrom = $(`#${ope.fromId[i]}`);
           jqFrom.prop('outerHTML', ope.to[i]);
           jqFrom = $(`#${ope.fromId[i]}`);
-          if (jqFrom.hasClass("kfknode")) {
-            KFK.setNodeEventHandler(jqFrom);
-          }
+          KFK.setNodeEventHandler(jqFrom);
           KFK.redrawLinkLines(jqFrom, 'redo');
           if (jqFrom.hasClass("lock")) {
             KFK.setNodeEvent(jqFrom, "draggable", "destroy");
             KFK.setNodeEvent(jqFrom, "resizable", "destroy");
             KFK.setNodeEvent(jqFrom, "droppable", "destroy");
           }
-          await KFK.syncNodePut('U', jqFrom, 'redo', null, true, 0, 1);
+          KFK.replaceNodeInSelectedDIVs(jqFrom);
+          await KFK.syncNodePut("U", jqFrom, 'redo', null, true, 0, 1);
         }
+      }
+      if (ope.from.length > 1) {
+        KFK.setSelectedNodesBoundingRect();
+
       }
     } else if (ope.etype === 'SLINE') {
       if (ope.from === '' && ope.to !== "") { //ope is C
@@ -1140,7 +1155,7 @@ KFK.initC3 = function () {
         KFK.lineToDrag.dmove(p1.x - parr[0][0], p1.y - parr[0][1]);
         KFK.lineToDrag.attr({ 'stroke-width': KFK.lineToDrag.attr('origin-width') });
         KFK.lineToRemember.attr({ 'stroke-width': KFK.lineToRemember.attr('origin-width') });
-        await KFK.syncLinePut('U', KFK.lineToDrag, 'move', KFK.lineToRemember, false);
+        await KFK.syncLinePut("U", KFK.lineToDrag, 'move', KFK.lineToRemember, false);
         KFK.setLineToRemember(KFK.lineToDrag);
       }
       KFK.lineDragging = false;
@@ -1876,25 +1891,25 @@ KFK.syncLinePut = async function (cmd, svgLine, reason, svgFrom, isUndoRedo) {
       doc_id: KFK.APP.model.cocodoc.doc_id,
       etype: 'SLINE',
       nodeid: svgLine.attr("id"),
-      content: cmd === 'D' ? svgLine.attr("id") : svgContent,
+      content: cmd === "D" ? svgLine.attr("id") : svgContent,
       offline: isOffline,
       lastupdate: svgLine.attr("lastupdate")
     };
 
     let formContent = toContent = fromId = toId = "";
     switch (cmd) {
-      case 'C':
+      case "C":
         fromContent = ""; fromId = "";
         toContent = svgLine ? svgLine.svg() : "";
         toId = svgLine ? svgLine.attr("id") : "";
         break;
-      case 'U':
+      case "U":
         fromContent = svgFrom ? svgFrom.svg() : "";
         fromId = svgFrom ? svgFrom.attr("id") : "";
         toContent = svgLine ? svgLine.svg() : '';
         toId = svgLine ? svgLine.attr("id") : '';
         break;
-      case 'D':
+      case "D":
         fromContent = svgLine ? svgLine.svg() : '';
         fromId = svgLine ? svgLine.attr("id") : '';
         toContent = ""; toId = "";
@@ -2448,7 +2463,7 @@ KFK.dumpNode = function (node) {
 };
 
 KFK.nodeLeft = function (aNode) {
-  return $(aNode).position().left;
+  return unpx($(aNode).css('left'));
 };
 KFK.nodeCenter = function (aNode) {
   return KFK.nodeLeft(aNode) + KFK.nodeWidth(aNode) * 0.5;
@@ -2457,7 +2472,7 @@ KFK.nodeRight = function (aNode) {
   return KFK.nodeLeft(aNode) + KFK.nodeWidth(aNode);
 };
 KFK.nodeTop = function (aNode) {
-  return $(aNode).position().top;
+  return unpx($(aNode).css('top'));
 };
 KFK.nodeMiddle = function (aNode) {
   return KFK.nodeTop(aNode) + KFK.nodeHeight(aNode) * 0.5;
@@ -2504,7 +2519,6 @@ KFK.alignNodes = function (direction) {
       KFK.selectedDIVs.forEach(aNode => {
         aNode.style.left = px(left);
       });
-
       break;
     case "center":
       let centerX =
@@ -2878,6 +2892,7 @@ KFK.getBoundingRectOfSelectedDIVs = function () {
       right: KFK.nodeRight(KFK.selectedDIVs[i]),
       bottom: KFK.nodeBottom(KFK.selectedDIVs[i])
     };
+    console.log(KFK.selectedDIVs[i].getAttribute("id"), JSON.stringify(tmp));
     if (tmp.left < ret.left) {
       ret.left = tmp.left;
     }
@@ -5931,7 +5946,7 @@ KFK.initLineMover = function () {
         ]
         );
       }
-      await KFK.syncLinePut('U', KFK.lineToResize, 'resize', KFK.lineToRemember, false);
+      await KFK.syncLinePut("U", KFK.lineToResize, 'resize', KFK.lineToRemember, false);
       KFK.setLineToRemember(KFK.lineToResize);
       $("#linetransformer").css("visibility", "hidden");
     }
