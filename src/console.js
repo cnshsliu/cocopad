@@ -79,6 +79,7 @@ KFK.centerPos = { x: 0, y: 0 };
 KFK.centerPos = { x: 0, y: 0 };
 KFK.lastFocusOnJqNode = null;
 KFK.justCreatedJqNode = null;
+KFK.justCreatedSvgLine = null;
 KFK._jqhoverdiv = null;
 KFK.inited = false;
 KFK.divInClipboard = undefined;
@@ -257,29 +258,42 @@ class Link {
   }
 }
 
-KFK.setJustCreated = function (jqNodeDIV) {
-  KFK.justCreatedJqNode = jqNodeDIV;
-  KFK.updatePropertyFormWithNode(jqNodeDIV);
-  if (jqNodeDIV && jqNodeDIV.attr("nodetype") === "text") {
-    KFK.APP.setData("model", "rightTabIndex", 0);
-  }
-};
-
 KFK.focusOnNode = function (jqNodeDIV) {
   KFK.lastFocusOnJqNode = jqNodeDIV;
   KFK.justCreatedJqNode = null;
+  KFK.justCreatedSvgLine = null;
 
-  KFK.updatePropertyFormWithNode(jqNodeDIV);
+  if (jqNodeDIV !== null)
+    KFK.updatePropertyFormWithNode(jqNodeDIV);
+};
+
+KFK.setRightTabIndex = function (tabindex) {
+  if (tabindex !== undefined) {
+    console.log("set righttabindex to ", tabindex);
+    KFK.APP.setData("model", "rightTabIndex", tabindex);
+  } else {
+    console.log("enter into else, tabindex is", tabindex);
+    if (KFK.selectedDIVs.length === 1
+      || KFK.pickedSvgLine !== null
+      || KFK.justCreatedJqNode !== null
+      || KFK.justCreatedSvgLine !== null) {
+      KFK.APP.setData("model", "rightTabIndex", 0);
+    } else if (KFK.selectedDIVs.length >= 2) {
+      KFK.APP.setData("model", "rightTabIndex", 1);
+    } else if (KFK.selectedDIVs.length === 0) {
+      KFK.APP.setData("model", "rightTabIndex", 2);
+    }
+  }
+  KFK.debug(KFK.APP.model.rightTabIndex, "set is", tabindex);
 };
 
 KFK.updatePropertyFormWithNode = function (jqNodeDIV) {
+  console.log(">>UPdatePropertyFormWithNode");
   let nodeType = "unknown";
   if (jqNodeDIV != null) {
     nodeType = jqNodeDIV.attr("nodetype");
   }
-  if (KFK.selectedDIVs.length < 2 && KFK.APP.model.rightTabIndex === 2) {
-    KFK.APP.setData("model", "rightTabIndex", 0);
-  }
+
   KFK.APP.setData("show", "customline", false);
   KFK.APP.setData("show", "shape_property", jqNodeDIV != null);
   KFK.APP.setData(
@@ -506,6 +520,13 @@ KFK.procLinkNode = function (shiftKey, text) {
   } else { KFK.linkPosNode[0] = KFK.linkPosNode[1]; KFK.linkPosNode.splice(1, 1); }
 };
 
+KFK.setLineToRemember = function (theLine) {
+  KFK.lineToRemember = theLine.clone();
+  KFK.lineToRemember.attr("id", theLine.attr("id"));
+  KFK.lineToRemember.attr("stroke-width", theLine.attr("origin-width"));
+};
+
+
 
 KFK.yarkLinePoint = function (x, y, shiftKey) {
   if (KFK.lineDragging) return;
@@ -535,15 +556,37 @@ KFK.procLinkLine = function (shiftKey) {
   }
   let fromPoint = null;
   let toPoint = null;
-  let svgLine = KFK.svgDrawLine(
+  KFK.justCreatedSvgLine = KFK.svgDrawLine(
     myuid(),
     KFK.linkPosLine[0].center.x,
     KFK.linkPosLine[0].center.y,
     KFK.linkPosLine[1].center.x,
     KFK.linkPosLine[1].center.y,
-    { color: KFK.APP.model.line.color, width: KFK.APP.model.line.width }
+    {
+      color: KFK.APP.model.line.color,
+      width: KFK.APP.model.line.width,
+      linecap: KFK.APP.model.line.linecap ? 'round' : 'square'
+    }
   );
-  KFK.syncLinePut("C", svgLine, "create new", null, false);
+
+  let theLine = KFK.justCreatedSvgLine;
+  KFK.setLineToRemember(theLine);
+
+  KFK.APP.setData("show", "shape_property", true);
+  KFK.APP.setData("show", "customshape", false);
+  KFK.APP.setData("show", "customline", true);
+  KFK.APP.setData("show", "custombacksvg", false);
+  KFK.APP.setData("show", "text_property", false);
+  KFK.APP.setData("show", "layercontrol", false);
+
+  KFK.pickedSvgLine = theLine;
+  let color = theLine.attr("stroke");
+  let width = theLine.attr("origin-width");
+  let linecap = theLine.attr("stroke-linecap");
+  $("#lineColor").spectrum("set", color);
+  $("#spinner_line_width").spinner("value", width);
+
+  KFK.syncLinePut("C", theLine, "create new", null, false);
   if (!shiftKey) {
     KFK.linkPosLine.splice(0, 2);
     KFK.setMode("pointer");
@@ -610,9 +653,7 @@ KFK.cancelAlreadySelected = function () {
 KFK.resetPropertyOnMultipleNodesSelected = function () {
   KFK.APP.setData("show", "arrange_multi_nodes", KFK.selectedDIVs.length > 1);
   KFK.APP.setData("show", "shape_property", KFK.selectedDIVs.length > 0);
-  if (KFK.selectedDIVs.length > 1) {
-    KFK.APP.setData("model", "rightTabIndex", 1);
-  }
+  KFK.setRightTabIndex();
 };
 
 KFK.undo = () => {
@@ -679,6 +720,7 @@ KFK.undo = () => {
         KFK.syncNodePut('U', jqTo, 'undo', null, true);
       }
     } else if (ope.etype === 'SLINE') {
+      KFK.hideLineTransformer();
       if (ope.from === '' && ope.to !== "") { //ope is C
         let toId = ope.toId;
         let toLine = draw.findOne(`.${toId}`);
@@ -829,20 +871,20 @@ KFK.initC3 = function () {
 
     KFK.debug('click c3');
     KFK.focusOnNode(null);
-    KFK.setJustCreated(null);
+    KFK.justCreatedJqNode = null;
+    KFK.justCreatedSvgLine = null;
+
     KFK.pickedSvgLine = null;
 
-    if(KFK.mode === 'lock' || KFK.mode === 'connect'){
-      KFK.setMode('pointer');
-    }
+    // if (KFK.mode === 'lock' || KFK.mode === 'connect') {
+    //   KFK.setMode('pointer');
+    // }
     if (KFK.docLocked()) return;
 
     if (KFK.tobeTransformJqLine) KFK.tobeTransformJqLine.removeClass("shadow2");
     $("#linetransformer").css("visibility", "hidden");
     KFK.tobeTransformJqLine = null;
 
-    KFK.APP.setData("show", "customshape", false);
-    KFK.APP.setData("show", "customline", false);
     if (KFK.editting || KFK.resizing || KFK.dragging) {
       return;
     }
@@ -875,7 +917,7 @@ KFK.initC3 = function () {
         let clientY = evt.clientY;
         let realX = KFK.scrollX(clientX);
         let realY = KFK.scrollY(clientY);
-        let tmp = KFK.placeNode(
+        let jqDIV = KFK.placeNode(
           evt.shiftKey,
           myuid(),
           KFK.mode,
@@ -884,10 +926,11 @@ KFK.initC3 = function () {
           realY
         );
         if (!evt.shiftKey) KFK.setMode("pointer");
-        KFK.syncNodePut("C", $(tmp), "new node", null, false);
+        KFK.syncNodePut("C", jqDIV, "new node", null, false);
       }
     }
 
+    KFK.setRightTabIndex();
     evt.stopImmediatePropagation();
     evt.stopPropagation();
     evt.preventDefault();
@@ -900,19 +943,19 @@ KFK.initC3 = function () {
       evt.clientX,
       evt.clientY
     );
-    
+
     KFK.currentMousePos.x = evt.clientX;
     KFK.currentMousePos.y = evt.clientY;
-  
+
     el($("#modeIndicator")).style.left = px(KFK.currentMousePos.x + 10);
     el($("#modeIndicator")).style.top = px(KFK.currentMousePos.y + 10);
     KFK.dragToSelectTo = {
       x: KFK.scrollX(evt.clientX),
       y: KFK.scrollY(evt.clientY)
     };
-  
+
     if (KFK.docLocked()) return;
-  
+
     if (KFK.lineToDrag && KFK.lineLocked(KFK.lineToDrag) === false) {
       if (KFK.distance(KFK.mousePosToRemember, KFK.currentMousePos) > 5) {
         KFK.lineDragging = true;
@@ -938,7 +981,7 @@ KFK.initC3 = function () {
     if (KFK.lineDragging || KFK.lineMoverDragging || KFK.minimapMouseDown) {
       KFK.duringKuangXuan = false;
     }
-  
+
     if (KFK.mode === "connect") {
       if (KFK.linkPosNode.length === 1) {
         KFK.lineTemping = true;
@@ -994,7 +1037,7 @@ KFK.initC3 = function () {
       KFK.lineDraggingStartPoint.y += deltaY;
     }
   });
-  
+
   $(c3).keyup(function (evt) {
     if (KFK.inDesigner() === false) return;
     let preventDefault = true;
@@ -1086,7 +1129,7 @@ KFK.initC3 = function () {
       };
     }
   });
-  $(c3).mouseup(evt => {
+  $(c3).mouseup(async (evt) => {
     if (KFK.inDesigner() === false) return;
     KFK.ignoreClick = false;
     if (KFK.lineDragging) {
@@ -1099,7 +1142,8 @@ KFK.initC3 = function () {
         KFK.lineToDrag.dmove(p1.x - parr[0][0], p1.y - parr[0][1]);
         KFK.lineToDrag.attr({ 'stroke-width': KFK.lineToDrag.attr('origin-width') });
         KFK.lineToRemember.attr({ 'stroke-width': KFK.lineToRemember.attr('origin-width') });
-        KFK.syncLinePut('U', KFK.lineToDrag, 'move', KFK.lineToRemember, false);
+        await KFK.syncLinePut('U', KFK.lineToDrag, 'move', KFK.lineToRemember, false);
+        KFK.setLineToRemember(KFK.lineToDrag);
       }
       KFK.lineDragging = false;
       KFK.lineToDrag = null;
@@ -1539,14 +1583,15 @@ KFK.placeNode = function (shiftKey, id, type, variant, x, y, w, h, attach) {
   let aNode = new Node(id, type, variant, x, y, w, h, attach);
   KFK.nodes.push(aNode);
   let nodeDIV = KFK._createNode(aNode);
-  KFK.setJustCreated($(nodeDIV));
+  let jqDIV = $(nodeDIV);
+  KFK.justCreatedJqNode = jqDIV;
 
   // //set just created node selected
   // let selDIV = nodeDIV;
   // let selLine = undefined;
   // KFK.procNodeInArrayOfSelected(selDIV, selLine, shiftKey);
   // KFK.resetPropertyOnMultipleNodesSelected();
-  return nodeDIV;
+  return jqDIV;
 };
 
 KFK._createNode = function (node) {
@@ -2258,7 +2303,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
             if (KFK.selectedDIVs[i].getAttribute("nodetype") === "kfkline") {
               KFK.offsetLineDataAttr(KFK.selectedDIVs[i], delta);
             }
-            KFK.syncNodePut( "U", $(KFK.selectedDIVs[i]), "move following selected", tmpFromJQ, false);
+            KFK.syncNodePut("U", $(KFK.selectedDIVs[i]), "move following selected", tmpFromJQ, false);
           }
         }
       }
@@ -2893,17 +2938,18 @@ KFK.showLockChanged = function (checked) {
 };
 
 KFK.lineCapChanged = function (checked) {
-  if (KFK.pickedSvgLine === null || KFK.anyLocked(KFK.pickedSvgLine)) return;
-  let tmp = KFK.pickedSvgLine.clone();
-  tmp.attr("id", KFK.pickedSvgLine.attr("id"));
-  KFK.pickedSvgLine.attr({
+  let theLine = KFK.getPropertyApplyToSvgLine();
+  KFK.setLineToRemember(theLine);
+  if (theLine === null || KFK.anyLocked(theLine)) return;
+  KFK.setLineModel({ linecap: checked });
+  theLine.attr({
     "stroke-linecap": checked ? 'round' : 'square',
   });
   KFK.syncLinePut(
     "U",
-    KFK.pickedSvgLine,
+    theLine,
     "set line color",
-    tmp,
+    KFK.lineToRemember,
     false
   );
 };
@@ -3409,7 +3455,7 @@ KFK.startPadDesigner = function () {
   KFK.focusOnC3();
   KFK.cancelAlreadySelected();
 
-  KFK.APP.setData("model", "rightTabIndex", 2);
+  KFK.setRightTabIndex(2);
   $(".padlayout").removeClass("noshow");
   $(".padlayout").fadeIn(1000, function () {
     // Animation complete
@@ -4039,6 +4085,23 @@ KFK.getPropertyApplyToJqNode = function () {
     return null;
   }
 };
+KFK.getPropertyApplyToSvgLine = function () {
+  if (KFK.svgHoverLine != null) {
+    return KFK.svgHoverLine;
+  } else if (KFK.pickedSvgLine != null) {
+    return KFK.pickedSvgLine;
+  } else if (KFK.justCreatedSvgLine != null) {
+    return KFK.justCreatedSvgLine;
+  } else {
+    return null;
+  }
+};
+
+KFK.setLineModel = function (options) {
+  let setting = $.extend({}, KFK.APP.model.line, options);
+  KFK.APP.setData("model", "line", setting);
+  console.log(JSON.stringify(KFK.APP.model.line));
+}
 
 KFK.initPropertyForm = function () {
   let spinnerBorderWidth = $("#spinner_border_width").spinner({
@@ -4081,19 +4144,22 @@ KFK.initPropertyForm = function () {
     max: 1000,
     step: 1,
     start: 1,
-    spin: function (evt, ui) {
-      if (KFK.pickedSvgLine === null || KFK.anyLocked(KFK.pickedSvgLine)) return;
-      KFK.pickedSvgLine.attr({
+    spin: async function (evt, ui) {
+      let theLine = KFK.getPropertyApplyToSvgLine();
+      if (theLine === null || KFK.anyLocked(theLine)) return;
+      KFK.setLineModel({ width: ui.value });
+      theLine.attr({
         "stroke-width": ui.value,
         "origin-width": ui.value
       });
-      KFK.syncLinePut(
+      await KFK.syncLinePut(
         "U",
-        KFK.pickedSvgLine,
+        theLine,
         "set line color",
         KFK.lineToRemember,
         false
       );
+      KFK.setLineToRemember(theLine);
     }
   });
   spinnerLineWidth.spinner("value", 1);
@@ -4259,7 +4325,7 @@ KFK.initColorPicker = function () {
       if (jqNode != null && KFK.notAnyLocked(jqNode)) {
         KFK.fromJQ = jqNode.clone();
         jqNode.css("border-color", color.toRgbString());
-        KFK.syncNodePut( "U", jqNode, "set node border-color", KFK.fromJQ, false);
+        KFK.syncNodePut("U", jqNode, "set node border-color", KFK.fromJQ, false);
       }
     }
   });
@@ -4271,20 +4337,19 @@ KFK.initColorPicker = function () {
     hideAfterPaletteSelect: "true",
     showInitial: "true",
     showButtons: "false",
-    change: function (color) {
-      var hsv = color.toHsv();
-      var rgb = color.toRgbString();
-      var hex = color.toHexString();
-      // KFK.APP.setBGto(color.toRgbString());
-      if (KFK.pickedSvgLine === null || KFK.anyLocked(KFK.pickedSvgLine)) return;
-      KFK.pickedSvgLine.attr("stroke", color.toRgbString());
-      KFK.syncLinePut(
+    change: async function (color) {
+      let theLine = KFK.getPropertyApplyToSvgLine();
+      if (theLine === null || KFK.anyLocked(theLine)) return;
+      theLine.attr("stroke", color.toRgbString());
+      KFK.setLineModel({ color: color.toRgbString() });
+      await KFK.syncLinePut(
         "U",
-        KFK.pickedSvgLine,
+        theLine,
         "set line color",
         KFK.lineToRemember,
         false
       );
+      KFK.setLineToRemember(theLine);
     }
   });
   $("#fontColor").spectrum({
@@ -4296,9 +4361,6 @@ KFK.initColorPicker = function () {
     showInitial: "true",
     showButtons: "false",
     change: function (color) {
-      var hsv = color.toHsv();
-      var rgb = color.toRgbString();
-      var hex = color.toHexString();
       // KFK.APP.setBGto(color.toRgbString());
       let jqNode = KFK.getPropertyApplyToJqNode();
       if (jqNode != null && KFK.notAnyLocked(jqNode)) {
@@ -4326,7 +4388,7 @@ KFK.initColorPicker = function () {
       if (theJqNode != null && KFK.notAnyLocked(theJqNode)) {
         KFK.fromJQ = theJqNode.clone();
         KFK.setTipBkgColor(theJqNode, rgb);
-        KFK.syncNodePut( "U", theJqNode, "set tip bkg color", KFK.fromJQ, false);
+        KFK.syncNodePut("U", theJqNode, "set tip bkg color", KFK.fromJQ, false);
       }
     }
   });
@@ -4439,29 +4501,44 @@ KFK.setMode = function (mode) {
         "src",
         KFK.images[config.node.yellowtip.defaultTip].src
       );
-      KFK.APP.setData("model", "rightTabIndex", 0);
     } else $("#modeIndicatorImg").attr("src", KFK.images[KFK.mode].src);
     $("#modeIndicator").show();
   }
 
-  if (KFK.mode === "yellowtip") {
-    KFK.APP.setData("show", "shape_property", true);
-    KFK.APP.setData("show", "custombacksvg", true);
-    KFK.APP.setData("show", "customshape", false);
-    KFK.APP.setData("show", "layercontrol", true);
-  } else if (KFK.mode === "textblock") {
-    KFK.APP.setData("show", "shape_property", true);
-    KFK.APP.setData("show", "customshape", true);
-    KFK.APP.setData("show", "custombacksvg", false);
-    KFK.APP.setData("show", "layercontrol", true);
-  } else if (KFK.mode === "text") {
+  if (KFK.mode === "text") {
     KFK.APP.setData("show", "shape_property", true);
     KFK.APP.setData("show", "customshape", false);
     KFK.APP.setData("show", "custombacksvg", false);
     KFK.APP.setData("show", "text_property", true);
     KFK.APP.setData("show", "layercontrol", true);
+    KFK.APP.setData("show", "customline", false);
+    KFK.setRightTabIndex(0);
+  } else if (KFK.mode === "textblock") {
+    KFK.APP.setData("show", "shape_property", true);
+    KFK.APP.setData("show", "customshape", true);
+    KFK.APP.setData("show", "text_property", true);
+    KFK.APP.setData("show", "custombacksvg", true);
+    KFK.APP.setData("show", "layercontrol", true);
+    KFK.APP.setData("show", "customline", false);
+    KFK.setRightTabIndex(0);
+  } else if (KFK.mode === "yellowtip") {
+    KFK.APP.setData("show", "shape_property", true);
+    KFK.APP.setData("show", "text_property", true);
+    KFK.APP.setData("show", "custombacksvg", true);
+    KFK.APP.setData("show", "customshape", false);
+    KFK.APP.setData("show", "layercontrol", true);
+    KFK.APP.setData("show", "customline", false);
+    KFK.setRightTabIndex(0);
+  } else if (KFK.mode === "line") {
+    KFK.APP.setData("show", "shape_property", true);
+    KFK.APP.setData("show", "customshape", false);
+    KFK.APP.setData("show", "custombacksvg", false);
+    KFK.APP.setData("show", "text_property", false);
+    KFK.APP.setData("show", "layercontrol", false);
+    KFK.APP.setData("show", "customline", true);
+    KFK.setRightTabIndex(0);
   }
-  KFK.APP.setData("model", "rightTabIndex", 0);
+
 
   KFK.focusOnC3();
 };
@@ -4735,7 +4812,7 @@ KFK.tryToLockUnlock = function (shiftKey) {
       });
     }
   }
-  if(!shiftKey){
+  if (!shiftKey) {
     KFK.setMode('pointer');
   }
 };
@@ -4809,7 +4886,7 @@ KFK.saveBlobToOSS = function (blob) {
     let tmpid = myuid();
     OSSClient.multipartUpload(KFK.getOSSFileName(`${tmpid}.png`), file)
       .then(res => {
-        let tmp = KFK.placeNode(
+        let jqDIV = KFK.placeNode(
           false, //shiftKey
           tmpid,
           "textblock",
@@ -4820,7 +4897,7 @@ KFK.saveBlobToOSS = function (blob) {
           100,
           `<img src='${res.res.requestUrls[0]}'/>`
         );
-        KFK.syncNodePut("C", $(tmp), "create image node", null, false);
+        KFK.syncNodePut("C", jqDIV, "create image node", null, false);
       })
       .catch(err => {
         KFK.error(err);
@@ -4952,16 +5029,15 @@ KFK.placePastedContent = function () {
         newText = toAdd;
       }
       innerObj.html(newText);
-      KFK.syncNodePut( "U", KFK.hoverJqDiv(), "add text to hover div", KFK.fromJQ, false);
+      KFK.syncNodePut("U", KFK.hoverJqDiv(), "add text to hover div", KFK.fromJQ, false);
     }
   } else {
     let box = KFK.APP.model.paste.box;
-    let tmp = KFK.placeNode(false, //shiftKey
+    let jBox = KFK.placeNode(false, //shiftKey
       myuid(), "textblock", "default",
       KFK.currentMousePos.x + KFK.scrollContainer.scrollLeft(),
       KFK.currentMousePos.y + KFK.scrollContainer.scrollTop(),
       100, 100, toAdd);
-    let jBox = $(tmp);
     switch (box) {
       case 'none':
         jBox.css("background", "rgba(255,255,255,0)");
@@ -5681,7 +5757,12 @@ KFK.ScreenMousePos = function (pos) {
     y: pos.y - KFK.scrollContainer.scrollTop()
   };
 }
-
+KFK.hideLineTransformer = function () {
+  $("#linetransformer").css("visibility", "hidden");
+};
+KFK.showLineTransformer = function () {
+  $("#linetransformer").css("visibility", "visible");
+};
 KFK.addSvgLineEventListner = function (theLine) {
   theLine.on('mouseover', (evt) => {
     KFK.svgHoverLine = theLine;
@@ -5700,9 +5781,7 @@ KFK.addSvgLineEventListner = function (theLine) {
       $("#linetransformer").css("visibility", "visible");
       KFK.moveLinePoint = "from";
       KFK.lineToResize = theLine;
-      KFK.lineToRemember = theLine.clone();
-      KFK.lineToRemember.attr("id", theLine.attr("id"));
-      KFK.lineToRemember.attr({ 'stroke-width': originWidth });
+      KFK.setLineToRemember(theLine);
       KFK.moveLineMoverTo(KFK.scrollToScreen({ x: parr[0][0], y: parr[0][1] }));
     } else if (KFK.mouseNear(
       KFK.C3MousePos(evt),
@@ -5712,9 +5791,7 @@ KFK.addSvgLineEventListner = function (theLine) {
       $("#linetransformer").css("visibility", "visible");
       KFK.moveLinePoint = "to";
       KFK.lineToResize = theLine;
-      KFK.lineToRemember = theLine.clone();
-      KFK.lineToRemember.attr("id", theLine.attr("id"));
-      KFK.lineToRemember.attr({ 'stroke-width': originWidth });
+      KFK.setLineToRemember(theLine);
       KFK.moveLineMoverTo(KFK.scrollToScreen({ x: parr[1][0], y: parr[1][1] }));
     } else {
       $("#linetransformer").css("visibility", "hidden");
@@ -5735,9 +5812,7 @@ KFK.addSvgLineEventListner = function (theLine) {
       x: KFK.currentMousePos.x,
       y: KFK.currentMousePos.y,
     };
-    KFK.lineToRemember = theLine.clone();
-    KFK.lineToRemember.attr("id", theLine.attr("id"));
-    KFK.lineToRemember.attr("stroke-width", theLine.attr("origin-width"));
+    KFK.setLineToRemember(theLine);
     KFK.lineDraggingStartPoint = {
       x: KFK.scrollX(evt.clientX),
       y: KFK.scrollY(evt.clientY)
@@ -5748,18 +5823,25 @@ KFK.addSvgLineEventListner = function (theLine) {
     evt.stopImmediatePropagation();
     evt.stopPropagation();
     evt.preventDefault();
-    if(KFK.mode === 'lock'){
+    if (KFK.anyLocked(theLine)) return;
+    if (KFK.mode === 'lock') {
       KFK.svgHoverLine = theLine;
       KFK.hoverJqDiv(null);
       KFK.tryToLockUnlock(evt.shiftKey);
     }
-    if (KFK.anyLocked(theLine)) return;
     KFK.lineToDrag = null;
     KFK.focusOnNode(null);
     KFK.APP.setData("show", "shape_property", true);
     KFK.APP.setData("show", "customshape", false);
     KFK.APP.setData("show", "customline", true);
+    KFK.APP.setData("show", "custombacksvg", false);
+    KFK.APP.setData("show", "text_property", false);
+    KFK.APP.setData("show", "layercontrol", false);
+
+    KFK.setLineToRemember(theLine);
+
     KFK.pickedSvgLine = theLine;
+    KFK.setRightTabIndex();
     let color = theLine.attr("stroke");
     let width = theLine.attr("origin-width");
     let linecap = theLine.attr("stroke-linecap");
@@ -5768,6 +5850,7 @@ KFK.addSvgLineEventListner = function (theLine) {
     let lineSetting = KFK.APP.model.line;
     lineSetting = { color: color, width: width, linecap: linecap === 'round' ? true : false };
     KFK.setAppData('model', "line", lineSetting);
+    console.log(JSON.stringify(KFK.APP.model.line));
     KFK.debug(KFK.APP.model.line);
   });
 
@@ -5805,7 +5888,7 @@ KFK.initLineMover = function () {
         );
       }
     },
-    stop: (evt, ui) => {
+    stop: async (evt, ui) => {
       //transform line  change line
       KFK.lineMoverDragging = false;
       KFK.lineMoverNewPosition = $("#linetransformer").position();
@@ -5830,7 +5913,9 @@ KFK.initLineMover = function () {
         ]
         );
       }
-      KFK.syncLinePut('U', KFK.lineToResize, 'resize', KFK.lineToRemember, false);
+      await KFK.syncLinePut('U', KFK.lineToResize, 'resize', KFK.lineToRemember, false);
+      KFK.setLineToRemember(KFK.lineToResize);
+      $("#linetransformer").css("visibility", "hidden");
     }
   }); //line transformer. draggable()
 };
