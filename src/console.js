@@ -2665,19 +2665,29 @@ KFK.alignNodes = async function (direction) {
       KFK.selectedDIVs.forEach(aNode => {
         tmpHoriArr.push(aNode);
       });
+      //最左边一个不移动
       tmpHoriArr.splice(tmpHoriArr.indexOf(nodeLeftMost), 1);
       //把除nodeLeftMos之外节点的中间X放入数组
       let centerArr = tmpHoriArr.map(aNode => {
         return KFK.nodeCenter(aNode);
       });
       let posX = KFK.nodeRight(nodeLeftMost);
+      movedSer = 0;
+      //这里要减去一，因为最左边的一个不移动
+      movedCount = KFK.getUnlockedCount()-1;
       while (centerArr.length > 0) {
         //找到剩余Node中最靠右边的一个
         let min = Math.min.apply(null, centerArr);
         let index = centerArr.indexOf(min);
         let newLeft = posX + space_hori;
-        //重设其位置
-        tmpHoriArr[index].style.left = px(newLeft);
+        let jqDIV = $(tmpHoriArr[index]);
+        let jqOld = jqDIV.clone();
+        if (KFK.anyLocked(jqDIV) === false) {
+          //重设其位置
+          jqDIV.css("left", newLeft);
+          await KFK.syncNodePut("U", jqDIV, "after align hori", jqOld, false, movedSer, movedCount);
+          movedSer = movedSer + 1;
+        }
 
         //为下一个节点准备基准点
         posX = newLeft + KFK.nodeWidth(tmpHoriArr[index]);
@@ -2713,24 +2723,33 @@ KFK.alignNodes = async function (direction) {
       KFK.selectedDIVs.forEach(aNode => {
         tmpVertArr.push(aNode);
       });
+      //最上面一个不移动
       tmpVertArr.splice(tmpVertArr.indexOf(nodeTopMost), 1);
       let middleArr = tmpVertArr.map(aNode => {
         return KFK.nodeMiddle(aNode);
       });
       let posY = KFK.nodeBottom(nodeTopMost);
+      movedSer = 0;
+      //这里要减去一，因为最上面一个不移动
+      movedCount = KFK.getUnlockedCount()-1;
       while (middleArr.length > 0) {
         let min = Math.min.apply(null, middleArr);
         let index = middleArr.indexOf(min);
         let newTop = posY + space_vert;
-        tmpVertArr[index].style.top = px(newTop);
-
+        let jqDIV = $(tmpVertArr[index]);
+        let jqOld = jqDIV.clone();
+        if (KFK.anyLocked(jqDIV) === false) {
+          jqDIV.css("top", newTop);
+          await KFK.syncNodePut("U", jqDIV, "after align right", jqOld, false, movedSer, movedCount);
+          movedSer = movedSer + 1;
+        }
         posY = newTop + KFK.nodeHeight(tmpVertArr[index]);
         middleArr.splice(index, 1);
         tmpVertArr.splice(index, 1);
       }
       break;
   }
-  this.setSelectedNodesBoundingRect();
+  KFK.setSelectedNodesBoundingRect();
   KFK.selectedDIVs.forEach(aNode => {
     KFK.redrawLinkLines($(aNode), 'align', true);
   });
@@ -6137,7 +6156,6 @@ KFK.svgConnectNode = function (fid, tid, fbp, tbp, fx, fy, tx, ty) {
   }
   KFK._svgDrawNodesConnect(fid, tid, lineClass, lineClassReverse, pstr, triangle);
 };
-
 module.exports = KFK;
 
 //TODO: logout redis story
