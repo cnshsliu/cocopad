@@ -2,7 +2,6 @@ import Vue from 'vue';
 import Joi from '@hapi/joi';
 import { BootstrapVue, IconsPlugin, ListGroupPlugin, VBHoverPlugin } from 'bootstrap-vue';
 import events from 'events';
-
 import "../scss/custom.scss";
 import KFK from './console';
 import { NodeController } from './nodeController';
@@ -13,7 +12,9 @@ Vue.use(IconsPlugin);
 Vue.use(ListGroupPlugin);
 Vue.use(VBHoverPlugin);
 const app = new Vue({
+
   data: {
+    selected: 'A',
     state: {
       profile:{
           name: null,
@@ -35,7 +36,7 @@ const app = new Vue({
     modalShow: false,
     modal_title: '',
     modal_text: '',
-    showLOGINFORM: false,
+    showSIGNINFORM: false,
     showCONSOLE: false,
     showCREATEROOM: false,
     showINVITATION: false,
@@ -47,23 +48,24 @@ const app = new Vue({
       ['tip_circle2', 'tip_check', 'tip_cross', 'tip_thunder', 'tip_smile'],
       ['tip_circle3', 'tip_arrow', 'tip_arrow2', 'tip_arrow3', 'tip_arrow4'],
     ],
-    //TODO: 没有用户信息时，显示注册页面而不是登录页面
-    active: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'lock': false, 'minimap':false, 'connect':false },
+    toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'lock': false, 'minimap':false, 'connect':false },
     show: {
+      'waiting': true,
       'wsready': false,
       'arrange_multi_nodes': false,
       'shape_property': false,
       'text_property': false,
       'customline': true,
       'waitingws': true,
-      'loginform': false,
+      'signinform': false,
       'explorer': true,
       'actionlog': false,
       'form': { newdoc: false, newprj: false, prjlist: true, doclist: false, share: false, bottomlinks: false, explorerTabIndex: 0 },
-      'section': { login: false, register: false, explorer: false, designer: false, minimap:true },
-      'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false, copyDocDialog: false, pasteContentDialog: true },
+      'section': { signin: false, register: false, explorer: false, designer: false, minimap:true },
+      'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false, copyDocDialog: false, pasteContentDialog: false, MsgBox:false},
     },
     model: {
+      msgbox:{title:'', content:''},
       connect:{
         color:'red', width: 3,
         triangle:{
@@ -73,13 +75,21 @@ const app = new Vue({
         }
       },
       line:{
-        color:'#306EF6', width: 3,linecap:false,
+        color:'#306EF6', width: 6,linecap:false,
       },
       paste: {
-        content: 'inputDocPasswordDialoginputDocPasswordDialoginputDocPasswordDialoginputDocPasswordDialoginputDocPasswordDialog',
-        display:'inputDocPasswordDialoginputDocPasswordDialoginputDocPasswordDialoginputDocPasswordDialoginputDocPasswordDialog',
+        content: '',
+        display:'',
         box: 'none',
         ctype: 'text',
+        showcontent: false,
+        showdisplay: false,
+        showbox: false,
+        options: [
+          { item: 'none', name: '无' },
+          { item: 'border', name: '仅边框' },
+          { item: 'all', name: '边框和底色' },
+        ],
       },
       avatarLoaded: false,
       copyToPrjId: null,
@@ -102,14 +112,14 @@ const app = new Vue({
       docLoaded: false,
       project: { prjid: '', name: '' },
       lastrealproject: { prjid: '', name: '' },
-      cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', readonly: false },
+      cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', doclocked: false },
       cocouser: { userid: '', name: '', avatar: 'avatar-0', avatar_src: null },
       listdocoption: {},
       listprjoption: {},
       register: { userid: '', pwd: '', pwd2: '', name: '' },
-      login: { userid: '', pwd: '' },
+      signin: { userid: '', pwd: '' },
       share: {},
-      docfields: [{ key: 'name', label: '名称' }, { key: 'readonly_icon', label: '模式' }, { key: 'security_icon', label: '密保' }, { key: 'copydoc', label: '复制' }, { key: 'share_icon', label: '分享' }, { key: 'owner', label: '发起人' }, { key: 'operation', label: '操作' }],
+      docfields: [{ key: 'name', label: '名称' }, { key: 'doclocked_icon', label: '模式' }, { key: 'security_icon', label: '密保' }, { key: 'copydoc', label: '复制' }, { key: 'share_icon', label: '分享' }, { key: 'owner', label: '发起人' }, { key: 'operation', label: '操作' }],
       prjfields: [{ key: 'name', label: '名称' }, { key: 'operation', label: '操作' }],
       prjwarning: '',
       docs: [],
@@ -160,11 +170,10 @@ const app = new Vue({
     }
   },
   computed: {
-
     prjListOptions() {
       let ret = [];
       this.model.prjs.forEach((prj, index) => {
-        if (prj.prjid !== 'all' && prj.prjid !== 'mine') {
+        if (['all','others','mine'].indexOf(prj.prjid)<0) {
           ret.push({
             value: prj.prjid,
             text: prj.name,
@@ -195,7 +204,7 @@ const app = new Vue({
         /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/
         // 邮箱地址
       ).required();
-      let str = this.model.login.userid;
+      let str = this.model.signin.userid;
       let { error, value } = schema.validate(str);
       if (error === undefined)
         return true;
