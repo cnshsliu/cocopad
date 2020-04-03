@@ -2499,7 +2499,7 @@ KFK.nodeRect = function (aNode) {
   };
 };
 
-KFK.alignNodes = function (direction) {
+KFK.alignNodes = async function (direction) {
   if (KFK.isZooming) return;
   if (KFK.selectedDIVs.length < 2) return;
   let hasOneLocked = false;
@@ -2509,24 +2509,58 @@ KFK.alignNodes = function (direction) {
     }
   });
   if (hasOneLocked) return;
+  let numberOfNotLocked = 0;
+  let movedSer = 0;
+  let movedCount = 0;
   switch (direction) {
     case "left":
       let left = KFK.nodeLeft(KFK.selectedDIVs[0]);
-      KFK.selectedDIVs.forEach(aNode => {
-        let tmp = KFK.nodeLeft(aNode);
+      for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+        let tmp = KFK.nodeLeft(KFK.selectedDIVs[i]);
         left = tmp < left ? tmp : left;
-      });
-      KFK.selectedDIVs.forEach(aNode => {
-        aNode.style.left = px(left);
-      });
+      }
+      numberOfNotLocked = 0;
+      for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+        let jqDIV = $(KFK.selectedDIVs[i]);
+        if (KFK.anyLocked(jqDIV) === false) {
+          numberOfNotLocked = numberOfNotLocked + 1;
+        }
+      }
+      movedSer = 0;
+      movedCount = numberOfNotLocked;
+      for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+        let jqDIV = $(KFK.selectedDIVs[i]);
+        let jqOld = jqDIV.clone();
+        if (KFK.anyLocked(jqDIV) === false) {
+          jqDIV.css("left", left);
+          await KFK.syncNodePut("U", jqDIV, "after align left", jqOld, false, movedSer, movedCount);
+          movedSer = movedSer + 1;
+        }
+      }
       break;
     case "center":
       let centerX =
         KFK.nodeLeft(KFK.selectedDIVs[0]) +
         KFK.nodeWidth(KFK.selectedDIVs[0]) * 0.5;
-      KFK.selectedDIVs.forEach(aNode => {
-        aNode.style.left = px(centerX - KFK.nodeWidth(aNode) * 0.5);
-      });
+
+      numberOfNotLocked = 0;
+      for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+        let jqDIV = $(KFK.selectedDIVs[i]);
+        if (KFK.anyLocked(jqDIV) === false) {
+          numberOfNotLocked = numberOfNotLocked + 1;
+        }
+      }
+      movedSer = 0;
+      movedCount = numberOfNotLocked;
+      for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+        let jqDIV = $(KFK.selectedDIVs[i]);
+        let jqOld = jqDIV.clone();
+        if (KFK.anyLocked(jqDIV) === false) {
+          jqDIV.css("left", centerX - KFK.nodeWidth(KFK.selectedDIVs[i]) * 0.5);
+          await KFK.syncNodePut("U", jqDIV, "after align center", jqOld, false, movedSer, movedCount);
+          movedSer = movedSer + 1;
+        }
+      }
       break;
     case "right":
       let right = KFK.nodeRight(KFK.selectedDIVs[0]);
