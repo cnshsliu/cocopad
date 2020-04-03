@@ -64,7 +64,7 @@ KFK.isZooming = false;
 KFK.zoomlevel = 1;
 KFK.designerConf = { scaleX: 1, scaleY: 1, left: 0, top: 0 };
 KFK.opstack = [];
-KFK.opstacklen = 10;
+KFK.opstacklen = 1000;
 KFK.opz = -1;
 KFK.mouseTimer = null;
 KFK.connectTime = 0;
@@ -1362,6 +1362,10 @@ KFK.endKuangXuan = function (pt1, pt2) {
         KFK.selectNode(div, undefined);
       }
     });
+    console.log(KFK.selectedDIVs.length, "node selected");
+    if(KFK.selectedDIVs.length>1){
+      KFK.resetPropertyOnMultipleNodesSelected();
+    }
 };
 
 KFK.deselectNode = function (theDIV, theLine) {
@@ -2485,6 +2489,9 @@ KFK.alignNodes = function (direction) {
         let tmp = KFK.nodeLeft(aNode);
         left = tmp < left ? tmp : left;
       });
+      KFK.selectedDIVs.forEach(aNode => {
+        aNode.style.left = px(left);
+      });
 
       break;
     case "center":
@@ -2630,11 +2637,6 @@ KFK.alignNodes = function (direction) {
       break;
   }
   this.setSelectedNodesBoundingRect();
-  KFK.selectedDIVs.forEach(aNode => {
-    let tmpJQ = $(aNode).clone();
-    aNode.style.left = px(left);
-    KFK.syncNodePut("U", $(aNode), "align left", tmpJQ, false);
-  });
 };
 
 KFK.scroll_posX = function (x) {
