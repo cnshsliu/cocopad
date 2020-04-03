@@ -1,0 +1,7 @@
+//TODO: toolbox active has no effect?
+//TODO: document.mouseup chagne to c3.mouseup?
+//TODO: 切换全屏是只保留一个按钮
+//TODO: 显示当前用户头像
+//TODO: update liukehong@gmail.com password
+//TODO: fix Decryptor deprecation error
+//TODO: minimize can't cover all.

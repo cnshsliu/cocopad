@@ -1,5 +1,5 @@
 .lkh {
-  font-size: large;
+  font-size: 24px;
 }
 
 html {
@@ -61,7 +61,7 @@ body {
   opacity: 0.3;
 }
 
-.reglogin {
+.regsignin {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -74,8 +74,8 @@ body {
 
 #toplogo {
   position: absolute;
-  top: 5px;
-  left: 5px;
+  top: 0px;
+  left: 0px;
   width: 100%;
   padding-right: 10px;
 }
@@ -133,7 +133,7 @@ body {
 #actionlog_button {
   position: absolute;
   top: 5px;
-  right: 350px;
+  right: 290px;
 }
 
 #actionloglist {
@@ -165,12 +165,12 @@ body {
 #gotodesignercontrol {
   position: absolute;
   top: 5px;
-  left: calc(100vw - 142px);
+  left: calc(100vw - 365px);
 }
 
 .logo {
-  width: 24px;
-  height: 24px;
+  width: 48px;
+  height: 48px;
 }
 
 .cocologo {
@@ -435,7 +435,7 @@ svg path {
   visibility: hidden;
 }
 
-.loginform {
+.signinform {
   position: absolute;
   width: 400px;
   height: 600px;
@@ -466,7 +466,7 @@ svg path {
   /* background-color: rgba(110, 223, 104, 0.056); */
 }
 
-.loginform input {
+.signinform input {
   border-radius: 20px;
   /* background-color: rgba(110, 223, 104, 0.056); */
 }
@@ -516,13 +516,10 @@ select:focus {
   outline: none !important;
 }
 
-.docname {
-  position: absolute;
-  top: 14px;
-  left: 200px;
-  font-size: 24px;
-  color: #777777;
-}
+.docname { position: absolute; top: 2px; left: 64px; font-size: 24px; color: #777777; }
+.docpeople { position: absolute; top: 32px; left:78px; font-size: 16px; color: #777777; padding-top: 4px;}
+.docpeople img { margin-left:10px; margin-right:3px; width: 24px; height: 24px;}
+.docpeople svg { margin-left:10px; margin-right:3px; width: 24px; height: 24px;}
 
 .btn.focus, .btn:focus {
   outline: 0;
@@ -686,4 +683,9 @@ select:focus {
 .kfknode img {
   width: 100%;
   height: 100%;
+}
+
+.page_title{
+  font-size: 24px;
+  font-weight: bold;
 }

@@ -3,7 +3,7 @@
 const DocController = {
 
     getDummyDoc: () => {
-        return { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', readonly: false };
+        return { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', doclocked: false };
     },
 
 
