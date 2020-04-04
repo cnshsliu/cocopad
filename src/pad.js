@@ -50,6 +50,7 @@ const app = new Vue({
     ],
     toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'lock': false, 'minimap':false, 'connect':false },
     show: {
+      'loading': false,
       'waiting': true,
       'wsready': false,
       'arrange_multi_nodes': false,
@@ -65,6 +66,7 @@ const app = new Vue({
       'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false, copyDocDialog: false, pasteContentDialog: false, MsgBox:false},
     },
     model: {
+      loading_value: 0,
       msgbox:{title:'', content:''},
       connect:{
         color:'red', width: 3,
@@ -112,7 +114,7 @@ const app = new Vue({
       docLoaded: false,
       project: { prjid: '', name: '' },
       lastrealproject: { prjid: '', name: '' },
-      cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', doclocked: false },
+      cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', doclocked: false, ownerAvatar_src:'../assets/cocopad.svg' },
       cocouser: { userid: '', name: '', avatar: 'avatar-0', avatar_src: null },
       listdocoption: {},
       listprjoption: {},

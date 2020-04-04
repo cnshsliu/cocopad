@@ -36,7 +36,7 @@
     </div>
     <div class="leftbkg" v-show="!show.section.designer">
       <div class='left_menu noshow' id="left_menu">
-        <b-container v-show="!show.wsready || show.section.register || show.section.signin">
+        <b-container >
           <b-row class="text-center mt-5">
             <b-col> <img src="../assets/brainstorm.svg" class='left_top_image' /> </b-col>
           </b-row>
@@ -512,7 +512,7 @@
       </b-container>
       <b-container class="docpeople padlayout" v-if="show.section.designer">
         <b-row>
-          <b-img v-if="model.cocodoc.owner !== model.cocouser.userid" rounded="circle"
+          <b-img class="noshow" v-if="model.cocodoc.owner !== model.cocouser.userid" rounded="circle"
             :src="model.cocodoc.ownerAvatar_src" title="共创发起人"></b-img>
             <span v-if="model.cocodoc.owner !== model.cocouser.userid" >{{model.cocodoc.ownerName}}</span>
           <b-img rounded="circle" :src="model.cocouser.avatar_src" title="当前用户"></b-img> {{model.cocouser.name}}
@@ -909,7 +909,7 @@
         </b-container>
       </b-modal>
       <b-modal @ok="KFK.msgOK" v-model="show.dialog.MsgBox" :title="model.msgbox.title" button-size="sm" centered
-        size="md">
+        size="md" class="noshow">
         <b-container>
           <b-row>
             <b-col cols="12">
@@ -919,6 +919,9 @@
         </b-container>
       </b-modal>
     </div>
+    <DIV class="w-50 mb-2 loading noshow  text-center">
+        正在为您绘制白板<BR> {{ model.loading_value }} %<BR>请稍候
+    </DIV>
   </div>
   <!--app-->
   <div id="copydiv" style="display: none; z-index: -99999"></div>

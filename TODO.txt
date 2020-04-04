@@ -1,5 +1,7 @@
+//TODO: batch delete
 //TODO: add loading progress 
 //TODO: Delete all
 //TODO: update liukehong@gmail.com password
 //TODO: minimize can't cover all.
-//DOTO: chat mode
+//TODO: chat mode
+//TODO: GROUP unGROUP?
