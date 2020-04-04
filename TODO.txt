@@ -1,5 +1,6 @@
+//TODO: change selecteddiv from normal div to jqdiv
 //TODO: batch delete
-//TODO: add loading progress 
+//O: add loading progress 
 //TODO: Delete all
 //TODO: update liukehong@gmail.com password
 //TODO: minimize can't cover all.
