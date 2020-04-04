@@ -435,6 +435,7 @@ svg path {
   visibility: hidden;
 }
 
+
 .signinform {
   position: absolute;
   width: 400px;
@@ -516,10 +517,36 @@ select:focus {
   outline: none !important;
 }
 
-.docname { position: absolute; top: 2px; left: 64px; font-size: 24px; color: #777777; }
-.docpeople { position: absolute; top: 32px; left:78px; font-size: 16px; color: #777777; padding-top: 4px;}
-.docpeople img { margin-left:10px; margin-right:3px; width: 24px; height: 24px;}
-.docpeople svg { margin-left:10px; margin-right:3px; width: 24px; height: 24px;}
+.docname {
+  position: absolute;
+  top: 2px;
+  left: 64px;
+  font-size: 24px;
+  color: #777777;
+}
+
+.docpeople {
+  position: absolute;
+  top: 32px;
+  left: 78px;
+  font-size: 16px;
+  color: #777777;
+  padding-top: 4px;
+}
+
+.docpeople img {
+  margin-left: 10px;
+  margin-right: 3px;
+  width: 24px;
+  height: 24px;
+}
+
+.docpeople svg {
+  margin-left: 10px;
+  margin-right: 3px;
+  width: 24px;
+  height: 24px;
+}
 
 .btn.focus, .btn:focus {
   outline: 0;
@@ -685,7 +712,24 @@ select:focus {
   height: 100%;
 }
 
-.page_title{
+.page_title {
   font-size: 24px;
   font-weight: bold;
+}
+
+.loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  -moz-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  -o-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  background-color: transparent;
+  font-size: 48px;
+  font-family: Consolas, "Courier New", Courier, FreeMono, monospace;
+  font-weight: bolder;
+  color: #d6dbe8;
+  z-index: 9999;
 }
