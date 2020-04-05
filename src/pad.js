@@ -66,7 +66,7 @@ const app = new Vue({
       'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false, copyDocDialog: false, pasteContentDialog: false, MsgBox:false},
     },
     model: {
-      signinButWaitVerified: false,
+      signInButWaitVerify: false,
       regForShared: false, //是否是接受到分享链接的用户来注册？
       loading_value: 0,
       msgbox:{title:'', content:''},

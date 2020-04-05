@@ -2941,13 +2941,16 @@ KFK.init = async function () {
 //TODO: onPaste paste position is wrong, need to fix.
 KFK.checkSession = async function () {
   KFK.info(">>>checkSession");
-  KFK.info(localStorage.getItem('cocouser'));
   KFK.connectTime = 0;
   KFK.setAppData("model", "prjs", []);
   KFK.docIdInUrl = RegHelper.getDocIdInUrl($(location).attr("pathname"));
   let cocouser = KFK.getCocouser();
-  KFK.setAppData('model', 'isDemoEnv', (cocouser.userid.indexOf("@cocopad_demo.org")>0));
-
+  if (cocouser) {
+    KFK.info(localStorage.getItem('cocouser'));
+    KFK.setAppData('model', 'isDemoEnv', (cocouser.userid.indexOf("@cocopad_demo.org") > 0));
+  }else{
+    KFK.info('There is no local user session');
+  }
   await KFK.sleep(50);
   if (cocouser && cocouser.sessionToken) {
     cocouser.localSessionId = myuid();
@@ -3189,7 +3192,7 @@ KFK.showHelp = function () {
 
 KFK.gotoSignin = function () {
   // KFK.APP.setData("model", "signin", { userid: "", pwd: "" });
-  KFK.setAppData("model", "signinButWaitVerified", false);
+  KFK.setAppData("model", "signInButWaitVerify", false);
   KFK.showSection({
     register: false,
     signin: true,
@@ -3390,7 +3393,7 @@ KFK.signin = function () {
             break;
           case "REGUSER-CODE":
             retuser = data.payload.data;
-            KFK.setAppData('model', 'signinButWaitVerified', true);
+            KFK.setAppData('model', 'signInButWaitVerify', true);
             KFK.setCocouser(retuser);
             KFK.scrLog("尚未验证邮箱地址，你可以继续使用，请在一周内完成邮箱验证");
             sessionStorage.setItem('regtoken', data.payload.data.sessionToken);
