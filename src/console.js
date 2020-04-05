@@ -321,8 +321,8 @@ KFK.updatePropertyFormWithNode = function (jqNodeDIV) {
   if (jqNodeDIV != null && getBoolean(config.node[nodeType].customshape)) {
     let nodeBkgColor = jqNodeDIV.css("background-color");
     let nodeBorderColor = jqNodeDIV.css("border-color");
-    let nodeBorderWidth = unpx(jqNodeDIV.css("border-width"));
-    let nodeBorderRadius = unpx(jqNodeDIV.css("border-radius"));
+    let nodeBorderWidth = KFK.unpx(jqNodeDIV.css("border-width"));
+    let nodeBorderRadius = KFK.unpx(jqNodeDIV.css("border-radius"));
     $("#shapeBkgColor").spectrum("set", nodeBkgColor);
     $("#shapeBorderColor").spectrum("set", nodeBorderColor);
     $("#spinner_border_width").spinner("value", nodeBorderWidth);
@@ -423,10 +423,10 @@ KFK.replaceNodeInSelectedDIVs = function (jqDIV) {
 }
 
 KFK.calculateNodeConnectPoints = function (jqDIV) {
-  let divLeft = unpx(jqDIV.css("left"));
-  let divTop = unpx(jqDIV.css("top"));
-  let divWidth = unpx(jqDIV.css("width"));
-  let divHeight = unpx(jqDIV.css("height"));
+  let divLeft = KFK.unpx(jqDIV.css("left"));
+  let divTop = KFK.unpx(jqDIV.css("top"));
+  let divWidth = KFK.unpx(jqDIV.css("width"));
+  let divHeight = KFK.unpx(jqDIV.css("height"));
   let pos = {
     center: {
       x: divLeft + divWidth * 0.5,
@@ -434,20 +434,20 @@ KFK.calculateNodeConnectPoints = function (jqDIV) {
     },
     points: [
       {
-        x: unpx(jqDIV.css("left")),
-        y: unpx(jqDIV.css("top")) + unpx(jqDIV.css("height")) * 0.5
+        x: KFK.unpx(jqDIV.css("left")),
+        y: KFK.unpx(jqDIV.css("top")) + KFK.unpx(jqDIV.css("height")) * 0.5
       },
       {
-        x: unpx(jqDIV.css("left")) + unpx(jqDIV.css("width")) * 0.5,
-        y: unpx(jqDIV.css("top"))
+        x: KFK.unpx(jqDIV.css("left")) + KFK.unpx(jqDIV.css("width")) * 0.5,
+        y: KFK.unpx(jqDIV.css("top"))
       },
       {
-        x: unpx(jqDIV.css("left")) + unpx(jqDIV.css("width")),
-        y: unpx(jqDIV.css("top")) + unpx(jqDIV.css("height")) * 0.5
+        x: KFK.unpx(jqDIV.css("left")) + KFK.unpx(jqDIV.css("width")),
+        y: KFK.unpx(jqDIV.css("top")) + KFK.unpx(jqDIV.css("height")) * 0.5
       },
       {
-        x: unpx(jqDIV.css("left")) + unpx(jqDIV.css("width")) * 0.5,
-        y: unpx(jqDIV.css("top")) + unpx(jqDIV.css("height"))
+        x: KFK.unpx(jqDIV.css("left")) + KFK.unpx(jqDIV.css("width")) * 0.5,
+        y: KFK.unpx(jqDIV.css("top")) + KFK.unpx(jqDIV.css("height"))
       }
     ]
   };
@@ -1324,7 +1324,7 @@ KFK._getNearGridPoint = function (x, y) {
   return { x: newX, y: newY };
 };
 
-function px(v) {
+KFK.px=(v)=> {
   if (typeof v === "string") {
     if (v.endsWith("px")) {
       return v;
@@ -1336,27 +1336,27 @@ function px(v) {
   }
 }
 
-function unpx(v) {
+KFK.unpx = (v)=>{
   if (typeof v === "string" && v.endsWith("px")) {
     return parseInt(v.substr(0, v.length - 2));
   }
 }
 
-function ltPos(node) {
+KFK.ltPos = function(node) {
   return {
     x: node.x - node.width * 0.5,
     y: node.y - node.height * 0.5
   };
 }
 
-function editTextNode(textnode, theDIV) {
+KFK.editTextNode = function(textnode, theDIV) {
   KFK.editting = true;
   theDIV.editting = true;
   textnode.editting = true;
   let oldText = textnode.innerText;
   textnode.style.visibility = "hidden";
   // theDIV.style.background = "transparent";
-  var areaPosition = { x: unpx(theDIV.style.left), y: unpx(theDIV.style.top) };
+  var areaPosition = { x: KFK.unpx(theDIV.style.left), y: KFK.unpx(theDIV.style.top) };
   var textarea = null;
   if (theDIV.type === "text") textarea = document.createElement("input");
   else {
@@ -1373,6 +1373,9 @@ function editTextNode(textnode, theDIV) {
   textarea.style.left = areaPosition.x + "px";
   textarea.style.width = theDIV.style.width;
   textarea.style.height = theDIV.style.height;
+  textarea.style.borderRadius = theDIV.style.borderRadius;
+  textarea.style.color = theDIV.style.color;
+  textarea.style.justifyContent = theDIV.style.justifyContent;
   textarea.style.fontSize = textnode.style.fontSize;
   textarea.style.borderColor = "#000";
   textarea.style.borderWidth = "1px";
@@ -1402,7 +1405,7 @@ function editTextNode(textnode, theDIV) {
   function setTextareaWidth(newWidth) {
     if (!newWidth) {
       // set width for placeholder
-      newWidth = unpx(textnode.style.width);
+      newWidth = KFK.unpx(textnode.style.width);
     }
     // some extra fixes on different browsers
     var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
@@ -1452,7 +1455,7 @@ function editTextNode(textnode, theDIV) {
   setTimeout(() => {
     window.addEventListener("click", handleOutsideClick);
   });
-}
+};
 
 KFK.getKFKNodeNumber = function () {
   let nodes = KFK.JC3.find(".kfknode");
@@ -1476,18 +1479,18 @@ KFK._createNode = function (node) {
   if (node.type === "image") {
     nodeObj = document.createElement("img");
     nodeObj.src = node.attach;
-    nodeObj.style.width = px(node.width);
-    nodeObj.style.height = px(node.height);
+    nodeObj.style.width = KFK.px(node.width);
+    nodeObj.style.height = KFK.px(node.height);
   } else if (["start", "end", "pin"].indexOf(node.type) >= 0) {
     nodeObj = document.createElement("img");
     nodeObj.src = KFK.images[node.type].src;
-    nodeObj.style.width = px(node.width);
-    nodeObj.style.height = px(node.height);
+    nodeObj.style.width = KFK.px(node.width);
+    nodeObj.style.height = KFK.px(node.height);
   } else if (node.type === "text") {
     nodeObj = document.createElement("span");
     nodeObj.style.fontSize = "18px";
     nodeObj.innerHTML = node.attach ? node.attach : config.node.text.content;
-    nodeObj.style.padding = px(2);
+    nodeObj.style.padding = KFK.px(2);
   } else if (node.type === "yellowtip") {
     nodeObj = document.createElement("span");
     nodeObj.style.fontSize = "18px";
@@ -1507,9 +1510,9 @@ KFK._createNode = function (node) {
     nodeObj.innerHTML = node.attach
       ? node.attach
       : config.node.textblock.content;
-    // nodeObj.style.width = px(node.width - textPadding * 2);
-    // nodeObj.style.height = px(node.height - textPadding * 2);
-    nodeObj.style.padding = px(2);
+    // nodeObj.style.width = KFK.px(node.width - textPadding * 2);
+    // nodeObj.style.height = KFK.px(node.height - textPadding * 2);
+    nodeObj.style.padding = KFK.px(2);
   }
   if (!nodeObj) {
     KFK.debug(`${node.type} is not supported`);
@@ -1521,10 +1524,10 @@ KFK._createNode = function (node) {
   nodeDIV.id = node.id;
   nodeDIV.style.position = "absolute";
 
-  nodeDIV.style.top = px(ltPos(node).y);
-  nodeDIV.style.left = px(ltPos(node).x);
-  nodeDIV.style.width = px(node.width);
-  nodeDIV.style.height = px(node.height);
+  nodeDIV.style.top = KFK.px(KFK.ltPos(node).y);
+  nodeDIV.style.left = KFK.px(KFK.ltPos(node).x);
+  nodeDIV.style.width = KFK.px(node.width);
+  nodeDIV.style.height = KFK.px(node.height);
   if (node.type === "text") {
     nodeDIV.style.width = "fit-content";
     nodeDIV.style.height = "fit-content";
@@ -2225,12 +2228,12 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
           let jqBig = jqNodeDIV;
           let jqSmall = ui.draggable;
           if (
-            unpx(jqSmall.css("left")) > unpx(jqBig.css("left")) &&
-            unpx(jqSmall.css("top")) > unpx(jqBig.css("top")) &&
-            unpx(jqSmall.css("left")) + unpx(jqSmall.css("width")) <
-            unpx(jqBig.css("left")) + unpx(jqBig.css("width")) &&
-            unpx(jqSmall.css("top")) + unpx(jqSmall.css("height")) <
-            unpx(jqBig.css("top")) + unpx(jqBig.css("height"))
+            KFK.unpx(jqSmall.css("left")) > KFK.unpx(jqBig.css("left")) &&
+            KFK.unpx(jqSmall.css("top")) > KFK.unpx(jqBig.css("top")) &&
+            KFK.unpx(jqSmall.css("left")) + KFK.unpx(jqSmall.css("width")) <
+            KFK.unpx(jqBig.css("left")) + KFK.unpx(jqBig.css("width")) &&
+            KFK.unpx(jqSmall.css("top")) + KFK.unpx(jqSmall.css("height")) <
+            KFK.unpx(jqBig.css("top")) + KFK.unpx(jqBig.css("height"))
           ) {
             innerObj.html(newText);
             //删掉之前那个被拖动的
@@ -2302,7 +2305,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
     ) {
       KFK.fromJQ = jqNodeDIV.clone();
       let innerText = el(jqNodeDIV.find(".innerobj"));
-      editTextNode(innerText, el(jqNodeDIV));
+      KFK.editTextNode(innerText, el(jqNodeDIV));
     }
   });
 };
@@ -2316,7 +2319,7 @@ KFK.dumpNode = function (node) {
 };
 
 KFK.divLeft = function (jqDiv) {
-  return unpx(jqDiv.css('left'));
+  return KFK.unpx(jqDiv.css('left'));
 };
 KFK.divCenter = function (jqDiv) {
   return KFK.divLeft(jqDiv) + KFK.divWidth(jqDiv) * 0.5;
@@ -2325,7 +2328,7 @@ KFK.divRight = function (jqDiv) {
   return KFK.divLeft(jqDiv) + KFK.divWidth(jqDiv);
 };
 KFK.divTop = function (jqDiv) {
-  return unpx(jqDiv.css('top'));
+  return KFK.unpx(jqDiv.css('top'));
 };
 KFK.divMiddle = function (jqDiv) {
   return KFK.divTop(jqDiv) + KFK.divHeight(jqDiv) * 0.5;
@@ -5663,8 +5666,8 @@ KFK.mouseNear = function (p1, p2, distance) {
 };
 
 KFK.moveDIVCenterToPos = function (jqDiv, pos) {
-  jqDiv.css('left', pos.x - unpx(jqDiv.css('width')) * 0.5);
-  jqDiv.css('top', pos.y - unpx(jqDiv.css('height')) * 0.5);
+  jqDiv.css('left', pos.x - KFK.unpx(jqDiv.css('width')) * 0.5);
+  jqDiv.css('top', pos.y - KFK.unpx(jqDiv.css('height')) * 0.5);
 }
 KFK.C3MousePos = function (evt) {
   return { x: KFK.scrollX(evt.clientX), y: KFK.scrollY(evt.clientY) };
