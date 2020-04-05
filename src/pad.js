@@ -66,6 +66,7 @@ const app = new Vue({
       'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false, copyDocDialog: false, pasteContentDialog: false, MsgBox:false},
     },
     model: {
+      signinButWaitVerified: false,
       regForShared: false, //是否是接受到分享链接的用户来注册？
       loading_value: 0,
       msgbox:{title:'', content:''},
@@ -119,7 +120,7 @@ const app = new Vue({
       cocouser: { userid: '', name: '', avatar: 'avatar-0', avatar_src: null },
       listdocoption: {},
       listprjoption: {},
-      register: { userid: '', pwd: '', pwd2: '', name: '' },
+      register: { userid: '', pwd: '', pwd2: '', name: '', step:'reg', code:'' },
       signin: { userid: '', pwd: '' },
       share: {},
       docfields: [{ key: 'name', label: '名称' }, { key: 'doclocked_icon', label: '模式' }, { key: 'security_icon', label: '密保' }, { key: 'copydoc', label: '复制' }, { key: 'share_icon', label: '分享' }, { key: 'owner', label: '发起人' }, { key: 'operation', label: '操作' }],

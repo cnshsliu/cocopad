@@ -458,9 +458,9 @@ KFK.drawPathBetween = function (A, B) {
     fromPoint = APos.points[i];
     for (let j = 0; j < BPos.points.length; j++) {
       toPoint = BPos.points[j];
-      let tmp = KFK.distance(fromPoint, toPoint);
-      if (tmp < shortestDistance) {
-        shortestDistance = tmp;
+      let tmp_drawPathBetween_distance = KFK.distance(fromPoint, toPoint);
+      if (tmp_drawPathBetween_distance < shortestDistance) {
+        shortestDistance = tmp_drawPathBetween_distance;
         AIndex = i;
         BIndex = j;
       }
@@ -1041,9 +1041,9 @@ KFK.initC3 = function () {
         for (let i = 0; i < KFK.tmpPos.points.length; i++) {
           fromPoint = KFK.tmpPos.points[i];
           toPoint = tmpPoint;
-          let tmp = KFK.distance(fromPoint, toPoint);
-          if (tmp < shortestDistance) {
-            shortestDistance = tmp;
+          let tmp_dis = KFK.distance(fromPoint, toPoint);
+          if (tmp_dis < shortestDistance) {
+            shortestDistance = tmp_dis;
             selectedFromIndex = i;
           }
         }
@@ -1107,21 +1107,7 @@ KFK.showUserMovingBadge = function (user, x, y) {
   let pos = { x: KFK.scrollX(x), y: KFK.scrollY(y) };
   let bgid = user.localSessionId;
   let bglabel = user.name;
-  // let jqBadgeDIV = $(document).find('#badge_' + bgid);
-  // let class_ser = KFK.get13Number(bgid);
-  // if (jqBadgeDIV.length === 0) {
-  //     let tmp = document.createElement('div');
-  //     KFK.C3.appendChild(tmp);
-  //     jqBadgeDIV = $(tmp);
-  //     jqBadgeDIV.attr("id", "badge_" + bgid);
-  //     jqBadgeDIV.addClass(`userbadge userbadge_${class_ser}`);
-  // }
-  // jqBadgeDIV.css("display", "block");
-  // jqBadgeDIV.css("top", pos.y);
-  // jqBadgeDIV.css("left", pos.x);
-  // jqBadgeDIV.css("width", "fit-content");
-  // jqBadgeDIV.css("height", "fit-content");
-  // jqBadgeDIV.html(bglabel);
+
 
   if (KFK.mouseTimer !== null) {
     clearTimeout(KFK.mouseTimer);
@@ -1146,9 +1132,9 @@ KFK.showOtherUserMovingBadge = function (data) {
   let jqBadgeDIV = $(document).find("#badge_" + bgid);
   let class_ser = KFK.get13Number(bgid);
   if (jqBadgeDIV.length === 0) {
-    let tmp = document.createElement("div");
-    KFK.C3.appendChild(tmp);
-    jqBadgeDIV = $(tmp);
+    let tmpdiv = document.createElement("div");
+    KFK.C3.appendChild(tmpdiv);
+    jqBadgeDIV = $(tmpdiv);
     jqBadgeDIV.attr("id", "badge_" + bgid);
     jqBadgeDIV.addClass(`userbadge userbadge_${class_ser}`);
   }
@@ -2386,8 +2372,8 @@ KFK.alignNodes = async function (direction) {
     case "left":
       let left = KFK.divLeft(KFK.selectedDIVs[0]);
       for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-        let tmp = KFK.divLeft(KFK.selectedDIVs[i]);
-        left = tmp < left ? tmp : left;
+        let tmp_left = KFK.divLeft(KFK.selectedDIVs[i]);
+        left = tmp_left < left ? tmp_left : left;
       }
       movedSer = 0;
       movedCount = KFK.getUnlockedCount();
@@ -2421,8 +2407,8 @@ KFK.alignNodes = async function (direction) {
     case "right":
       let right = KFK.divRight(KFK.selectedDIVs[0]);
       KFK.selectedDIVs.forEach(aNode => {
-        let tmp = KFK.divRight(aNode);
-        right = tmp > right ? tmp : right;
+        let tmp_right = KFK.divRight(aNode);
+        right = tmp_right > right ? tmp_right : right;
       });
       movedSer = 0;
       movedCount = KFK.getUnlockedCount();
@@ -2439,8 +2425,8 @@ KFK.alignNodes = async function (direction) {
     case "top":
       let top = KFK.divTop(KFK.selectedDIVs[0]);
       KFK.selectedDIVs.forEach(aNode => {
-        let tmp = KFK.divTop(aNode);
-        top = tmp < top ? tmp : top;
+        let tmp_top = KFK.divTop(aNode);
+        top = tmp_top < top ? tmp_top : top;
       });
       movedSer = 0;
       movedCount = KFK.getUnlockedCount();
@@ -2474,8 +2460,8 @@ KFK.alignNodes = async function (direction) {
     case "bottom":
       let bottom = KFK.divBottom(KFK.selectedDIVs[0]);
       KFK.selectedDIVs.forEach(aNode => {
-        let tmp = KFK.divBottom(aNode);
-        bottom = tmp > bottom ? tmp : bottom;
+        let tmp_bottom = KFK.divBottom(aNode);
+        bottom = tmp_bottom > bottom ? tmp_bottom : bottom;
       });
 
 
@@ -2498,20 +2484,20 @@ KFK.alignNodes = async function (direction) {
       //找到最左边的node及其left位置， leftMost
       KFK.selectedDIVs.forEach(aNode => {
         totalWidth += KFK.divWidth(aNode);
-        let tmp = KFK.divLeft(aNode);
-        if (tmp < leftMost) {
+        let tmp_left = KFK.divLeft(aNode);
+        if (tmp_left < leftMost) {
           nodeLeftMost = aNode;
-          leftMost = tmp;
+          leftMost = tmp_left;
         }
       });
       //找到最右边的node及其右侧边位置， rightMost
       let nodeAtRightMost = KFK.selectedDIVs[0];
       let rightMost = KFK.divRight(KFK.selectedDIVs[0]);
       KFK.selectedDIVs.forEach(aNode => {
-        let tmp = KFK.divRight(aNode);
-        if (tmp > rightMost) {
+        let tmp_right = KFK.divRight(aNode);
+        if (tmp_right > rightMost) {
           nodeAtRightMost = aNode;
-          rightMost = tmp;
+          rightMost = tmp_right;
         }
       });
       //计算中间的space
@@ -2558,19 +2544,19 @@ KFK.alignNodes = async function (direction) {
       let topMost = KFK.divTop(KFK.selectedDIVs[0]);
       KFK.selectedDIVs.forEach(aNode => {
         totalHeight += KFK.divHeight(aNode);
-        let tmp = KFK.divTop(aNode);
-        if (tmp < topMost) {
+        let tmp_top = KFK.divTop(aNode);
+        if (tmp_top < topMost) {
           nodeTopMost = aNode;
-          topMost = tmp;
+          topMost = tmp_top;
         }
       });
       let nodeAtBottomMost = KFK.selectedDIVs[0];
       let bottomMost = KFK.divBottom(KFK.selectedDIVs[0]);
       KFK.selectedDIVs.forEach(aNode => {
-        let tmp = KFK.divBottom(aNode);
-        if (tmp > bottomMost) {
+        let tmp_bottom = KFK.divBottom(aNode);
+        if (tmp_bottom > bottomMost) {
           nodeAtBottomMost = aNode;
-          bottomMost = tmp;
+          bottomMost = tmp_bottom;
         }
       });
       let availableHeight = bottomMost - topMost;
@@ -2658,9 +2644,9 @@ KFK.deleteNode_exec = function (jqDIV) {
     count += 1;
     let jqDIV = $(aDIV);
     let fromId = jqDIV.attr("id");
-    let tmp = KFK.getZIndex(jqDIV);
-    if (tmp > myZI) {
-      KFK.setZIndex(jqDIV, tmp - 1);
+    let tmpzi = KFK.getZIndex(jqDIV);
+    if (tmpzi > myZI) {
+      KFK.setZIndex(jqDIV, tmpzi - 1);
     }
     tmp1 = jqDIV.attr("linkto");
     let arr = KFK.stringToArray(tmp1);
@@ -2757,9 +2743,9 @@ KFK.deleteHoverOrSelectedDiv = async function (evt) {
       //最后看鼠标滑过的connect（节点间连接线）
       if (KFK.docLocked()) return;
       //Find ids of the two nodes connected by this connect.
-      let tmp = KFK.getNodeIdsFromConnectId(KFK.hoveredConnectId);
-      nid = tmp[0];
-      tid = tmp[1];
+      let tmpNodeIdPair = KFK.getNodeIdsFromConnectId(KFK.hoveredConnectId);
+      nid = tmpNodeIdPair[0];
+      tid = tmpNodeIdPair[1];
       let jqFrom = $(`#${nid}`);
       let jqTo = $(`#${tid}`);
       if (KFK.anyLocked(jqFrom)) return;
@@ -2841,23 +2827,23 @@ KFK.getBoundingRectOfSelectedDIVs = function () {
     bottom: KFK.divBottom(KFK.selectedDIVs[0])
   };
   for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-    let tmp = {
+    let tmpRect = {
       left: KFK.divLeft(KFK.selectedDIVs[i]),
       top: KFK.divTop(KFK.selectedDIVs[i]),
       right: KFK.divRight(KFK.selectedDIVs[i]),
       bottom: KFK.divBottom(KFK.selectedDIVs[i])
     };
-    if (tmp.left < ret.left) {
-      ret.left = tmp.left;
+    if (tmpRect.left < ret.left) {
+      ret.left = tmpRect.left;
     }
-    if (tmp.top < ret.top) {
-      ret.top = tmp.top;
+    if (tmpRect.top < ret.top) {
+      ret.top = tmpRect.top;
     }
-    if (tmp.right > ret.right) {
-      ret.right = tmp.right;
+    if (tmpRect.right > ret.right) {
+      ret.right = tmpRect.right;
     }
-    if (tmp.bottom > ret.bottom) {
-      ret.bottom = tmp.bottom;
+    if (tmpRect.bottom > ret.bottom) {
+      ret.bottom = tmpRect.bottom;
     }
   }
   ret.width = ret.right - ret.left;
@@ -2955,10 +2941,13 @@ KFK.init = async function () {
 //TODO: onPaste paste position is wrong, need to fix.
 KFK.checkSession = async function () {
   KFK.info(">>>checkSession");
+  KFK.info(localStorage.getItem('cocouser'));
   KFK.connectTime = 0;
   KFK.setAppData("model", "prjs", []);
   KFK.docIdInUrl = RegHelper.getDocIdInUrl($(location).attr("pathname"));
   let cocouser = KFK.getCocouser();
+  KFK.setAppData('model', 'isDemoEnv', (cocouser.userid.indexOf("@cocopad_demo.org")>0));
+
   await KFK.sleep(50);
   if (cocouser && cocouser.sessionToken) {
     cocouser.localSessionId = myuid();
@@ -2996,8 +2985,7 @@ KFK.onWsConnected = function () {
       });
     KFK.info(`There are ${count} offline nodes `);
     if (count === 0) {
-      let tmp = JSON.parse(localStorage.getItem('cocodoc'));
-      KFK.debug('cocodoc in storage', tmp);
+      KFK.debug('cocodoc in storage', JSON.parse(localStorage.getItem('cocodoc')));
       KFK.debug('cocodoc in mem', KFK.APP.model.cocodoc);
       KFK.sendCmd('DOC_ID', { doc_id: KFK.APP.model.cocodoc.doc_id });
     }
@@ -3019,8 +3007,8 @@ KFK.showDialog = function (options) {
   KFK.APP.setData("show", "dialog", dialog);
 };
 KFK.mergetAppData = (data, key, value) => {
-  let tmp = $.extend({}, KFK.APP[data][key], value);
-  KFK.APP.setData(data, key, tmp);
+  let tmpData = $.extend({}, KFK.APP[data][key], value);
+  KFK.APP.setData(data, key, tmpData);
 };
 
 KFK.setAppData = (data, key, value) => {
@@ -3157,40 +3145,6 @@ KFK.clearCurrentProject = function () {
   localStorage.removeItem("cocoprj");
 };
 
-KFK.signin = function () {
-  let userid = KFK.APP.model.signin.userid;
-  let pwd = KFK.APP.model.signin.pwd;
-  KFK.info("singin " + userid);
-  WS.start(
-    function () {
-      WS.put("SIGNIN", { userid: userid, pwd: pwd });
-    },
-    function (data) {
-      data = JSON.parse(data);
-      if (data.payload) {
-        switch (data.payload.cmd) {
-          case "SIGNIN":
-            let retuser = data.payload.data;
-            KFK.setCocouser(retuser);
-            KFK.resetAllLocalData();
-            KFK.APP.setData('model', 'isDemoEnv', false);
-            setTimeout(() => { KFK.gotoWork(); }, 500);
-            break;
-          case "PLSSIGNIN":
-            KFK.scrLog(data.payload.error);
-            KFK.removeCocouser();
-            KFK.gotoSignin();
-            break;
-        }
-        WS.close();
-      }
-    },
-    0,
-    'signin',
-    'ONCE'
-  );
-};
-
 KFK.gotoWork = async function () {
   KFK.debug(KFK.APP.model.prjs);
   KFK.debug(KFK.APP.model.docs);
@@ -3206,18 +3160,6 @@ KFK.resetAllLocalData = function () {
   KFK.APP.setData("model", "lastrealproject", { prjid: '', name: '' });
   KFK.APP.setData("model", "prjs", []);
   KFK.APP.setData("model", "docs", []);
-};
-
-KFK.signout = function () {
-  KFK.WS.put("SIGNOUT", { userid: KFK.APP.model.cocouser.userid });
-  KFK.resetAllLocalData();
-  localStorage.removeItem('cocouser');
-  KFK.APP.model.cocouser = {
-    userid: "",
-    name: "",
-    avatar: "avatar-0",
-    avatar_src: null
-  };
 };
 
 KFK.showCreateNewDoc = function () {
@@ -3247,6 +3189,7 @@ KFK.showHelp = function () {
 
 KFK.gotoSignin = function () {
   // KFK.APP.setData("model", "signin", { userid: "", pwd: "" });
+  KFK.setAppData("model", "signinButWaitVerified", false);
   KFK.showSection({
     register: false,
     signin: true,
@@ -3264,7 +3207,9 @@ KFK.gotoRegister = function (docIdInUrl = null) {
     userid: "",
     pwd: "",
     pwd2: "",
-    name: ""
+    name: "",
+    step: 'reg',
+    code: '',
   });
   KFK.showSection({
     signin: false,
@@ -3280,11 +3225,12 @@ KFK.remoteCheckUserId = function (userid) {
 };
 
 KFK.registerUser = function () {
-  let tmp = KFK.APP.model.register;
-  let userid = tmp.userid.trim();
-  let pwd = tmp.pwd.trim();
-  let name = tmp.name.trim();
-  let pwd2 = tmp.pwd2.trim();
+  let tmpRegData = KFK.APP.model.register;
+  console.log(tmpRegData);
+  let userid = tmpRegData.userid.trim();
+  let pwd = tmpRegData.pwd.trim();
+  let name = tmpRegData.name.trim();
+  let pwd2 = tmpRegData.pwd2.trim();
   let foundError = false;
   KFK.APP.state.reg.userid = KFK.validateUserId(userid);
   KFK.APP.state.reg.name = KFK.validateUserName(name);
@@ -3296,7 +3242,7 @@ KFK.registerUser = function () {
     KFK.APP.state.reg.pwd &&
     KFK.APP.state.reg.pwd2
   )) {
-    KFK.APP.setData("model", "register", tmp);
+    KFK.APP.setData("model", "register", tmpRegData);
     return;
   }
   WS.start(
@@ -3307,9 +3253,21 @@ KFK.registerUser = function () {
       data = JSON.parse(data);
       if (data.payload) {
         switch (data.payload.cmd) {
-          case "REGUSER-TRUE":
-            KFK.scrLog("欢迎，已注册成功，请登录");
-            KFK.gotoSignin();
+          case "REGUSER-CODE":
+            KFK.scrLog("请检查邮箱，输入验证码");
+            let tmpReg = KFK.APP.model.register;
+            tmpReg.step = "code";
+            KFK.setAppData('model', 'register', tmpReg);
+            console.log('regtoken', data.payload.data.sessionToken);
+            sessionStorage.setItem('regtoken', data.payload.data.sessionToken);
+            break;
+          case "REGUSER-PLSVERIFY":
+            KFK.scrLog(`账号已被注册尚未验证，请重新验证`);
+            tmpReg = KFK.APP.model.register;
+            tmpReg.step = "code";
+            KFK.setAppData('model', 'register', tmpReg);
+            console.log('regtoken', data.payload.data.sessionToken);
+            sessionStorage.setItem('regtoken', data.payload.data.sessionToken);
             break;
           case "REGUSER-FALSE":
             KFK.scrLog("注册失败，请重试");
@@ -3317,6 +3275,7 @@ KFK.registerUser = function () {
           case "REGUSER-DUP":
             KFK.scrLog(`账号${data.payload.data.userid}已被占用`);
             break;
+
         }
         WS.close();
       }
@@ -3326,6 +3285,138 @@ KFK.registerUser = function () {
     'ONCE'
   );
 };
+
+KFK.resendVerifyCode = async function () {
+  WS.start(
+    function () {
+      let regtoken = sessionStorage.getItem("regtoken");
+      WS.put("RESENDCODE", { regtoken: regtoken });
+    },
+    function (data) {
+      try {
+        data = JSON.parse(data);
+        console.log(data);
+        if (data.payload && data.payload.cmd) {
+          switch (data.payload.cmd) {
+            case "REGUSER-CODE":
+              KFK.scrLog("请检查邮箱，输入验证码");
+              let tmpReg = KFK.APP.model.register;
+              tmpReg.step = "code";
+              KFK.setAppData('model', 'register', tmpReg);
+              sessionStorage.setItem('regtoken', data.payload.data.sessionToken);
+              break;
+            case "REGUSER-FALSE":
+              KFK.scrLog(data.payload.msg);
+              tmpReg = KFK.APP.model.register;
+              tmpReg.step = "code";
+              KFK.setAppData('model', 'register', tmpReg);
+              break;
+          }
+          WS.close();
+        }
+      } catch (error) {
+        console.log(error);
+      } finally {
+
+      }
+    },
+    0,
+    'resendVerifyCode',
+    'ONCE'
+  );
+};
+
+KFK.verifyRegCode = async function () {
+  WS.start(
+    function () {
+      let regtoken = sessionStorage.getItem('regtoken');
+      WS.put("VERIFYREGCODE", { code: KFK.APP.model.register.code, regtoken: regtoken });
+    },
+    function (data) {
+      data = JSON.parse(data);
+      if (data.payload) {
+        switch (data.payload.cmd) {
+          case "VERIFY-FALSE":
+            KFK.scrLog("注册失败，请重试");
+            break;
+          case "VERIFY-EXPIRED":
+            KFK.scrLog("验证码已过期，请重新发送");
+            break;
+          case "VERIFY-WRONGCODE":
+            KFK.scrLog("验证码错误，请重新输入");
+            break;
+          case "VERIFY-SUCCESS":
+            KFK.scrLog("验证成功，请登录");
+            sessionStorage.removeItem('regtoken');
+            KFK.gotoSignin();
+            break;
+          case "VERIFY-ALREAY":
+            KFK.scrLog("已验证过，请直接登录");
+            break;
+        }
+        WS.close();
+      }
+    },
+    0,
+    'verifyRegCode',
+    'ONCE'
+  );
+};
+
+
+KFK.signin = function () {
+  let userid = KFK.APP.model.signin.userid;
+  let pwd = KFK.APP.model.signin.pwd;
+  KFK.info("singin " + userid);
+  WS.start(
+    function () {
+      WS.put("SIGNIN", { userid: userid, pwd: pwd });
+    },
+    function (data) {
+      data = JSON.parse(data);
+      if (data.payload) {
+        switch (data.payload.cmd) {
+          case "SIGNIN":
+            let retuser = data.payload.data;
+            KFK.setCocouser(retuser);
+            KFK.resetAllLocalData();
+            KFK.APP.setData('model', 'isDemoEnv', false);
+            setTimeout(() => { KFK.gotoWork(); }, 500);
+            break;
+          case "PLSSIGNIN":
+            KFK.scrLog(data.payload.error);
+            KFK.removeCocouser();
+            KFK.gotoSignin();
+            break;
+          case "REGUSER-CODE":
+            retuser = data.payload.data;
+            KFK.setAppData('model', 'signinButWaitVerified', true);
+            KFK.setCocouser(retuser);
+            KFK.scrLog("尚未验证邮箱地址，你可以继续使用，请在一周内完成邮箱验证");
+            sessionStorage.setItem('regtoken', data.payload.data.sessionToken);
+            break;
+        }
+        WS.close();
+      }
+    },
+    0,
+    'signin',
+    'ONCE'
+  );
+};
+
+KFK.signout = function () {
+  KFK.WS.put("SIGNOUT", { userid: KFK.APP.model.cocouser.userid });
+  KFK.resetAllLocalData();
+  localStorage.removeItem('cocouser');
+  KFK.APP.model.cocouser = {
+    userid: "",
+    name: "",
+    avatar: "avatar-0",
+    avatar_src: null
+  };
+};
+
 
 KFK.pickPrjForCreateDoc = function () {
   KFK.onPrjSelected = KFK.showCreateNewDoc;
@@ -3390,7 +3481,7 @@ KFK.showPrjs = function (msg = null, userealprjs = false) {
     bottomlinks: true,
     explorerTabIndex: 0
   });
-  if (KFK.currentView === 'designer'){
+  if (KFK.currentView === 'designer') {
     KFK.currentView = "explorer";
     KFK.showSection({ explorer: true, designer: false });
   }
@@ -3491,16 +3582,21 @@ KFK.onWsMsg = function (data) {
       KFK.scrLog(data.payload.msg);
       break;
     case "OPEN":
-      if (data.payload.demo)
+      if (data.payload.demo) {
+        KFK.debug("set isDemoEnv to TRUE. after received OPEN");
         KFK.APP.setData('model', 'isDemoEnv', true);
-      else
+      }
+      else {
+        KFK.debug("set isDemoEnv to FALSE. after received OPEN");
         KFK.APP.setData('model', 'isDemoEnv', false);
+      }
       KFK.recreateFullDoc(data.payload.data, KFK.checkLoading);
       break;
     case "OPENANN":
       let annUser = data.payload.data;
       KFK.debug(annUser);
       KFK.setCocouser(annUser);
+      KFK.debug("set isDemoEnv to TRUE. after received OPENANN");
       KFK.APP.setData('model', 'isDemoEnv', true);
       KFK.resetAllLocalData();
       setTimeout(() => { KFK.gotoWork(); }, 500);
@@ -3952,9 +4048,13 @@ KFK.recreateObject = async function (obj, callback) {
     KFK.recreateSLine(obj, callback);
   } else {
     KFK.error('Unknow etype, guess it');
-    let tmp = KFK.base64ToCode(obj.html);
-    KFK.detail(tmp);
-    if (tmp.indexOf('nodetype') > 0 && tmp.indexOf('edittable') > 0 && tmp.indexOf('kfknode') > 0) {
+    let tmpHtml = KFK.base64ToCode(obj.html);
+    KFK.detail(tmpHtml);
+    if (
+      tmpHtml.indexOf('nodetype') > 0 &&
+      tmpHtml.indexOf('edittable') > 0 &&
+      tmpHtml.indexOf('kfknode') > 0
+    ) {
       obj.etype = 'DIV';
       KFK.recreateNode(obj, callback);
     }
@@ -4211,9 +4311,9 @@ KFK.initPropertyForm = function () {
     })
     .on("change", async function () {
       // Split font into family and weight/style
-      var tmp = $("input.fonts").val().split(":"),
-        family = tmp[0],
-        variant = tmp[1] || "400",
+      var fontInfo = $("input.fonts").val().split(":"),
+        family = fontInfo[0],
+        variant = fontInfo[1] || "400",
         weight = parseInt(variant, 10),
         italic = /i$/.test(variant);
 
@@ -4396,14 +4496,14 @@ KFK.initColorPicker = function () {
 };
 
 KFK.textAlignChanged = async function (evt, value) {
-  let tmp = $("#textAlign").val();
+  let alignInfo = $("#textAlign").val();
   let jqNode = KFK.getPropertyApplyToJqNode();
   if (jqNode != null && KFK.notAnyLocked(jqNode)) {
     KFK.fromJQ = jqNode.clone();
     if (jqNode.find(".tip_content").length !== 0) {
-      jqNode.find(".tip_content").css("justify-content", tmp);
+      jqNode.find(".tip_content").css("justify-content", alignInfo);
     } else {
-      jqNode.css("justify-content", tmp);
+      jqNode.css("justify-content", alignInfo);
     }
     await KFK.syncNodePut("U", jqNode, "set text alignment", KFK.fromJQ, false, 0, 1);
   }
@@ -4411,14 +4511,14 @@ KFK.textAlignChanged = async function (evt, value) {
 };
 
 KFK.vertAlignChanged = async function (evt, value) {
-  let tmp = $("#vertAlign").val();
+  let valignInfo = $("#vertAlign").val();
   let jqNode = KFK.getPropertyApplyToJqNode();
   if (jqNode != null && KFK.notAnyLocked(jqNode)) {
     KFK.fromJQ = jqNode.clone();
     if (jqNode.find(".tip_content").length !== 0) {
-      jqNode.find(".tip_content").css("align-items", tmp);
+      jqNode.find(".tip_content").css("align-items", valignInfo);
     } else {
-      jqNode.css("align-items", tmp);
+      jqNode.css("align-items", valignInfo);
     }
     await KFK.syncNodePut("U", jqNode, "set text vert alignment", KFK.fromJQ, false, 0, 1);
   }
@@ -4660,12 +4760,12 @@ KFK.addDocumentEventHandler = function () {
     // $("#linetransformer").css("visibility", "hidden");
     if (timer === null) {
       timer = setTimeout(() => {
-        let tmp = KFK.getNearGridPoint(
+        let pt = KFK.getNearGridPoint(
           KFK.scrollContainer.scrollLeft(),
           KFK.scrollContainer.scrollTop()
         );
-        let deltaX = tmp.x - KFK.scrollContainer.scrollLeft();
-        let deltaY = tmp.y - KFK.scrollContainer.scrollTop();
+        let deltaX = pt.x - KFK.scrollContainer.scrollLeft();
+        let deltaY = pt.y - KFK.scrollContainer.scrollTop();
         // KFK.drawGridlines(deltaX, deltaY);
         KFK.JCM.css('background-position-x', deltaX);
         KFK.JCM.css('background-position-y', deltaY);
@@ -4696,10 +4796,10 @@ KFK.ZiToTop = function () {
     .each((index, aNodeDIV) => {
       count += 1;
       let jqNode = $(aNodeDIV);
-      let tmp = KFK.getZIndex(jqNode);
-      if (tmp > myZI) {
-        KFK.setZIndex(jqNode, tmp - 1);
-        zIndexChanger.ZI[jqNode.attr("id")] = tmp - 1;
+      let tmpZi = KFK.getZIndex(jqNode);
+      if (tmpZi > myZI) {
+        KFK.setZIndex(jqNode, tmpZi - 1);
+        zIndexChanger.ZI[jqNode.attr("id")] = tmpZi - 1;
       }
     });
   KFK.setZIndex(curJQ, count);
@@ -4720,10 +4820,10 @@ KFK.ZiToBottom = function () {
     .each((index, aNodeDIV) => {
       count += 1;
       let jqNode = $(aNodeDIV);
-      let tmp = KFK.getZIndex(jqNode);
-      if (tmp < myZI) {
-        KFK.setZIndex(jqNode, tmp + 1);
-        zIndexChanger.ZI[jqNode.attr("id")] = tmp + 1;
+      let tmpZi = KFK.getZIndex(jqNode);
+      if (tmpZi < myZI) {
+        KFK.setZIndex(jqNode, tmpZi + 1);
+        zIndexChanger.ZI[jqNode.attr("id")] = tmpZi + 1;
       }
     });
   KFK.setZIndex(curJQ, 1);
@@ -4742,8 +4842,8 @@ KFK.ZiToHigher = function () {
     allnodes.each((index, aNodeDIV) => {
       count += 1;
       let jqNode = $(aNodeDIV);
-      let tmp = KFK.getZIndex(jqNode);
-      if (tmp === myZI + 1) {
+      let tmpZi = KFK.getZIndex(jqNode);
+      if (tmpZi === myZI + 1) {
         KFK.setZIndex(jqNode, myZI);
         zIndexChanger.ZI[jqNode.attr("id")] = myZI;
       }
@@ -4767,8 +4867,8 @@ KFK.ZiToLower = function () {
       .each((index, aNodeDIV) => {
         count += 1;
         let jqNode = $(aNodeDIV);
-        let tmp = KFK.getZIndex(jqNode);
-        if (tmp === myZI - 1) {
+        let tmpZi = KFK.getZIndex(jqNode);
+        if (tmpZi === myZI - 1) {
           KFK.setZIndex(jqNode, myZI);
           zIndexChanger.ZI[jqNode.attr("id")] = myZI;
         }
@@ -5023,8 +5123,8 @@ KFK.showTextPasteDialog = function (content) {
       }
     }
   } else if (content.html !== "") {
-    tmp = RegHelper.removeMeta(content.html);
-    toAdd = KFK.replaceHTMLTarget(tmp);
+    let tmpText = RegHelper.removeMeta(content.html);
+    toAdd = KFK.replaceHTMLTarget(tmpText);
     showbox = KFK.hoverJqDiv() ? false : true;
     if (showbox) {
       KFK.mergetAppData("model", "paste", {
@@ -5047,6 +5147,7 @@ KFK.placePastedContent = async function () {
   if (ctype === 'url') {
     toAdd = `<a href="${toAdd}" target="_blank">${display}</a>`;
   }
+  //paste image or paste text
   if (KFK.hoverJqDiv()) {
     if (KFK.anyLocked(KFK.hoverJqDiv())) return;
     if (KFK.isZooming) return;
@@ -5063,6 +5164,8 @@ KFK.placePastedContent = async function () {
       await KFK.syncNodePut("U", KFK.hoverJqDiv(), "add text to hover div", KFK.fromJQ, false, 0, 1);
     }
   } else {
+    //box是在pad.js中定义的paste对象时，是否显示边框和背景色的配置信息
+    //paste image in a new node
     let box = KFK.APP.model.paste.box;
     let jBox = KFK.placeNode(false, //shiftKey
       myuid(), "textblock", "default",
@@ -5083,12 +5186,13 @@ KFK.placePastedContent = async function () {
         jBox.css("border-color", "rgba(51,51,51,255)");
         break;
     }
-    await KFK.syncNodePut("C", $(tmp), "create text node", null, false, 0, 1);
+    await KFK.syncNodePut("C", jBox, "create text node", null, false, 0, 1);
   }
 };
 
 KFK.onPaste = function (evt) {
   if (KFK.docLocked() || KFK.isZooming) return;
+  if (KFK.currentView !== 'designer') return;
   let content = { html: "", text: "", image: null };
   content.html = evt.clipboardData.getData("text/html");
   content.text = evt.clipboardData.getData("Text");
@@ -5860,13 +5964,13 @@ KFK.initLineMover = function () {
       let parr = KFK.lineToResize.array();
       let stopAtPos = KFK.C3MousePos(evt);
       if (KFK.moveLinePoint === "from") {
-        let tmp = KFK.lineToResize.plot([
+        KFK.lineToResize.plot([
           [stopAtPos.x, stopAtPos.y],
           parr[1]
         ]
         );
       } else {
-        let tmp = KFK.lineToResize.plot([
+        KFK.lineToResize.plot([
           parr[0],
           [stopAtPos.x, stopAtPos.y],
         ]
@@ -5886,13 +5990,13 @@ KFK.initLineMover = function () {
         KFK.moveDIVCenterToPos($('#linetransformer'), smp);
       }
       if (KFK.moveLinePoint === "from") {
-        let tmp = KFK.lineToResize.plot([
+        KFK.lineToResize.plot([
           [stopAtPos.x, stopAtPos.y],
           parr[1]
         ]
         );
       } else {
-        let tmp = KFK.lineToResize.plot([
+        KFK.lineToResize.plot([
           parr[0],
           [stopAtPos.x, stopAtPos.y],
         ]

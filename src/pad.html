@@ -103,70 +103,81 @@
     <div id="registerform" class="registerform" v-show="show.section.register" style="display:none;">
       <b-container class="my-3 ">
         <b-form autocomplete="off" class="w-100 text-center px-2">
-          <b-row>
-            <b-col class="pb-4" style="font-size:28px">
-              新用户注册
-            </b-col>
-          </b-row>
-          <b-form-group>
-            <b-form-input id="regUserId" trim v-model="model.register.userid" :state="state.reg.userid"
-              class="mb-2 mr-sm-2 mb-sm-0" required placeholder="请使用正确的邮箱地址" class="w-50"></b-form-input>
-            <b-form-invalid-feedback id="regUserId-feedback">
-              一个正确的邮箱地址
-            </b-form-invalid-feedback>
-          </b-form-group>
-          <b-form-group>
-            <b-form-input id="regUserName" trim v-model="model.register.name" :state="state.reg.name"
-              class="mb-2 mr-sm-2 mb-sm-0" required placeholder="您的全称" class="w-50"></b-form-input>
-            <b-form-invalid-feedback id="regUserName-feedback">
-              2个以上汉字或4个以上英文，最多10个
-            </b-form-invalid-feedback>
-          </b-form-group>
-          <b-form-group>
-            <b-form-input id="regUserPwd" trim :type="model.hidepassword?'password':'text'" v-model="model.register.pwd"
-              :state="state.reg.pwd" class="mb-2 mr-sm-2 mb-sm-0" required placeholder="请输入密码" class="w-50">
-            </b-form-input>
-            <b-form-invalid-feedback id="regUserPwd-feedback">
-              密码至少8字符，<BR>必须含大小写字母数字和特殊字符
-            </b-form-invalid-feedback>
-          </b-form-group>
-          <b-form-group>
-            <b-form-input id="regUserPwd2" trim :type="model.hidepassword?'password':'text'"
-              v-model="model.register.pwd2" :state="state.reg.pwd2" class="mb-2 mr-sm-2 mb-sm-0" required
-              placeholder="两次密码输入需要一致" class="w-50"></b-form-input>
-            <b-form-invalid-feedback id="regUserPwd2-feedback">
-              两次密码输入需要一致
-            </b-form-invalid-feedback>
-            <b-button @click="toggleHidePassword" variant="outline-none">
-              <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
-            </b-button>
-          </b-form-group>
-          <div class="bg-none">
+          <div v-show="model.register.step==='reg'">
+            <b-row>
+              <b-col class="pb-4" style="font-size:28px">
+                新用户注册
+              </b-col>
+            </b-row>
+            <b-form-group>
+              <b-form-input id="regUserId" trim v-model="model.register.userid" :state="state.reg.userid"
+                class="mb-2 mr-sm-2 mb-sm-0" required placeholder="请使用正确的邮箱地址" class="w-50"></b-form-input>
+              <b-form-invalid-feedback id="regUserId-feedback">
+                一个正确的邮箱地址
+              </b-form-invalid-feedback>
+            </b-form-group>
+            <b-form-group>
+              <b-form-input id="regUserName" trim v-model="model.register.name" :state="state.reg.name"
+                class="mb-2 mr-sm-2 mb-sm-0" required placeholder="您的全称" class="w-50"></b-form-input>
+              <b-form-invalid-feedback id="regUserName-feedback">
+                2个以上汉字或4个以上英文，最多10个
+              </b-form-invalid-feedback>
+            </b-form-group>
+            <b-form-group>
+              <b-form-input id="regUserPwd" trim :type="model.hidepassword?'password':'text'"
+                v-model="model.register.pwd" :state="state.reg.pwd" class="mb-2 mr-sm-2 mb-sm-0" required
+                placeholder="请输入密码" class="w-50">
+              </b-form-input>
+              <b-form-invalid-feedback id="regUserPwd-feedback">
+                密码至少8字符，<BR>必须含大小写字母数字和特殊字符
+              </b-form-invalid-feedback>
+            </b-form-group>
+            <b-form-group>
+              <b-form-input id="regUserPwd2" trim :type="model.hidepassword?'password':'text'"
+                v-model="model.register.pwd2" :state="state.reg.pwd2" class="mb-2 mr-sm-2 mb-sm-0" required
+                placeholder="两次密码输入需要一致" class="w-50"></b-form-input>
+              <b-form-invalid-feedback id="regUserPwd2-feedback">
+                两次密码输入需要一致
+              </b-form-invalid-feedback>
+              <b-button @click="toggleHidePassword" variant="outline-none">
+                <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
+              </b-button>
+            </b-form-group>
+            <div class="bg-none">
+            </div>
+            <b-row>
+              <b-col class="bg-none">
+                <b-button @click="KFK.registerUser" variant="outline-primary">注册 &gt;&gt;</b-button>
+              </b-col>
+            </b-row>
           </div>
-          <b-col class="bg-none">
-            <b-button @click="KFK.registerUser" variant="outline-primary">注册账号 &gt;&gt;</b-button>
-          </b-col>
-          </b-row>
-        </b-form>
-      </b-container>
-      <b-container style="position: absolute; bottom: 20px;">
-        <b-row class="w-100 text-center">
-          <b-col class="pt-3"><a href="#" class="card-link" @click="KFK.gotoSignin" style='font-size:18px'>已有账号？请登录</a>
-          </b-col>
-          <div class="w-100">
-            <hr>
+          <div v-show="model.register.step==='code'">
+            <b-row>
+              <b-col class="pb-4" style="font-size:28px">
+                新用户注册
+              </b-col>
+            </b-row>
+            <b-form-group>
+              <b-form-input id="regUserCode" trim v-model="model.register.code" class="mb-2 mr-sm-2 mb-sm-0" required
+                placeholder="请输入六位验证码" class="w-50"></b-form-input>
+            </b-form-group>
+            <b-row>
+              <b-col class="bg-none">
+                <b-button @click="KFK.verifyRegCode" variant="outline-primary">验证 &gt;&gt;</b-button>
+              </b-col>
+            </b-row>
+            <b-row>
+              <b-col class="bg-none">
+                <a href="#" class="card-link" @click="KFK.resendVerifyCode">没有收到验证码？点这里重新发送</a>
+              </b-col>
+            </b-row>
           </div>
-          </b-col>
-          <b-col><a href="#" class="card-link" @click="KFK.openDemoDoc">先不注册 直接体验</a>
-            <div class="w-100"></div>
-            <b-col><a href="#" class="card-link" @click="KFK.showHelp">帮助</a></b-col>
-        </b-row>
         </b-form>
       </b-container>
     </div>
     <div id="signinform" class="signinform" v-show="show.section.signin" style="display:none;">
       <b-container class="my-3 ">
-        <b-form autocomplete="off" class="w-100 px-2 text-center">
+        <b-form v-if="model.signinButWaitVerified===false" autocomplete="off" class="w-100 px-2 text-center">
           <b-row>
             <b-col class="pb-4" style="font-size:28px">
               请登录
@@ -187,16 +198,29 @@
             <b-button @click="KFK.signin" variant="outline-primary">登录 &gt;&gt;</b-button>
           </div>
         </b-form>
-      </b-container>
-      <b-container style="position: absolute; bottom: 20px;">
-        <b-row class="w-100 text-center">
-          <b-col class="pt-3"><a href="#" @click="KFK.gotoRegister" style='font-size:18px'>还没有账号？新用户注册</a></b-col>
-          </b-col>
-          <div class="w-100">
-            <hr>
-          </div>
-          <b-col><a href="#" class="card-link" @click="KFK.showHelp">帮助</a></b-col>
-        </b-row>
+        <b-form v-else autocomplete="off" class="w-100 px-2 text-center">
+          <b-row>
+            <b-col class="pb-4" style="font-size:28px">
+              你的邮箱地址尚未验证
+            </b-col>
+          </b-row>
+          <b-form-group>
+            <b-form-input id="regUserCode" trim v-model="model.register.code" class="mb-2 mr-sm-2 mb-sm-0" required
+              placeholder="请输入六位验证码" class="w-50"></b-form-input>
+          </b-form-group>
+          <b-row>
+            <b-col class="bg-none">
+              <b-button @click="KFK.verifyRegCode" variant="outline-primary">现在验证 &gt;&gt;</b-button>
+            </b-col>
+            <div class="w-100"></div>
+            <b-col class="bg-none mt-3">
+              <a href="#" class="card-link" @click="KFK.resendVerifyCode">没有收到验证码？点这里重新发送</a>
+            </b-col>
+            <div class="w-100"></div>
+            <b-col class="bg-none  mt-3">
+              <a href="#" class="card-link" @click="KFK.gotoWork">先不验证，直接使用</a>
+            </b-col>
+          </b-row>
         </b-form>
       </b-container>
     </div>
@@ -518,7 +542,8 @@
             </b-img>
             <b-dropdown :text="model.cocouser.name" right size="sm" variant="link" class="m-0 p-0 userinfo">
               <b-dropdown-item-button>{{model.cocouser.name}}</b-dropdown-item-button>
-              <b-dropdown-item-button v-if="!model.isDemoEnv" @click="KFK.showSetProfileDialog()">修改账户信息</b-dropdown-item-button>
+              <b-dropdown-item-button v-if="!model.isDemoEnv" @click="KFK.showSetProfileDialog()">修改账户信息
+              </b-dropdown-item-button>
               <b-dropdown-divider></b-dropdown-divider>
               <b-dropdown-item-button @click="KFK.showPrjs">我的项目</b-dropdown-item-button>
               <b-dropdown-item-button @click="KFK.gotoExplorer">我的白板</b-dropdown-item-button>
@@ -532,7 +557,7 @@
             </b-button>{{model.actionlog.length}}
           </b-row>
         </b-container>
-            
+
       </b-container>
       <div id="modeIndicator" style="position:absolute; top: 0px; left: 0px; display: none; ">
         <img id="modeIndicatorImg" src="../assets/pointer.svg" style='width: 18px; height: 18px;' />
@@ -561,7 +586,8 @@
             </div>
             <b-nav-item-dropdown text="我的" right>
               <b-dropdown-item-button>{{model.cocouser.name}}</b-dropdown-item-button>
-              <b-dropdown-item-button v-if="!model.isDemoEnv" @click="KFK.showSetProfileDialog()">修改账户信息</b-dropdown-item-button>
+              <b-dropdown-item-button v-if="!model.isDemoEnv" @click="KFK.showSetProfileDialog()">修改账户信息
+              </b-dropdown-item-button>
               <b-dropdown-divider></b-dropdown-divider>
               <b-dropdown-item-button @click="KFK.showPrjs">我的项目</b-dropdown-item-button>
               <b-dropdown-item-button @click="KFK.showDocs">我的白板</b-dropdown-item-button>
@@ -725,20 +751,17 @@
               </b-tab>
             </b-tabs>
           </b-card>
-          <b-row class="text-center mt-5 pt-5">
-            <b-col >
-              <a href="#" v-if="model.isDemoEnv" class="card-link"
-                @click="KFK.upgradeToStartAccount">当前为演示账户，操作不会被保存<BR>
-                  注册为正式用户，以便享有更多功能</a>
+          <b-row class="text-center" v-if="model.isDemoEnv">
+            <b-col class="mt-5 pt-5">
+              <a href="#" class="card-link" @click="KFK.upgradeToStartAccount">当前为演示账户，操作不会被保存<BR>
+                注册为正式用户，以便享有更多功能</a>
             </b-col>
-          </b-row>
-          <b-row class="text-center mt-3">
-            <b-col >
+            <div class="w-100"></div>
+            <b-col class="mt-3 pt-3">
               <a href="#" class="card-link" @click="KFK.gotoSignin" style='font-size:18px'>已有账号？请登录</a>
             </b-col>
-          </b-row>
-          <b-row class="text-center">
-            <b-col>
+            <div class="w-100"></div>
+            <b-col class="mt-3 pt-3">
               <a href="#" class="card-link" @click="KFK.openDemoDoc">查看COCOPAD使用说明</a>
             </b-col>
           </b-row>
