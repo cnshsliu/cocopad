@@ -9,8 +9,7 @@
 //TODO: Add  Delete/Copy tool on the le
 //TODO: Textbox has the same round corner as the host DIV
 //TODO: share by shareCode
-//TODO: add try catch in handers for all handlers
-//TODO: scrLog changed to drop down on top
+//TODO: add try catch in handers for all handlers, make sure it return a payload
 //TODO: share by sending email
 //TODO: draw page divider line
 //TODO: HOTKEY to nav A4 page
