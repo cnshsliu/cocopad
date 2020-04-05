@@ -35,8 +35,8 @@
       </b-row>
     </div>
     <div class="leftbkg" v-show="!show.section.designer">
-      <div class='left_menu noshow' id="left_menu">
-        <b-container >
+      <div class='left_menu noshow' v-show="show.section.register || show.section.signin" id="left_menu">
+        <b-container>
           <b-row class="text-center mt-5">
             <b-col> <img src="../assets/brainstorm.svg" class='left_top_image' /> </b-col>
           </b-row>
@@ -102,37 +102,38 @@
     </div>
     <div id="registerform" class="registerform" v-show="show.section.register" style="display:none;">
       <b-container class="my-3 ">
-        <b-form autocomplete="off" class="w-100 px-2">
+        <b-form autocomplete="off" class="w-100 text-center px-2">
           <b-row>
-            <b-col class="text-right pb-4" style="font-size:28px">
+            <b-col class="pb-4" style="font-size:28px">
               新用户注册
             </b-col>
           </b-row>
-          <b-form-group label-cols=3 label="新用户ID" label-for="regUserId" label-align="right">
+          <b-form-group>
             <b-form-input id="regUserId" trim v-model="model.register.userid" :state="state.reg.userid"
               class="mb-2 mr-sm-2 mb-sm-0" required placeholder="请使用正确的邮箱地址" class="w-50"></b-form-input>
             <b-form-invalid-feedback id="regUserId-feedback">
               一个正确的邮箱地址
             </b-form-invalid-feedback>
           </b-form-group>
-          <b-form-group label-cols=3 label="全名" label-for="regUserName" label-align="right">
+          <b-form-group>
             <b-form-input id="regUserName" trim v-model="model.register.name" :state="state.reg.name"
               class="mb-2 mr-sm-2 mb-sm-0" required placeholder="您的全称" class="w-50"></b-form-input>
             <b-form-invalid-feedback id="regUserName-feedback">
               2个以上汉字或4个以上英文，最多10个
             </b-form-invalid-feedback>
           </b-form-group>
-          <b-form-group label-cols=3 label="用户密码" label-for="regUserPwd" label-align="right">
+          <b-form-group>
             <b-form-input id="regUserPwd" trim :type="model.hidepassword?'password':'text'" v-model="model.register.pwd"
-              :state="state.reg.pwd" class="mb-2 mr-sm-2 mb-sm-0" required placeholder="" class="w-50"></b-form-input>
+              :state="state.reg.pwd" class="mb-2 mr-sm-2 mb-sm-0" required placeholder="请输入密码" class="w-50">
+            </b-form-input>
             <b-form-invalid-feedback id="regUserPwd-feedback">
               密码至少8字符，<BR>必须含大小写字母数字和特殊字符
             </b-form-invalid-feedback>
           </b-form-group>
-          <b-form-group label-cols=3 label="再次录入" label-for="regUserPwd2" label-align="right">
+          <b-form-group>
             <b-form-input id="regUserPwd2" trim :type="model.hidepassword?'password':'text'"
-              v-model="model.register.pwd2" :state="state.reg.pwd2" class="mb-2 mr-sm-2 mb-sm-0" required placeholder=""
-              class="w-50"></b-form-input>
+              v-model="model.register.pwd2" :state="state.reg.pwd2" class="mb-2 mr-sm-2 mb-sm-0" required
+              placeholder="两次密码输入需要一致" class="w-50"></b-form-input>
             <b-form-invalid-feedback id="regUserPwd2-feedback">
               两次密码输入需要一致
             </b-form-invalid-feedback>
@@ -140,14 +141,11 @@
               <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
             </b-button>
           </b-form-group>
-          <div class="bg-none text-right">
+          <div class="bg-none">
           </div>
-          <b-row>
-            <b-col cols=6>
-            </b-col>
-            <b-col cols=6 class="bg-none text-right">
-              <b-button @click="KFK.registerUser" variant="outline-primary">注册账号 &gt;&gt;</b-button>
-            </b-col>
+          <b-col class="bg-none">
+            <b-button @click="KFK.registerUser" variant="outline-primary">注册账号 &gt;&gt;</b-button>
+          </b-col>
           </b-row>
         </b-form>
       </b-container>
@@ -159,7 +157,7 @@
             <hr>
           </div>
           </b-col>
-          <b-col><a href="#" class="card-link" @click="KFK.createDemoEnv">先不注册 直接体验</a>
+          <b-col><a href="#" class="card-link" @click="KFK.openDemoDoc">先不注册 直接体验</a>
             <div class="w-100"></div>
             <b-col><a href="#" class="card-link" @click="KFK.showHelp">帮助</a></b-col>
         </b-row>
@@ -168,24 +166,24 @@
     </div>
     <div id="signinform" class="signinform" v-show="show.section.signin" style="display:none;">
       <b-container class="my-3 ">
-        <b-form autocomplete="off" class="w-100 px-2">
+        <b-form autocomplete="off" class="w-100 px-2 text-center">
           <b-row>
-            <b-col class="text-right pb-4" style="font-size:28px">
+            <b-col class="pb-4" style="font-size:28px">
               请登录
             </b-col>
           </b-row>
-          <b-form-group label-cols=3 label="用户ID" label-for="userId" label-align="right">
-            <b-form-input id="userId" trim v-model="model.signin.userid" class="mb-2 mr-sm-2 mb-sm-0" placeholder=""
-              class="w-50"></b-form-input>
+          <b-form-group>
+            <b-form-input id="userId" trim v-model="model.signin.userid" class="mb-2 mr-sm-2 mb-sm-0"
+              placeholder="你的用户名" class="w-50"></b-form-input>
           </b-form-group>
-          <b-form-group label-cols="3" label="用户密码" label-for="userPwd" label-align="right">
+          <b-form-group>
             <b-form-input id="userPwd" trim :type="model.hidepassword?'password':'text'" v-model="model.signin.pwd"
-              class="mb-2 mr-sm-2 mb-sm-0" placeholder="" class="w-50"></b-form-input>
+              class="mb-2 mr-sm-2 mb-sm-0" placeholder="你的密码" class="w-50"></b-form-input>
             <b-button @click="toggleHidePassword" variant="outline-none">
               <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
             </b-button>
           </b-form-group>
-          <div class="bg-none text-right">
+          <div class="bg-none">
             <b-button @click="KFK.signin" variant="outline-primary">登录 &gt;&gt;</b-button>
           </div>
         </b-form>
@@ -505,19 +503,36 @@
           </b-list-group-item>
         </b-list-group>
       </div>
-      <b-container class="docname" v-if="show.section.designer">
-        <b-icon v-if="model.cocodoc.doclocked" icon="lock" variant="secondary"></b-icon>
-        <b-icon v-else icon="book" variant="secondary"></b-icon>
-        {{model.cocodoc.name}}
-      </b-container>
-      <b-container class="docpeople padlayout" v-if="show.section.designer">
-        <b-row>
-          <b-img class="noshow" v-if="model.cocodoc.owner !== model.cocouser.userid" rounded="circle"
-            :src="model.cocodoc.ownerAvatar_src" title="共创发起人"></b-img>
-            <span v-if="model.cocodoc.owner !== model.cocouser.userid" >{{model.cocodoc.ownerName}}</span>
-          <b-img rounded="circle" :src="model.cocouser.avatar_src" title="当前用户"></b-img> {{model.cocouser.name}}
-          <b-button title='hello' class="m-0 p-0" variant='link' @click="KFK.showActionLog"><b-icon icon="people"></b-icon></b-button>{{model.actionlog.length}}
-        </b-row>
+      <b-container class="noshow" id="docHeaderInfo">
+        <b-container class="docname" v-if="show.section.designer">
+          <b-icon v-if="model.cocodoc.doclocked" icon="lock" variant="secondary"></b-icon>
+          <b-icon v-else icon="book" variant="secondary"></b-icon>
+          {{model.cocodoc.name}}
+        </b-container>
+        <b-container class="docpeople padlayout" v-if="show.section.designer">
+          <b-row>
+            <b-img v-if="model.cocodoc.owner !== model.cocouser.userid" rounded="circle"
+              :src="model.cocodoc.ownerAvatar_src" title="共创发起人"></b-img>
+            <span v-if="model.cocodoc.owner !== model.cocouser.userid">发起人:{{model.cocodoc.ownerName}}</span>
+            <b-img rounded="circle" v-if="model.cocouser.avatar_src" :src="model.cocouser.avatar_src" title="当前用户">
+            </b-img>
+            <b-dropdown :text="model.cocouser.name" right size="sm" variant="link" class="m-0 p-0 userinfo">
+              <b-dropdown-item-button>{{model.cocouser.name}}</b-dropdown-item-button>
+              <b-dropdown-item-button v-if="!model.isDemoEnv" @click="KFK.showSetProfileDialog()">修改账户信息</b-dropdown-item-button>
+              <b-dropdown-divider></b-dropdown-divider>
+              <b-dropdown-item-button @click="KFK.showPrjs">我的项目</b-dropdown-item-button>
+              <b-dropdown-item-button @click="KFK.gotoExplorer">我的白板</b-dropdown-item-button>
+              <b-dropdown-divider></b-dropdown-divider>
+              <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.upgradeToStartAccount">注册为正式用户
+              </b-dropdown-item-button>
+              <b-dropdown-item-button v-else @click="KFK.signout">退出登录状态</b-dropdown-item-button>
+            </b-dropdown>
+            <b-button title='hello' class="m-0 p-0" variant='link' @click="KFK.showActionLog">
+              <b-icon icon="people"></b-icon>
+            </b-button>{{model.actionlog.length}}
+          </b-row>
+        </b-container>
+            
       </b-container>
       <div id="modeIndicator" style="position:absolute; top: 0px; left: 0px; display: none; ">
         <img id="modeIndicatorImg" src="../assets/pointer.svg" style='width: 18px; height: 18px;' />
@@ -546,7 +561,7 @@
             </div>
             <b-nav-item-dropdown text="我的" right>
               <b-dropdown-item-button>{{model.cocouser.name}}</b-dropdown-item-button>
-              <b-dropdown-item-button @click="KFK.showSetProfileDialog()">账户信息</b-dropdown-item-button>
+              <b-dropdown-item-button v-if="!model.isDemoEnv" @click="KFK.showSetProfileDialog()">修改账户信息</b-dropdown-item-button>
               <b-dropdown-divider></b-dropdown-divider>
               <b-dropdown-item-button @click="KFK.showPrjs">我的项目</b-dropdown-item-button>
               <b-dropdown-item-button @click="KFK.showDocs">我的白板</b-dropdown-item-button>
@@ -563,7 +578,7 @@
           <b-card no-body>
             <b-tabs card v-model="show.form.explorerTabIndex" vertical
               active-nav-item-class="font-weight-bold text-uppercase text-danger" active-tab-class="">
-              <b-tab title="我的项目" @click="KFK.selectPrjTab">
+              <b-tab title="我的项目" @click="KFK.showPrjs">
                 <div v-show="show.form.newprj">
                   <b-card title="新建项目">
                     <b-form>
@@ -710,11 +725,21 @@
               </b-tab>
             </b-tabs>
           </b-card>
-          <b-row>
-            <b-col class="text-center mt-5 pt-5">
+          <b-row class="text-center mt-5 pt-5">
+            <b-col >
               <a href="#" v-if="model.isDemoEnv" class="card-link"
-                @click="KFK.upgradeToStartAccount">当前为演示账户，注册为正式用户，以便享有更多功能<BR>
-                注册正式用户成功时，你之前已拥有的内容将自动迁移到你的正式用户名下 </a>
+                @click="KFK.upgradeToStartAccount">当前为演示账户，操作不会被保存<BR>
+                  注册为正式用户，以便享有更多功能</a>
+            </b-col>
+          </b-row>
+          <b-row class="text-center mt-3">
+            <b-col >
+              <a href="#" class="card-link" @click="KFK.gotoSignin" style='font-size:18px'>已有账号？请登录</a>
+            </b-col>
+          </b-row>
+          <b-row class="text-center">
+            <b-col>
+              <a href="#" class="card-link" @click="KFK.openDemoDoc">查看COCOPAD使用说明</a>
             </b-col>
           </b-row>
         </div>
@@ -919,8 +944,10 @@
         </b-container>
       </b-modal>
     </div>
+    <DIV class="forDemoUser">
+    </DIV>
     <DIV class="w-50 mb-2 loading noshow  text-center">
-        正在为您绘制白板<BR> {{ model.loading_value }} %<BR>请稍候
+      {{ model.loading_value }}%加载中请稍候
     </DIV>
   </div>
   <!--app-->

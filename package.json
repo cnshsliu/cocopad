@@ -9,9 +9,11 @@
   },
   "dependencies": {
     "@hapi/joi": "^17.1.1",
+    "@popperjs/core": "^2.2.1",
     "@svgdotjs/svg.js": "^3.0.16",
     "bootstrap": "^4.4.1",
     "bootstrap-vue": "^2.8.0",
+    "bufferutil": "^4.0.1",
     "clipboard": "^2.0.6",
     "console": "^0.7.2",
     "console2": "^2.3.8",
@@ -21,26 +23,18 @@
     "jq": "^1.7.2",
     "jquery": "^3.4.1",
     "jquery-ui-dist": "^1.12.1",
-    "jsdom": "^16.2.1",
-    "konva": "^4.2.0",
-    "node-fetch": "^2.6.0",
-    "ossnolookup": "^6.5.1",
-    "regenerator-runtime": "^0.13.5",
+    "popper.js": "^1.16.1",
     "short-uuid": "^3.1.1",
     "spectrum-colorpicker2": "^2.0.0",
     "src": "^1.1.2",
+    "utf-8-validate": "^5.0.2",
     "vue": "^2.6.11",
     "vue-scrollto": "^2.17.1",
     "vue-template-compiler": "^2.6.11"
   },
   "devDependencies": {
     "@babel/core": "latest",
-    "babel-preset-env": "^1.7.0",
-    "node-fetch": "^2.6.0",
-    "node-minify": "^3.6.0",
-    "prettier": "^2.0.2",
-    "sass": "^1.26.2",
-    "uglify-js": ">=2.6.0"
+    "babel-preset-env": "^1.7.0"
   },
   "alias": {
     "vue": "./node_modules/vue/dist/vue.common.js"

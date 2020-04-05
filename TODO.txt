@@ -1,8 +1,7 @@
-//TODO: change selecteddiv from normal div to jqdiv
-//TODO: batch delete
-//O: add loading progress 
 //TODO: Delete all
-//TODO: update liukehong@gmail.com password
 //TODO: minimize can't cover all.
 //TODO: chat mode
 //TODO: GROUP unGROUP?
+//TODO: Add  Delete/Copy tool on the le
+//TODO: Textbox has the same round corner as the host DIV
+//TODO: share by shareCode
