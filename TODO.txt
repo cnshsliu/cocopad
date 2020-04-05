@@ -1,3 +1,7 @@
+//TODO: After login, there is two WS connected, calls mouse feedback to myself
+//TODO: verify code input place in center
+//TODO: After program modified, with URL in href, reopen cause use demo user.
+//TODO: split accountmanger source code.
 //TODO: Delete all
 //TODO: minimize can't cover all.
 //TODO: chat mode
@@ -8,3 +12,5 @@
 //TODO: add try catch in handers for all handlers
 //TODO: scrLog changed to drop down on top
 //TODO: share by sending email
+//TODO: draw page divider line
+//TODO: HOTKEY to nav A4 page

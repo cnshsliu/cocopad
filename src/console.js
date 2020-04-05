@@ -20,11 +20,8 @@ import Demo from "./demo";
 import { RegHelper } from './reghelper';
 import SVGs from "./svgs";
 import WS from "./ws";
+import ACM from "./accountmanage";
 
-
-function myuid() {
-  return suuid.generate();
-}
 Array.prototype.clear = function () {
   this.splice(0, this.length);
 };
@@ -42,31 +39,35 @@ Array.prototype.remove = function () {
   return this;
 };
 
-let badgeTimers = {};
-var FROM_SERVER = true;
-var FROM_CLIENT = false;
-var NO_SHIFT = false;
-
-const OSSClient = new OSS({
+const KFK = {};
+KFK.svgDraw = null;   //画svg的画布
+KFK.OSSClient = new OSS({
   region: "oss-cn-hangzhou",
   accessKeyId: "ACCESSKEY",
   accessKeySecret: "ACCESSECRET",
   bucket: config.vault.bucket
 });
-let draw = null;
-const KFK = {};
-KFK.updateReceived = 0;
-KFK.svgAnimDuration = 400;
-KFK.tempSvgLine = null;
-KFK.isZooming = false;
-KFK.loglevel = -1;
-KFK.zoomlevel = 1;
-KFK.designerConf = { scaleX: 1, scaleY: 1, left: 0, top: 0 };
-KFK.opstack = [];
-KFK.opstacklen = 1000;
-KFK.opz = -1;
-KFK.mouseTimer = null;
-KFK.connectTime = 0;
+KFK.FROM_SERVER = true; //三个常量
+KFK.FROM_CLIENT = false;
+KFK.NO_SHIFT = false;
+KFK.badgeTimers = {};  //用于存放用户badge显示间隔控制的timer，这样，不是每一个mousemove都要上传，在Timer内，只上传最后一次mouse位置
+KFK.updateReceived = 0; //记录接收到的其他用户的改动次数，在startActiveLogWatcher中，使用这个数字来控制是否到服务器端去拉取更新列表
+KFK.tempSvgLine = null; //这条线是在划线或者链接node时，那条随着鼠标移动的线
+KFK.isZooming = false; //是否是在Zoom状态
+KFK.LOGLEVEL_ERROR = 1;
+KFK.LOGLEVEL_WARN = 2;
+KFK.LOGLEVEL_INFO = 3;
+KFK.LOGLEVEL_DEBUG=4;
+KFK.LOGLEVEL_DETAIL=5;
+KFK.LOGLEVEL_NOTHING=0;
+KFK.loglevel = KFK.LOGLEVEL_DEBUG; //控制log的等级, 级数越小，显示信息越少
+KFK.zoomlevel = 1; //记录当前的zoom等级
+KFK.designerConf = { scaleX: 1, scaleY: 1, left: 0, top: 0 }; //用于在zoom控制计算中
+KFK.opstack = []; //Operation Stack, 数组中记录操作记录，用于undo/redo
+KFK.opstacklen = 1000; //undo，redo记录次数
+KFK.opz = -1; // opstack 当前记录指针
+KFK.mouseTimer = null;  //定时器用于控制鼠标移动上传的频次
+KFK.WSConnectTime = 0; //WebSocket重连的次数
 KFK.currentView = "unknown";
 KFK.WS = null;
 KFK.C3 = null;
@@ -136,6 +137,10 @@ KFK.focusOnC3 = () => {
   } else {
     KFK.warn("focusOnC3 failed. not exist");
   }
+}
+
+KFK.myuid = ()=> {
+  return suuid.generate();
 }
 KFK.scrollContainer = $("#scroll-container");
 KFK.lockMode = false;
@@ -349,23 +354,23 @@ KFK.log = function (...info) {
   console.log('LOG>', ...info);
 };
 KFK.error = function (...info) {
-  if (KFK.loglevel >= 1)
+  if (KFK.loglevel >= KFK.LOGLEVEL_ERROR)
     console.log('ERROR>', ...info);
 }
 KFK.warn = function (...info) {
-  if (KFK.loglevel >= 2)
+  if (KFK.loglevel >= KFK.LOGLEVEL_WARN)
     console.log('WARN>', ...info);
 }
 KFK.info = function (...info) {
-  if (KFK.loglevel >= 3)
+  if (KFK.loglevel >= KFK.LOGLEVEL_INFO)
     console.log('INFO', ...info);
 }
 KFK.debug = function (...info) {
-  if (KFK.loglevel >= 4)
+  if (KFK.loglevel >= KFK.LOGLEVEL_DEBUG)
     console.log("DEBUG>", ...info);
 }
 KFK.detail = function (...info) {
-  if (KFK.loglevel >= 5)
+  if (KFK.loglevel >= KFK.LOGLEVEL_DETAIL)
     console.log("DETAIL>", ...info);
 }
 
@@ -560,7 +565,7 @@ KFK.procLinkLine = function (shiftKey) {
   let fromPoint = null;
   let toPoint = null;
   KFK.justCreatedSvgLine = KFK.svgDrawLine(
-    myuid(),
+    KFK.myuid(),
     KFK.linkPosLine[0].center.x,
     KFK.linkPosLine[0].center.y,
     KFK.linkPosLine[1].center.x,
@@ -729,14 +734,14 @@ KFK.undo = async () => {
       KFK.hideLineTransformer();
       if (ope.from === '' && ope.to !== "") { //ope is C
         let toId = ope.toId;
-        let toLine = draw.findOne(`.${toId}`);
+        let toLine = KFK.svgDraw.findOne(`.${toId}`);
         await KFK.syncLinePut("D", toLine, "undo", null, true);
       } else if (ope.from !== "" && ope.to === "") { //ope is D
         let fromId = ope.fromId;
         let fromLine = KFK.restoreSvgLine(fromId, ope.from);
         await KFK.syncLinePut("C", fromLine, "undo", null, true);
       } else if (ope.from !== "" && ope.to !== "") { //ope is U
-        let toLine = draw.findOne(`.${ope.toId}`);
+        let toLine = KFK.svgDraw.findOne(`.${ope.toId}`);
         let fromLine = KFK.restoreSvgLine(ope.fromId, ope.from);
         //fromLine与toLine的ID相同，因此在restoreSvgLine时，就自动把toLine换成了fromLine
         //不用删除toLine
@@ -827,10 +832,10 @@ KFK.redo = async () => {
         await KFK.syncLinePut("C", toLine, "redo", null, true);
       } else if (ope.from !== "" && ope.to === "") { //ope is D
         let fromId = ope.fromId;
-        let fromLine = draw.findOne(`.${fromId}`);
+        let fromLine = KFK.svgDraw.findOne(`.${fromId}`);
         await KFK.syncLinePut("D", fromLine, "redo", null, true);
       } else if (ope.from !== "" && ope.to !== "") { //ope is U
-        let fromLine = draw.findOne(`.${ope.fromId}`);
+        let fromLine = KFK.svgDraw.findOne(`.${ope.fromId}`);
         let toLine = KFK.restoreSvgLine(ope.toId, ope.to);
         //fromLine与toLine的ID相同，因此在restoreSvgLine时，就自动把fromLine换成了toLine
         //不用删除fromLine
@@ -925,7 +930,7 @@ KFK.initC3 = function () {
         let realY = KFK.scrollY(clientY);
         let jqDIV = KFK.placeNode(
           evt.shiftKey,
-          myuid(),
+          KFK.myuid(),
           KFK.mode,
           variant,
           realX,
@@ -1116,19 +1121,12 @@ KFK.showUserMovingBadge = function (user, x, y) {
   if (KFK.mouseTimer !== null) {
     clearTimeout(KFK.mouseTimer);
   }
-  //MOUSE不用传太多数据，简化一下
   let consisedUser = {userid: user.userid, name: user.name};
   KFK.mouseTimer = setTimeout(function () {
     KFK.WS.put("MOUSE", { user: consisedUser, pos: pos });
     KFK.mouseTimer = null;
   }, 200);
 
-  // if (badgeTimers[bgid] === undefined) {
-  //     badgeTimers[bgid] = setTimeout(() => {
-  //         jqBadgeDIV.css("display", "none");
-  //         delete badgeTimers[bgid];
-  //     }, config.badge.lastSeconds);
-  // }
 };
 
 KFK.showOtherUserMovingBadge = function (data) {
@@ -1136,7 +1134,7 @@ KFK.showOtherUserMovingBadge = function (data) {
   let userid = data.user.userid;
   let bgid = KFK.badgeIdMap[userid];
   if(!bgid){
-    bgid = myuid();
+    bgid = KFK.myuid();
     KFK.badgeIdMap[userid] = bgid;
   }
   let bglabel = data.user.name;
@@ -1174,13 +1172,13 @@ KFK.showOtherUserMovingBadge = function (data) {
   jqBadgeDIV.css("top", pos.y);
   jqBadgeDIV.css("left", pos.x);
 
-  if (badgeTimers[bgid] !== undefined) {
-    clearTimeout(badgeTimers[bgid]);
+  if (KFK.badgeTimers[bgid] !== undefined) {
+    clearTimeout(KFK.badgeTimers[bgid]);
   }
 
-  badgeTimers[bgid] = setTimeout(() => {
+  KFK.badgeTimers[bgid] = setTimeout(() => {
     jqBadgeDIV.css("display", "none");
-    delete badgeTimers[bgid];
+    delete KFK.badgeTimers[bgid];
   }, config.badge.lastSeconds);
 };
 
@@ -1956,22 +1954,22 @@ KFK.getNodeLinkIds = function (jq1, direction) {
 }
 
 KFK.removeConnectById = function (connect_id) {
-  try { draw.find(`.${connect_id}`).remove(); } catch (err) { }
+  try { KFK.svgDraw.find(`.${connect_id}`).remove(); } catch (err) { }
   let triangle_id = connect_id + "_triangle";
-  try { draw.find(`.${triangle_id}`).remove(); } catch (err) { }
+  try { KFK.svgDraw.find(`.${triangle_id}`).remove(); } catch (err) { }
 };
 
 KFK.redrawLinkLines = function (jqNode, reason = 'unknown', bothside = true) {
   // KFK.debug('Redrawlinks', reason, 'bothside', bothside);
   let myId = jqNode.attr("id");
   let toIds = KFK.getNodeLinkIds(jqNode, 'linkto');
-  let list = draw.find('.connect');
+  let list = KFK.svgDraw.find('.connect');
   list.each((connect) => {
     if (connect.attr('fid') === myId) {
       let connect_id = connect.attr("id");
       connect.remove();
       let triangle_id = connect_id + "_triangle";
-      draw.find(`.${triangle_id}`).remove();
+      KFK.svgDraw.find(`.${triangle_id}`).remove();
     }
   });
   toIds.forEach((toId, index) => {
@@ -2276,7 +2274,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
       KFK.selectNodesOnClick(jqNodeDIV, evt.shiftKey);
     if (KFK.mode === "connect") {
       if (KFK.afterDragging === false) {
-        KFK.yarkLinkNode(jqNodeDIV, evt.shiftKey, '', FROM_CLIENT);
+        KFK.yarkLinkNode(jqNodeDIV, evt.shiftKey, '', KFK.FROM_CLIENT);
       } else {
         KFK.afterDragging = true;
       }
@@ -2642,8 +2640,8 @@ KFK.deleteNode_exec = function (jqDIV) {
   toIds.forEach((toId) => {
     let lineClassSelector = `.line_${myId}_${toId}`;
     let triClassSelector = `.line_${myId}_${toId}_triangle`;
-    try { draw.findOne(lineClassSelector).remove(); } catch (err) { } finally { };
-    try { draw.findOne(triClassSelector).remove(); } catch (err) { } finally { };
+    try { KFK.svgDraw.findOne(lineClassSelector).remove(); } catch (err) { } finally { };
+    try { KFK.svgDraw.findOne(triClassSelector).remove(); } catch (err) { } finally { };
   });
   //重置全局ZIndex 同时，删除那些链接到当前节点的连接线
   let myZI = KFK.getZIndex(jqDIV);
@@ -2664,8 +2662,8 @@ KFK.deleteNode_exec = function (jqDIV) {
     if (arr.indexOf(myId) >= 0) {
       let lineClassSelector = `.line_${fromId}_${myId}`;
       let triClassSelector = `.line_${fromId}_${myId}_triangle`;
-      try { draw.findOne(lineClassSelector).remove(); } catch (err) { } finally { };
-      try { draw.findOne(triClassSelector).remove(); } catch (err) { } finally { };
+      try { KFK.svgDraw.findOne(lineClassSelector).remove(); } catch (err) { } finally { };
+      try { KFK.svgDraw.findOne(triClassSelector).remove(); } catch (err) { } finally { };
     }
     // KFK.removeLinkTo(jqDIV, myId);
     // tmp2 = jqDIV.attr("linkto");
@@ -2673,8 +2671,8 @@ KFK.deleteNode_exec = function (jqDIV) {
     //   KFK.debug("remove link for ", fromId);
     //   let lineClassSelector = `.line_${fromId}_${myId}`;
     //   let triClassSelector = `.line_${fromId}_${myId}_triangle`;
-    //   try { draw.findOne(lineClassSelector).remove(); }catch(err){} finally { };
-    //   try { draw.findOne(triClassSelector).remove(); }catch(err){} finally { };
+    //   try { KFK.svgDraw.findOne(lineClassSelector).remove(); }catch(err){} finally { };
+    //   try { KFK.svgDraw.findOne(triClassSelector).remove(); }catch(err){} finally { };
     // } else {
     //   KFK.debug(fromId, ' has no link to me');
     // }
@@ -2688,7 +2686,7 @@ KFK.deleteNode_exec = function (jqDIV) {
     let parsed = url.parse(imageSrc);
     let oss_filename = path.basename(parsed.pathname);
     try {
-      OSSClient.delete(parsed.pathname);
+      KFK.OSSClient.delete(parsed.pathname);
     } catch (err) {
       console.error(err);
     }
@@ -2797,7 +2795,7 @@ KFK.duplicateHoverObject = async function (evt) {
 KFK.makeACopyOfJQ = async function (jqtocopy, shiftKey) {
   let offset = { x: 20, y: 0 };
   let jqNewNode = KFK.jqToCopy.clone(false);
-  jqNewNode.attr("id", myuid());
+  jqNewNode.attr("id", KFK.myuid());
   jqNewNode.css("left", KFK.scrollX(KFK.currentMousePos.x) - parseInt(jqNewNode.css("width")) * 0.5);
   jqNewNode.css("top", KFK.scrollY(KFK.currentMousePos.y) - parseInt(jqNewNode.css("height")) * 0.5);
   //按住shift 复制时，也就是META-SHIFT-D, 则保留linkto
@@ -2814,7 +2812,7 @@ KFK.makeACopyOfJQ = async function (jqtocopy, shiftKey) {
 KFK.makeACopyOfLine = async function (linetocopy) {
   let newLine = KFK.lineToCopy.clone();
 
-  let newline_id = "line_" + myuid();
+  let newline_id = "line_" + KFK.myuid();
   let classes = newLine.classes();
   classes.forEach((className, index) => {
     if (className !== 'kfkline') {
@@ -2912,14 +2910,6 @@ KFK.lineCapChanged = function (checked) {
 };
 
 KFK.init = async function () {
-
-  localStorage.setItem('loglevel', 4);
-  let loglevel = localStorage.getItem('loglevel');
-  loglevel = loglevel ? loglevel : '0';
-  loglevel = parseInt(loglevel);
-  KFK.loglevel = loglevel === NaN ? 0 : loglevel;
-  KFK.log('loglevel', loglevel);
-
   if (KFK.inited === true) {
     console.error("KFK.init was called more than once, maybe loadImages error");
     return;
@@ -2953,7 +2943,7 @@ KFK.init = async function () {
 //TODO: onPaste paste position is wrong, need to fix.
 KFK.checkSession = async function () {
   KFK.info(">>>checkSession");
-  KFK.connectTime = 0;
+  KFK.WSConnectTime = 0;
   KFK.setAppData("model", "prjs", []);
   KFK.docIdInUrl = RegHelper.getDocIdInUrl($(location).attr("pathname"));
   let cocouser = KFK.getCocouser();
@@ -2976,11 +2966,11 @@ KFK.checkSession = async function () {
 };
 
 KFK.onWsConnected = function () {
-  KFK.connectTime = KFK.connectTime + 1;
-  KFK.info(">>>>>>>>>Connect Times", KFK.connectTime);
+  KFK.WSConnectTime = KFK.WSConnectTime + 1;
+  KFK.info(">>>>>>>>>Connect Times", KFK.WSConnectTime);
   KFK.APP.setData("show", "wsready", true);
   //第一次连接，这条消息会被欢迎回来覆盖，正常
-  if (KFK.connectTime === 1) {
+  if (KFK.WSConnectTime === 1) {
     KFK.scrLog("欢迎来到共创协作工作平台");
     //The first time
     KFK.WS = WS;
@@ -3238,198 +3228,6 @@ KFK.remoteCheckUserId = function (userid) {
   KFK.WS.put("IFEXIST", { userid: userid });
 };
 
-KFK.registerUser = function () {
-  let tmpRegData = KFK.APP.model.register;
-  console.log(tmpRegData);
-  let userid = tmpRegData.userid.trim();
-  let pwd = tmpRegData.pwd.trim();
-  let name = tmpRegData.name.trim();
-  let pwd2 = tmpRegData.pwd2.trim();
-  let foundError = false;
-  KFK.APP.state.reg.userid = KFK.validateUserId(userid);
-  KFK.APP.state.reg.name = KFK.validateUserName(name);
-  KFK.APP.state.reg.pwd = KFK.validateUserPassword(pwd);
-  KFK.APP.state.reg.pwd2 = pwd === pwd2;
-  if (!(
-    KFK.APP.state.reg.userid &&
-    KFK.APP.state.reg.name &&
-    KFK.APP.state.reg.pwd &&
-    KFK.APP.state.reg.pwd2
-  )) {
-    KFK.APP.setData("model", "register", tmpRegData);
-    return;
-  }
-  WS.start(
-    function () {
-      WS.put("REGUSER", { userid: userid, pwd: pwd, name: name });
-    },
-    function (data) {
-      data = JSON.parse(data);
-      if (data.payload) {
-        switch (data.payload.cmd) {
-          case "REGUSER-CODE":
-            KFK.scrLog("请检查邮箱，输入验证码");
-            let tmpReg = KFK.APP.model.register;
-            tmpReg.step = "code";
-            KFK.setAppData('model', 'register', tmpReg);
-            console.log('regtoken', data.payload.data.sessionToken);
-            sessionStorage.setItem('regtoken', data.payload.data.sessionToken);
-            break;
-          case "REGUSER-PLSVERIFY":
-            KFK.scrLog(`账号已被注册尚未验证，请重新验证`);
-            tmpReg = KFK.APP.model.register;
-            tmpReg.step = "code";
-            KFK.setAppData('model', 'register', tmpReg);
-            console.log('regtoken', data.payload.data.sessionToken);
-            sessionStorage.setItem('regtoken', data.payload.data.sessionToken);
-            break;
-          case "REGUSER-FALSE":
-            KFK.scrLog("注册失败，请重试");
-            break;
-          case "REGUSER-DUP":
-            KFK.scrLog(`账号${data.payload.data.userid}已被占用`);
-            break;
-
-        }
-        WS.close();
-      }
-    },
-    0,
-    'registerUser',
-    'ONCE'
-  );
-};
-
-KFK.resendVerifyCode = async function () {
-  WS.start(
-    function () {
-      let regtoken = sessionStorage.getItem("regtoken");
-      WS.put("RESENDCODE", { regtoken: regtoken });
-    },
-    function (data) {
-      try {
-        data = JSON.parse(data);
-        console.log(data);
-        if (data.payload && data.payload.cmd) {
-          switch (data.payload.cmd) {
-            case "REGUSER-CODE":
-              KFK.scrLog("请检查邮箱，输入验证码");
-              let tmpReg = KFK.APP.model.register;
-              tmpReg.step = "code";
-              KFK.setAppData('model', 'register', tmpReg);
-              sessionStorage.setItem('regtoken', data.payload.data.sessionToken);
-              break;
-            case "REGUSER-FALSE":
-              KFK.scrLog(data.payload.msg);
-              tmpReg = KFK.APP.model.register;
-              tmpReg.step = "code";
-              KFK.setAppData('model', 'register', tmpReg);
-              break;
-          }
-          WS.close();
-        }
-      } catch (error) {
-        console.log(error);
-      } finally {
-
-      }
-    },
-    0,
-    'resendVerifyCode',
-    'ONCE'
-  );
-};
-
-KFK.verifyRegCode = async function () {
-  WS.start(
-    function () {
-      let regtoken = sessionStorage.getItem('regtoken');
-      WS.put("VERIFYREGCODE", { code: KFK.APP.model.register.code, regtoken: regtoken });
-    },
-    function (data) {
-      data = JSON.parse(data);
-      if (data.payload) {
-        switch (data.payload.cmd) {
-          case "VERIFY-FALSE":
-            KFK.scrLog("注册失败，请重试");
-            break;
-          case "VERIFY-EXPIRED":
-            KFK.scrLog("验证码已过期，请重新发送");
-            break;
-          case "VERIFY-WRONGCODE":
-            KFK.scrLog("验证码错误，请重新输入");
-            break;
-          case "VERIFY-SUCCESS":
-            KFK.scrLog("验证成功，请登录");
-            sessionStorage.removeItem('regtoken');
-            KFK.gotoSignin();
-            break;
-          case "VERIFY-ALREAY":
-            KFK.scrLog("已验证过，请直接登录");
-            break;
-        }
-        WS.close();
-      }
-    },
-    0,
-    'verifyRegCode',
-    'ONCE'
-  );
-};
-
-
-KFK.signin = function () {
-  let userid = KFK.APP.model.signin.userid;
-  let pwd = KFK.APP.model.signin.pwd;
-  KFK.info("singin " + userid);
-  WS.start(
-    function () {
-      WS.put("SIGNIN", { userid: userid, pwd: pwd });
-    },
-    function (data) {
-      data = JSON.parse(data);
-      if (data.payload) {
-        switch (data.payload.cmd) {
-          case "SIGNIN":
-            let retuser = data.payload.data;
-            KFK.setCocouser(retuser);
-            KFK.resetAllLocalData();
-            KFK.APP.setData('model', 'isDemoEnv', false);
-            setTimeout(() => { KFK.gotoWork(); }, 500);
-            break;
-          case "PLSSIGNIN":
-            KFK.scrLog(data.payload.error);
-            KFK.removeCocouser();
-            KFK.gotoSignin();
-            break;
-          case "REGUSER-CODE":
-            retuser = data.payload.data;
-            KFK.setAppData('model', 'signInButWaitVerify', true);
-            KFK.setCocouser(retuser);
-            KFK.scrLog("尚未验证邮箱地址，你可以继续使用，请在一周内完成邮箱验证");
-            sessionStorage.setItem('regtoken', data.payload.data.sessionToken);
-            break;
-        }
-        WS.close();
-      }
-    },
-    0,
-    'signin',
-    'ONCE'
-  );
-};
-
-KFK.signout = function () {
-  KFK.WS.put("SIGNOUT", { userid: KFK.APP.model.cocouser.userid });
-  KFK.resetAllLocalData();
-  localStorage.removeItem('cocouser');
-  KFK.APP.model.cocouser = {
-    userid: "",
-    name: "",
-    avatar: "avatar-0",
-    avatar_src: null
-  };
-};
 
 
 KFK.pickPrjForCreateDoc = function () {
@@ -3552,6 +3350,9 @@ KFK.sayHello = function () {
 
 KFK.startActiveLogWatcher = function () {
   KFK.getActionLog();
+  //自动刷新活动记录，但不是每次接收到有更新，就去服务器端刷新，
+  //而是每五秒钟，检查收到的更新数量，如果五秒钟内有更新，updateReceived>0, 
+  //才调用KFK.getActionLog()去服务器端拉取
   setInterval(
     function () {
       if (KFK.updateReceived > 0) {
@@ -3763,11 +3564,11 @@ KFK.onWsMsg = function (data) {
       break;
     case "LOCKLINE":
       KFK.debug("------------GOT LOCKLINE, LOCK IT-----");
-      KFK.NodeController.lockline(KFK, draw.findOne(`.${data.payload.data.nodeid}`));
+      KFK.NodeController.lockline(KFK, KFK.svgDraw.findOne(`.${data.payload.data.nodeid}`));
       break;
     case "UNLOCKLINE":
       KFK.debug("------------GOT UNLOCKLINE, LOCK IT-----");
-      KFK.NodeController.unlockline(KFK, draw.findOne(`.${data.payload.data.nodeid}`));
+      KFK.NodeController.unlockline(KFK, KFK.svgDraw.findOne(`.${data.payload.data.nodeid}`));
       break;
     case "COPYDOC":
       KFK.onCopyDoc(data.paylaod.data);
@@ -4166,7 +3967,7 @@ KFK.deleteObject_for_Response = function (obj) {
     } else if (obj.etype === 'SLINE') {
       let selector = `.${obj.nodeid}`;
       try {
-        draw.findOne(selector).remove();
+        KFK.svgDraw.findOne(selector).remove();
       } catch (error) {
         KFK.error(error);
       }
@@ -5029,8 +4830,8 @@ KFK.saveBlobToOSS = function (blob) {
   var reader = new FileReader();
   reader.onload = function (evt) {
     let file = KFK.dataURLtoFile(evt.target.result, "");
-    let tmpid = myuid();
-    OSSClient.multipartUpload(KFK.getOSSFileName(`${tmpid}.png`), file)
+    let tmpid = KFK.myuid();
+    KFK.OSSClient.multipartUpload(KFK.getOSSFileName(`${tmpid}.png`), file)
       .then(async (res) => {
         let jqDIV = KFK.placeNode(
           false, //shiftKey
@@ -5054,12 +4855,12 @@ KFK.saveBlobToOSS = function (blob) {
 
 KFK.save = async function () {
   let docPath = `/${config.tenant.id}/${KFK.APP.model.cocodoc.doc_id}/`;
-  // let result = await OSSClient.list({
+  // let result = await KFK.OSSClient.list({
   //     prefix: 'lucas/',
   // });
   try {
     // 不带任何参数，默认最多返回1000个文件。
-    let result = await OSSClient.list({
+    let result = await KFK.OSSClient.list({
       prefix: "lucas/"
     });
     // 根据nextMarker继续列出文件。
@@ -5182,7 +4983,7 @@ KFK.placePastedContent = async function () {
     //paste image in a new node
     let box = KFK.APP.model.paste.box;
     let jBox = KFK.placeNode(false, //shiftKey
-      myuid(), "textblock", "default",
+      KFK.myuid(), "textblock", "default",
       KFK.currentMousePos.x + KFK.scrollContainer.scrollLeft(),
       KFK.currentMousePos.y + KFK.scrollContainer.scrollTop(),
       100, 100, toAdd);
@@ -5730,16 +5531,15 @@ KFK.loadAvatars();
 
 KFK.initSvgLayer = function () {
   KFK.svgDraw = SVG().addTo("#C3").size(KFK._width, KFK._height);
-  draw = KFK.svgDraw;
   KFK.debug('svg layer initialized');
 };
 
 KFK.restoreSvgLine = function (line_id, html) {
   let aLine = null;
   let selector = `.${line_id}`;
-  aLine = draw.findOne(selector);
+  aLine = KFK.svgDraw.findOne(selector);
   if (aLine === null || aLine === undefined) {
-    aLine = draw.line();
+    aLine = KFK.svgDraw.line();
   }
   let parent = aLine.svg(html, true);
   aLine = parent.findOne(selector);
@@ -5758,13 +5558,11 @@ KFK.makePath = function (p1, p2) {
 
 KFK._svgDrawNodesConnect = function (fid, tid, lineClass, lineClassReverse, pstr, triangle) {
   let theLine = null;
-  let reverseLine = draw.findOne(`.${lineClassReverse}`);
-  let oldLine = draw.findOne(`.${lineClass}`);
-  let reverseTriangle = draw.findOne(`.${lineClassReverse}_triangle`);
-  let oldTriangle = draw.findOne(`.${lineClass}_triangle`);
+  let reverseLine = KFK.svgDraw.findOne(`.${lineClassReverse}`);
+  let oldLine = KFK.svgDraw.findOne(`.${lineClass}`);
+  let reverseTriangle = KFK.svgDraw.findOne(`.${lineClassReverse}_triangle`);
+  let oldTriangle = KFK.svgDraw.findOne(`.${lineClass}_triangle`);
   if (oldLine) {
-    // 有动画时， 带箭头的线出错
-    // oldLine.animate(KFK.svgAnimDuration).plot(pstr);
     oldLine.plot(pstr);
     oldTriangle.plot(triangle);
     theLine = oldLine;
@@ -5772,16 +5570,15 @@ KFK._svgDrawNodesConnect = function (fid, tid, lineClass, lineClassReverse, pstr
     if (reverseLine) {
       reverseLine.removeClass(lineClassReverse);
       reverseLine.addClass(lineClass);
-      // reverseLine.animate(KFK.svgAnimDuration).plot(pstr);
       reverseLine.plot(pstr);
       reverseTriangle.removeClass(lineClassReverse + "_triangle");
       reverseTriangle.addClass(lineClass + "_triangle");
       reverseTriangle.plot(triangle);
       theLine = reverseLine;
     } else {
-      theLine = draw.path(pstr);
+      theLine = KFK.svgDraw.path(pstr);
       theLine.addClass(lineClass).addClass('connect').fill("none").stroke({ width: KFK.APP.model.connect.width, color: KFK.APP.model.connect.color });
-      draw.polygon(triangle).addClass(lineClass + "_triangle").addClass('connect').fill(KFK.APP.model.connect.triangle.fill).stroke({ width: KFK.APP.model.connect.triangle.width, color: KFK.APP.model.connect.triangle.color });
+      KFK.svgDraw.polygon(triangle).addClass(lineClass + "_triangle").addClass('connect').fill(KFK.APP.model.connect.triangle.fill).stroke({ width: KFK.APP.model.connect.triangle.width, color: KFK.APP.model.connect.triangle.color });
       theLine.attr({
         "id": lineClass,
         "origin-width": KFK.APP.model.connect.width
@@ -5811,12 +5608,12 @@ KFK.lockLine = function (line, lock = true) {
     let d = 10;
     let y3 = (d * (y2 - y1)) / r + y1;
     let x3 = (d * (x2 - x1)) / r + x1;
-    let dot = draw.circle(10);
+    let dot = KFK.svgDraw.circle(10);
     dot.center(x3, y3).fill('red').addClass(line.attr('id') + "_lock").addClass('locklabel');
     dot.addTo(line.parent());
     return dot;
   } else {
-    try { draw.findOne('.' + line.attr('id') + '_lock').remove(); } catch (err) { }
+    try { KFK.svgDraw.findOne('.' + line.attr('id') + '_lock').remove(); } catch (err) { }
   }
 };
 
@@ -5831,11 +5628,11 @@ KFK.svgDrawLine = function (id, fx, fy, tx, ty, option) {
   }
   let lineClass = "kfkline";
   let lineId = "line_" + id;
-  let theLine = draw.findOne(`#line_${id}`);
+  let theLine = KFK.svgDraw.findOne(`#line_${id}`);
   if (theLine) {
     theLine.plot(fx, fy, tx, ty).stroke(option);
   } else {
-    theLine = draw.line(fx, fy, tx, ty);
+    theLine = KFK.svgDraw.line(fx, fy, tx, ty);
     theLine.attr("id", lineId);
     theLine.addClass(lineClass).addClass(lineId).stroke(option);
     theLine.attr('origin-width', option.width);
@@ -6030,12 +5827,12 @@ KFK.svgDrawTmpLine = function (fx, fy, tx, ty, option) {
       tx = fx;
     else ty = fy;
   }
-  KFK.tempSvgLine = draw.findOne(`.${tmpLineClass}`);
+  KFK.tempSvgLine = KFK.svgDraw.findOne(`.${tmpLineClass}`);
   if (KFK.tempSvgLine) {
     KFK.tempSvgLine.show();
     KFK.tempSvgLine.plot(fx, fy, tx, ty).stroke(option);
   } else {
-    KFK.tempSvgLine = draw.line(fx, fy, tx, ty).addClass(tmpLineClass).stroke(option);
+    KFK.tempSvgLine = KFK.svgDraw.line(fx, fy, tx, ty).addClass(tmpLineClass).stroke(option);
   }
 };
 
@@ -6158,7 +5955,7 @@ KFK.myShow = function (jq) {
   jq.css({ "visibility": 'visible', opacity: 1.0 });
 };
 
-module.exports = KFK;
+export default KFK;
 
 //TODO: direct loginas demo user story
 //TODO: 流量计费
