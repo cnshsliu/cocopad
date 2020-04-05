@@ -4,6 +4,7 @@ import { BootstrapVue, IconsPlugin, ListGroupPlugin, VBHoverPlugin } from 'boots
 import events from 'events';
 import "../scss/custom.scss";
 import KFK from './console';
+import ACM from './accountmanage';
 import { NodeController } from './nodeController';
 import { DocController } from './docController';
 
@@ -32,6 +33,7 @@ const app = new Vue({
     RegUserIdState: null,
     RegUserNameState: null,
     KFK: KFK,
+    ACM: ACM,
     seen: true,
     modalShow: false,
     modal_title: '',
