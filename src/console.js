@@ -93,6 +93,7 @@ KFK.actionLogToViewIndex = 0;
 KFK.explorerRefreshed = false;
 KFK.numberOfNodeToCreate = 0;
 KFK.numberOfNodeCreated = 0;
+KFK.badgeIdMap = {};
 
 // KFK._width = window.innerWidth; KFK._height = window.innerHeight;
 // KFK._width = window.innerWidth * 6; KFK._height = window.innerHeight * 6;
@@ -371,6 +372,7 @@ KFK.detail = function (...info) {
 KFK.logKey = function (...info) {
   KFK.scrLog(...info);
 }
+
 KFK.scrLog = function (msg) {
   let parent = $("#MSG").parent();
   let msgDIV = $("#MSG");
@@ -382,9 +384,12 @@ KFK.scrLog = function (msg) {
   cloneDIV = msgDIV.clone().appendTo(parent);
   cloneDIV.attr("id", "fadeoutmsg");
   cloneDIV.html(msg);
-  cloneDIV.fadeOut(4000, function () {
-    cloneDIV.remove();
-  });
+  cloneDIV.animate({ top: "10px", }, 200, async function(){
+    await KFK.sleep(5000);
+    cloneDIV.animate({top:"-24px"}, 1000,async function(){
+      cloneDIV.remove();
+    } )
+  })
 };
 
 KFK.getConnectorPoints = function (from, to, rad) {
@@ -1105,15 +1110,16 @@ KFK.get13Number = function (str) {
 
 KFK.showUserMovingBadge = function (user, x, y) {
   let pos = { x: KFK.scrollX(x), y: KFK.scrollY(y) };
-  let bgid = user.localSessionId;
   let bglabel = user.name;
 
 
   if (KFK.mouseTimer !== null) {
     clearTimeout(KFK.mouseTimer);
   }
+  //MOUSE不用传太多数据，简化一下
+  let consisedUser = {userid: user.userid, name: user.name};
   KFK.mouseTimer = setTimeout(function () {
-    KFK.WS.put("MOUSE", { user: user, pos: pos });
+    KFK.WS.put("MOUSE", { user: consisedUser, pos: pos });
     KFK.mouseTimer = null;
   }, 200);
 
@@ -1127,7 +1133,12 @@ KFK.showUserMovingBadge = function (user, x, y) {
 
 KFK.showOtherUserMovingBadge = function (data) {
   let pos = data.pos;
-  let bgid = data.user.localSessionId;
+  let userid = data.user.userid;
+  let bgid = KFK.badgeIdMap[userid];
+  if(!bgid){
+    bgid = myuid();
+    KFK.badgeIdMap[userid] = bgid;
+  }
   let bglabel = data.user.name;
   let jqBadgeDIV = $(document).find("#badge_" + bgid);
   let class_ser = KFK.get13Number(bgid);
@@ -2901,6 +2912,7 @@ KFK.lineCapChanged = function (checked) {
 };
 
 KFK.init = async function () {
+
   localStorage.setItem('loglevel', 4);
   let loglevel = localStorage.getItem('loglevel');
   loglevel = loglevel ? loglevel : '0';
@@ -2953,7 +2965,6 @@ KFK.checkSession = async function () {
   }
   await KFK.sleep(50);
   if (cocouser && cocouser.sessionToken) {
-    cocouser.localSessionId = myuid();
     await WS.start(KFK.onWsConnected, KFK.onWsMsg, 500, "checkSession", "KEEP");
   } else if (KFK.docIdInUrl) {
     await WS.start(KFK.onWsConnected, KFK.onWsMsg, 500, "checkSession", "KEEP");
@@ -3581,6 +3592,9 @@ KFK.onWsMsg = function (data) {
       KFK.WS.close();
       KFK.gotoSignin();
       break;
+    case "ENTER":
+      KFK.scrLog(data.payload.data.name + " 进入协作");
+      break;
     case 'RESTRICT':
       KFK.scrLog(data.payload.msg);
       break;
@@ -3615,10 +3629,6 @@ KFK.onWsMsg = function (data) {
     case "DEL":
       KFK.updateReceived++;
       KFK.deleteObject_for_Response(data.payload.data);
-      break;
-    case "CONNECT":
-      KFK.updateReceived++;
-      KFK.onLinkConnect(data.payload.data);
       break;
     case "ASKPWD":
       KFK.showDialog({ inputDocPasswordDialog: true });
@@ -3739,6 +3749,7 @@ KFK.onWsMsg = function (data) {
       break;
 
     case "MOUSE":
+      console.log("MOUSE oF OTHER", JSON.stringify(data.payload));
       KFK.showOtherUserMovingBadge(data.payload.data);
       break;
     case "ZI":

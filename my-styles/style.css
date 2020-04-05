@@ -241,8 +241,19 @@ body {
   z-index: 100;
   color: rgb(83, 79, 79);
   position: absolute;
-  bottom: 5px;
-  width: 100vw;
+  top: -24px;
+  width: fit-content;
+  left: 50%;
+  margin-top: 8px;
+  padding: 0px 15px 0px 15px;
+  border-radius: 0px 0px 20px 20px;
+  background-color: #ffffff45;
+  border: 1px solid #00000045;
+  -webkit-transform: translate(-50%, -50%);
+  -moz-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  -o-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
 }
 
 .cocopadbg {
