@@ -14,6 +14,7 @@ body {
   overscroll-behavior-x: none;
 }
 
+
 .leftbkg {
   position: absolute;
   top: 0px;
@@ -436,41 +437,68 @@ svg path {
 }
 
 
-.signinform {
+.signinform,.registerform {
   position: absolute;
   width: 400px;
   height: 600px;
   background-color: transparent;
-  /* background-color: white;
-    box-shadow: -1px 0 15px #686868, 0 1px 15px #686868, 1px 0 15px #686868, 0 -1px 15px #686868; */
-  top: calc(50vh - 300px);
-  left: calc(50vw - 200px);
   z-index: 99999;
   border-radius: 20px;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  -moz-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  -o-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+.signinform input, .registerform input{
+  background-size: 24px 24px;
+  background-repeat: no-repeat;
+  background-position: 5px;
+  padding-left: 40px;
+  font-family:  monospace;
+  font-size: 20px;
 }
 
-.registerform {
-  position: absolute;
-  width: 400px;
-  height: 600px;
-  background-color: transparent;
-  /* background-color: white; */
-  /* box-shadow: -1px 0 15px #686868, 0 1px 15px #686868, 1px 0 15px #686868, 0 -1px 15px #686868; */
-  top: calc(50vh - 300px);
-  left: calc(50vw - 200px);
-  z-index: 99999;
-  border-radius: 20px;
+.signinform input#userId{
+  background-image: url("../assets/email.svg");
+}
+.signinform input#userPwd{
+  background-image: url("../assets/pwd.svg");
 }
 
-.registerform input {
-  border-radius: 20px;
-  /* background-color: rgba(110, 223, 104, 0.056); */
+
+.signinform input::-webkit-input-placeholder,.registerform input::-webkit-input-placeholder { /* Edge */
+  color: #9c89fac9;
 }
 
-.signinform input {
-  border-radius: 20px;
-  /* background-color: rgba(110, 223, 104, 0.056); */
+.signinform input::-ms-input-placeholder,.registerform input::-ms-input-placeholder { /* Internet Explorer 10-11 */
+  color: #9c89fac9;
 }
+
+.signinform input::placeholder,.registerform input::placeholder { 
+  color: #9c89fac9;
+}
+
+.registerform input#regUserId{
+  background-image: url("../assets/email.svg");
+}
+.registerform input#regUserName{
+  background-image: url("../assets/name-tag.svg");
+}
+.registerform input#regUserPwd{
+  background-image: url("../assets/pwd.svg");
+}
+.registerform input#regUserPwd2{
+  background-image: url("../assets/pwd.svg");
+} 
+
+.registerform input,.signinform input {
+  border-radius: 20px;
+  background-color: rgba(110, 223, 104, 0.45);
+}
+
 
 .explorer {
   position: absolute;
@@ -483,11 +511,14 @@ svg path {
 
 .explorer .inner {
   margin: 100px auto;
-  background-color: #ffffff;
+  background-color: #ffffffbb;
   width: min(90vw, 1000px);
   padding: 20px;
-  box-shadow: -1px 0 15px #686868, 0 1px 15px #686868, 1px 0 15px #686868, 0 -1px 15px #686868;
+  box-shadow: -1px 0 15px #919191, 0 1px 15px #919191, 1px 0 15px #919191, 0 -1px 15px #919191;
   border-radius: 20px;
+}
+.explorer .inner .card {
+  background-color: #ffffffbb;
 }
 
 .custom-select {
@@ -547,6 +578,21 @@ select:focus {
   width: 24px;
   height: 24px;
 }
+.docpeople .userinfo{
+  -webkit-transform: translate(-5px, -5px);
+  -moz-transform: translate(-5px, -5px);
+  -ms-transform: translate(-5px, -5px);
+  -o-transform: translate(-5px, -5px);
+  transform: translate(-5px, -5px);
+}
+.docpeople .btn-link{
+  font-size: 16px;
+  color: #777777;
+}
+.docpeople .dropdown-menu{
+  background-color: #FFFFFF82;
+}
+
 
 .btn.focus, .btn:focus {
   outline: 0;
@@ -719,7 +765,7 @@ select:focus {
 
 .loading {
   position: absolute;
-  top: 50%;
+  bottom: 40px;
   left: 50%;
   -webkit-transform: translate(-50%, -50%);
   -moz-transform: translate(-50%, -50%);
@@ -727,9 +773,20 @@ select:focus {
   -o-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
   background-color: transparent;
-  font-size: 48px;
+  font-size: 36px;
   font-family: Consolas, "Courier New", Courier, FreeMono, monospace;
   font-weight: bolder;
-  color: #d6dbe8;
+  color: #91aef5;
   z-index: 9999;
+}
+
+.forDemoUser {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  background-color: transparent;
+  font-size: 28px;
+  font-family: FreeMono, monospace, Consolas, "Courier New", Courier;
+  color: #d6dbe8;
+  z-index: 2;
 }
