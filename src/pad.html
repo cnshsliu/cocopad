@@ -230,12 +230,7 @@
         </div>
       </div>
       <div id="toplogo" class="padlayout">
-        <b-navbar type="light">
-          <b-navbar-brand>
             <img src="../assets/cocopad.svg" class="logo d-inline-block align-top" alt="COCOPAD">
-            <span class='lkh'></span>
-          </b-navbar-brand>
-        </b-navbar>
       </div>
 
       <div id="left" class="bg-white padlayout noshow">
@@ -475,6 +470,10 @@
           <b-button disable="model.cocodoc.doclocked" id="toggle_all" variant="outline-success"
             @click="KFK.toggleFullScreen">
             <b-icon icon="arrows-fullscreen"></b-icon>
+          </b-button>
+          <b-button disable="model.cocodoc.doclocked" id="toggle_cbonly" variant="outline-success"
+            @click="KFK.toggleControlButtonOnly">
+            <b-icon icon="layout-sidebar-reverse" rotate="270"></b-icon>
           </b-button>
           <b-button disable="model.cocodoc.doclocked" id="toggle-right" variant="outline-success"
             @click="KFK.toggleRight">

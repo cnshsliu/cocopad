@@ -75,8 +75,8 @@ body {
 
 #toplogo {
   position: absolute;
-  top: 0px;
-  left: 0px;
+  top: 15px;
+  left: 15px;
   width: 100%;
   padding-right: 10px;
 }
