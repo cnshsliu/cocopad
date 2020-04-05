@@ -18,12 +18,7 @@
       注 册</b-button>
     <b-button v-show="show.section.register" pill variant='outline-success' class='regsignin' @click="KFK.gotoSignin">
       登 录</b-button>
-    <div class="msgarea">
-      <b-row class="w-100">
-        <b-col class="text-center">
-          <div id="MSG"></div>
-        </b-col>
-      </b-row>
+    <div class="text-center msgarea" id="MSG">
     </div>
     <img v-show="!show.section.designer" src="../assets/cocopad.svg" class='left_top_logo_image' />
     <div class="cocoslogon" v-show="!show.section.designer">

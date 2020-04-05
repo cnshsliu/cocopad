@@ -47,6 +47,7 @@ WS.put = async (cmd, payload) => {
     payload.cmd = cmd;
     let cocouserStr = localStorage.getItem("cocouser");
     if (cocouserStr){
+        if(cmd !== 'MOUSE')
         payload.Auth = JSON.parse(cocouserStr)["sessionToken"];
     }
     // console.log('readystate=' + WS.ws.readyState);
