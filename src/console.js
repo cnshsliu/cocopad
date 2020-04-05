@@ -74,6 +74,7 @@ KFK.C3 = null;
 KFK.JC3 = null;
 KFK.docDuringLoading = null;
 KFK.fullScreen = false;
+KFK.controlButtonsOnly = false;
 KFK.zoomFactor = 0;
 KFK.lineMoverDragging = false;
 KFK.scaleBy = 1.01;
@@ -1425,7 +1426,6 @@ function editTextNode(textnode, theDIV) {
   };
 
   textarea.addEventListener("keydown", function (evt) {
-    KFK.scrLog('textarea keydown ' + evt.keyCode);
     // hide on enter
     // but don't hide on shift + enter
     if (evt.keyCode === 13 && !evt.shiftKey) {
@@ -4487,7 +4487,9 @@ KFK.addDocumentEventHandler = function () {
     switch (evt.keyCode) {
       case 27:
         //ESC
-        KFK.logKey('ESC');
+        if(KFK.fullScreen){
+          KFK.toggleFullScreen();
+        }
         if (KFK.isZooming === true) {
           KFK.zoomStop();
         }
@@ -4757,28 +4759,42 @@ KFK.toggleRight = function (flag) {
   if (KFK.APP.model.cocodoc.doclocked) {
     return;
   }
-  if (KFK.fullScreen) return;
+  if (KFK.fullScreen || KFK.controlButtonsOnly) return;
   $("#right").toggle("slide", { duration: 100, direction: "right" });
 };
-
-KFK.toggleFullScreen = function (evt) {
+KFK.toggleFullScreen = function(evt){
+  if (KFK.isZooming === true) {
+    KFK.zoomStop();
+  }
   KFK.fullScreen = !KFK.fullScreen;
+  KFK.showSection({minimap: !KFK.fullScreen});
+  let display = KFK.fullScreen ? 'none' : 'block';
+  $("#left").css("display", display);
+  $("#right").css("display", display);
+  KFK.APP.setData('show', 'actionlog', false);
+  $('#docHeaderInfo').css("visibility", KFK.fullScreen?'hidden':'visible');
+  $('#rtcontrol').css("visibility", KFK.fullScreen?'hidden':'visible');
+  $('#toplogo').css("visibility", KFK.fullScreen?'hidden':'visible');
+};
+
+KFK.toggleControlButtonOnly = function (evt) {
+  KFK.controlButtonsOnly = !KFK.controlButtonsOnly;
   if (KFK.APP.model.cocodoc.doclocked) {
     //文档锁定时，依然可以对minimap切换显示与否
-    KFK.showSection({ minimap: !KFK.fullScreen });
+    KFK.showSection({ minimap: !KFK.controlButtonsOnly });
     return;
   }
   //左侧和右侧的工具栏，可进行切换
-  let display = KFK.fullScreen ? 'none' : 'block';
+  let display = KFK.controlButtonsOnly ? 'none' : 'block';
   $("#left").css("display", display);
   $("#right").css("display", display);
   //actionlog总是关闭
   KFK.APP.setData('show', 'actionlog', false);
   //切换minimap
-  KFK.showSection({ minimap: !KFK.fullScreen });
+  KFK.showSection({ minimap: !KFK.controlButtonsOnly });
 };
 KFK.showHidePanel = function (flag) {
-  if (flag === true && KFK.fullScreen === false) {
+  if (flag === true && (KFK.fullScreen === false && KFK.controlButtonsOnly===false)) {
     $("#left").css("display", "block");
     $("#right").css("display", "block");
   } else {
