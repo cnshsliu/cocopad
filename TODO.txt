@@ -13,3 +13,4 @@
 //TODO: share by sending email
 //TODO: draw page divider line
 //TODO: HOTKEY to nav A4 page
+//TODO: three rows of avatar and allow scroll

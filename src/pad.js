@@ -5,6 +5,7 @@ import events from 'events';
 import "../scss/custom.scss";
 import KFK from './console';
 import ACM from './accountmanage';
+import EXP from './explorermanage';
 import { NodeController } from './nodeController';
 import { DocController } from './docController';
 
@@ -34,6 +35,7 @@ const app = new Vue({
     RegUserNameState: null,
     KFK: KFK,
     ACM: ACM,
+    EXP: EXP,
     seen: true,
     modalShow: false,
     modal_title: '',

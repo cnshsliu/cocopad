@@ -5444,11 +5444,7 @@ KFK.setUserProfile = function (bvModalEvt) {
   bvModalEvt.preventDefault();
   KFK.handleProfileSubmit();
 };
-KFK.setProfileAvatar = function (avatar) {
-  let profile = KFK.APP.model.profileToSet;
-  profile.avatar = avatar;
-  KFK.setAppData("model", "profileToSet", profile);
-};
+
 KFK.handleProfileSubmit = function () {
   KFK.APP.state.profile.name = KFK.validateUserName(
     KFK.APP.model.profileToSet.name
