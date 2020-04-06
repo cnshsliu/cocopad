@@ -247,7 +247,7 @@ body {
   margin-top: 8px;
   padding: 0px 15px 0px 15px;
   border-radius: 0px 0px 20px 20px;
-  background-color: #ffffff45;
+  background-color: #ffffffff;
   border: 1px solid #00000045;
   -webkit-transform: translate(-50%, -50%);
   -moz-transform: translate(-50%, -50%);
@@ -610,14 +610,15 @@ select:focus {
   box-shadow: none !important;
 }
 
-.shareItContainer {
+#shareDialog {
   position: absolute;
   width: 400px;
   background-color: white;
   box-shadow: -1px 0 15px #686868, 0 1px 15px #686868, 1px 0 15px #686868, 0 -1px 15px #686868;
   top: calc(50vh - 300px);
   left: calc(50vw - 200px);
-  border-radius: 20px;
+  border-radius: 10px;
+  padding: 20px;
   z-index: 100;
 }
 

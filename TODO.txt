@@ -3,6 +3,7 @@
 //TODO: After program modified, with URL in href, reopen cause use demo user.
 //TODO: split accountmanger source code.
 //TODO: Delete all
+//TODO: BUG: 用户密码清除文档密码
 //TODO: minimize can't cover all.
 //TODO: chat mode
 //TODO: GROUP unGROUP?
@@ -14,3 +15,4 @@
 //TODO: draw page divider line
 //TODO: HOTKEY to nav A4 page
 //TODO: three rows of avatar and allow scroll
+//TODO:  zoomin/zoomout重新设计，全部按比例计算位置和大小，包括字体，并自动缩小canvas, 不用scale机制

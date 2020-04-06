@@ -26,44 +26,69 @@ ACM.registerUser = function () {
         function () {
             WS.put("REGUSER", { userid: userid, pwd: pwd, name: name });
         },
-        function (data) {
-            data = JSON.parse(data);
-            if (data.payload) {
-                try {
-                    switch (data.payload.cmd) {
-                        case "REGUSER-CODE":
-                            KFK.scrLog("请检查邮箱，输入验证码");
-                            let tmpReg = KFK.APP.model.register;
-                            tmpReg.step = "code";
-                            KFK.setAppData('model', 'register', tmpReg);
-                            console.log('regtoken', data.payload.data.sessionToken);
-                            sessionStorage.setItem('regtoken', data.payload.data.sessionToken);
-                            break;
-                        case "REGUSER-PLSVERIFY":
-                            KFK.scrLog(`账号已被注册尚未验证，请重新验证`);
-                            tmpReg = KFK.APP.model.register;
-                            tmpReg.step = "code";
-                            KFK.setAppData('model', 'register', tmpReg);
-                            console.log('regtoken', data.payload.data.sessionToken);
-                            sessionStorage.setItem('regtoken', data.payload.data.sessionToken);
-                            break;
-                        case "REGUSER-FALSE":
-                            KFK.scrLog("注册失败，请重试");
-                            break;
-                        case "REGUSER-DUP":
-                            KFK.scrLog(`账号${data.payload.data.userid}已被占用`);
-                            break;
+        async function (response) {
+            response = JSON.parse(response);
+            try {
+                switch (response.cmd) {
+                    case "REGUSER-CODE":
+                        KFK.scrLog("请检查邮箱，输入验证码");
+                        await KFK.mergeAppData('model', 'register', { step: 'code' });
+                        console.log('regtoken', response.sessionToken);
+                        sessionStorage.setItem('regtoken', response.sessionToken);
+                        break;
+                    case "REGUSER-PLSVERIFY":
+                        KFK.scrLog(`账号已被注册尚未验证，请重新验证`);
+                        await KFK.mergeAppData('model', 'register', { step: 'code' });
+                        console.log('regtoken', response.sessionToken);
+                        sessionStorage.setItem('regtoken', response.sessionToken);
+                        break;
+                    case "REGUSER-FALSE":
+                        KFK.scrLog("注册失败，请重试");
+                        break;
+                    case "REGUSER-DUP":
+                        KFK.scrLog(`账号${response.payload.response.userid}已被占用`);
+                        break;
 
-                    }
-                } catch (error) { console.log(error); }
-                finally { WS.close(); }
-            }
+                }
+            } catch (error) { console.log(error); }
+            finally { WS.close(); }
         },
         0,
         'registerUser',
         'ONCE'
     );
 };
+
+ACM.resendVerifyCode = async function () {
+    WS.start(
+        function () {
+            let regtoken = sessionStorage.getItem("regtoken");
+            WS.put("RESENDCODE", { regtoken: regtoken });
+        },
+        async function (response) {
+            response = JSON.parse(response);
+            console.log(response);
+            try {
+                switch (response.cmd) {
+                    case "REGUSER-CODE":
+                        KFK.scrLog("请检查邮箱，输入验证码");
+                        await KFK.mergeAppData('model', 'register', { step: 'code' });
+                        sessionStorage.setItem('regtoken', response.sessionToken);
+                        break;
+                    case "REGUSER-FALSE":
+                        KFK.scrLog(response.msg);
+                        await KFK.mergeAppData('model', 'register', { step: 'code' });
+                        break;
+                }
+            } catch (error) { console.log(error); }
+            finally { WS.close(); }
+        },
+        0,
+        'resendVerifyCode',
+        'ONCE'
+    );
+};
+
 
 ACM.signin = function () {
     let userid = KFK.APP.model.signin.userid;
@@ -73,34 +98,32 @@ ACM.signin = function () {
         function () {
             WS.put("SIGNIN", { userid: userid, pwd: pwd });
         },
-        function (data) {
-            data = JSON.parse(data);
-            if (data.payload) {
-                try {
-                    switch (data.payload.cmd) {
-                        case "SIGNIN":
-                            let retuser = data.payload.data;
-                            KFK.setCocouser(retuser);
-                            KFK.resetAllLocalData();
-                            KFK.APP.setData('model', 'isDemoEnv', false);
-                            setTimeout(() => { KFK.gotoWork(); }, 500);
-                            break;
-                        case "PLSSIGNIN":
-                            KFK.scrLog(data.payload.error);
-                            KFK.removeCocouser();
-                            KFK.gotoSignin();
-                            break;
-                        case "REGUSER-CODE":
-                            retuser = data.payload.data;
-                            KFK.setAppData('model', 'signInButWaitVerify', true);
-                            KFK.setCocouser(retuser);
-                            KFK.scrLog("尚未验证邮箱地址，你可以继续使用，请在一周内完成邮箱验证");
-                            sessionStorage.setItem('regtoken', data.payload.data.sessionToken);
-                            break;
-                    }
-                } catch (error) { console.log(error); }
-                finally { WS.close(); }
-            }
+        function (response) {
+            response = JSON.parse(response);
+            try {
+                switch (response.cmd) {
+                    case "SIGNIN":
+                        let retuser = response.user;
+                        KFK.setCocouser(retuser);
+                        KFK.resetAllLocalData();
+                        KFK.APP.setData('model', 'isDemoEnv', false);
+                        setTimeout(() => { KFK.gotoWork(); }, 500);
+                        break;
+                    case "PLSSIGNIN":
+                        KFK.scrLog(response.msg);
+                        KFK.removeCocouser();
+                        KFK.gotoSignin();
+                        break;
+                    case "REGUSER-CODE":
+                        retuser = response.user;
+                        KFK.setAppData('model', 'signInButWaitVerify', true);
+                        KFK.setCocouser(retuser);
+                        KFK.scrLog("尚未验证邮箱地址，你可以继续使用，请在一周内完成邮箱验证");
+                        sessionStorage.setItem('regtoken', response.user.sessionToken);
+                        break;
+                }
+            } catch (error) { console.log(error); }
+            finally { WS.close(); }
         },
         0,
         'signin',
@@ -126,71 +149,33 @@ ACM.verifyRegCode = async function () {
             let regtoken = sessionStorage.getItem('regtoken');
             WS.put("VERIFYREGCODE", { code: KFK.APP.model.register.code, regtoken: regtoken });
         },
-        function (data) {
-            data = JSON.parse(data);
-            if (data.payload) {
-                try {
-                    switch (data.payload.cmd) {
-                        case "VERIFY-FALSE":
-                            KFK.scrLog("注册失败，请重试");
-                            break;
-                        case "VERIFY-EXPIRED":
-                            KFK.scrLog("验证码已过期，请重新发送");
-                            break;
-                        case "VERIFY-WRONGCODE":
-                            KFK.scrLog("验证码错误，请重新输入");
-                            break;
-                        case "VERIFY-SUCCESS":
-                            KFK.scrLog("验证成功，请登录");
-                            sessionStorage.removeItem('regtoken');
-                            KFK.gotoSignin();
-                            break;
-                        case "VERIFY-ALREAY":
-                            KFK.scrLog("已验证过，请直接登录");
-                            break;
-                    }
-                } catch (error) { console.log(error); }
-                finally { WS.close(); }
-            }
+        function (response) {
+            response = JSON.parse(response);
+            try {
+                switch (response.cmd) {
+                    case "VERIFY-FALSE":
+                        KFK.scrLog(response.msg);
+                        break;
+                    case "VERIFY-EXPIRED":
+                        KFK.scrLog("验证码已过期，请重新发送");
+                        break;
+                    case "VERIFY-WRONGCODE":
+                        KFK.scrLog("验证码错误，请重新输入");
+                        break;
+                    case "VERIFY-SUCCESS":
+                        KFK.scrLog("验证成功，请登录");
+                        sessionStorage.removeItem('regtoken');
+                        KFK.gotoSignin();
+                        break;
+                    case "VERIFY-ALREAY":
+                        KFK.scrLog("已验证过，请直接登录");
+                        break;
+                }
+            } catch (error) { console.log(error); }
+            finally { WS.close(); }
         },
         0,
         'verifyRegCode',
-        'ONCE'
-    );
-};
-
-ACM.resendVerifyCode = async function () {
-    WS.start(
-        function () {
-            let regtoken = sessionStorage.getItem("regtoken");
-            WS.put("RESENDCODE", { regtoken: regtoken });
-        },
-        function (data) {
-            data = JSON.parse(data);
-            console.log(data);
-            if (data.payload && data.payload.cmd) {
-                try {
-                    switch (data.payload.cmd) {
-                        case "REGUSER-CODE":
-                            KFK.scrLog("请检查邮箱，输入验证码");
-                            let tmpReg = KFK.APP.model.register;
-                            tmpReg.step = "code";
-                            KFK.setAppData('model', 'register', tmpReg);
-                            sessionStorage.setItem('regtoken', data.payload.data.sessionToken);
-                            break;
-                        case "REGUSER-FALSE":
-                            KFK.scrLog(data.payload.msg);
-                            tmpReg = KFK.APP.model.register;
-                            tmpReg.step = "code";
-                            KFK.setAppData('model', 'register', tmpReg);
-                            break;
-                    }
-                } catch (error) { console.log(error); }
-                finally { WS.close(); }
-            }
-        },
-        0,
-        'resendVerifyCode',
         'ONCE'
     );
 };

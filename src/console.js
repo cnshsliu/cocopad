@@ -2,7 +2,6 @@ import "./importjquery";
 import "regenerator-runtime/runtime";
 import Joi from "@hapi/joi";
 import { SVG } from "@svgdotjs/svg.js";
-import ClipboardJs from "clipboard";
 import "core-js/stable";
 import "jquery-ui-dist/jquery-ui.js";
 import OSS from "ossnolookup";
@@ -17,10 +16,11 @@ import "../lib/fontpicker-jquery-plugin/dist/jquery.fontpicker";
 import "../lib/jquery-minimap/jquery-minimap";
 import config from "./config";
 import Demo from "./demo";
-import { RegHelper } from './reghelper';
+import RegHelper from './reghelper';
 import SVGs from "./svgs";
 import WS from "./ws";
 import ACM from "./accountmanage";
+import SHARE from "./sharemanage";
 
 Array.prototype.clear = function () {
   this.splice(0, this.length);
@@ -57,9 +57,9 @@ KFK.isZooming = false; //是否是在Zoom状态
 KFK.LOGLEVEL_ERROR = 1;
 KFK.LOGLEVEL_WARN = 2;
 KFK.LOGLEVEL_INFO = 3;
-KFK.LOGLEVEL_DEBUG=4;
-KFK.LOGLEVEL_DETAIL=5;
-KFK.LOGLEVEL_NOTHING=0;
+KFK.LOGLEVEL_DEBUG = 4;
+KFK.LOGLEVEL_DETAIL = 5;
+KFK.LOGLEVEL_NOTHING = 0;
 KFK.loglevel = KFK.LOGLEVEL_DEBUG; //控制log的等级, 级数越小，显示信息越少
 KFK.zoomlevel = 1; //记录当前的zoom等级
 KFK.designerConf = { scaleX: 1, scaleY: 1, left: 0, top: 0 }; //用于在zoom控制计算中
@@ -140,7 +140,7 @@ KFK.focusOnC3 = () => {
   }
 }
 
-KFK.myuid = ()=> {
+KFK.myuid = () => {
   return suuid.generate();
 }
 KFK.scrollContainer = $("#scroll-container");
@@ -390,11 +390,11 @@ KFK.scrLog = function (msg) {
   cloneDIV = msgDIV.clone().appendTo(parent);
   cloneDIV.attr("id", "fadeoutmsg");
   cloneDIV.html(msg);
-  cloneDIV.animate({ top: "10px", }, 200, async function(){
+  cloneDIV.animate({ top: "10px", }, 200, async function () {
     await KFK.sleep(5000);
-    cloneDIV.animate({top:"-24px"}, 1000,async function(){
+    cloneDIV.animate({ top: "-24px" }, 1000, async function () {
       cloneDIV.remove();
-    } )
+    })
   })
 };
 
@@ -1122,7 +1122,7 @@ KFK.showUserMovingBadge = function (user, x, y) {
   if (KFK.mouseTimer !== null) {
     clearTimeout(KFK.mouseTimer);
   }
-  let consisedUser = {userid: user.userid, name: user.name};
+  let consisedUser = { userid: user.userid, name: user.name };
   KFK.mouseTimer = setTimeout(function () {
     KFK.WS.put("MOUSE", { user: consisedUser, pos: pos });
     KFK.mouseTimer = null;
@@ -1130,15 +1130,15 @@ KFK.showUserMovingBadge = function (user, x, y) {
 
 };
 
-KFK.showOtherUserMovingBadge = function (data) {
-  let pos = data.pos;
-  let userid = data.user.userid;
+KFK.showOtherUserMovingBadge = function (mouse) {
+  let pos = mouse.pos;
+  let userid = mouse.user.userid;
   let bgid = KFK.badgeIdMap[userid];
-  if(!bgid){
+  if (!bgid) {
     bgid = KFK.myuid();
     KFK.badgeIdMap[userid] = bgid;
   }
-  let bglabel = data.user.name;
+  let bglabel = mouse.user.name;
   let jqBadgeDIV = $(document).find("#badge_" + bgid);
   let class_ser = KFK.get13Number(bgid);
   if (jqBadgeDIV.length === 0) {
@@ -1324,7 +1324,7 @@ KFK._getNearGridPoint = function (x, y) {
   return { x: newX, y: newY };
 };
 
-KFK.px=(v)=> {
+KFK.px = (v) => {
   if (typeof v === "string") {
     if (v.endsWith("px")) {
       return v;
@@ -1336,20 +1336,20 @@ KFK.px=(v)=> {
   }
 }
 
-KFK.unpx = (v)=>{
+KFK.unpx = (v) => {
   if (typeof v === "string" && v.endsWith("px")) {
     return parseInt(v.substr(0, v.length - 2));
   }
 }
 
-KFK.ltPos = function(node) {
+KFK.ltPos = function (node) {
   return {
     x: node.x - node.width * 0.5,
     y: node.y - node.height * 0.5
   };
 }
 
-KFK.editTextNode = function(textnode, theDIV) {
+KFK.editTextNode = function (textnode, theDIV) {
   KFK.editting = true;
   theDIV.editting = true;
   textnode.editting = true;
@@ -2919,11 +2919,6 @@ KFK.init = async function () {
   }
   KFK.debug("Initializing...");
 
-  new ClipboardJs(".shareit", {
-    text: function (trigger) {
-      return KFK.dataToShare;
-    }
-  });
 
   $("#left_menu").removeClass("noshow");
   KFK.initC3();
@@ -2953,7 +2948,7 @@ KFK.checkSession = async function () {
   if (cocouser) {
     KFK.info(localStorage.getItem('cocouser'));
     KFK.setAppData('model', 'isDemoEnv', (cocouser.userid.indexOf("@cocopad_demo.org") > 0));
-  }else{
+  } else {
     KFK.info('There is no local user session');
   }
   await KFK.sleep(50);
@@ -3013,14 +3008,24 @@ KFK.showDialog = function (options) {
   let dialog = $.extend({}, KFK.APP.show.dialog, options);
   KFK.APP.setData("show", "dialog", dialog);
 };
-KFK.mergetAppData = (data, key, value) => {
-  let tmpData = $.extend({}, KFK.APP[data][key], value);
-  KFK.APP.setData(data, key, tmpData);
+KFK.mergeAppData = async (data, key, value) => {
+  if (typeof data === 'string' && typeof key === 'string' && typeof value === 'object') {
+    let tmpData = $.extend({}, KFK.APP[data][key], value);
+    await KFK.APP.setData(data, key, tmpData);
+  } else if (typeof data === 'string' && data.indexOf('.') > 0 && typeof key === 'object') {
+    let arr = data.split('.');
+    let tmpData = $.extend({}, KFK.APP[arr[0]][arr[1]], key);
+    await KFK.APP.setData(arr[0], arr[1], tmpData);
+  }
 };
 
 KFK.setAppData = (data, key, value) => {
   KFK.APP.setData(data, key, value);
 };
+
+KFK.askShareCode = (doc_id) => {
+  KFK.sendCmd("SHARECODE", { doc_id: doc_id });
+}
 
 
 KFK.refreshDesigner = function (doc_id, docpwd) {
@@ -3081,7 +3086,7 @@ KFK.loadDoc = function (doc_id, pwd) {
     KFK.docDuringLoading = doc_id;
     let payload = { doc_id: doc_id, pwd: pwd };
     if (KFK.getCocouser())
-      KFK.sendCmd("OPEN", payload);
+      KFK.sendCmd("OPENDOC", payload);
     else {
       KFK.sendCmd('OPENANN', payload);
     } KFK.showSection({
@@ -3366,24 +3371,15 @@ KFK.startActiveLogWatcher = function () {
     5000);
 };
 
-KFK.onWsMsg = function (data) {
-  data = JSON.parse(data);
-  if (data.cmd === "PING") {
-    KFK.WS.put("PONG", {});
-  }
-  if (!data.payload) {
-    return;
-  }
-  if (data.res === "INFO") {
-    KFK.scrLog(data.payload.msg);
-    return;
-  } else if (data.res !== "OK") {
-    KFK.scrLog("unknow res" + data.res);
-  }
-  switch (data.payload.cmd) {
+KFK.onWsMsg = function (response) {
+  response = JSON.parse(response);
+  if (!response.cmd) { return; }
+  if (response.payload) { KFK.error("Still has payload response", response.cmd) };
+  if (response.cmd === "PING") { KFK.WS.put("PONG", {}); }
+  switch (response.cmd) {
     case "NEEDAUTH":
       KFK.scrLog('需要先登录，谢谢');
-      KFK.debug(data.payload.msg);
+      KFK.debug(response.msg);
       KFK.removeCocouser("cocouser");
       KFK.WS.keepFlag = "ONCE";
       KFK.WS.close();
@@ -3397,50 +3393,48 @@ KFK.onWsMsg = function (data) {
       KFK.gotoSignin();
       break;
     case "ENTER":
-      KFK.scrLog(data.payload.data.name + " 进入协作");
+      KFK.scrLog(response.name + " 进入协作");
       break;
     case 'RESTRICT':
-      KFK.scrLog(data.payload.msg);
+      KFK.scrLog(response.msg);
       break;
-    case "OPEN":
-      if (data.payload.demo) {
-        KFK.debug("set isDemoEnv to TRUE. after received OPEN");
+    case "OPENDOC":
+      if (response.demo) {
+        KFK.debug("set isDemoEnv to TRUE. after received OPENDOC");
         KFK.APP.setData('model', 'isDemoEnv', true);
       }
       else {
-        KFK.debug("set isDemoEnv to FALSE. after received OPEN");
+        KFK.debug("set isDemoEnv to FALSE. after received OPENDOC");
         KFK.APP.setData('model', 'isDemoEnv', false);
       }
-      KFK.recreateFullDoc(data.payload.data, KFK.checkLoading);
+      KFK.recreateFullDoc(response.doc, KFK.checkLoading);
       break;
     case "OPENANN":
-      let annUser = data.payload.data;
-      KFK.debug(annUser);
+      let annUser = response.user;
       KFK.setCocouser(annUser);
-      KFK.debug("set isDemoEnv to TRUE. after received OPENANN");
       KFK.APP.setData('model', 'isDemoEnv', true);
       KFK.resetAllLocalData();
       setTimeout(() => { KFK.gotoWork(); }, 500);
       break;
     case "UPD":
       KFK.updateReceived++;
-      KFK.recreateObject(data.payload.data);
+      KFK.recreateObject(response.block);
       break;
     case "SYNC":
       KFK.updateReceived++;
-      KFK.recreateObject(data.payload.data);
+      KFK.recreateObject(response.block);
       break;
     case "DEL":
       KFK.updateReceived++;
-      KFK.deleteObject_for_Response(data.payload.data);
+      KFK.deleteObject_for_Response(response.block);
       break;
     case "ASKPWD":
       KFK.showDialog({ inputDocPasswordDialog: true });
       break;
     case "RESETPWD":
       KFK.APP.model.docs.forEach(doc => {
-        if (doc._id === data.payload.doc_id) {
-          if (data.payload.pwd === "") {
+        if (doc._id === response.doc_id) {
+          if (response.pwd === "") {
             doc.security_icon = "blank";
             doc.pwd = "";
           } else {
@@ -3452,8 +3446,8 @@ KFK.onWsMsg = function (data) {
       break;
     case "REMOVEPWD":
       KFK.APP.model.docs.forEach(doc => {
-        if (doc._id === data.payload.doc_id) {
-          if (data.payload.pwd === "") {
+        if (doc._id === response.doc_id) {
+          if (response.pwd === "") {
             doc.security_icon = "blank";
             doc.pwd = "";
           } else {
@@ -3474,8 +3468,8 @@ KFK.onWsMsg = function (data) {
       break;
     case "TGLREAD":
       KFK.APP.model.docs.forEach(doc => {
-        if (doc._id === data.payload.doc_id) {
-          doc.doclocked = data.payload.doclocked;
+        if (doc._id === response.doc_id) {
+          doc.doclocked = response.doclocked;
           if (doc.doclocked === true) {
             doc.doclocked_icon = "lock";
             doc.doclocked_variant = "primary";
@@ -3485,31 +3479,31 @@ KFK.onWsMsg = function (data) {
           }
         }
       });
-      if (data.payload.doc_id === KFK.APP.model.cocodoc.doc_id) {
-        KFK.APP.model.cocodoc.doclocked = data.payload.doclocked;
+      if (response.doc_id === KFK.APP.model.cocodoc.doc_id) {
+        KFK.APP.model.cocodoc.doclocked = response.doclocked;
         KFK.APP.setData("model", "cocodoc", KFK.APP.model.cocodoc);
         localStorage.setItem("cocodoc", JSON.stringify(KFK.APP.model.cocodoc));
       }
       break;
     case "NEWPRJ":
       let cocoprj = {
-        prjid: data.payload.data[0].prjid,
-        name: data.payload.data[0].name
+        prjid: response.prj.prjid,
+        name: response.prj.name
       };
       KFK.setCurrentPrj(cocoprj);
       KFK.refreshConsole();
       KFK.showPrjs();
       break;
     case "NEWDOC":
-      KFK.updatePrjDoclist(data.payload.data.prjid);
+      KFK.updatePrjDoclist(response.doc.prjid);
       KFK.refreshDesigner(
-        data.payload.data._id,
+        response.doc._id,
         KFK.APP.model.newdocpwd.trim()
       );
       break;
     case "LISTDOC":
-      KFK.APP.setData("model", "listdocoption", data.payload.option);
-      let docs = data.payload.data;
+      KFK.APP.setData("model", "listdocoption", response.option);
+      let docs = response.docs;
       docs.forEach(doc => {
         if (doc.pwd === "") {
           doc.security_icon = "blank";
@@ -3532,7 +3526,7 @@ KFK.onWsMsg = function (data) {
       KFK.APP.setData("model", "docs", docs);
       break;
     case "GETBLKOPS":
-      let blkops = data.payload.data;
+      let blkops = response.blkops;
       blkops.forEach(blkop => {
         if (blkop.avatar === undefined || blkop.avatar === null || blkop.avatar === "") {
           blkop.avatarSrc = KFK.avatars['avatar-0'].src;
@@ -3544,40 +3538,36 @@ KFK.onWsMsg = function (data) {
       KFK.setAppData("model", "actionlog", blkops);
       break;
     case "LISTPRJ":
-      KFK.APP.setData("model", "listprjoption", data.payload.option);
-      let option = data.payload.option;
+      KFK.APP.setData("model", "listprjoption", response.option);
+      let option = response.option;
       // let skip = option.skip;
       // let count = option.count;
-      let prjs = data.payload.data;
+      let prjs = response.prjs;
       KFK.APP.setData("model", "prjs", prjs);
       break;
 
     case "MOUSE":
-      console.log("MOUSE oF OTHER", JSON.stringify(data.payload));
-      KFK.showOtherUserMovingBadge(data.payload.data);
+      KFK.showOtherUserMovingBadge(response.mouse);
       break;
     case "ZI":
-      KFK.resetNodeZIndex(data.payload.data);
+      KFK.resetNodeZIndex(response.ZI);
       break;
     case "LOCKNODE":
-      KFK.NodeController.lock($(`#${data.payload.data.nodeid}`));
+      KFK.NodeController.lock($(`#${response.nodeid}`));
       break;
     case "UNLOCKNODE":
-      KFK.NodeController.unlock($(`#${data.payload.data.nodeid}`));
+      KFK.NodeController.unlock($(`#${response.nodeid}`));
       break;
     case "LOCKLINE":
       KFK.debug("------------GOT LOCKLINE, LOCK IT-----");
-      KFK.NodeController.lockline(KFK, KFK.svgDraw.findOne(`.${data.payload.data.nodeid}`));
+      KFK.NodeController.lockline(KFK, KFK.svgDraw.findOne(`.${response.nodeid}`));
       break;
     case "UNLOCKLINE":
       KFK.debug("------------GOT UNLOCKLINE, LOCK IT-----");
-      KFK.NodeController.unlockline(KFK, KFK.svgDraw.findOne(`.${data.payload.data.nodeid}`));
-      break;
-    case "COPYDOC":
-      KFK.onCopyDoc(data.paylaod.data);
+      KFK.NodeController.unlockline(KFK, KFK.svgDraw.findOne(`.${response.nodeid}`));
       break;
     case "GOTOPRJ":
-      let gotoPrjId = data.payload.prjid;
+      let gotoPrjId = response.prjid;
       let found = -1;
       for (let i = 2; i < KFK.APP.model.prjs.length; i++) {
         if (gotoPrjId === KFK.APP.model.prjs[i].prjid) {
@@ -3593,10 +3583,17 @@ KFK.onWsMsg = function (data) {
       break;
     case "SETPROFILE-TRUE":
       KFK.scrLog("基本资料已设置成功");
-      KFK.setCocouser(data.payload.data);
+      KFK.setCocouser(response.info);
       break;
     case "SETPROFILE-FAIL":
-      KFK.scrLog("基本资料未成功设置，请重试" + data.payload.error);
+      KFK.scrLog("基本资料未成功设置，请重试" + response.error);
+      break;
+    case 'EMAILSHARE':
+    case 'SHARECODE':
+      SHARE.onWsMsg(response);
+      break;
+    case 'ERROR':
+      KFK.error(response.msg);
       break;
   }
 };
@@ -3729,14 +3726,11 @@ KFK.cancelDocPwd = function () {
   KFK.refreshExplorer();
 };
 KFK.onDocPwdHidden = function (bvModalEvt) {
+  //这个值初始为show,这样，不运行点对话框外部，把对话框隐藏起来
   if (KFK.APP.model.passwordinputok === "show") bvModalEvt.preventDefault();
 };
 
-KFK.shareDoc = function (item, index, button) {
-  KFK.setAppData("model", "docNameToShare", item.name);
-  KFK.dataToShare = `http://localhost:1234/doc/${item._id}`;
-  KFK.showForm({ share: true });
-};
+
 KFK.shareThisDoc = function () {
   KFK.setAppData("model", "docNameToShare", KFK.APP.model.cocodoc.name);
   KFK.dataToShare = `http://localhost:1234/doc/${KFK.APP.model.cocodoc.doc_id}`;
@@ -4490,7 +4484,7 @@ KFK.addDocumentEventHandler = function () {
     switch (evt.keyCode) {
       case 27:
         //ESC
-        if(KFK.fullScreen){
+        if (KFK.fullScreen) {
           KFK.toggleFullScreen();
         }
         if (KFK.isZooming === true) {
@@ -4765,19 +4759,19 @@ KFK.toggleRight = function (flag) {
   if (KFK.fullScreen || KFK.controlButtonsOnly) return;
   $("#right").toggle("slide", { duration: 100, direction: "right" });
 };
-KFK.toggleFullScreen = function(evt){
+KFK.toggleFullScreen = function (evt) {
   if (KFK.isZooming === true) {
     KFK.zoomStop();
   }
   KFK.fullScreen = !KFK.fullScreen;
-  KFK.showSection({minimap: !KFK.fullScreen});
+  KFK.showSection({ minimap: !KFK.fullScreen });
   let display = KFK.fullScreen ? 'none' : 'block';
   $("#left").css("display", display);
   $("#right").css("display", display);
   KFK.APP.setData('show', 'actionlog', false);
-  $('#docHeaderInfo').css("visibility", KFK.fullScreen?'hidden':'visible');
-  $('#rtcontrol').css("visibility", KFK.fullScreen?'hidden':'visible');
-  $('#toplogo').css("visibility", KFK.fullScreen?'hidden':'visible');
+  $('#docHeaderInfo').css("visibility", KFK.fullScreen ? 'hidden' : 'visible');
+  $('#rtcontrol').css("visibility", KFK.fullScreen ? 'hidden' : 'visible');
+  $('#toplogo').css("visibility", KFK.fullScreen ? 'hidden' : 'visible');
 };
 
 KFK.toggleControlButtonOnly = function (evt) {
@@ -4797,7 +4791,7 @@ KFK.toggleControlButtonOnly = function (evt) {
   KFK.showSection({ minimap: !KFK.controlButtonsOnly });
 };
 KFK.showHidePanel = function (flag) {
-  if (flag === true && (KFK.fullScreen === false && KFK.controlButtonsOnly===false)) {
+  if (flag === true && (KFK.fullScreen === false && KFK.controlButtonsOnly === false)) {
     $("#left").css("display", "block");
     $("#right").css("display", "block");
   } else {
@@ -4927,7 +4921,7 @@ KFK.pasteContent = function () {
   let paste = KFK.APP.model.paste;
 };
 
-KFK.showTextPasteDialog = function (content) {
+KFK.showTextPasteDialog = async function (content) {
   if (KFK.anyLocked(KFK.hoverJqDiv())) return;
   let toAdd = content.text;
   let showbox = false;
@@ -4935,7 +4929,7 @@ KFK.showTextPasteDialog = function (content) {
     toAdd = content.text;
     if (RegHelper.isUrl(toAdd)) { // Plain text is a URL
       showbox = KFK.hoverJqDiv() ? false : true;
-      KFK.mergetAppData("model", "paste", {
+      await KFK.mergeAppData("model", "paste", {
         showcontent: true, showdisplay: true, showbox: showbox,
         content: toAdd, display: '请点击访问',
         ctype: 'url',
@@ -4945,7 +4939,7 @@ KFK.showTextPasteDialog = function (content) {
       showbox = KFK.hoverJqDiv() ? false : true;
       KFK.debug(showbox ? 'showbox' : 'no showbox');
       if (showbox) {
-        KFK.mergetAppData("model", "paste", {
+        await KFK.mergeAppData("model", "paste", {
           showcontent: false, showdisplay: false, showbox: showbox,
           content: toAdd, display: toAdd,
           ctype: 'text',
@@ -4961,7 +4955,7 @@ KFK.showTextPasteDialog = function (content) {
     toAdd = KFK.replaceHTMLTarget(tmpText);
     showbox = KFK.hoverJqDiv() ? false : true;
     if (showbox) {
-      KFK.mergetAppData("model", "paste", {
+      await KFK.mergeAppData("model", "paste", {
         showcontent: false, showdisplay: false, showbox: showbox,
         content: toAdd, display: toAdd,
         ctype: 'html',
@@ -5414,8 +5408,8 @@ KFK.onCopyDoc = async function (data) {
   KFK.info(data);
 };
 KFK.onLinkConnect = async function (data) {
-  let selectorFrom = `#${data.from}`;
-  let selectorTo = `#${data.to}`;
+  let selectorFrom = `#${response.from}`;
+  let selectorTo = `#${response.to}`;
   let nodeFrom = $(selectorFrom);
   let nodeTo = $(selectorTo);
   if (nodeFrom.length > 0 && nodeTo.length > 0) {
@@ -5524,7 +5518,7 @@ KFK.validateUserId = function (str) {
   const schema = Joi.string()
     .regex(
       /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/
-      // 邮箱地址
+      // 邮箱地址  validate email address
     )
     .required();
   let { error, value } = schema.validate(str);
