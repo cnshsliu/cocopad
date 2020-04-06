@@ -23,7 +23,11 @@ const RegHelper = {
       return null;
     }
   },
+  validateEmails: (emails)=>{
+    let mret = emails.match(/^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})(\s*,\s*([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4}))*$/);
+    return mret;
+  }
 
 };
 
-export { RegHelper };
+export default  RegHelper;

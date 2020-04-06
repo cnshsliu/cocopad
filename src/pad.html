@@ -230,7 +230,7 @@
         </div>
       </div>
       <div id="toplogo" class="padlayout">
-            <img src="../assets/cocopad.svg" class="logo d-inline-block align-top" alt="COCOPAD">
+        <img src="../assets/cocopad.svg" class="logo d-inline-block align-top" alt="COCOPAD">
       </div>
 
       <div id="left" class="bg-white padlayout noshow">
@@ -442,7 +442,7 @@
           <b-button id="goto_explorer" variant="outline-success" @click="KFK.gotoExplorer">
             <b-icon icon="house"></b-icon>
           </b-button>
-          <b-button id='sharethisbutton' @click="KFK.shareThisDoc" class="" variant="outline-success">
+          <b-button id='sharethisbutton' @click="SHARE.shareThisDoc" class="" variant="outline-success">
             <b-icon icon="box-arrow-up"></b-icon>分享
           </b-button>
         </b-button-group>
@@ -715,7 +715,7 @@
                     </template>
                     <template v-slot:cell(share_icon)="data">
                       <b-button size="sm" class="m-0 p-0 text-center" variant="outline-secondary"
-                        @click="KFK.shareDoc(data.item, data.index, $event.target)">
+                        @click="SHARE.shareDoc(data.item, data.index, $event.target)">
                         <b-icon icon="box-arrow-up" size=" sm" />
                       </b-button>
                     </template>
@@ -856,9 +856,9 @@
             </b-form>
           </b-container>
         </b-modal>
-        <b-modal id="modal-setuserprofile" @ok="KFK.setUserProfile" v-model="show.dialog.setProfileDialog" :title="model.cocouser.userid"
-          button-size="sm" centered>
-          <b-container class="my-3 "> 
+        <b-modal id="modal-setuserprofile" @ok="KFK.setUserProfile" v-model="show.dialog.setProfileDialog"
+          :title="model.cocouser.userid" button-size="sm" centered>
+          <b-container class="my-3 ">
             <b-form autocomplete="off" class="w-100 px-2" @submit.stop.prevent="KFK.handleProfileSubmit">
               <b-form-group label-cols=3 label="显示名" label-for="profile_name" label-align="right">
                 <b-form-input id="profile_name" trim v-model="model.profileToSet.name" :state="state.profile.name"
@@ -899,14 +899,18 @@
                   </b-button>
                 </b-col>
               </b-row>
-              <b-container class="w-100" style="height: 148px; white-space:nowrap; overflow-x:auto; overflow-y:scroll; ">
+              <b-container class="w-100"
+                style="height: 148px; white-space:nowrap; overflow-x:auto; overflow-y:scroll; ">
                 <b-row>
-                  <b-col v-for="avatar in model.avatars" v-bind:key="avatar.id"  :class="avatar.id === model.cocouser.avatar?'avatar-selected':''"   v-on:mouseover="EXP.avatarMouseOver" v-on:mouseout="EXP.avatarMouseOut"  v-on:click='EXP.setProfileAvatar($event, avatar.id)' >
-                    <b-img :src="avatar.src" class="avatarimg" style="width:48px; height:48px"/>
+                  <b-col v-for="avatar in model.avatars" v-bind:key="avatar.id"
+                    :class="avatar.id === model.cocouser.avatar?'avatar-selected':''"
+                    v-on:mouseover="EXP.avatarMouseOver" v-on:mouseout="EXP.avatarMouseOut"
+                    v-on:click='EXP.setProfileAvatar($event, avatar.id)'>
+                    <b-img :src="avatar.src" class="avatarimg" style="width:48px; height:48px" />
                   </b-col>
                 </b-row>
               </b-container>
-<!--               
+              <!--               
               <div class="w-100" display="inline" style="white-space:nowrap; overflow-x:auto; overflow-y:hidden; ">
                 <b-button variant="light" size="lg" class="mx-1" @click='EXP.setProfileAvatar(avatar.id)'
                   v-for="avatar in model.avatars" v-bind:key="avatar.id">
@@ -927,18 +931,33 @@
       </div>
     </div> <!-- explorer -->
     <div id="minimap" v-show="show.section.designer && show.section.minimap"></div>
-    <div id="share" v-show="show.form.share" class="shareItContainer py-2 text-center" style="display:none;">
-      <b-card :title="'分享文档 ' + model.docNameToShare">
-        <b-card-text>
-          点击下面的分享按钮后，<BR> 到任何沟通工具中粘贴，<BR>把URL给到协作人即可<BR>
-          如果该文档已设置分享码，<BR>打开时需要提供分享码
-        </b-card-text>
-        <b-button id="shareit" class="shareit" variant="outline-success" @click="KFK.shareDone">
-          <b-icon icon="box-arrow-up" scale=2></b-icon>
-        </b-button>
-      </b-card>
-    </div>
     <div>
+        <div id="shareDialog" v-show="show.dialog.shareDialog" title="分享文档" button-size="sm" centered size="md">
+          <b-container>
+            <b-form>
+              <b-row>
+                <b-col>
+                  点击分享按钮后，无论是否输入邮件地址，分享连接都会放入剪贴板，你可以到任何沟通工具中，把邀请连接粘贴给需要分享的人。
+                  <BR>
+                </b-col>
+                <div class="w-100"></div>
+                <b-col>
+                  <b-form-input trim v-model="model.share.email" placeholder="请输入邮件地址，多地址用英文逗号分开"></b-form-input>
+                </b-col>
+              </b-row>
+              <b-row class="text-center mt-3">
+                <b-col>
+                  <b-button variant="outline-secondary" size="sm" class="mb-2" v-on:click="SHARE.cancelShare">
+                    <b-icon icon="x"></b-icon>取消
+                  </b-button>
+                  <b-button id="shareitBtn" variant="outline-primary"  size="sm" class="mb-2">
+                    <b-icon icon="box-arrow-up"></b-icon>分享出去
+                  </b-button>
+                </b-col>
+              </b-row>
+            </b-form>
+          </b-container>
+        </div>
       <b-modal @ok="KFK.placePastedContent" v-model="show.dialog.pasteContentDialog" title="请选择粘贴方式" button-size="sm"
         centered size="md">
         <b-container>

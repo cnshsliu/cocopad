@@ -6,6 +6,7 @@ import "../scss/custom.scss";
 import KFK from './console';
 import ACM from './accountmanage';
 import EXP from './explorermanage';
+import SHARE from './sharemanage';
 import { NodeController } from './nodeController';
 import { DocController } from './docController';
 
@@ -36,6 +37,7 @@ const app = new Vue({
     KFK: KFK,
     ACM: ACM,
     EXP: EXP,
+    SHARE: SHARE,
     seen: true,
     modalShow: false,
     modal_title: '',
@@ -67,9 +69,10 @@ const app = new Vue({
       'actionlog': false,
       'form': { newdoc: false, newprj: false, prjlist: true, doclist: false, share: false, bottomlinks: false, explorerTabIndex: 0 },
       'section': { signin: false, register: false, explorer: false, designer: false, minimap:true },
-      'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false, copyDocDialog: false, pasteContentDialog: false, MsgBox:false},
+      'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false, copyDocDialog: false, pasteContentDialog: false, MsgBox:false, shareDialog:false},
     },
     model: {
+      share: {code: '', emai:''},
       signInButWaitVerify: false,
       regForShared: false, //是否是接受到分享链接的用户来注册？
       loading_value: 0,
@@ -270,8 +273,8 @@ const app = new Vue({
     focusOnUserPwdInput() {
       this.$refs.focusUserPwd.focus();
     },
-    setData(data, key, value) {
-      this.$set(this[data], key, value);
+    async setData(data, key, value) {
+      await this.$set(this[data], key, value);
     },
 
     setMode(mode) {
