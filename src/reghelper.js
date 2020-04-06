@@ -16,9 +16,13 @@ const RegHelper = {
     return g;
   },
   getDocIdInUrl: (pathname) => {
-    if (pathname.match(/\/doc\/(.+)/)) {
-      let doc_id = pathname.substring(pathname.lastIndexOf("/") + 1);
-      return doc_id;
+    let m = pathname.match(/\/doc\/(.+)\/code\/(.+)/);
+    return m;
+  },
+  getShareCodeInUrl: (pathname) => {
+    if (pathname.match(/\/share\/(.+)/)) {
+      let sharecode = pathname.substring(pathname.lastIndexOf("/") + 1);
+      return sharecode;
     } else {
       return null;
     }

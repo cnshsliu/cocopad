@@ -46,9 +46,17 @@ WS.close = () => {
 WS.put = async (cmd, payload) => {
     payload.cmd = cmd;
     let cocouserStr = localStorage.getItem("cocouser");
+    let sharecode = localStorage.getItem("sharecode");
     if (cocouserStr){
         if(cmd !== 'MOUSE')
         payload.Auth = JSON.parse(cocouserStr)["sessionToken"];
+    }
+    if(sharecode){
+        //只要用户没有正式注册，就一直带着带着这个sharecode
+        //而且如果本地保存有别人分享的sharecode1的话，就一直待到服务器上
+        //当用户执行register操作时，如果同时有sharecode,就去检查是谁share的，然后给这个人加分
+        //anyway， 注册完成后，总要检查并删除本地的sharecode
+        payload.sharecode = sharecode;
     }
     // console.log('readystate=' + WS.ws.readyState);
     let ret = false;
