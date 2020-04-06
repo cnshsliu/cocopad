@@ -2943,21 +2943,35 @@ KFK.checkSession = async function () {
   KFK.info(">>>checkSession");
   KFK.WSConnectTime = 0;
   KFK.setAppData("model", "prjs", []);
-  KFK.docIdInUrl = RegHelper.getDocIdInUrl($(location).attr("pathname"));
-  let cocouser = KFK.getCocouser();
+  //长期分享的URL格式为 HOST/doc/{doc_id}/code/{sharecode}
+  //sharecode用于在新用户打开出,在其localStorage中记录这个sharecode
+  //等该用户注册时,可以根据这个sharecode在服务器端的redis中查到是谁分享的
+  //这样,就把quota给分享者加上去
+  //对短期分享,URL格式为 hOST/share/{sharecode}
+  //短期分享在REDIS服务器上的share_{sharecode}记录有48小时有效期
+  let m= RegHelper.getDocIdInUrl($(location).attr("pathname"));
+  if(m!==null) {
+    KFK.docIdInUrl = m[1];
+    KFK.docShareCode = m[2];
+  }else{
+    KFK.docIdInUrl = null;
+    KFK.docShareCode = null;
+  }
+  KFK.shareCodeInUrl = RegHelper.getShareCodeInUrl($(location).attr("pathname"));
+  let cocouser = await KFK.readLocalCocoUser();
   if (cocouser) {
-    KFK.info(localStorage.getItem('cocouser'));
+    KFK.debug("checksession: found cocouser" + cocouser.name);
     KFK.setAppData('model', 'isDemoEnv', (cocouser.userid.indexOf("@cocopad_demo.org") > 0));
   } else {
-    KFK.info('There is no local user session');
+    KFK.debug('checksession: NO local user');
   }
-  await KFK.sleep(50);
   if (cocouser && cocouser.sessionToken) {
     await WS.start(KFK.onWsConnected, KFK.onWsMsg, 500, "checkSession", "KEEP");
-  } else if (KFK.docIdInUrl) {
+  } else if (KFK.shareCodeInUrl || KFK.docIdInUrl) {
+    //两种URL形式都连接WS
+    KFK.debug('checksession: connect to open sharecode');
     await WS.start(KFK.onWsConnected, KFK.onWsMsg, 500, "checkSession", "KEEP");
   } else {
-    KFK.removeCocouser();
     KFK.gotoRegister();
   }
   KFK.setAppData('show', 'waiting', false);
@@ -2967,13 +2981,37 @@ KFK.onWsConnected = function () {
   KFK.WSConnectTime = KFK.WSConnectTime + 1;
   KFK.info(">>>>>>>>>Connect Times", KFK.WSConnectTime);
   KFK.APP.setData("show", "wsready", true);
-  //第一次连接，这条消息会被欢迎回来覆盖，正常
+  //第一次连接，这条消息会被kj迎回来覆盖，正常
   if (KFK.WSConnectTime === 1) {
     KFK.scrLog("欢迎来到共创协作工作平台");
     //The first time
     KFK.WS = WS;
-    if (KFK.docIdInUrl === null) KFK.refreshExplorer();
-    else KFK.refreshDesigner(KFK.docIdInUrl, "");
+    //这里是第一次启动cocopad，服务器连接成功时的处理方式
+    //refreshExplorer会用到很多需要Auth的操作，但shareDocInUrl不需要
+    //如果URL中没有ShareCodeInURL
+    //正常情况下，会进入到浏览器界面
+    if (KFK.cocouser && KFK.cocouser.sessionToken && KFK.shareCodeInUrl === null && KFK.docIdInUrl === null) {
+      KFK.refreshExplorer();
+    }
+    //如果有shareCodeInURL的话，则尝试直接打开这个分享文档
+    //处理localStorage中的sharecode
+    if (KFK.shareCodeInUrl !== null || KFK.docIdInUrl !== null) {
+      //已经正常注册登陆的用户，不需要在本地保存shareCode
+      if (KFK.cocouser && KFK.cocouser.sessionToken && KFK.cocouser.userid.indexOf("@cocopad_demo.org") < 0) {
+        KFK.debug("正常用户不保存sharecode");
+      } else {
+        //sharecode根据情况,都放一个,这样后面正式注册时,删除
+        //docIdInUrl时,这个sharecode与其实际doc_id不符,不过无所谓
+        if (KFK.docIdInUrl !== null)
+          localStorage.setItem('sharecode', KFK.docShareCode);
+        else
+          localStorage.setItem('sharecode', KFK.shareCodeInUrl);
+      }
+      if (KFK.shareCodeInUrl !== null)
+        KFK.openShareCode(KFK.shareCodeInUrl, 'code');
+      else
+        KFK.openShareCode(KFK.docIdInUrl, 'doc');
+    }
   } else {
     //重新连接
     KFK.debug('>>>>>>>>>Reconnect success...');
@@ -3028,7 +3066,22 @@ KFK.askShareCode = (doc_id) => {
 }
 
 
-KFK.refreshDesigner = function (doc_id, docpwd) {
+//tyep is whether code or doc
+//code. means url is HOST/share/sharecode format, from a temporary share (48 hours)
+//doc, means url is HOST/doc/codi_id format, for a long term share
+KFK.openShareCode = function (shareCode, type) {
+  KFK.debug("openShareCode", shareCode, "type is", type);
+  //如果是sharecode, 则去服务器取
+  if (type === 'code'){
+    KFK.debug("send OPENSHARECODE ", shareCode);
+    KFK.sendCmd('OPENSHARECODE', { code: shareCode });
+  }else//否则,就直接打开这个doc_id(放在shareCode变量中,为保持代码简化, 里面放的其实是doc_id) 
+    KFK.refreshDesigner(shareCode, '');
+};
+
+KFK.refreshDesigner = async function (doc_id, docpwd) {
+  KFK.info('>>>>>>refereshDesigner:', doc_id);
+  await KFK.readLocalCocoUser();
   KFK.myHide($('#docHeaderInfo'));
   KFK.myHide(KFK.JC3);
   KFK.JC3.empty();
@@ -3052,7 +3105,6 @@ KFK.refreshDesigner = function (doc_id, docpwd) {
   localStorage.removeItem("cocodoc");
   // KFK.loadDoc(doc_id, docpwd);
 
-  KFK.info(">>>>>>>.startPadDesigner");
   KFK.initShowEditors("none");
   KFK.addDocumentEventHandler();
   KFK.scrollContainer.scrollTop(0);
@@ -3071,25 +3123,29 @@ KFK.refreshDesigner = function (doc_id, docpwd) {
   KFK.info(">>>>>>Designer is fully ready, load doc[", doc_id, "] now");
   KFK.currentView = "designer";
   KFK.loadDoc(doc_id, docpwd);
-
 }
 
 
 KFK.loadDoc = function (doc_id, pwd) {
+  KFK.info(">>>>>>loadDoc", doc_id);
   try {
-    if (KFK.docDuringLoading !== null) {
-      KFK.debug('docduringloading is not null, cancel loading');
-      KFK.cancelLoading = true;
-      KFK.JC3.empty();
-    }
-    KFK.myHide(KFK.JC3);
-    KFK.docDuringLoading = doc_id;
     let payload = { doc_id: doc_id, pwd: pwd };
-    if (KFK.getCocouser())
+    if (KFK.cocouser && KFK.cocouser.sessionToken) {
+      if (KFK.docDuringLoading !== null) {
+        KFK.debug('docduringloading is not null, cancel loading');
+        KFK.cancelLoading = true;
+        KFK.JC3.empty();
+      }
+      KFK.docDuringLoading = doc_id;
+      KFK.myHide(KFK.JC3);
+      KFK.debug('Open doc normally');
       KFK.sendCmd("OPENDOC", payload);
-    else {
+    } else {
+      KFK.debug('Open doc annonymously');
       KFK.sendCmd('OPENANN', payload);
-    } KFK.showSection({
+    }
+
+    KFK.showSection({
       signin: false,
       register: false,
       explorer: false,
@@ -3099,7 +3155,6 @@ KFK.loadDoc = function (doc_id, pwd) {
     console.error(err);
   } finally {
     KFK.inited = true;
-    // callback();
   }
 };
 
@@ -3108,14 +3163,14 @@ KFK.loadDoc = function (doc_id, pwd) {
 KFK.refreshExplorer = function () {
   // KFK.APP.setData("model", "docLoaded", false);
   KFK.showSection({ signin: false, register: false, explorer: true, designer: false });
-  KFK.refreshConsole();
+  KFK.refreshProjects();
   KFK.showPrjs();
   KFK.explorerRefreshed = true;
 };
 
 //这里检查是否有project
-KFK.refreshConsole = function () {
-  KFK.showForm({ newdoc: false, newprj: false, prjlist: true, doclist: true, explorerTabIndex: 0 });
+KFK.refreshProjects = function () {
+  KFK.showForm({ newdoc: false, newprj: false, prjlist: true, doclist: true });
   let currentprj = localStorage.getItem("cocoprj");
   if (!getNull(currentprj)) {
     let prj = JSON.parse(currentprj);
@@ -3127,7 +3182,7 @@ KFK.refreshConsole = function () {
       }
     }
     if (found < 0) {
-      if (KFK.APP.model.prjs.length > 2) {
+      if (KFK.APP.model.prjs.length > 3) {
         KFK.showPrjs("请选择一个项目");
       } else {
         KFK.showCreateNewPrj();
@@ -3371,7 +3426,7 @@ KFK.startActiveLogWatcher = function () {
     5000);
 };
 
-KFK.onWsMsg = function (response) {
+KFK.onWsMsg = async function (response) {
   response = JSON.parse(response);
   if (!response.cmd) { return; }
   if (response.payload) { KFK.error("Still has payload response", response.cmd) };
@@ -3411,7 +3466,7 @@ KFK.onWsMsg = function (response) {
       break;
     case "OPENANN":
       let annUser = response.user;
-      KFK.setCocouser(annUser);
+      KFK.updateCocouser(annUser);
       KFK.APP.setData('model', 'isDemoEnv', true);
       KFK.resetAllLocalData();
       setTimeout(() => { KFK.gotoWork(); }, 500);
@@ -3491,12 +3546,12 @@ KFK.onWsMsg = function (response) {
         name: response.prj.name
       };
       KFK.setCurrentPrj(cocoprj);
-      KFK.refreshConsole();
+      KFK.refreshProjects();
       KFK.showPrjs();
       break;
     case "NEWDOC":
       KFK.updatePrjDoclist(response.doc.prjid);
-      KFK.refreshDesigner(
+      await KFK.refreshDesigner(
         response.doc._id,
         KFK.APP.model.newdocpwd.trim()
       );
@@ -3583,13 +3638,15 @@ KFK.onWsMsg = function (response) {
       break;
     case "SETPROFILE-TRUE":
       KFK.scrLog("基本资料已设置成功");
-      KFK.setCocouser(response.info);
+      KFK.updateCocouser(response.info);
       break;
     case "SETPROFILE-FAIL":
       KFK.scrLog("基本资料未成功设置，请重试" + response.error);
       break;
     case 'EMAILSHARE':
     case 'SHARECODE':
+    case 'OPENSHARECODE':
+    case 'OPENSHARECODE-FALSE':
       SHARE.onWsMsg(response);
       break;
     case 'ERROR':
@@ -3598,8 +3655,8 @@ KFK.onWsMsg = function (response) {
   }
 };
 
-KFK.setCocouser = function (data) {
-  let oldCocouser = KFK.getCocouser();
+KFK.updateCocouser = function (data) {
+  let oldCocouser = KFK.APP.model.cocouser;
   let cocouser = $.extend({}, oldCocouser, data);
   if (cocouser.avatar === 'avatar-temp')
     cocouser.avatar_src = KFK.images[cocouser.avatar].src;
@@ -3607,16 +3664,23 @@ KFK.setCocouser = function (data) {
     cocouser.avatar_src = KFK.avatars[cocouser.avatar].src;
   localStorage.setItem("cocouser", JSON.stringify(cocouser));
   KFK.APP.setData("model", "cocouser", cocouser);
-  KFK.debug('>>>> cocouser set to ', cocouser);
+  KFK.cocouser = cocouser;
+  KFK.debug('>>>> updateCocouser to ', cocouser.userid);
 };
 KFK.removeCocouser = function () {
   localStorage.removeItem("cocouser");
   KFK.APP.setData("model", "cocouser", { userid: '', name: '', avatar: 'avatar-0', avatar_src: null });
 }
-KFK.getCocouser = function () {
-  let cocouser = JSON.parse(localStorage.getItem('cocouser'));
+KFK.readLocalCocoUser = async function () {
+  let cuinls = localStorage.getItem('cocouser');
+  await KFK.sleep(10);
+  let cocouser = JSON.parse(cuinls);
   if (cocouser && cocouser.sessionToken) {
+    KFK.cocouser = cocouser;
     KFK.APP.setData("model", "cocouser", cocouser);
+    //这个用于控制HTML显示，不能设置为null, 但又不方便使用，所以，再加上使用KFK.cocouser
+  } else {
+    KFK.cocouser = null;
   }
   return cocouser;
 };
@@ -3707,19 +3771,19 @@ KFK.sendCmd = async function (cmd, payload) {
     await KFK.WS.put(cmd, payload);
 };
 
-KFK.docRowClickHandler = function (record, index) {
+KFK.docRowClickHandler = async function (record, index) {
   if (record.pwd === "*********") {
     KFK.APP.setData("model", "opendocpwd", "");
     KFK.showDialog({ inputDocPasswordDialog: true });
     KFK.tryToOpenDocId = record._id;
   } else {
-    KFK.refreshDesigner(record._id, "");
+    await KFK.refreshDesigner(record._id, "");
   }
 };
 
-KFK.getDocPwd = function () {
+KFK.getDocPwd = async function () {
   KFK.APP.setData("model", "passwordinputok", "ok");
-  KFK.refreshDesigner(KFK.tryToOpenDocId, KFK.APP.model.opendocpwd);
+  await KFK.refreshDesigner(KFK.tryToOpenDocId, KFK.APP.model.opendocpwd);
 };
 KFK.cancelDocPwd = function () {
   KFK.APP.setData("model", "passwordinputok", "cancel");
@@ -3763,7 +3827,7 @@ KFK.toggleFromResetToRemovePwd = function () {
 KFK.removeDocPwd = function () {
   let payload = {
     doc_id: KFK.tryToRemovePwdDoc._id,
-    userid: KFK.getCocouser().userid,
+    userid: KFK.cocouser.userid,
     pwd: KFK.APP.model.inputUserPwd
   };
   KFK.sendCmd("REMOVEPWD", payload);
@@ -4804,12 +4868,14 @@ KFK.gotoExplorer = function () {
   if (KFK.APP.model.project.name === '') {
     KFK.setAppData("model", "project", { "prjid": "all", "name": "我最近使用过的白板" });
   }
+  //不用每次gotoExplorer都refreshExplorer, 因为refreshExplorer要跟服务器刷新数据
+  //仅仅是切换explorer或者designer视图，没必要拉取数据
+  //只在首次切换到explorer时，拉取数据。
+  //其他时候，在creaeproject等操作的地方，会调用refreshExplorer重新拉取数据，在那时，Projects发生了变化，重新拉取是有必要的。
   if (KFK.explorerRefreshed === false) {
     KFK.refreshExplorer();
   }
   KFK.currentView = "explorer";
-  KFK.debug('KFK.explorerRefreshed');
-  KFK.debug('project name = ', JSON.stringify(KFK.APP.model.project));
   KFK.showSection({ explorer: true, designer: false });
   KFK.showForm({
     newdoc: false,

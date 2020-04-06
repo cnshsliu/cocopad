@@ -46,7 +46,7 @@ ACM.registerUser = function () {
                         KFK.scrLog("注册失败，请重试");
                         break;
                     case "REGUSER-DUP":
-                        KFK.scrLog(`账号${response.payload.response.userid}已被占用`);
+                        KFK.scrLog(`账号已被占用`);
                         break;
 
                 }
@@ -104,7 +104,7 @@ ACM.signin = function () {
                 switch (response.cmd) {
                     case "SIGNIN":
                         let retuser = response.user;
-                        KFK.setCocouser(retuser);
+                        KFK.updateCocouser(retuser);
                         KFK.resetAllLocalData();
                         KFK.APP.setData('model', 'isDemoEnv', false);
                         setTimeout(() => { KFK.gotoWork(); }, 500);
@@ -117,7 +117,7 @@ ACM.signin = function () {
                     case "REGUSER-CODE":
                         retuser = response.user;
                         KFK.setAppData('model', 'signInButWaitVerify', true);
-                        KFK.setCocouser(retuser);
+                        KFK.updateCocouser(retuser);
                         KFK.scrLog("尚未验证邮箱地址，你可以继续使用，请在一周内完成邮箱验证");
                         sessionStorage.setItem('regtoken', response.user.sessionToken);
                         break;
@@ -165,6 +165,7 @@ ACM.verifyRegCode = async function () {
                     case "VERIFY-SUCCESS":
                         KFK.scrLog("验证成功，请登录");
                         sessionStorage.removeItem('regtoken');
+                        localStorage.removeItem("sharecode");
                         KFK.gotoSignin();
                         break;
                     case "VERIFY-ALREAY":

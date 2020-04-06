@@ -932,7 +932,7 @@
     </div> <!-- explorer -->
     <div id="minimap" v-show="show.section.designer && show.section.minimap"></div>
     <div>
-        <div id="shareDialog" v-show="show.dialog.shareDialog" title="分享文档" button-size="sm" centered size="md">
+        <div id="shareDialog" v-show="show.dialog.shareDialog" title="分享文档" button-size="sm" centered size="md" class="noshow">
           <b-container>
             <b-form>
               <b-row>
@@ -942,7 +942,12 @@
                 </b-col>
                 <div class="w-100"></div>
                 <b-col>
-                  <b-form-input trim v-model="model.share.email" placeholder="请输入邮件地址，多地址用英文逗号分开"></b-form-input>
+                <b-checkbox id="cb-lifeshare" v-model="model.share.lifeshare" name="cb-lifeshare" switch @change="model.share.lifeshare=!model.share.lifeshare; model.share.msg=model.share.lifeshare?'永久分享（依然可以使用密码限制访问）':'临时分享, 48小时后过期'">{{model.share.msg}} </b-checkbox>
+                </b-col>
+                <div class="w-100"></div>
+                <b-col class="mt-3">
+                  <b-form-input id="shareItEmail" trim v-model="model.share.email" placeholder="请输入邮件地址，多地址用英文逗号分开"></b-form-input>
+                  <b-form-input id="shareItUrl" style="visibility: hidden" trim v-model="model.share.url"></b-form-input>
                 </b-col>
               </b-row>
               <b-row class="text-center mt-3">
@@ -950,8 +955,11 @@
                   <b-button variant="outline-secondary" size="sm" class="mb-2" v-on:click="SHARE.cancelShare">
                     <b-icon icon="x"></b-icon>取消
                   </b-button>
-                  <b-button id="shareitBtn" variant="outline-primary"  size="sm" class="mb-2">
+                  <b-button id="shareItOut" v-on:click="SHARE.doEmailShare" variant="outline-primary"  size="sm" class="mb-2">
                     <b-icon icon="box-arrow-up"></b-icon>分享出去
+                  </b-button>
+                  <b-button id="shareItBtn" variant="outline-primary" style="visibility: hidden" size="sm" class="mb-2">
+                    <b-icon icon="box-arrow-up"></b-icon>复制地址
                   </b-button>
                 </b-col>
               </b-row>
