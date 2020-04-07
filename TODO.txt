@@ -1,5 +1,9 @@
-//TODO: use single instance of WS across reg
+//TODO: 缩小缺省大小
+//TODO: 提供合理化建议获得操作点, 分享获得操作点, 
 //TODO: Delete all
+//TODO: zoom out到屏幕尺寸
+//TODO: handler中所有发送回去统一到一个地方,然后便于统一计费, 支持企业?
+//TODO: use single instance of WS across reg
 //TODO: BUG: 用户密码清除文档密码
 //TODO: minimize can't cover all.
 //TODO: chat mode

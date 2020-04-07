@@ -49,60 +49,27 @@ const app = new Vue({
     lockMode: KFK.lockMode,
     images: KFK.images,
     tip_groups: [
-      ['tip', 'tip_cubic',
-        'tip_clinder',
-        'tip_diamond', 'tip_cone', 'tip_pyramid', 'tip_hexogon', 'tip_parr',
-        'tip_heart', 'tip_smile',
-        'tip_thunder', 'tip_cloud',
-        'tip_check', 'tip_cross',
-        'tip_p5star', 'tip_p8star',
-        'tip_circle1', 'tip_circle2', 'tip_circle3', 'tip_circle4',
-        'tip_callout1', 'tip_callout2', 'tip_callout3', 'tip_callout4',
-        'tip_arrow1', 'tip_arrow2', 'tip_arrow3', 'tip_arrow4', 'tip_arrow5', 'tip_arrow6', 'tip_arrow7',
-        'tip_sig0', 'tip_sig1'
-      ],
-      [
-        'btn_collapse', 'btn_expand',
-        'align_bottom', 'align_center', 'align_hori', 'align_left', 'align_middle', 'align_right', 'align_top', 'align_vert',
-        'collaboration', 'classroom', 'design',
-      ],
-      [
-        'btn_collapse', 'btn_expand',
-        'align_bottom', 'align_center', 'align_hori', 'align_left', 'align_middle', 'align_right', 'align_top', 'align_vert',
-        'collaboration', 'classroom', 'design',
-      ],
-      [
-        'btn_collapse', 'btn_expand',
-        'align_bottom', 'align_center', 'align_hori', 'align_left', 'align_middle', 'align_right', 'align_top', 'align_vert',
-        'collaboration', 'classroom', 'design',
-      ],
-      [
-        'btn_collapse', 'btn_expand',
-        'align_bottom', 'align_center', 'align_hori', 'align_left', 'align_middle', 'align_right', 'align_top', 'align_vert',
-        'collaboration', 'classroom', 'design',
-      ],
-      [
-        'btn_collapse', 'btn_expand',
-        'align_bottom', 'align_center', 'align_hori', 'align_left', 'align_middle', 'align_right', 'align_top', 'align_vert',
-        'collaboration', 'classroom', 'design',
-      ],
-      [
-        'btn_collapse', 'btn_expand',
-        'align_bottom', 'align_center', 'align_hori', 'align_left', 'align_middle', 'align_right', 'align_top', 'align_vert',
-        'collaboration', 'classroom', 'design',
-      ],
-      [
-        'btn_collapse', 'btn_expand',
-        'align_bottom', 'align_center', 'align_hori', 'align_left', 'align_middle', 'align_right', 'align_top', 'align_vert',
-        'collaboration', 'classroom', 'design',
-      ],
-      [
-        'btn_collapse', 'btn_expand',
-        'align_bottom', 'align_center', 'align_hori', 'align_left', 'align_middle', 'align_right', 'align_top', 'align_vert',
-        'collaboration', 'classroom', 'design',
-      ],
+      {
+        title: 'abcd', div: '#toolbox2', svgs:
+          [
+            'tip', 'tip_cubic', 'tip_clinder',
+            'tip_diamond', 'tip_cone', 'tip_pyramid', 'tip_hexogon', 'tip_parr',
+            'tip_heart', 'tip_smile',
+            'tip_thunder', 'tip_cloud',
+            'tip_check', 'tip_cross',
+            'tip_p5star', 'tip_p8star',
+            'tip_circle1', 'tip_circle2', 'tip_circle3', 'tip_circle4',
+            'tip_callout1', 'tip_callout2', 'tip_callout3', 'tip_callout4',
+            'tip_arrow1', 'tip_arrow2', 'tip_arrow3', 'tip_arrow4', 'tip_arrow5', 'tip_arrow6', 'tip_arrow7',
+            'tip_sig0', 'tip_sig1'
+          ]
+      },
+      {
+        title: 'OPQR', div: '#toolbox3', svgs:
+          ["biz001", "biz002", "biz003", "biz004", "biz005", "biz006", "biz007", "biz008", "biz009", "biz010", "biz011", "biz012", "biz013", "biz014", "biz015", "biz016", "biz017", "biz018", "biz019", "biz020", "biz021", "biz022", "biz023", "biz024", "biz025", "biz026", "biz027", "biz028", "biz029", "biz030", "biz031", "biz032", "biz033", "biz034", "biz035", "biz036", "biz037", "biz038", "biz039", "biz040", "biz041", "biz042", "biz043", "biz044", "biz045", "biz04", "biz047", "biz048", "biz049", "biz050", "biz051", "biz052", "biz053", "biz054", "biz055", "biz056", "biz057", "biz058", "biz059", "biz060"],
+      }
     ],
-    toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'lock': false, 'minimap': false, 'connect': false },
+    toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'lock': false, 'minimap': false, 'connect': false , 'clean':false},
     show: {
       'loading': false,
       'waiting': true,

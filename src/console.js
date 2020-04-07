@@ -61,8 +61,8 @@ KFK.LOGLEVEL_DEBUG = 4;
 KFK.LOGLEVEL_DETAIL = 5;
 KFK.LOGLEVEL_NOTHING = 0;
 KFK.loglevel = KFK.LOGLEVEL_DEBUG; //控制log的等级, 级数越小，显示信息越少
-KFK.zoomlevel = 1; //记录当前的zoom等级
-KFK.designerConf = { scaleX: 1, scaleY: 1, left: 0, top: 0 }; //用于在zoom控制计算中
+KFK.zoomLevel = 1; //记录当前的zoom等级
+KFK.designerConf = { scale: 1, left: 0, top: 0 }; //用于在zoom控制计算中
 KFK.opstack = []; //Operation Stack, 数组中记录操作记录，用于undo/redo
 KFK.opstacklen = 1000; //undo，redo记录次数
 KFK.opz = -1; // opstack 当前记录指针
@@ -868,8 +868,8 @@ KFK.initC3 = function () {
 
   //click c3  click C3 click canvas click background
   KFK.JC3.dblclick(function (evt) {
-    if (KFK.isZooming === true) {
-      KFK.zoomStop();
+    if (KFK.masking) {
+      KFK.endOnePage({ x: evt.offsetX, y: evt.offsetY });
     }
     KFK.cancelTempLine();
     evt.preventDefault();
@@ -1095,14 +1095,14 @@ KFK.initC3 = function () {
     }
   });
 
-  KFK.zoomlevel = 1;
+  KFK.zoomLevel = 1;
   KFK.addMinimap();
 };
 
 KFK.addMinimap = function () {
   KFK.refreshC3event = new CustomEvent("refreshC3");
   KFK.zoomEvent = new CustomEvent("zoomC3");
-  $("#minimap").minimap(KFK, $("#scroll-container"), KFK.JC3);
+  $("#minimap").minimap(KFK, $("#scroll-container"), KFK.JC3, $('#containermain'));
 };
 
 KFK.get13Number = function (str) {
@@ -1926,7 +1926,6 @@ KFK.setTipVariant = function (tipvariant) {
     $("#modeIndicatorImg").hide();
     $("#modeIndicatorDiv").show();
   }
-  let theNode = KFK.getPropertyApplyToJqNode();
   let theJqNode = KFK.getPropertyApplyToJqNode();
   if (theJqNode !== null && KFK.notAnyLocked(theJqNode)) {
     let oldColor = KFK.getTipBkgColor(theJqNode);
@@ -1970,7 +1969,7 @@ KFK._setTipBkgColor = function (theJqNode, bgColor) {
     svgImg.attr("fill", bgColor);
     return true;
   } else {
-    console.warn(
+    KFK.debug(
       `Can't change main path color. Node type ${theJqNode.attr("nodetype")} id:${theJqNode.attr("id")}   .svg_main_path not found`
     );
     return false;
@@ -2177,6 +2176,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
   //drag node
   jqNodeDIV.draggable({
     scroll: true,
+    containment: "parent",
     start: (evt, ui) => {
       if (KFK.isZooming) return;
       KFK.fromJQ = jqNodeDIV.clone();
@@ -2990,34 +2990,49 @@ KFK.init = async function () {
   });
 
   let loadedSvgObjs = {};
-  let svgHolder = $('#toolbox2');
-  $.each(SVGs, (name, svgstr) => {
-    let div = document.createElement("span");
-    let jdiv = $(div);
-    let svgImg = $(svgstr);
-    svgImg.css("width", "36px");
-    svgImg.css("height", "36px");
-    svgImg.css("padding", "0px");
-    jdiv.css("width", "36px");
-    jdiv.css("height", "36px");
-    jdiv.css("padding", "2px");
-    jdiv.on('mouseover', (evt) => {
-      let target = svgImg;
-      let svgMainPath = target.find(".svg_main_path");
-      svgMainPath.attr("fill", '#E5DBFF');
-    });
-    jdiv.on('mouseout', (evt) => {
-      let target = svgImg;
-      let svgMainPath = target.find(".svg_main_path");
-      svgMainPath.attr("fill", '#F7F7C6');
-    });
-    svgImg.on('click', (evt) => {
-      console.log('mouse click on ', name);
-      this.setTipVariant(name);
-    });
-    svgImg.appendTo(jdiv);
-    jdiv.appendTo(svgHolder);
-  });
+  $.each(KFK.APP.tip_groups, (index, group) => {
+    console.log('KFK.APP.tip_groups', index, group);
+    let title = group.title;
+    let svgHolder = $(group.div);
+    let svgs = group.svgs;
+    for (let i = 0; i < svgs.length; i++) {
+      let span = document.createElement("span");
+      let jspan = $(span);
+      let name = svgs[i];
+      let svgstr = SVGs[name];
+      let svgImg = $(svgstr);
+      svgImg.css("width", "36px");
+      svgImg.css("height", "36px");
+      svgImg.css("padding", "2px");
+      jspan.css("width", "36px");
+      jspan.css("height", "36px");
+      jspan.css("padding", "2px");
+      jspan.on('mouseover', (evt) => {
+        let target = svgImg;
+        let svgMainPath = target.find(".svg_main_path");
+        if (svgMainPath.length > 0)
+          svgMainPath.attr("fill", '#E5DBFF');
+        else
+          jspan.css('background-color', '#E5DBFF');
+      });
+      jspan.on('mouseout', (evt) => {
+        let target = svgImg;
+        let svgMainPath = target.find(".svg_main_path");
+        if (svgMainPath.length > 0)
+          svgMainPath.attr("fill", '#F7F7C6');
+        else
+          jspan.css('background-color', '#FFFFFF');
+      });
+      svgImg.on('click', (evt) => {
+        KFK.justCreatedJqNode = null;
+        KFK.setMode('yellowtip');
+        this.setTipVariant(name);
+      });
+      svgImg.appendTo(jspan);
+      jspan.appendTo(svgHolder);
+
+    }
+  })
 
   await KFK.checkSession();
 };
@@ -3163,6 +3178,8 @@ KFK.openShareCode = function (shareCode, type) {
     KFK.refreshDesigner(shareCode, '');
 };
 
+//载入文档前的初始化
+//如果doc_id, 只初始化,不载入文档. 在用户执行清除文档时,就执行这个操作
 KFK.refreshDesigner = async function (doc_id, docpwd) {
   KFK.info('>>>>>>refereshDesigner:', doc_id);
   await KFK.readLocalCocoUser();
@@ -3171,7 +3188,6 @@ KFK.refreshDesigner = async function (doc_id, docpwd) {
   KFK.JC3.empty();
   KFK.initSvgLayer();
   let main = $("#containermain");
-  main.css("transform", "scale(1, 1)");
   KFK.isZooming = false;
 
   KFK.opstack.splice(0, KFK.opstacklen);
@@ -3187,7 +3203,6 @@ KFK.refreshDesigner = async function (doc_id, docpwd) {
   KFK.tryToOpenDocId = doc_id;
   KFK.APP.setData("model", "cocodoc", KFK.DocController.getDummyDoc());
   localStorage.removeItem("cocodoc");
-  // KFK.loadDoc(doc_id, docpwd);
 
   KFK.initShowEditors("none");
   KFK.addDocumentEventHandler();
@@ -3200,13 +3215,14 @@ KFK.refreshDesigner = async function (doc_id, docpwd) {
   //需要在explorer状态下隐藏的，都可以加上noshow, 在进入Designer时，noshow会被去掉
   //并以动画形式显示出来
   $(".padlayout").removeClass("noshow");
-  $(".padlayout").fadeIn(3000, function () {
+  $(".padlayout").fadeIn(1000, function () {
     // Animation complete
   });
 
   KFK.info(">>>>>>Designer is fully ready, load doc[", doc_id, "] now");
   KFK.currentView = "designer";
-  KFK.loadDoc(doc_id, docpwd);
+  if (doc_id !== null)
+    KFK.loadDoc(doc_id, docpwd);
 }
 
 
@@ -3727,6 +3743,10 @@ KFK.onWsMsg = async function (response) {
     case "SETPROFILE-FAIL":
       KFK.scrLog("基本资料未成功设置，请重试" + response.error);
       break;
+    case "CLEANUP":
+      console.log("接受到CLEANUP")
+      KFK.doCleanup();
+      break;
     case 'EMAILSHARE':
     case 'SHARECODE':
     case 'OPENSHARECODE':
@@ -4137,11 +4157,14 @@ KFK.base64ToCode = function (base64) {
 };
 
 KFK.getPropertyApplyToJqNode = function () {
-  if (KFK.hoverJqDiv() !== null)
+  if (KFK.hoverJqDiv() !== null) {
+    console.log("APPLY TO  hoverJqDIV");
     return KFK.hoverJqDiv();
-  if (KFK.lastFocusOnJqNode != null) {
+  } else if (KFK.lastFocusOnJqNode != null) {
+    console.log("APPLY TO  lastFocusOnJqNode");
     return KFK.lastFocusOnJqNode;
   } else if (KFK.justCreatedJqNode != null) {
+    console.log("APPLY TO  justCreatedJqNode");
     return KFK.justCreatedJqNode;
   } else {
     return null;
@@ -4611,6 +4634,36 @@ KFK.setMode = function (mode) {
   KFK.focusOnC3();
 };
 
+KFK.cleanAllNodes = function () {
+  KFK.APP.$bvModal.msgBoxConfirm('请确认要清空白板, 其他协作用户的白板也会一起清除, 且本操作无法回退.', {
+    title: '请确认',
+    size: 'sm',
+    buttonSize: 'sm',
+    okVariant: 'danger',
+    okTitle: '确认清除白板',
+    cancelTitle: '放弃',
+    footerClass: 'p-2',
+    hideHeaderClose: false,
+    centered: true
+  })
+    .then(async (value) => {
+      if (value === true) {
+        await KFK.sendCmd("CLEANUP", { doc_id: KFK.APP.model.cocodoc.doc_id });
+      }
+    })
+    .catch(err => {
+      // An error occurred
+    })
+  //Dialog to confirm, 提示不能回退
+  //check if doc owner 
+  //send cmd to server
+};
+KFK.doCleanup = async function () {
+  await KFK.refreshDesigner(null, '');
+  KFK.scrLog("白板已被发起人擦除");
+  KFK.C3.dispatchEvent(KFK.refreshC3event);
+};
+
 KFK.toggleMinimap = function () {
   for (let key in KFK.APP.toolActiveState) {
     KFK.APP.toolActiveState[key] = false;
@@ -5026,6 +5079,9 @@ KFK.toggleControlButtonOnly = function (evt) {
   KFK.APP.setData('show', 'actionlog', false);
   //切换minimap
   KFK.showSection({ minimap: !KFK.controlButtonsOnly });
+  $('#docHeaderInfo').css("visibility", KFK.controlButtonsOnly ? 'hidden' : 'visible');
+  $('#toplogo').css("visibility", KFK.controlButtonsOnly ? 'hidden' : 'visible');
+  //add a mask layer
 };
 KFK.showHidePanel = function (flag) {
   if (flag === true && (KFK.fullScreen === false && KFK.controlButtonsOnly === false)) {
@@ -5336,121 +5392,171 @@ KFK.showCenterIndicator = function (cx, cy) {
   $("#centerpoint").css("top", centerY - 10);
 };
 
-//just before rebuild zoomin/zoomout
-KFK.zoomIn = function () {
-  KFK.zoomStart("in");
-  if (KFK.designerConf.scaleX > 4) return;
+KFK.toggleOnePage = function () {
+  KFK.debug("here0000");
   let main = $("#containermain");
   let scroller = $("#scroll-container");
-
-  let scaleBy = 1.1;
-  let oldScaleX = KFK.designerConf.scaleX;
-  let oldScaleY = KFK.designerConf.scaleY;
-  let newScaleX = oldScaleX * scaleBy;
-  let newScaleY = oldScaleY * scaleBy;
-  KFK.designerConf.scaleX = newScaleX;
-  KFK.designerConf.scaleY = newScaleY;
   let scrCenter = KFK.scrCenter();
+  let window_width = scrCenter.x * 2;
+  let window_height = scrCenter.y * 2;
+  KFK.debug("here0");
+  KFK.toggleControlButtonOnly();
+  KFK.debug("here01");
+  if (KFK.masking === true) {
+    KFK.endOnePage();
+    scroller.scrollLeft(KFK.scrollPosToRemember.x);
+    scroller.scrollTop(KFK.scrollPosToRemember.y);
+  } else {
+    KFK.debug("here1");
+    KFK.scrollPosToRemember = { x: scroller.scrollLeft(), y: scroller.scrollTop() };
+    let scaleX = window_width / KFK._width;
+    let scaleY = window_height / KFK._height;
+    let scale = Math.min(scaleX, scaleY);
+    let scaledW = scale * KFK._width;
+    let scaledH = scale * KFK._height;
+    let offsetX = (Math.round((window_width - scaledW) * 0.5)) / scale;
+    let offsetY = (Math.round((window_height - scaledH) * 0.5)) / scale;
+    KFK.debug("here2");
+    main.css({ 'transform-origin': '0px 0px', '-webkit-transform-origin': '0px 0px' });
+    main.css("transform", `scale(${scale}, ${scale})`);
+    setTimeout(function () {
+      main.css("transform", `scale(${scale}, ${scale}) translate(${offsetX}px, ${offsetY}px)`);
+    }, 200);
+    KFK.debug("here3");
+    console.log("transform", `translate(${offsetX}px, ${offsetY}px)`)
+    // main.css( "transform", `translate(${offsetX}px, ${offsetY}px)`)
+    KFK.debug("here4");
+    KFK.masking = true;
+    let mask = document.createElement('div');
+    let jmask = $(mask);
+    jmask.width(KFK._width);
+    jmask.height(KFK._height);
+    jmask.addClass("mask");
+    // jmask.appendTo(KFK.JC3);
+    KFK.C3.appendChild(mask);
+    KFK.scrLog("双击某区域以查看")
+  }
+};
+KFK.endOnePage = function (pos) {
+  let main = $("#containermain");
+  let scroller = $("#scroll-container");
+  let scrCenter = KFK.scrCenter();
+  let window_width = scrCenter.x * 2;
+  let window_height = scrCenter.y * 2;
 
-  KFK.showCenterIndicator(scrCenter.x, scrCenter.y);
-  try {
-    if (newScaleX >= 1) {
-      let physicalX = (scroller.scrollLeft() + scrCenter.x) / oldScaleX;
-      let physicalY = (scroller.scrollTop() + scrCenter.y) / oldScaleY;
+  main.css({ 'transform-origin': '0px 0px', '-webkit-transform-origin': '0px 0px' });
+  main.css("transform", `scale(1, 1)`);
+  if (pos !== undefined) {
+    scroller.scrollLeft(pos.x - window_width * 0.5);
+    scroller.scrollTop(pos.y - window_height * 0.5);
+  }
+  KFK.toggleControlButtonOnly();
+  KFK.masking = true;
+  KFK.JC3.find('.mask').remove();
+  KFK.masking = false;
 
-      let newLeft = (newScaleX - 1) * KFK._width * 0.5;
-      let newTop = (newScaleY - 1) * KFK._height * 0.5;
-      main.css("left", newLeft);
-      main.css("top", newTop);
-      main.css("transform", `scale(${newScaleX}, ${newScaleY})`);
-      KFK.designerConf.left = newLeft;
-      KFK.designerConf.top = newTop;
+};
 
-      let tmpX = physicalX * newScaleX - scrCenter.x;
-      let tmpY = physicalY * newScaleY - scrCenter.y;
-      scroller.scrollLeft(tmpX);
-      scroller.scrollTop(tmpY);
-    } else {
-      let tmpX =
-        (1 - newScaleX) * KFK._width * 0.5 +
-        $(window).width() * newScaleX * 0.5 -
-        $(window).width() * 1 * 0.5;
-      let tmpY =
-        (1 - newScaleY) * KFK._height * 0.5 +
-        $(window).height() * newScaleY * 0.5 -
-        $(window).height() * 1 * 0.5;
-      main.css("left", -tmpX);
-      main.css("top", -tmpY);
-      main.css("transform", `scale(${newScaleX}, ${newScaleY})`);
-      let sx = (scroller.scrollLeft() / oldScaleX) * newScaleX;
-      let sy = (scroller.scrollTop() / oldScaleY) * newScaleY;
-      scroller.scrollLeft(sx);
-      scroller.scrollTop(sy);
+//just before rebuild zoomin/zoomout
+KFK.zoomIn = function () {
+  let main = $("#containermain");
+  let scroller = $("#scroll-container");
+  let scrCenter = KFK.scrCenter();
+  let window_width = scrCenter.x * 2;
+  let window_height = scrCenter.y * 2;
+  let scaleBy = 1.1;
+  let oldScale = KFK.zoomLevel;
+  let newScale = oldScale * scaleBy;
+  // newScaleX = newScaleY = Math.min(newScaleX, newScaleY);
+  KFK.showCenterIndicator();
+
+  let x = (scrCenter.x + scroller.scrollLeft()) / oldScale;
+  let y = (scrCenter.y + scroller.scrollTop()) / oldScale;
+  // let x = (scrCenter.x + scroller.scrollLeft())/oldScaleX; let y = (scrCenter.y + scroller.scrollTop())/oldScaleY;
+  // let x = (scrCenter.x + scroller.scrollLeft())*oldScaleX; let y = (scrCenter.y + scroller.scrollTop())*oldScaleY;
+  KFK.JC3.css(
+    {
+      'transform-origin': KFK.px(x) + ' ' + KFK.px(y) + ' 0px',
+      '-webkit-transform-origin': KFK.px(x) + ' ' + KFK.px(y) + ' 0px',
     }
+  );
+  KFK.JC3.css(
+    "transform",
+    `scale(${newScale}, ${newScale})`
+  )
+  main.css(
+    {
+      'transform-origin': KFK.px(x) + ' ' + KFK.px(y) + ' 0px',
+      '-webkit-transform-origin': KFK.px(x) + ' ' + KFK.px(y) + ' 0px',
+    }
+  );
+  main.css(
+    "transform",
+    `scale(${newScale}, ${newScale})`
+  )
+  KFK.zoomLevel = newScale;
+  console.log(KFK.JC3.width(), '*', KFK.zoomLevel, '=', main.css('width'));
+  KFK.C3.dispatchEvent(KFK.refreshC3event);
+};
+KFK.zoomStop = function () {
+  let main = $("#containermain");
+  let scroller = $("#scroll-container");
+  let scrCenter = KFK.scrCenter();
+  let window_width = scrCenter.x * 2;
+  let window_height = scrCenter.y * 2;
+  $("#centerpoint").addClass("noshow");
+  $(".ui-resizable").resizable("enable");
+  $(".ui-draggable").draggable("enable");
+  $(".ui-droppable").droppable("enable");
+  KFK.showHidePanel(!KFK.APP.model.cocodoc.doclocked);
+  let newScaleX = 1;
+  let newScaleY = 1;
+  try {
+    // KFK.JC3.css(
+    //   {
+    //     'transform-origin': KFK.px(x) + ' ' + KFK.px(y) + ' 0px',
+    //     '-webkit-transform-origin': KFK.px(x) + ' ' + KFK.px(y) + ' 0px',
+    //   }
+    // );
+    KFK.JC3.css(
+      "transform",
+      `scale(${newScaleX}, ${newScaleY})`
+    )
+    main.css('width', KFK._width * newScaleX);
+    main.css('height', KFK._height * newScaleY);
+    scroller.scrollLeft(0);
+    scroller.scrollTop(0);
+  } catch (error) {
+    console.error(error);
   } finally {
-    KFK.zoomlevel = newScaleX;
+    KFK.zoomLevel = 1;
     KFK.C3.dispatchEvent(KFK.zoomEvent);
+    KFK.isZooming = false;
   }
 };
 KFK.zoomOut = function () {
-  KFK.zoomStart("out");
-  if (KFK.designerConf.scaleX < 0.25) return;
   let main = $("#containermain");
   let scroller = $("#scroll-container");
-
-  let scaleBy = 1.1;
-  let oldScaleX = KFK.designerConf.scaleX;
-  let oldScaleY = KFK.designerConf.scaleY;
-  let newScaleX = oldScaleX / scaleBy;
-  let newScaleY = oldScaleY / scaleBy;
-  KFK.designerConf.scaleX = newScaleX;
-  KFK.designerConf.scaleY = newScaleY;
   let scrCenter = KFK.scrCenter();
+  let window_width = scrCenter.x * 2;
+  let window_height = scrCenter.y * 2;
+  let scaleBy = 1.1;
+  let oldScale = KFK.zoomLevel;
+  let newScale = oldScale / scaleBy;
 
-  KFK.showCenterIndicator(scrCenter.x, scrCenter.y);
-  try {
-    if (newScaleX >= 1) {
-      let physicalX = (scroller.scrollLeft() + scrCenter.x) / oldScaleX;
-      let physicalY = (scroller.scrollTop() + scrCenter.y) / oldScaleY;
-
-      let newLeft = (newScaleX - 1) * KFK._width * 0.5;
-      let newTop = (newScaleY - 1) * KFK._height * 0.5;
-      main.css("left", newLeft);
-      main.css("top", newTop);
-      main.css("transform", `scale(${newScaleX}, ${newScaleY})`);
-      KFK.designerConf.left = newLeft;
-      KFK.designerConf.top = newTop;
-
-      let tmpX = physicalX * newScaleX - scrCenter.x;
-      let tmpY = physicalY * newScaleY - scrCenter.y;
-      if (newScaleX === 1 && tmpX !== 0) {
-        console.error("something wrong tmpX should be 0, but got", tmpX);
-        tmpX = 0;
-        tmpY = 0;
-      }
-      scroller.scrollLeft(tmpX);
-      scroller.scrollTop(tmpY);
-    } else {
-      let tmpX =
-        (1 - newScaleX) * KFK._width * 0.5 +
-        $(window).width() * newScaleX * 0.5 -
-        $(window).width() * 1 * 0.5;
-      let tmpY =
-        (1 - newScaleY) * KFK._height * 0.5 +
-        $(window).height() * newScaleY * 0.5 -
-        $(window).height() * 1 * 0.5;
-      main.css("left", -tmpX);
-      main.css("top", -tmpY);
-      main.css("transform", `scale(${newScaleX}, ${newScaleY})`);
-      let sx = (scroller.scrollLeft() / oldScaleX) * newScaleX;
-      let sy = (scroller.scrollTop() / oldScaleY) * newScaleY;
-      scroller.scrollLeft(sx);
-      scroller.scrollTop(sy);
+  let x = scrCenter.x + scroller.scrollLeft() * oldScale;
+  let y = scrCenter.y + scroller.scrollTop() * oldScale;
+  main.css(
+    {
+      'transform-origin': KFK.px(x) + ' ' + KFK.px(y) + ' 0px',
+      '-webkit-transform-origin': KFK.px(x) + ' ' + KFK.px(y) + ' 0px',
     }
-  } finally {
-    KFK.zoomlevel = newScaleX;
-    KFK.C3.dispatchEvent(KFK.zoomEvent);
-  }
+  );
+  main.css(
+    "transform",
+    `scale(${newScale}, ${newScale})`
+  )
+  KFK.zoomLevel = newScale;
 };
 
 KFK.zoomStart = function (inOrOut) {
@@ -5466,65 +5572,6 @@ KFK.printCallStack = function () {
   KFK.info(new Error().stack);
 };
 
-KFK.zoomStop = function () {
-  $("#centerpoint").addClass("noshow");
-  $(".ui-resizable").resizable("enable");
-  $(".ui-draggable").draggable("enable");
-  $(".ui-droppable").droppable("enable");
-  KFK.showHidePanel(!KFK.APP.model.cocodoc.doclocked);
-  try {
-    let main = $("#containermain");
-    let scroller = $("#scroll-container");
-
-    let scaleBy = 1.1;
-    let oldScaleX = KFK.designerConf.scaleX;
-    let oldScaleY = KFK.designerConf.scaleY;
-    let newScaleX = 1;
-    let newScaleY = 1;
-    KFK.designerConf.scaleX = newScaleX;
-    KFK.designerConf.scaleY = newScaleY;
-    let scrCenter = KFK.scrCenter();
-
-    KFK.showCenterIndicator(scrCenter.x, scrCenter.y);
-    if (oldScaleX > 1) {
-      let physicalX = (scroller.scrollLeft() + scrCenter.x) / oldScaleX;
-      let physicalY = (scroller.scrollTop() + scrCenter.y) / oldScaleY;
-
-      let newLeft = (newScaleX - 1) * KFK._width * 0.5;
-      let newTop = (newScaleY - 1) * KFK._height * 0.5;
-      main.css("left", newLeft);
-      main.css("top", newTop);
-      main.css("transform", `scale(${newScaleX}, ${newScaleY})`);
-      KFK.designerConf.left = newLeft;
-      KFK.designerConf.top = newTop;
-
-      let tmpX = physicalX * newScaleX - scrCenter.x;
-      let tmpY = physicalY * newScaleY - scrCenter.y;
-      scroller.scrollLeft(tmpX);
-      scroller.scrollTop(tmpY);
-    } else if (oldScaleX < 1) {
-      let tmpX =
-        (1 - newScaleX) * KFK._width * 0.5 +
-        $(window).width() * newScaleX * 0.5 -
-        $(window).width() * 1 * 0.5;
-      let tmpY =
-        (1 - newScaleY) * KFK._height * 0.5 +
-        $(window).height() * newScaleY * 0.5 -
-        $(window).height() * 1 * 0.5;
-      main.css("left", -tmpX);
-      main.css("top", -tmpY);
-      main.css("transform", `scale(${newScaleX}, ${newScaleY})`);
-      let sx = (scroller.scrollLeft() / oldScaleX) * newScaleX;
-      let sy = (scroller.scrollTop() / oldScaleY) * newScaleY;
-      scroller.scrollLeft(sx);
-      scroller.scrollTop(sy);
-    }
-  } finally {
-    KFK.zoomlevel = 1;
-    KFK.C3.dispatchEvent(KFK.zoomEvent);
-    KFK.isZooming = false;
-  }
-};
 
 KFK.closeActionLog = function () {
   KFK.APP.setData("show", "actionlog", false);
