@@ -52,7 +52,7 @@ const config = {
             width: 160, height: 80, resizable: true,
             background: '#FFFFFF', minWidth: 1, minHeight: 1,
             borderColor: '#333333', borderWidth: '1px',
-            borderStyle: 'solid', borderRadius: '20px',
+            borderStyle: 'solid', borderRadius: '5px',
             textAlign: 'center', color: 'black', vertAlign: 'center',
             droppable: true,
             edittable: true,

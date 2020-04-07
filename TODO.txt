@@ -1,7 +1,4 @@
-//TODO: After login, there is two WS connected, calls mouse feedback to myself
-//TODO: verify code input place in center
-//TODO: After program modified, with URL in href, reopen cause use demo user.
-//TODO: split accountmanger source code.
+//TODO: use single instance of WS across reg
 //TODO: Delete all
 //TODO: BUG: 用户密码清除文档密码
 //TODO: minimize can't cover all.
@@ -9,10 +6,6 @@
 //TODO: GROUP unGROUP?
 //TODO: Add  Delete/Copy tool on the le
 //TODO: Textbox has the same round corner as the host DIV
-//TODO: share by shareCode
-//TODO: add try catch in handers for all handlers, make sure it return a payload
-//TODO: share by sending email
 //TODO: draw page divider line
 //TODO: HOTKEY to nav A4 page
-//TODO: three rows of avatar and allow scroll
 //TODO:  zoomin/zoomout重新设计，全部按比例计算位置和大小，包括字体，并自动缩小canvas, 不用scale机制
