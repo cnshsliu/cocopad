@@ -377,7 +377,7 @@ KFK.detail = function (...info) {
 }
 
 KFK.logKey = function (...info) {
-  KFK.scrLog(...info);
+  // KFK.scrLog(...info);
 }
 
 KFK.scrLog = function (msg) {
@@ -2835,11 +2835,17 @@ KFK.duplicateHoverObject = async function (evt) {
   let offset = { x: 0, y: 0 };
   if (KFK.hoverJqDiv()) {
     KFK.jqToCopy = KFK.hoverJqDiv();
-    await KFK.makeACopyOfJQ(KFK.jqToCopy, evt.shiftKey);
+    //下面这句代码在第一次按META-D时就粘贴了一条,有些不用,
+    // await KFK.makeACopyOfJQ(KFK.jqToCopy, evt.shiftKey);
+    KFK.lineToCopy = null;
+    KFK.scrLog('对象已复制, 移动鼠标看所需位置再次按META-D安放')
   } else if (KFK.hoverSvgLine()) {
     KFK.hoverSvgLine().attr({ 'stroke-width': KFK.hoverSvgLine().attr('origin-width') });
     KFK.lineToCopy = KFK.hoverSvgLine();
-    await KFK.makeACopyOfLine(KFK.lineToCopy, evt.shiftKey);
+    KFK.jqToCopy = null;
+    KFK.scrLog('对象已复制, 移动鼠标看所需位置再次按META-D安放')
+    //下面这句代码在第一次按META-D时就粘贴了一条,有些不用,
+    // await KFK.makeACopyOfLine(KFK.lineToCopy, evt.shiftKey);
   } else if (KFK.jqToCopy) {
     await KFK.makeACopyOfJQ(KFK.jqToCopy, evt.shiftKey);
   } else if (KFK.lineToCopy) {
@@ -2849,7 +2855,8 @@ KFK.duplicateHoverObject = async function (evt) {
 };
 
 KFK.makeACopyOfJQ = async function (jqtocopy, shiftKey) {
-  let offset = { x: 20, y: 0 };
+  //现在是移动指定位置再次META-D才放置对象,因此offset没用.事实上,offset在复制node时就一直没有用到
+  let offset = { x: 0, y: 0 };
   let jqNewNode = KFK.jqToCopy.clone(false);
   jqNewNode.attr("id", KFK.myuid());
   jqNewNode.css("left", KFK.scrollX(KFK.currentMousePos.x) - parseInt(jqNewNode.css("width")) * 0.5);
@@ -2877,7 +2884,10 @@ KFK.makeACopyOfLine = async function (linetocopy) {
   });
   newLine.attr("id", newline_id);
   newLine.addClass(newline_id);
-  newLine.center(KFK.scrollX(KFK.currentMousePos.x) + 20, KFK.scrollY(KFK.currentMousePos.y) + 20);
+  //现在是移动指定位置再次META-D才放置对象,因此offset没用.
+  //之前的代码在x,y后面分别加了个20, 以便不覆盖到节点
+  //现在第一次点取不马上复制了,+offset已经没有了必要
+  newLine.center(KFK.scrollX(KFK.currentMousePos.x), KFK.scrollY(KFK.currentMousePos.y));
   newLine.addTo(KFK.lineToCopy.parent());
   KFK.addSvgLineEventListner(newLine);
   await KFK.syncLinePut("C", newLine, "duplicate line", null, false);
@@ -3745,7 +3755,7 @@ KFK.onWsMsg = async function (response) {
       break;
     case "CLEANUP":
       console.log("接受到CLEANUP")
-      KFK.doCleanup();
+      KFK.doCleanUp();
       break;
     case 'EMAILSHARE':
     case 'SHARECODE':
@@ -4658,8 +4668,9 @@ KFK.cleanAllNodes = function () {
   //check if doc owner 
   //send cmd to server
 };
-KFK.doCleanup = async function () {
-  await KFK.refreshDesigner(null, '');
+KFK.doCleanUp = async function () {
+  console.log('cocodoc is', KFK.APP.model.cocodoc.doc_id);
+  await KFK.refreshDesigner(KFK.APP.model.cocodoc.doc_id, '');
   KFK.scrLog("白板已被发起人擦除");
   KFK.C3.dispatchEvent(KFK.refreshC3event);
 };
