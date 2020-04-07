@@ -5335,6 +5335,8 @@ KFK.showCenterIndicator = function (cx, cy) {
   $("#centerpoint").css("left", centerX - 10);
   $("#centerpoint").css("top", centerY - 10);
 };
+
+//just before rebuild zoomin/zoomout
 KFK.zoomIn = function () {
   KFK.zoomStart("in");
   if (KFK.designerConf.scaleX > 4) return;
