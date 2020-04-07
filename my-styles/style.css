@@ -111,6 +111,11 @@ body {
   border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 15px;
 }
+#right .tab-content{
+  position: absolute;
+  height: calc(100% - 60px);
+  overflow-y: scroll;
+}
 
 .stayright {
   text-align: right;
@@ -816,4 +821,8 @@ select:focus {
   font-family: FreeMono, monospace, Consolas, "Courier New", Courier;
   color: #d6dbe8;
   z-index: 2;
+}
+
+#toolbox{
+  height: inherit;
 }

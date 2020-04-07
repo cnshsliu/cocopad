@@ -274,87 +274,110 @@
         </b-list-group>
       </div>
       <div id="right" class="padlayout noshow">
-        <b-tabs v-model="model.rightTabIndex" content-class="mt-3" justified>
+        <b-tabs v-model="model.rightTabIndex" content-class="mt-1 w-100" justified>
           <b-tab title="样式" class='cocoproperty'>
             <b-container v-show="show.customshape">
-              <b-row class="mx-auto my-1">
-                <b-col>背景底色</b-col>
-                <b-col class='coco'><input class="w-100" name="shapeBkgColor" id="shapeBkgColor" /></b-col>
-              </b-row>
-              <b-row class="mx-auto my-1">
-                <b-col>边框颜色</b-col>
-                <b-col class='coco'><input name="shapeBorderColor" id="shapeBorderColor" /></b-col>
-              </b-row>
-              <b-row class="mx-auto my-1">
-                <b-col>边框粗细</b-col>
-                <b-col class='coco'><input class='selector' size=3 id="spinner_border_width" name="value_bw" /></b-col>
-              </b-row>
-              <b-row class="mx-auto my-1">
-                <b-col>圆角度数</b-col>
-                <b-col class='coco'><input class='selector' size=3 id="spinner_border_radius" name="value_rad" />
-                </b-col>
-              </b-row>
+              <b-button v-b-toggle.collapse-customshape class="mb-1 p-1 w-100" variant='outline-primary'>基本式样</b-button>
+              <b-collapse visible id="collapse-customshape">
+                <b-row class="m-0 pb-1 text-center">
+                  <b-col>
+                    <b-button v-on:click="KFK.changeBorderRadius(0)" size="sm" class="m=0 p=0" style="padding:0px;"
+                      variant='primary'>直角</b-button>
+                  </b-col>
+                  <b-col>
+                    <b-button v-on:click="KFK.changeBorderRadius(20)" size="sm" class="m-0 p-0" pill variant="primary">
+                      圆角
+                    </b-button>
+                  </b-col>
+                  <b-col>
+                    <b-button v-on:click="KFK.changeToTransparent" size="sm" class="m-0 p-0" variant="outline-primary">
+                      透底
+                    </b-button>
+                  </b-col>
+                </b-row>
+                <b-row class="mx-auto my-1">
+                  <b-col>背景底色</b-col>
+                  <b-col class='coco'><input class="w-100" name="shapeBkgColor" id="shapeBkgColor" /></b-col>
+                </b-row>
+                <b-row class="mx-auto my-1">
+                  <b-col>边框颜色</b-col>
+                  <b-col class='coco'><input name="shapeBorderColor" id="shapeBorderColor" /></b-col>
+                </b-row>
+                <b-row class="mx-auto my-1">
+                  <b-col>边框粗细</b-col>
+                  <b-col class='coco'><input class='selector' size=3 id="spinner_border_width" name="value_bw" />
+                  </b-col>
+                </b-row>
+                <b-row class="mx-auto my-1">
+                  <b-col>圆角度数</b-col>
+                  <b-col class='coco'><input class='selector' size=3 id="spinner_border_radius" name="value_rad" />
+                  </b-col>
+                </b-row>
+              </b-collapse>
             </b-container>
             <b-container v-show="show.customline">
-              <b-row class="mx-auto my-1">
-                <b-col>线条颜色</b-col>
-                <b-col class='coco'><input name="lineColor" id="lineColor" /></b-col>
-              </b-row>
-              <b-row class="mx-auto my-1">
-                <b-col>线条粗细</b-col>
-                <b-col class='coco'><input class='selector' size=3 id="spinner_line_width" name="value_lw" /></b-col>
-              </b-row>
-              <b-row class="mx-auto my-1">
-                <b-checkbox id="cb-linecap" v-model="model.line.linecap" name="cb-linecap" switch
-                  @change="KFK.lineCapChanged">
-                  圆头线条
-                </b-checkbox>
-              </b-row>
+              <b-button v-b-toggle.collapse-customline class="mb-1 p-1 w-100" variant='outline-primary'>线条式样</b-button>
+              <b-collapse visible id="collapse-customline">
+                <b-row class="mx-auto my-1">
+                  <b-col>线条颜色</b-col>
+                  <b-col class='coco'><input name="lineColor" id="lineColor" /></b-col>
+                </b-row>
+                <b-row class="mx-auto my-1">
+                  <b-col>线条粗细</b-col>
+                  <b-col class='coco'><input class='selector' size=3 id="spinner_line_width" name="value_lw" /></b-col>
+                </b-row>
+                <b-row class="mx-auto my-1">
+
+                  <b-checkbox id="cb-linecap" v-model="model.line.linecap" name="cb-linecap" switch
+                    @change="KFK.lineCapChanged">
+                    圆头线条
+                  </b-checkbox>
+                </b-row>
+              </b-collapse>
             </b-container>
 
-            <b-container v-show="show.text_property" class='border-top'>
-              <div class="row mx-auto my-1">
-                <div class="col">文本字体</div>
-                <div class="col coco"><input class="fonts p-0" /></div>
-              </div>
-              <div class="row mx-auto my-1">
-                <div class="col">文本颜色</div>
-                <div class="col coco">
-                  <input name="fontColor" id="fontColor" />
+            <b-container v-show="show.customfont" class='border-top'>
+              <b-button v-b-toggle.collapse-customfont class="mb-1 p-1 w-100" variant='outline-primary'>字体式样</b-button>
+              <b-collapse visible id="collapse-customfont">
+                <div class="row mx-auto my-1">
+                  <div class="col">文本字体</div>
+                  <div class="col coco"><input class="fonts p-0" /></div>
                 </div>
-              </div>
-              <div class="row mx-auto my-1">
-                <div class="col">横向对齐</div>
-                <div class="col coco">
-                  <b-form-select id="textAlign" v-model="model.textAlign" :options="model.textAlignOptions"
-                    @change="textAlignChanged">
-                  </b-form-select>
+                <div class="row mx-auto my-1">
+                  <div class="col">文本颜色</div>
+                  <div class="col coco">
+                    <input name="fontColor" id="fontColor" />
+                  </div>
                 </div>
-              </div>
-              <div class="row mx-auto my-1">
-                <div class="col">纵向对齐</div>
-                <div class="col coco">
-                  <b-form-select id="vertAlign" v-model="model.vertAlign" :options="model.vertAlignOptions"
-                    @change="vertAlignChanged">
-                  </b-form-select>
+                <div class="row mx-auto my-1">
+                  <div class="col">横向对齐</div>
+                  <div class="col coco">
+                    <b-form-select id="textAlign" v-model="model.textAlign" :options="model.textAlignOptions"
+                      @change="textAlignChanged">
+                    </b-form-select>
+                  </div>
                 </div>
-              </div>
+                <div class="row mx-auto my-1">
+                  <div class="col">纵向对齐</div>
+                  <div class="col coco">
+                    <b-form-select id="vertAlign" v-model="model.vertAlign" :options="model.vertAlignOptions"
+                      @change="vertAlignChanged">
+                    </b-form-select>
+                  </div>
+                </div>
+              </b-collapse>
             </b-container>
-            <b-container v-show="show.custombacksvg" class='border-top'>
-              使用背景图片
-              <b-row v-for="tips in tip_groups" v-bind:key="tips[0]">
-                <b-col class='p-1' v-for="tip in tips" v-bind:key="tip">
-                  <b-img :src="images[tip].src" fluid alt="" scale="2" class="cocotool" @click="setTipVariant(tip)">
-                  </b-img>
-                </b-col>
-              </b-row>
-              <b-row class="mx-auto my-1">
-                <b-col>底图颜色</b-col>
-                <b-col class='coco'><input name="tipBkgColor" id="tipBkgColor" /></b-col>
-              </b-row>
-            </b-container>
+            <b-row class="mx-auto my-1">
+              <b-col>贴纸颜色</b-col>
+              <b-col class='coco'><input name="tipBkgColor" id="tipBkgColor" /></b-col>
+            </b-row>
+            <b-button v-b-toggle.collapse-toolgroup1 class="mb-1 p-1 w-100" variant='outline-primary'>基本形状</b-button>
+            <b-collapse visible id="collapse-toolgroup1">
+              <b-container id="toolbox2" class="w-100" style="height: 300px; width:100%; overflow-y:scroll; ">
+              </b-container>
+            </b-collapse>
           </b-tab>
-          <b-tab title="排列">
+          <b-tab title="排列" class="cocoproperty">
             <b-button-toolbar v-show="show.layercontrol" key-nav class="w-100 justify-content-md-center">
               <p>图层设置</p>
               <b-button-group class="d-flex w-100" title="hello">
@@ -557,6 +580,7 @@
       </b-container>
       <div id="modeIndicator" style="position:absolute; top: 0px; left: 0px; display: none; ">
         <img id="modeIndicatorImg" src="../assets/pointer.svg" style='width: 18px; height: 18px;' />
+        <div id="modeIndicatorDiv" style='width: 18px; height: 18px;'></div>
       </div>
       <img id="linetransformer" src="../assets/linetransformer.svg"
         style="position: absolute; top:10px; height: 10px; width: 20px; height: 20px; z-index: 9999; visibility: hidden;" />
@@ -932,40 +956,45 @@
     </div> <!-- explorer -->
     <div id="minimap" v-show="show.section.designer && show.section.minimap"></div>
     <div>
-        <div id="shareDialog" v-show="show.dialog.shareDialog" title="分享文档" button-size="sm" centered size="md" class="noshow">
-          <b-container>
-            <b-form>
-              <b-row>
-                <b-col>
-                  点击分享按钮后，无论是否输入邮件地址，分享连接都会放入剪贴板，你可以到任何沟通工具中，把邀请连接粘贴给需要分享的人。
-                  <BR>
-                </b-col>
-                <div class="w-100"></div>
-                <b-col>
-                <b-checkbox id="cb-lifeshare" v-model="model.share.lifeshare" name="cb-lifeshare" switch @change="model.share.lifeshare=!model.share.lifeshare; model.share.msg=model.share.lifeshare?'永久分享（依然可以使用密码限制访问）':'临时分享, 48小时后过期'">{{model.share.msg}} </b-checkbox>
-                </b-col>
-                <div class="w-100"></div>
-                <b-col class="mt-3">
-                  <b-form-input id="shareItEmail" trim v-model="model.share.email" placeholder="请输入邮件地址，多地址用英文逗号分开"></b-form-input>
-                  <b-form-input id="shareItUrl" style="visibility: hidden" trim v-model="model.share.url"></b-form-input>
-                </b-col>
-              </b-row>
-              <b-row class="text-center mt-3">
-                <b-col>
-                  <b-button variant="outline-secondary" size="sm" class="mb-2" v-on:click="SHARE.cancelShare">
-                    <b-icon icon="x"></b-icon>取消
-                  </b-button>
-                  <b-button id="shareItOut" v-on:click="SHARE.doEmailShare" variant="outline-primary"  size="sm" class="mb-2">
-                    <b-icon icon="box-arrow-up"></b-icon>分享出去
-                  </b-button>
-                  <b-button id="shareItBtn" variant="outline-primary" style="visibility: hidden" size="sm" class="mb-2">
-                    <b-icon icon="box-arrow-up"></b-icon>复制地址
-                  </b-button>
-                </b-col>
-              </b-row>
-            </b-form>
-          </b-container>
-        </div>
+      <div id="shareDialog" v-show="show.dialog.shareDialog" title="分享文档" button-size="sm" centered size="md"
+        class="noshow">
+        <b-container>
+          <b-form>
+            <b-row>
+              <b-col>
+                点击分享按钮后，无论是否输入邮件地址，分享连接都会放入剪贴板，你可以到任何沟通工具中，把邀请连接粘贴给需要分享的人。
+                <BR>
+              </b-col>
+              <div class="w-100"></div>
+              <b-col>
+                <b-checkbox id="cb-lifeshare" v-model="model.share.lifeshare" name="cb-lifeshare" switch
+                  @change="model.share.lifeshare=!model.share.lifeshare; model.share.msg=model.share.lifeshare?'永久分享（依然可以使用密码限制访问）':'临时分享, 48小时后过期'">
+                  {{model.share.msg}} </b-checkbox>
+              </b-col>
+              <div class="w-100"></div>
+              <b-col class="mt-3">
+                <b-form-input id="shareItEmail" trim v-model="model.share.email" placeholder="请输入邮件地址，多地址用英文逗号分开">
+                </b-form-input>
+                <b-form-input id="shareItUrl" style="visibility: hidden" trim v-model="model.share.url"></b-form-input>
+              </b-col>
+            </b-row>
+            <b-row class="text-center mt-3">
+              <b-col>
+                <b-button variant="outline-secondary" size="sm" class="mb-2" v-on:click="SHARE.cancelShare">
+                  <b-icon icon="x"></b-icon>取消
+                </b-button>
+                <b-button id="shareItOut" v-on:click="SHARE.doEmailShare" variant="outline-primary" size="sm"
+                  class="mb-2">
+                  <b-icon icon="box-arrow-up"></b-icon>分享出去
+                </b-button>
+                <b-button id="shareItBtn" variant="outline-primary" style="visibility: hidden" size="sm" class="mb-2">
+                  <b-icon icon="box-arrow-up"></b-icon>复制地址
+                </b-button>
+              </b-col>
+            </b-row>
+          </b-form>
+        </b-container>
+      </div>
       <b-modal @ok="KFK.placePastedContent" v-model="show.dialog.pasteContentDialog" title="请选择粘贴方式" button-size="sm"
         centered size="md">
         <b-container>

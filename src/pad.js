@@ -19,11 +19,11 @@ const app = new Vue({
   data: {
     selected: 'A',
     state: {
-      profile:{
-          name: null,
-          oldpwd: null,
-          newpwd: null,
-          newpwd2: null,
+      profile: {
+        name: null,
+        oldpwd: null,
+        newpwd: null,
+        newpwd2: null,
       },
       reg: {
         userid: null,
@@ -49,48 +49,96 @@ const app = new Vue({
     lockMode: KFK.lockMode,
     images: KFK.images,
     tip_groups: [
-      ['tip', 'tip_heart', 'tip_callout2', 'tip_cloud', 'tip_sig'],
-      ['tip_circle', 'tip_p5star', 'tip_p8star', 'tip_cubic', 'tip_clinder'],
-      ['tip_circle2', 'tip_check', 'tip_cross', 'tip_thunder', 'tip_smile'],
-      ['tip_circle3', 'tip_arrow', 'tip_arrow2', 'tip_arrow3', 'tip_arrow4'],
+      ['tip', 'tip_cubic',
+        'tip_clinder',
+        'tip_diamond', 'tip_cone', 'tip_pyramid', 'tip_hexogon', 'tip_parr',
+        'tip_heart', 'tip_smile',
+        'tip_thunder', 'tip_cloud',
+        'tip_check', 'tip_cross',
+        'tip_p5star', 'tip_p8star',
+        'tip_circle1', 'tip_circle2', 'tip_circle3', 'tip_circle4',
+        'tip_callout1', 'tip_callout2', 'tip_callout3', 'tip_callout4',
+        'tip_arrow1', 'tip_arrow2', 'tip_arrow3', 'tip_arrow4', 'tip_arrow5', 'tip_arrow6', 'tip_arrow7',
+        'tip_sig0', 'tip_sig1'
+      ],
+      [
+        'btn_collapse', 'btn_expand',
+        'align_bottom', 'align_center', 'align_hori', 'align_left', 'align_middle', 'align_right', 'align_top', 'align_vert',
+        'collaboration', 'classroom', 'design',
+      ],
+      [
+        'btn_collapse', 'btn_expand',
+        'align_bottom', 'align_center', 'align_hori', 'align_left', 'align_middle', 'align_right', 'align_top', 'align_vert',
+        'collaboration', 'classroom', 'design',
+      ],
+      [
+        'btn_collapse', 'btn_expand',
+        'align_bottom', 'align_center', 'align_hori', 'align_left', 'align_middle', 'align_right', 'align_top', 'align_vert',
+        'collaboration', 'classroom', 'design',
+      ],
+      [
+        'btn_collapse', 'btn_expand',
+        'align_bottom', 'align_center', 'align_hori', 'align_left', 'align_middle', 'align_right', 'align_top', 'align_vert',
+        'collaboration', 'classroom', 'design',
+      ],
+      [
+        'btn_collapse', 'btn_expand',
+        'align_bottom', 'align_center', 'align_hori', 'align_left', 'align_middle', 'align_right', 'align_top', 'align_vert',
+        'collaboration', 'classroom', 'design',
+      ],
+      [
+        'btn_collapse', 'btn_expand',
+        'align_bottom', 'align_center', 'align_hori', 'align_left', 'align_middle', 'align_right', 'align_top', 'align_vert',
+        'collaboration', 'classroom', 'design',
+      ],
+      [
+        'btn_collapse', 'btn_expand',
+        'align_bottom', 'align_center', 'align_hori', 'align_left', 'align_middle', 'align_right', 'align_top', 'align_vert',
+        'collaboration', 'classroom', 'design',
+      ],
+      [
+        'btn_collapse', 'btn_expand',
+        'align_bottom', 'align_center', 'align_hori', 'align_left', 'align_middle', 'align_right', 'align_top', 'align_vert',
+        'collaboration', 'classroom', 'design',
+      ],
     ],
-    toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'lock': false, 'minimap':false, 'connect':false },
+    toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'lock': false, 'minimap': false, 'connect': false },
     show: {
       'loading': false,
       'waiting': true,
       'wsready': false,
       'arrange_multi_nodes': false,
       'shape_property': false,
-      'text_property': false,
+      'customfont': false,
       'customline': true,
       'waitingws': true,
       'signinform': false,
       'explorer': true,
       'actionlog': false,
       'form': { newdoc: false, newprj: false, prjlist: true, doclist: false, share: false, bottomlinks: false, explorerTabIndex: 0 },
-      'section': { signin: false, register: false, explorer: false, designer: false, minimap:true },
-      'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false, copyDocDialog: false, pasteContentDialog: false, MsgBox:false, shareDialog:false},
+      'section': { signin: false, register: false, explorer: false, designer: false, minimap: true },
+      'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false, copyDocDialog: false, pasteContentDialog: false, MsgBox: false, shareDialog: false },
     },
     model: {
-      share: {code: '', email:'',lifeshare:false, msg:'临时分享, 48小时后过期', url:'' },
+      share: { code: '', email: '', lifeshare: false, msg: '临时分享, 48小时后过期', url: '' },
       signInButWaitVerify: false,
       regForShared: false, //是否是接受到分享链接的用户来注册？
       loading_value: 0,
-      msgbox:{title:'', content:''},
-      connect:{
-        color:'red', width: 3,
-        triangle:{
+      msgbox: { title: '', content: '' },
+      connect: {
+        color: 'red', width: 3,
+        triangle: {
           width: 1,
           color: 'blue',
           fill: 'blue'
         }
       },
-      line:{
-        color:'#306EF6', width: 6,linecap:false,
+      line: {
+        color: '#306EF6', width: 6, linecap: false,
       },
       paste: {
         content: '',
-        display:'',
+        display: '',
         box: 'none',
         ctype: 'text',
         showcontent: false,
@@ -123,11 +171,11 @@ const app = new Vue({
       docLoaded: false,
       project: { prjid: '', name: '' },
       lastrealproject: { prjid: '', name: '' },
-      cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', doclocked: false, ownerAvatar_src:'../assets/cocopad.svg' },
+      cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', doclocked: false, ownerAvatar_src: '../assets/cocopad.svg' },
       cocouser: { userid: '', name: '', avatar: 'avatar-0', avatar_src: null },
       listdocoption: {},
       listprjoption: {},
-      register: { userid: '', pwd: '', pwd2: '', name: '', step:'reg', code:'' },
+      register: { userid: '', pwd: '', pwd2: '', name: '', step: 'reg', code: '' },
       signin: { userid: '', pwd: '' },
       docfields: [{ key: 'name', label: '名称' }, { key: 'doclocked_icon', label: '模式' }, { key: 'security_icon', label: '密保' }, { key: 'copydoc', label: '复制' }, { key: 'share_icon', label: '分享' }, { key: 'owner', label: '发起人' }, { key: 'operation', label: '操作' }],
       prjfields: [{ key: 'name', label: '名称' }, { key: 'operation', label: '操作' }],
@@ -177,13 +225,15 @@ const app = new Vue({
         { value: 'all', text: '列出全部' }
       ],
       isDemoEnv: true,
+      svgs: {},
+      svgsData: {},
     }
   },
   computed: {
     prjListOptions() {
       let ret = [];
       this.model.prjs.forEach((prj, index) => {
-        if (['all','others','mine'].indexOf(prj.prjid)<0) {
+        if (['all', 'others', 'mine'].indexOf(prj.prjid) < 0) {
           ret.push({
             value: prj.prjid,
             text: prj.name,
@@ -195,10 +245,10 @@ const app = new Vue({
     avatarListOptions() {
       let ret = [];
       this.model.avatars.forEach((prj, index) => {
-          ret.push({
-            value: prj.prjid,
-            text: prj.name,
-          })
+        ret.push({
+          value: prj.prjid,
+          text: prj.name,
+        })
       })
       return ret;
     },
@@ -221,8 +271,8 @@ const app = new Vue({
       else
         return false;
     },
-    
-  
+
+
     docNameState() {
       const schema = Joi.string().regex(/^[a-zA-Z0-9_\u4e00-\u9fa5]{3,20}$/).required();
       let str = this.model.newdocname;
@@ -282,7 +332,7 @@ const app = new Vue({
     KfkAlign(direction) {
       KFK.alignNodes(direction);
     },
-    
+
     showGridChanged(checked) {
       console.log(`showGrid ${checked}`);
       // if (!checked) { app.setData('model', 'oldSnap', app.model.snap); app.setData('model', 'snap', false); }

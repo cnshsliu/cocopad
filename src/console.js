@@ -192,6 +192,7 @@ KFK.loadImages = function loadimg() {
   }
 
   KFK.images["toggle_line"].src = KFK.images["line"].src;
+
 };
 
 KFK.loadAvatars = function loadavatar() {
@@ -300,7 +301,7 @@ KFK.updatePropertyFormWithNode = function (jqNodeDIV) {
   KFK.APP.setData("show", "shape_property", jqNodeDIV != null);
   KFK.APP.setData(
     "show",
-    "text_property",
+    "customfont",
     jqNodeDIV != null && getBoolean(config.node[nodeType].edittable)
   );
   KFK.APP.setData(
@@ -585,7 +586,7 @@ KFK.procLinkLine = function (shiftKey) {
   KFK.APP.setData("show", "customshape", false);
   KFK.APP.setData("show", "customline", true);
   KFK.APP.setData("show", "custombacksvg", false);
-  KFK.APP.setData("show", "text_property", false);
+  KFK.APP.setData("show", "customfont", false);
   KFK.APP.setData("show", "layercontrol", false);
 
   KFK.pickedSvgLine = theLine;
@@ -1349,6 +1350,34 @@ KFK.ltPos = function (node) {
   };
 }
 
+KFK.getNodeTextAlignment = function (jqDiv) {
+  let ret = "left";
+  let jcTmp = jqDiv.css("justify-content");
+  if (jcTmp === 'flex-start')
+    ret = "left";
+  else if (jcTmp === "center")
+    ret = "center";
+  else if (jcTmp === "flex-end")
+    ret = "right";
+
+  return ret;
+};
+
+KFK.setNodeTextAlignment = function (jqElem, theType, align) {
+  if (theType === "textarea") {
+    if (align === 'left') {
+      jqElem.css("text-align", "justify");
+      jqElem.css("text-align-last", "left");
+    } else if (align === 'center') {
+      jqElem.css("text-align", "justify");
+      jqElem.css("text-align-last", "center");
+    } else if (align === "right") {
+      jqElem.css("text-align", "justify");
+      jqElem.css("text-align-last", "right");
+    }
+  }
+};
+
 KFK.editTextNode = function (textnode, theDIV) {
   KFK.editting = true;
   theDIV.editting = true;
@@ -1371,21 +1400,33 @@ KFK.editTextNode = function (textnode, theDIV) {
   textarea.style.position = "absolute";
   textarea.style.top = areaPosition.y + "px";
   textarea.style.left = areaPosition.x + "px";
-  textarea.style.width = theDIV.style.width;
-  textarea.style.height = theDIV.style.height;
+  $(textarea).width($(theDIV).width());
+  $(textarea).height($(theDIV).height());
   textarea.style.borderRadius = theDIV.style.borderRadius;
   textarea.style.color = theDIV.style.color;
+  $(textarea).css("background", $(textnode).css("background"));
   textarea.style.justifyContent = theDIV.style.justifyContent;
   textarea.style.fontSize = textnode.style.fontSize;
   textarea.style.borderColor = "#000";
-  textarea.style.borderWidth = "1px";
-  textarea.style.padding = "0px";
-  textarea.style.margin = "0px";
+  textarea.style.borderWidth = textnode.style.borderWidth;
+
+  // if ($(textnode).find(".tip_content").length !== 0) {
+  // $(textarea).css("padding",  unpx(textnode.style.padding) + unpx($(textnode).find(".tip_content")[0].style.padding));
+  // }else{
+  // textarea.style.padding = textnode.style.padding;
+  // }
+  textarea.style.padding = "4px";
+
+
+
+  textarea.style.margin = textnode.style.margin;
   textarea.style.overflow = "hidden";
-  textarea.style.background = "none";
-  textarea.style.outline = "none";
+  textarea.style.outline = textnode.style.outline;
   textarea.style.resize = "none";
   textarea.style.transformOrigin = "left top";
+
+  KFK.setNodeTextAlignment($(textarea), "textarea", KFK.getNodeTextAlignment($(theDIV)));
+  textarea.style.verticalAlign = "middle";
 
   textarea.focus();
 
@@ -1487,7 +1528,7 @@ KFK._createNode = function (node) {
     nodeObj.style.width = KFK.px(node.width);
     nodeObj.style.height = KFK.px(node.height);
   } else if (node.type === "text") {
-    nodeObj = document.createElement("span");
+    nodeObj = document.createElement("div");
     nodeObj.style.fontSize = "18px";
     nodeObj.innerHTML = node.attach ? node.attach : config.node.text.content;
     nodeObj.style.padding = KFK.px(2);
@@ -1868,18 +1909,29 @@ KFK.lineLocked = function (svgLine) {
 };
 
 
+KFK.setModeIndicatorForYellowTip = function (tipvariant) {
+  $("#modeIndicatorDiv").empty();
+  let svg = $(SVGs[tipvariant]);
+  svg.css("width", "18px");
+  svg.css("height", "18px");
+  svg.appendTo($("#modeIndicatorDiv"));
+};
+
 KFK.setTipVariant = function (tipvariant) {
   config.node.yellowtip.defaultTip = tipvariant;
-  if (KFK.mode === "yellowtip")
-    $("#modeIndicatorImg").attr(
-      "src",
-      KFK.images[config.node.yellowtip.defaultTip].src
-    );
-  // let theNode = KFK.getPropertyApplyToJqNode();
+  console.log(config.node.yellowtip.defaultTip);
+  // console.log(KFK.images[config.node.yellowtip.defaultTip].src);
+  if (KFK.mode === "yellowtip") {
+    KFK.setModeIndicatorForYellowTip(tipvariant);
+    $("#modeIndicatorImg").hide();
+    $("#modeIndicatorDiv").show();
+  }
+  let theNode = KFK.getPropertyApplyToJqNode();
   let theJqNode = KFK.getPropertyApplyToJqNode();
   if (theJqNode !== null && KFK.notAnyLocked(theJqNode)) {
     let oldColor = KFK.getTipBkgColor(theJqNode);
     theJqNode.attr("variant", tipvariant);
+    console.log(theJqNode.attr("variant"));
     KFK.setTipBkgImage(theJqNode, tipvariant, oldColor);
   }
 };
@@ -1889,6 +1941,7 @@ KFK.setTipBkgImage = async function (jqDIV, svgid, svgcolor) {
   await KFK.syncNodePut("U", jqDIV, "change bkg image", KFK.fromJQ, false, 0, 1);
 };
 KFK._setTipBkgImage = function (jqDIV, svgid, svgcolor) {
+  console.log("Come here");
   jqDIV.find(".tip_bkg").remove();
   let bkgSVG = $(SVGs[svgid]);
   bkgSVG.addClass("tip_bkg");
@@ -2935,6 +2988,37 @@ KFK.init = async function () {
     explorer: false,
     designer: false
   });
+
+  let loadedSvgObjs = {};
+  let svgHolder = $('#toolbox2');
+  $.each(SVGs, (name, svgstr) => {
+    let div = document.createElement("span");
+    let jdiv = $(div);
+    let svgImg = $(svgstr);
+    svgImg.css("width", "36px");
+    svgImg.css("height", "36px");
+    svgImg.css("padding", "0px");
+    jdiv.css("width", "36px");
+    jdiv.css("height", "36px");
+    jdiv.css("padding", "2px");
+    jdiv.on('mouseover', (evt) => {
+      let target = svgImg;
+      let svgMainPath = target.find(".svg_main_path");
+      svgMainPath.attr("fill", '#E5DBFF');
+    });
+    jdiv.on('mouseout', (evt) => {
+      let target = svgImg;
+      let svgMainPath = target.find(".svg_main_path");
+      svgMainPath.attr("fill", '#F7F7C6');
+    });
+    svgImg.on('click', (evt) => {
+      console.log('mouse click on ', name);
+      this.setTipVariant(name);
+    });
+    svgImg.appendTo(jdiv);
+    jdiv.appendTo(svgHolder);
+  });
+
   await KFK.checkSession();
 };
 //TODO: onPaste, disable when is not in designer
@@ -2949,11 +3033,11 @@ KFK.checkSession = async function () {
   //这样,就把quota给分享者加上去
   //对短期分享,URL格式为 hOST/share/{sharecode}
   //短期分享在REDIS服务器上的share_{sharecode}记录有48小时有效期
-  let m= RegHelper.getDocIdInUrl($(location).attr("pathname"));
-  if(m!==null) {
+  let m = RegHelper.getDocIdInUrl($(location).attr("pathname"));
+  if (m !== null) {
     KFK.docIdInUrl = m[1];
     KFK.docShareCode = m[2];
-  }else{
+  } else {
     KFK.docIdInUrl = null;
     KFK.docShareCode = null;
   }
@@ -3072,10 +3156,10 @@ KFK.askShareCode = (doc_id) => {
 KFK.openShareCode = function (shareCode, type) {
   KFK.debug("openShareCode", shareCode, "type is", type);
   //如果是sharecode, 则去服务器取
-  if (type === 'code'){
+  if (type === 'code') {
     KFK.debug("send OPENSHARECODE ", shareCode);
     KFK.sendCmd('OPENSHARECODE', { code: shareCode });
-  }else//否则,就直接打开这个doc_id(放在shareCode变量中,为保持代码简化, 里面放的其实是doc_id) 
+  } else//否则,就直接打开这个doc_id(放在shareCode变量中,为保持代码简化, 里面放的其实是doc_id) 
     KFK.refreshDesigner(shareCode, '');
 };
 
@@ -4079,6 +4163,23 @@ KFK.setLineModel = function (options) {
   let setting = $.extend({}, KFK.APP.model.line, options);
   KFK.APP.setData("model", "line", setting);
 }
+KFK.changeBorderRadius = async function (radius) {
+  let jqNode = KFK.getPropertyApplyToJqNode();
+  if (jqNode != null && KFK.notAnyLocked(jqNode)) {
+    KFK.fromJQ = jqNode.clone();
+    jqNode.css("border-radius", radius);
+    await KFK.syncNodePut("U", jqNode, "set border radius", KFK.fromJQ, false, 0, 1);
+  }
+};
+KFK.changeToTransparent = async function () {
+  let jqNode = KFK.getPropertyApplyToJqNode();
+  if (jqNode != null && KFK.notAnyLocked(jqNode)) {
+    KFK.fromJQ = jqNode.clone();
+    jqNode.css("background-color", "transparent");
+    jqNode.css("border-color", "transparent");
+    await KFK.syncNodePut("U", jqNode, "set border radius", KFK.fromJQ, false, 0, 1);
+  }
+};
 
 KFK.initPropertyForm = function () {
   let spinnerBorderWidth = $("#spinner_border_width").spinner({
@@ -4374,16 +4475,47 @@ KFK.initColorPicker = function () {
 KFK.textAlignChanged = async function (evt, value) {
   let alignInfo = $("#textAlign").val();
   let jqNode = KFK.getPropertyApplyToJqNode();
+  KFK.setAlignmentDirectly(jqNode, alignInfo);
+  KFK.focusOnC3();
+};
+KFK.toggleCustomShape = function (evt) {
+  if ($('.customcontrol').hasClass('btn_collapse')) {
+    $('.customcontrol').removeClass('btn_collapse');
+    $('.customcontrol').addClass('btn_expand');
+    KFK.rememberWhich = [];
+    if (KFK.APP.show.customshape === true) {
+      KFK.APP.setData('show', 'customshape', false);
+      KFK.rememberWhich.push("customshape");
+    } if (KFK.APP.show.customfont === true) {
+      KFK.APP.setData('show', 'customfont', false);
+      KFK.rememberWhich.push("customfont");
+    } if (KFK.APP.show.customline == true) {
+      KFK.APP.setData('show', 'customline', false);
+      KFK.rememberWhich.push("customline");
+    }
+  } else {
+    $('.customcontrol').removeClass('btn_expand');
+    $('.customcontrol').addClass('btn_collapse');
+    for (let i = 0; i < KFK.rememberWhich.length; i++) {
+      KFK.APP.setData('show', KFK.rememberWhich[i], true);
+    }
+  }
+};
+
+KFK.setAlignmentDirectly = async function (jqNode, alignInfo) {
   if (jqNode != null && KFK.notAnyLocked(jqNode)) {
     KFK.fromJQ = jqNode.clone();
     if (jqNode.find(".tip_content").length !== 0) {
       jqNode.find(".tip_content").css("justify-content", alignInfo);
+      jqNode.find(".tip_content").css("text-align-last",
+        alignInfo === 'flex-start' ? 'left' : alignInfo === 'flex-end' ? 'right' : 'center');
     } else {
       jqNode.css("justify-content", alignInfo);
+      jqNode.css("text-align-last",
+        alignInfo === 'flex-start' ? 'left' : alignInfo === 'flex-end' ? 'right' : 'center');
     }
     await KFK.syncNodePut("U", jqNode, "set text alignment", KFK.fromJQ, false, 0, 1);
   }
-  KFK.focusOnC3();
 };
 
 KFK.vertAlignChanged = async function (evt, value) {
@@ -4430,11 +4562,14 @@ KFK.setMode = function (mode) {
     $("#modeIndicator").hide();
   } else {
     if (KFK.mode === "yellowtip") {
-      $("#modeIndicatorImg").attr(
-        "src",
-        KFK.images[config.node.yellowtip.defaultTip].src
-      );
-    } else $("#modeIndicatorImg").attr("src", KFK.images[KFK.mode].src);
+      KFK.setModeIndicatorForYellowTip(config.node.yellowtip.defaultTip);
+      $("#modeIndicatorImg").hide();
+      $("#modeIndicatorDiv").show();
+    } else {
+      $("#modeIndicatorImg").attr("src", KFK.images[KFK.mode].src);
+      $("#modeIndicatorImg").show();
+      $("#modeIndicatorDiv").hide();
+    }
     $("#modeIndicator").show();
   }
 
@@ -4442,21 +4577,21 @@ KFK.setMode = function (mode) {
     KFK.APP.setData("show", "shape_property", true);
     KFK.APP.setData("show", "customshape", false);
     KFK.APP.setData("show", "custombacksvg", false);
-    KFK.APP.setData("show", "text_property", true);
+    KFK.APP.setData("show", "customfont", true);
     KFK.APP.setData("show", "layercontrol", true);
     KFK.APP.setData("show", "customline", false);
     // KFK.setRightTabIndex(0);
   } else if (KFK.mode === "textblock") {
     KFK.APP.setData("show", "shape_property", true);
     KFK.APP.setData("show", "customshape", true);
-    KFK.APP.setData("show", "text_property", true);
+    KFK.APP.setData("show", "customfont", true);
     KFK.APP.setData("show", "custombacksvg", true);
     KFK.APP.setData("show", "layercontrol", true);
     KFK.APP.setData("show", "customline", false);
     // KFK.setRightTabIndex(0);
   } else if (KFK.mode === "yellowtip") {
     KFK.APP.setData("show", "shape_property", true);
-    KFK.APP.setData("show", "text_property", true);
+    KFK.APP.setData("show", "customfont", true);
     KFK.APP.setData("show", "custombacksvg", true);
     KFK.APP.setData("show", "customshape", false);
     KFK.APP.setData("show", "layercontrol", true);
@@ -4466,7 +4601,7 @@ KFK.setMode = function (mode) {
     KFK.APP.setData("show", "shape_property", true);
     KFK.APP.setData("show", "customshape", false);
     KFK.APP.setData("show", "custombacksvg", false);
-    KFK.APP.setData("show", "text_property", false);
+    KFK.APP.setData("show", "customfont", false);
     KFK.APP.setData("show", "layercontrol", false);
     KFK.APP.setData("show", "customline", true);
     // KFK.setRightTabIndex(0);
@@ -4548,6 +4683,7 @@ KFK.addDocumentEventHandler = function () {
     switch (evt.keyCode) {
       case 27:
         //ESC
+        //TODO: make real fullscreen? how can Miro do?
         if (KFK.fullScreen) {
           KFK.toggleFullScreen();
         }
@@ -4615,11 +4751,43 @@ KFK.addDocumentEventHandler = function () {
         break;
       case 76:
         if (evt.metaKey || evt.ctrlKey) {
-          KFK.logKey('META-L');
+          KFK.logKey('META-SHIFT-L');
           KFK.tryToLockUnlock();
           KFK.holdEvent(evt);
         }
         break;
+      /*
+    case 55:
+      if (evt.metaKey || evt.ctrlKey) {
+        KFK.logKey('META-7');
+        let tmpJq= KFK.getPropertyApplyToJqNode();
+        if (tmpJq !== null && KFK.notAnyLocked(tmpJq)) {
+          KFK.setAlignmentDirectly(tmpJq, 'flex-start');
+        }
+      }
+      break;
+    case 56:
+      if (evt.metaKey || evt.ctrlKey) {
+        KFK.logKey('META-8');
+        let jqNode = KFK.getPropertyApplyToJqNode();
+        if (jqNode != null && KFK.notAnyLocked(jqNode)) {
+          KFK.setAlignmentDirectly(jqNode, 'center');
+        }
+      }
+      break;
+    case 57:
+      if (evt.metaKey || evt.ctrlKey) {
+        KFK.logKey('META-9');
+        let jqNode = KFK.getPropertyApplyToJqNode();
+        if (jqNode != null && KFK.notAnyLocked(jqNode)) {
+          KFK.setAlignmentDirectly(jqNode, 'flex-end');
+        }
+      }
+      evt.preventDefault();
+      evt.stopImmediatePropagation();
+      evt.stopPropagation();
+      break;
+      */
       default:
         preventDefault = false;
 
@@ -4836,6 +5004,11 @@ KFK.toggleFullScreen = function (evt) {
   $('#docHeaderInfo').css("visibility", KFK.fullScreen ? 'hidden' : 'visible');
   $('#rtcontrol').css("visibility", KFK.fullScreen ? 'hidden' : 'visible');
   $('#toplogo').css("visibility", KFK.fullScreen ? 'hidden' : 'visible');
+  if (KFK.fullScreen) {
+    KFK.openFullscreen();
+  } else {
+    KFK.closeFullscreen();
+  }
 };
 
 KFK.toggleControlButtonOnly = function (evt) {
@@ -5812,7 +5985,7 @@ KFK.addSvgLineEventListner = function (theLine) {
     KFK.APP.setData("show", "customshape", false);
     KFK.APP.setData("show", "customline", true);
     KFK.APP.setData("show", "custombacksvg", false);
-    KFK.APP.setData("show", "text_property", false);
+    KFK.APP.setData("show", "customfont", false);
     KFK.APP.setData("show", "layercontrol", false);
 
     KFK.setLineToRemember(theLine);
@@ -6028,6 +6201,35 @@ KFK.myHide = function (jq) {
 };
 KFK.myShow = function (jq) {
   jq.css({ "visibility": 'visible', opacity: 1.0 });
+};
+
+KFK.fsElem = document.documentElement;
+
+/* View in fullscreen */
+KFK.openFullscreen = function () {
+  console.log('open Full screen');
+  if (KFK.fsElem.requestFullscreen) {
+    KFK.fsElem.requestFullscreen();
+  } else if (KFK.fsElem.mozRequestFullScreen) { /* Firefox */
+    KFK.fsElem.mozRequestFullScreen();
+  } else if (KFK.fsElem.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
+    KFK.fsElem.webkitRequestFullscreen();
+  } else if (KFK.fsElem.msRequestFullscreen) { /* IE/Edge */
+    KFK.fsElem.msRequestFullscreen();
+  }
+};
+
+/* Close fullscreen */
+KFK.closeFullscreen = function () {
+  if (document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if (document.mozCancelFullScreen) { /* Firefox */
+    document.mozCancelFullScreen();
+  } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
+    document.webkitExitFullscreen();
+  } else if (document.msExitFullscreen) { /* IE/Edge */
+    document.msExitFullscreen();
+  }
 };
 
 export default KFK;

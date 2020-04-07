@@ -34,7 +34,9 @@
   },
   "devDependencies": {
     "@babel/core": "latest",
-    "babel-preset-env": "^1.7.0"
+    "babel-preset-env": "^1.7.0",
+    "line-reader": "^0.4.0",
+    "n-readlines": "^1.0.0"
   },
   "alias": {
     "vue": "./node_modules/vue/dist/vue.common.js"
