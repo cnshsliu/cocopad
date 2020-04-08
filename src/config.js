@@ -36,6 +36,7 @@ const config = {
             height: 20,
             edittable: true,
             content: '一行文字',
+            fontSize: 18,
         },
         yellowtip: {
             width: 160,
@@ -46,6 +47,7 @@ const config = {
             textAlign: 'center', color: 'black', vertAlign: 'center',
             defaultTip: 'tip',
             defaultColor: 'rgb(255, 242, 204)',
+            fontSize: 18,
             content: '',
         },
         textblock: {
@@ -54,6 +56,7 @@ const config = {
             borderColor: '#333333', borderWidth: '1px',
             borderStyle: 'solid', borderRadius: '5px',
             textAlign: 'center', color: 'black', vertAlign: 'center',
+            fontSize: 18,
             droppable: true,
             edittable: true,
             customshape: true,

@@ -1,15 +1,13 @@
+//TODO: 演示模式 
+//TODO: 标题字体
+//TODO: 部署
+//TODO: 邀请码
+//TODO: 企业计费
+//TODO: HOTKEY to nav A4 page
 //TODO: 缩小缺省大小
 //TODO: 提供合理化建议获得操作点, 分享获得操作点, 
-//TODO: Delete all
-//TODO: zoom out到屏幕尺寸
 //TODO: handler中所有发送回去统一到一个地方,然后便于统一计费, 支持企业?
-//TODO: use single instance of WS across reg
 //TODO: BUG: 用户密码清除文档密码
-//TODO: minimize can't cover all.
 //TODO: chat mode
 //TODO: GROUP unGROUP?
 //TODO: Add  Delete/Copy tool on the le
-//TODO: Textbox has the same round corner as the host DIV
-//TODO: draw page divider line
-//TODO: HOTKEY to nav A4 page
-//TODO:  zoomin/zoomout重新设计，全部按比例计算位置和大小，包括字体，并自动缩小canvas, 不用scale机制

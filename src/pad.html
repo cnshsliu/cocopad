@@ -273,9 +273,10 @@
           <b-list-group-item class="m-0 p-0">
             <b-icon icon="blank" scale="0.3"></b-icon>
           </b-list-group-item>
-          <b-list-group-item href="#" v-if="model.docLoaded && (KFK.APP.model.cocodoc.owner === KFK.APP.model.cocouser.userid)" class="d-flex align-items-center" @click="KFK.cleanAllNodes();"
-            :active="toolActiveState['clean']">
-            <b-img :src="images['eraser'].src" fluid alt=""  class="eraser" id='tool_clean'></b-img>
+          <b-list-group-item href="#"
+            v-if="model.docLoaded && (KFK.APP.model.cocodoc.owner === KFK.APP.model.cocouser.userid)"
+            class="d-flex align-items-center" @click="KFK.cleanAllNodes();" :active="toolActiveState['clean']">
+            <b-img :src="images['eraser'].src" fluid alt="" class="eraser" id='tool_clean'></b-img>
           </b-list-group-item>
 
         </b-list-group>
@@ -283,6 +284,43 @@
       <div id="right" class="padlayout noshow">
         <b-tabs v-model="model.rightTabIndex" content-class="mt-1 w-100" justified>
           <b-tab title="样式" class='cocoproperty'>
+            <b-container v-show="show.customfont" class='border-top'>
+              <b-button v-b-toggle.collapse-customfont class="mb-1 p-1 w-100" variant='outline-primary'>字体式样</b-button>
+              <b-collapse visible id="collapse-customfont">
+                <div class="row mx-auto my-1">
+                  <div class="col">文本字体</div>
+                  <div class="col coco"><input class="fonts p-0" /></div>
+                </div>
+                <div class="row mx-auto my-1">
+                  <div class="col">字体大小</div>
+                  <div class="col coco">
+                    <input class='selector' size=3 id="spinner_font_size" name="value_font_size" />
+                  </div>
+                </div>
+                <div class="row mx-auto my-1">
+                  <div class="col">文本颜色</div>
+                  <div class="col coco">
+                    <input name="fontColor" id="fontColor" />
+                  </div>
+                </div>
+                <div class="row mx-auto my-1">
+                  <div class="col">横向对齐</div>
+                  <div class="col coco">
+                    <b-form-select id="textAlign" v-model="model.textAlign" :options="model.textAlignOptions"
+                      @change="textAlignChanged">
+                    </b-form-select>
+                  </div>
+                </div>
+                <div class="row mx-auto my-1">
+                  <div class="col">纵向对齐</div>
+                  <div class="col coco">
+                    <b-form-select id="vertAlign" v-model="model.vertAlign" :options="model.vertAlignOptions"
+                      @change="vertAlignChanged">
+                    </b-form-select>
+                  </div>
+                </div>
+              </b-collapse>
+            </b-container>
             <b-container v-show="show.customshape">
               <b-button v-b-toggle.collapse-customshape class="mb-1 p-1 w-100" variant='outline-primary'>基本式样</b-button>
               <b-collapse visible id="collapse-customshape">
@@ -323,6 +361,7 @@
               </b-collapse>
             </b-container>
             <b-container v-show="show.customline">
+
               <b-button v-b-toggle.collapse-customline class="mb-1 p-1 w-100" variant='outline-primary'>线条式样</b-button>
               <b-collapse visible id="collapse-customline">
                 <b-row class="mx-auto my-1">
@@ -342,38 +381,7 @@
                 </b-row>
               </b-collapse>
             </b-container>
-
-            <b-container v-show="show.customfont" class='border-top'>
-              <b-button v-b-toggle.collapse-customfont class="mb-1 p-1 w-100" variant='outline-primary'>字体式样</b-button>
-              <b-collapse visible id="collapse-customfont">
-                <div class="row mx-auto my-1">
-                  <div class="col">文本字体</div>
-                  <div class="col coco"><input class="fonts p-0" /></div>
-                </div>
-                <div class="row mx-auto my-1">
-                  <div class="col">文本颜色</div>
-                  <div class="col coco">
-                    <input name="fontColor" id="fontColor" />
-                  </div>
-                </div>
-                <div class="row mx-auto my-1">
-                  <div class="col">横向对齐</div>
-                  <div class="col coco">
-                    <b-form-select id="textAlign" v-model="model.textAlign" :options="model.textAlignOptions"
-                      @change="textAlignChanged">
-                    </b-form-select>
-                  </div>
-                </div>
-                <div class="row mx-auto my-1">
-                  <div class="col">纵向对齐</div>
-                  <div class="col coco">
-                    <b-form-select id="vertAlign" v-model="model.vertAlign" :options="model.vertAlignOptions"
-                      @change="vertAlignChanged">
-                    </b-form-select>
-                  </div>
-                </div>
-              </b-collapse>
-            </b-container>
+            <b-containr v-show="show.custombacksvg">
             <b-row class="mx-auto my-1">
               <b-col>贴纸颜色</b-col>
               <b-col class='coco'><input name="tipBkgColor" id="tipBkgColor" /></b-col>
@@ -384,11 +392,12 @@
               <b-container id="toolbox2" class="w-100" style="height: 300px; width:100%; overflow-y:scroll; ">
               </b-container>
             </b-collapse>
-             <b-button v-b-toggle.collapse-toolgroup3 class="mb-1 p-1 w-100" variant='outline-primary'>商务组件</b-button>
+            <b-button v-b-toggle.collapse-toolgroup3 class="mb-1 p-1 w-100" variant='outline-primary'>商务组件</b-button>
             <b-collapse visible id="collapse-toolgroup3">
               <b-container id="toolbox3" class="w-100" style="height: 300px; width:100%; overflow-y:scroll; ">
               </b-container>
             </b-collapse>
+            </b-containr>
           </b-tab>
           <b-tab title="排列" class="cocoproperty">
             <b-button-toolbar v-show="show.layercontrol" key-nav class="w-100 justify-content-md-center">
@@ -484,7 +493,7 @@
         </b-button-group>
         <b-button-group class="coco">
           <b-button id="onepage" variant="outline-success" @click="KFK.toggleOnePage">
-              <b-icon icon="grid3x2" shift-h="-1.2" shift-v="1.1"></b-icon>
+            <b-icon icon="grid3x2" shift-h="-1.2" shift-v="1.1"></b-icon>
           </b-button>
           <!-- <b-button id="zoom_in" variant="outline-success" @click="KFK.zoomIn">
             <b-iconstack scale="0.6">
@@ -931,33 +940,30 @@
                   新密码两次输入必须一样
                 </b-form-invalid-feedback>
               </b-form-group>
-              <b-row
-                <b-col cols="10"> 换头像需要输入原密码 </b-col>
+              <b-row <b-col cols="10"> 换头像需要输入原密码 </b-col>
                 <b-col cols="2" class="text-right">
                   <b-button @click="toggleHidePassword" variant="outline-none">
                     <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
                   </b-button>
                 </b-col>
-              </b-row
-              <b-container class="w-100"
+              </b-row <b-container class="w-100"
                 style="height: 148px; white-space:nowrap; overflow-x:auto; overflow-y:scroll; ">
-                <b-row>
-                  <b-col v-for="avatar in model.avatars" v-bind:key="avatar.id"
-                    :class="avatar.id === model.cocouser.avatar?'avatar-selected':''"
-                    v-on:mouseover="EXP.avatarMouseOver" v-on:mouseout="EXP.avatarMouseOut"
-                    v-on:click='EXP.setProfileAvatar($event, avatar.id)'>
-                    <b-img :src="avatar.src" class="avatarimg" style="width:48px; height:48px" />
-                  </b-col>
-                </b-row>
-              </b-container>
-              <!--               
+              <b-row>
+                <b-col v-for="avatar in model.avatars" v-bind:key="avatar.id"
+                  :class="avatar.id === model.cocouser.avatar?'avatar-selected':''" v-on:mouseover="EXP.avatarMouseOver"
+                  v-on:mouseout="EXP.avatarMouseOut" v-on:click='EXP.setProfileAvatar($event, avatar.id)'>
+                  <b-img :src="avatar.src" class="avatarimg" style="width:48px; height:48px" />
+                </b-col>
+              </b-row>
+          </b-container>
+          <!--               
               <div class="w-100" display="inline" style="white-space:nowrap; overflow-x:auto; overflow-y:hidden; ">
                 <b-button variant="light" size="lg" class="mx-1" @click='EXP.setProfileAvatar(avatar.id)'
                   v-for="avatar in model.avatars" v-bind:key="avatar.id">
                   <img :src="avatar.src" style="width:48px; height:48px" />
                 </b-button>
               </div> -->
-            </b-form>
+          </b-form>
           </b-container>
         </b-modal>
 

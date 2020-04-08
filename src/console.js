@@ -293,32 +293,14 @@ KFK.setRightTabIndex = function (tabindex) {
 
 KFK.updatePropertyFormWithNode = function (jqNodeDIV) {
   let nodeType = "unknown";
-  if (jqNodeDIV != null) {
-    nodeType = jqNodeDIV.attr("nodetype");
-  }
+  if (jqNodeDIV != null) { nodeType = jqNodeDIV.attr("nodetype"); }
 
   KFK.APP.setData("show", "customline", false);
   KFK.APP.setData("show", "shape_property", jqNodeDIV != null);
-  KFK.APP.setData(
-    "show",
-    "customfont",
-    jqNodeDIV != null && getBoolean(config.node[nodeType].edittable)
-  );
-  KFK.APP.setData(
-    "show",
-    "customshape",
-    jqNodeDIV != null && getBoolean(config.node[nodeType].customshape)
-  );
-  KFK.APP.setData(
-    "show",
-    "custombacksvg",
-    jqNodeDIV != null && (nodeType === "yellowtip" || nodeType === "textblock")
-  );
-  KFK.APP.setData(
-    "show",
-    "layercontrol",
-    jqNodeDIV != null && (nodeType === "text" || nodeType === "yellowtip" || nodeType === "textblock")
-  );
+  KFK.APP.setData("show", "customfont", jqNodeDIV != null && getBoolean(config.node[nodeType].edittable));
+  KFK.APP.setData("show", "customshape", jqNodeDIV != null && getBoolean(config.node[nodeType].customshape));
+  KFK.APP.setData("show", "custombacksvg", jqNodeDIV != null && (nodeType === "yellowtip" || nodeType === "textblock"));
+  KFK.APP.setData("show", "layercontrol", jqNodeDIV != null && (nodeType === "text" || nodeType === "yellowtip" || nodeType === "textblock"));
   if (jqNodeDIV != null && getBoolean(config.node[nodeType].customshape)) {
     let nodeBkgColor = jqNodeDIV.css("background-color");
     let nodeBorderColor = jqNodeDIV.css("border-color");
@@ -336,7 +318,7 @@ KFK.updatePropertyFormWithNode = function (jqNodeDIV) {
 
   if (jqNodeDIV != null && getBoolean(config.node[nodeType].edittable)) {
     let fontFamily = jqNodeDIV.css("font-family");
-    let fontSize = jqNodeDIV.css("font-size");
+    let fontSize = KFK.unpx(jqNodeDIV.css("font-size"));
     let fontColor = jqNodeDIV.css("color");
     let textAlign = jqNodeDIV.css("justify-content");
     let vertAlign = jqNodeDIV.css("align-items");
@@ -347,6 +329,8 @@ KFK.updatePropertyFormWithNode = function (jqNodeDIV) {
       vertAlign = jqNodeDIV.find(".tip_content").css("align-items");
     }
     $("#fontColor").spectrum("set", fontColor);
+    $("#spinner_font_size").spinner("value", fontSize);
+    console.log("update property form font size to", fontSize);
     KFK.APP.setData("model", "textAlign", textAlign);
     KFK.APP.setData("model", "vertAlign", vertAlign);
   }
@@ -870,6 +854,8 @@ KFK.initC3 = function () {
   KFK.JC3.dblclick(function (evt) {
     if (KFK.masking) {
       KFK.endOnePage({ x: evt.offsetX, y: evt.offsetY });
+    } else {
+      KFK.toggleOnePage();
     }
     KFK.cancelTempLine();
     evt.preventDefault();
@@ -1470,9 +1456,7 @@ KFK.editTextNode = function (textnode, theDIV) {
   };
 
   textarea.addEventListener("keydown", function (evt) {
-    // hide on enter
-    // but don't hide on shift + enter
-    if (evt.keyCode === 13 && !evt.shiftKey) {
+    if (evt.keyCode === 13 && (evt.shiftKey || evt.ctrlKey || evt.metaKey)) {
       textnode.innerText = textarea.value;
       removeTextarea(textarea.value !== oldText);
       KFK.focusOnC3();
@@ -1529,16 +1513,14 @@ KFK._createNode = function (node) {
     nodeObj.style.height = KFK.px(node.height);
   } else if (node.type === "text") {
     nodeObj = document.createElement("div");
-    nodeObj.style.fontSize = "18px";
     nodeObj.innerHTML = node.attach ? node.attach : config.node.text.content;
-    nodeObj.style.padding = KFK.px(2);
+    nodeObj.style.padding = KFK.px(0);
   } else if (node.type === "yellowtip") {
     nodeObj = document.createElement("span");
-    nodeObj.style.fontSize = "18px";
     nodeObj.innerText = config.node.yellowtip.content;
     $(nodeObj).css("width", "100%");
     $(nodeObj).css("height", "100%");
-    $(nodeObj).css("padding", 2);
+    $(nodeObj).css("padding", 0);
     $(nodeObj).css("z-index", 1);
     $(nodeObj).css("display", "flex");
     $(nodeObj).css("justify-content", config.node.yellowtip.textAlign);
@@ -1547,13 +1529,12 @@ KFK._createNode = function (node) {
     $(nodeObj).addClass("tip_content");
   } else if (node.type === "textblock") {
     nodeObj = document.createElement("div");
-    nodeObj.style.fontSize = "18px";
     nodeObj.innerHTML = node.attach
       ? node.attach
       : config.node.textblock.content;
     // nodeObj.style.width = KFK.px(node.width - textPadding * 2);
     // nodeObj.style.height = KFK.px(node.height - textPadding * 2);
-    nodeObj.style.padding = KFK.px(2);
+    nodeObj.style.padding = KFK.px(0);
   }
   if (!nodeObj) {
     KFK.debug(`${node.type} is not supported`);
@@ -1604,24 +1585,30 @@ KFK._createNode = function (node) {
       config.node.yellowtip.defaultTip,
       config.node.yellowtip.defaultColor
     );
-    $(nodeDIV).attr("variant", config.node.yellowtip.defaultTip);
-    $(nodeDIV).css("width", rect.w);
-    $(nodeDIV).css("height", rect.h);
-    $(nodeDIV).css("color", config.node.yellowtip.color);
-    $(nodeDIV).addClass("yellowtip");
+    jqNodeDIV.attr("variant", config.node.yellowtip.defaultTip);
+    jqNodeDIV.css("width", rect.w);
+    jqNodeDIV.css("height", rect.h);
+    jqNodeDIV.css("color", config.node.yellowtip.color);
+    jqNodeDIV.addClass("yellowtip");
   } else if (node.type === "textblock") {
     let rect = KFK.getShapeDynamicDefaultSize("textblock", "default");
-    $(nodeDIV).css("width", rect.w);
-    $(nodeDIV).css("height", rect.h);
-    $(nodeDIV).css("border-radius", config.node.textblock.borderRadius);
-    $(nodeDIV).css("border-style", config.node.textblock.borderStyle);
-    $(nodeDIV).css("border-color", config.node.textblock.borderColor);
-    $(nodeDIV).css("border-width", config.node.textblock.borderWidth);
-    $(nodeDIV).css("color", config.node.textblock.color);
-    $(nodeDIV).css("justify-content", config.node.yellowtip.textAlign);
-    $(nodeDIV).css("align-items", config.node.yellowtip.vertAlign);
-    $(nodeDIV).css("background-color", KFK.APP.model.shapeBkgColor);
+    jqNodeDIV.css("width", rect.w);
+    jqNodeDIV.css("height", rect.h);
+    jqNodeDIV.css("border-radius", config.node.textblock.borderRadius);
+    jqNodeDIV.css("border-style", config.node.textblock.borderStyle);
+    jqNodeDIV.css("border-color", config.node.textblock.borderColor);
+    jqNodeDIV.css("border-width", config.node.textblock.borderWidth);
+    jqNodeDIV.css("color", config.node.textblock.color);
+    jqNodeDIV.css("justify-content", config.node.yellowtip.textAlign);
+    jqNodeDIV.css("align-items", config.node.yellowtip.vertAlign);
+    jqNodeDIV.css("background-color", KFK.APP.model.shapeBkgColor);
   }
+  if (config.node && config.node[node.type] && config.node[node.type].fontSize)
+    jqNodeDIV.css("font-size", KFK.px(KFK.unpx(config.node[node.type].fontSize)));
+  else if (config.node && config.node.fontSize)
+    jqNodeDIV.css("font-size", KFK.px(KFK.unpx(config.node.fontSize)));
+  else
+    jqNodeDIV.css("font-size", KFK.px(18));
 
   $(nodeObj).addClass("innerobj");
   // nodeDIV.attr('w', node.width);
@@ -1648,7 +1635,7 @@ KFK._createNode = function (node) {
   jqNodeDIV.attr("nodetype", node.type);
   jqNodeDIV.attr("edittable", config.node[node.type].edittable ? true : false);
   if (node.type === "yellowtip") {
-    KFK._setTipBkgColor($(nodeDIV), KFK.APP.model.tipBkgColor);
+    KFK._setTipBkgColor(jqNodeDIV, KFK.APP.model.tipBkgColor);
   }
 
   KFK.C3.appendChild(nodeDIV);
@@ -1940,7 +1927,6 @@ KFK.setTipBkgImage = async function (jqDIV, svgid, svgcolor) {
   await KFK.syncNodePut("U", jqDIV, "change bkg image", KFK.fromJQ, false, 0, 1);
 };
 KFK._setTipBkgImage = function (jqDIV, svgid, svgcolor) {
-  console.log("Come here");
   jqDIV.find(".tip_bkg").remove();
   let bkgSVG = $(SVGs[svgid]);
   bkgSVG.addClass("tip_bkg");
@@ -2351,17 +2337,23 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
   });
 
   jqNodeDIV.dblclick(function (evt) {
-    if (KFK.isZooming) return;
-    if (
-      getBoolean(jqNodeDIV.attr("edittable")) &&
-      KFK.notAnyLocked(jqNodeDIV)
-    ) {
-      KFK.fromJQ = jqNodeDIV.clone();
-      let innerText = el(jqNodeDIV.find(".innerobj"));
-      KFK.editTextNode(innerText, el(jqNodeDIV));
-    }
+    evt.stopPropagation();
+    evt.stopImmediatePropagation();
+    evt.preventDefault();
+    KFK.startNodeEditing(jqNodeDIV);
   });
 };
+
+KFK.startNodeEditing = function(jqNodeDIV){
+  if (
+    getBoolean(jqNodeDIV.attr("edittable")) &&
+    KFK.notAnyLocked(jqNodeDIV)
+  ) {
+    KFK.fromJQ = jqNodeDIV.clone();
+    let innerText = el(jqNodeDIV.find(".innerobj"));
+    KFK.editTextNode(innerText, el(jqNodeDIV));
+  }
+}
 
 KFK.dumpNode = function (node) {
   let jqNode = node;
@@ -2825,6 +2817,13 @@ KFK.deleteHoverOrSelectedDiv = async function (evt) {
       await KFK.syncNodePut("U", jqFrom, "remove connect", oldJq, false, 0, 1);
       KFK.debug(KFK.hoveredConnectId, nid, tid);
     }
+  }
+};
+
+KFK.editHoverObject = async function (evt) {
+  if (KFK.hoverJqDiv()) {
+    if (KFK.anyLocked(KFK.hoverJqDiv())) return;
+    KFK.startNodeEditing(KFK.hoverJqDiv());
   }
 };
 
@@ -4215,6 +4214,22 @@ KFK.changeToTransparent = async function () {
 };
 
 KFK.initPropertyForm = function () {
+  let spinnerFontSize = $("#spinner_font_size").spinner({
+    min: 8,
+    max: 100,
+    step: 1,
+    start: 18,
+    spin: async function (evt, ui) {
+      let jqNode = KFK.getPropertyApplyToJqNode();
+      if (jqNode != null && KFK.notAnyLocked(jqNode)) {
+        KFK.fromJQ = jqNode.clone();
+        jqNode.css("font-size", KFK.px(ui.value));
+        await KFK.syncNodePut("U", jqNode, "set font size", KFK.fromJQ, false, 0, 1);
+      }
+    }
+  });
+  spinnerFontSize.spinner("value", 18);
+  $("#spinner_font_size").height("6px");
   let spinnerBorderWidth = $("#spinner_border_width").spinner({
     min: 0,
     max: 20,
@@ -4745,6 +4760,9 @@ KFK.addDocumentEventHandler = function () {
     if (KFK.inDesigner() === false) return;
     if (KFK.editting || KFK.isZooming) return;
     switch (evt.keyCode) {
+      case 13:
+        KFK.editHoverObject(evt);
+        break;
       case 27:
         //ESC
         //TODO: make real fullscreen? how can Miro do?
@@ -5404,21 +5422,17 @@ KFK.showCenterIndicator = function (cx, cy) {
 };
 
 KFK.toggleOnePage = function () {
-  KFK.debug("here0000");
   let main = $("#containermain");
   let scroller = $("#scroll-container");
   let scrCenter = KFK.scrCenter();
   let window_width = scrCenter.x * 2;
   let window_height = scrCenter.y * 2;
-  KFK.debug("here0");
   KFK.toggleControlButtonOnly();
-  KFK.debug("here01");
   if (KFK.masking === true) {
     KFK.endOnePage();
     scroller.scrollLeft(KFK.scrollPosToRemember.x);
     scroller.scrollTop(KFK.scrollPosToRemember.y);
   } else {
-    KFK.debug("here1");
     KFK.scrollPosToRemember = { x: scroller.scrollLeft(), y: scroller.scrollTop() };
     let scaleX = window_width / KFK._width;
     let scaleY = window_height / KFK._height;
@@ -5427,16 +5441,13 @@ KFK.toggleOnePage = function () {
     let scaledH = scale * KFK._height;
     let offsetX = (Math.round((window_width - scaledW) * 0.5)) / scale;
     let offsetY = (Math.round((window_height - scaledH) * 0.5)) / scale;
-    KFK.debug("here2");
     main.css({ 'transform-origin': '0px 0px', '-webkit-transform-origin': '0px 0px' });
     main.css("transform", `scale(${scale}, ${scale})`);
     setTimeout(function () {
       main.css("transform", `scale(${scale}, ${scale}) translate(${offsetX}px, ${offsetY}px)`);
     }, 200);
-    KFK.debug("here3");
     console.log("transform", `translate(${offsetX}px, ${offsetY}px)`)
     // main.css( "transform", `translate(${offsetX}px, ${offsetY}px)`)
-    KFK.debug("here4");
     KFK.masking = true;
     let mask = document.createElement('div');
     let jmask = $(mask);
