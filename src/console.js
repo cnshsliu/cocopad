@@ -74,8 +74,11 @@ KFK.WS = null;
 KFK.C3 = null;
 KFK.JC3 = null;
 KFK.docDuringLoading = null;
-KFK.fullScreen = false;
+KFK.inFullScreenMode = false;
+KFK.inPresentingMode = false;
+KFK.inOverviewMode = false;
 KFK.controlButtonsOnly = false;
+KFK.showRightTools = true;
 KFK.zoomFactor = 0;
 KFK.lineMoverDragging = false;
 KFK.scaleBy = 1.01;
@@ -338,7 +341,6 @@ KFK.updatePropertyFormWithNode = function (jqNodeDIV) {
     }
     $("#fontColor").spectrum("set", fontColor);
     $("#spinner_font_size").spinner("value", fontSize);
-    console.log("update property form font size to", fontSize);
     KFK.APP.setData("model", "textAlign", textAlign);
     KFK.APP.setData("model", "vertAlign", vertAlign);
   }
@@ -856,8 +858,8 @@ KFK.initC3 = function () {
 
   //click c3  click C3 click canvas click background
   KFK.JC3.dblclick(function (evt) {
-    if (KFK.masking) {
-      KFK.endOnePage({ x: evt.offsetX, y: evt.offsetY });
+    if (KFK.inOverviewMode === true) {
+      KFK.toggleOnePage({ x: evt.offsetX, y: evt.offsetY });
     } else {
       KFK.toggleOnePage();
     }
@@ -985,6 +987,7 @@ KFK.initC3 = function () {
 
   KFK.JC3.on("mousemove", function (evt) {
     if (KFK.inDesigner() === false) return;
+    if (KFK.inPresentingMode || KFK.inOverviewMode) return;
     KFK.showUserMovingBadge(
       KFK.APP.model.cocouser,
       evt.clientX,
@@ -1912,8 +1915,6 @@ KFK.setModeIndicatorForYellowTip = function (tipvariant) {
 
 KFK.setTipVariant = function (tipvariant) {
   config.node.yellowtip.defaultTip = tipvariant;
-  console.log(config.node.yellowtip.defaultTip);
-  // console.log(KFK.images[config.node.yellowtip.defaultTip].src);
   if (KFK.mode === "yellowtip") {
     KFK.setModeIndicatorForYellowTip(tipvariant);
     $("#modeIndicatorImg").hide();
@@ -1923,7 +1924,6 @@ KFK.setTipVariant = function (tipvariant) {
   if (theJqNode !== null && KFK.notAnyLocked(theJqNode)) {
     let oldColor = KFK.getTipBkgColor(theJqNode);
     theJqNode.attr("variant", tipvariant);
-    console.log(theJqNode.attr("variant"));
     KFK.setTipBkgImage(theJqNode, tipvariant, oldColor);
   }
 };
@@ -2309,6 +2309,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
   });
   //click node
   jqNodeDIV.click(evt => {
+    if (KFK.inPresentingMode || KFK.inOverviewMode) return;
     KFK.pickedSvgLine = null;
     KFK.afterDragging = false;
     KFK.afterResizing = false;
@@ -2340,6 +2341,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
     evt.stopPropagation();
     evt.stopImmediatePropagation();
     evt.preventDefault();
+    if (KFK.inPresentingMode === true || KFK.inOverviewMode) return;
     KFK.startNodeEditing(jqNodeDIV);
   });
 };
@@ -2954,6 +2956,11 @@ KFK.showGridChanged = function (checked) {
 };
 KFK.showBoundingChanged = function (checked) {
   KFK.APP.model.showbounding = checked;
+  if (checked) {
+    $('.pageBoundingLine').removeClass('noshow');
+  } else {
+    $('.pageBoundingLine').addClass('noshow');
+  }
   KFK.saveLocalCocoConfig();
 };
 KFK.snapChanged = function (checked) {
@@ -3005,8 +3012,6 @@ KFK.init = async function () {
     if (localCocoConfigStr) {
       let cococonfig = JSON.parse(localCocoConfigStr);
       if (cococonfig.showgrid !== undefined) {
-        console.log("local config loaded");
-        console.log(JSON.stringify(cococonfig));
         KFK.mergeAppData('model.cococonfig', cococonfig);
         if (cococonfig.showgrid === true)
           $('#containerbkg').show();
@@ -3035,7 +3040,6 @@ KFK.init = async function () {
 
   let loadedSvgObjs = {};
   $.each(KFK.APP.tip_groups, (index, group) => {
-    console.log('KFK.APP.tip_groups', index, group);
     let title = group.title;
     let svgHolder = $(group.div);
     let svgs = group.svgs;
@@ -3165,6 +3169,45 @@ KFK.onWsConnected = function () {
       KFK.sendCmd('DOC_ID', { doc_id: KFK.APP.model.cocodoc.doc_id });
     }
   }
+};
+KFK.rememberLayoutDisplay = function () {
+  KFK.layoutRemembered = {
+    showgrid: KFK.APP.model.cococonfig.showgrid,
+    minimap: KFK.APP.show.section.minimap,
+    toplogo: $('#toplogo').css("visibility"),
+    docHeaderInfo: $('#docHeaderInfo').css("visibility"),
+    rtcontrol: $('#rtcontrol').css("visibility"),
+    left: $('#left').css("display"),
+    right: $('#right').css("display"),
+  }
+};
+KFK.restoreLayoutDisplay = function () {
+  KFK.APP.model.cococonfig.showgrid = KFK.layoutRemembered.showgrid;
+  if (KFK.layoutRemembered.showgrid)
+    $('#containerbkg').addClass('grid1');
+  else
+    $('#containerbkg').removeClass('grid1');
+  KFK.showSection({ minimap: KFK.layoutRemembered.minimap });
+  $('#toplogo').css("visibility", KFK.layoutRemembered.toplogo);
+  $('#docHeaderInfo').css("visibility", KFK.layoutRemembered.docHeaderInfo);
+  $('#rtcontrol').css("visibility", KFK.layoutRemembered.rtcontrol);
+  $('#left').css("display", KFK.layoutRemembered.left);
+  $('#right').css("display", KFK.layoutRemembered.right);
+};
+KFK.setLayoutDisplay = function (config) {
+  KFK.debug('setlayoutdisplay', JSON.stringify(config));
+  KFK.rememberLayoutDisplay();
+  KFK.APP.model.cococonfig.showgrid = config.showgrid;
+  if (config.showgrid === true)
+    $('#containerbkg').addClass('grid1');
+  else
+    $('#containerbkg').removeClass('grid1');
+  KFK.showSection({ minimap: config.minimap });
+  $('#toplogo').css("visibility", config.toplogo);
+  $('#docHeaderInfo').css("visibility", config.docHeaderInfo);
+  $('#rtcontrol').css("visibility", config.rtcontrol);
+  $('#left').css("display", config.left);
+  $('#right').css("display", config.right);
 };
 
 KFK.showSection = function (options) {
@@ -3770,7 +3813,6 @@ KFK.onWsMsg = async function (response) {
       KFK.scrLog("基本资料未成功设置，请重试" + response.error);
       break;
     case "CLEANUP":
-      console.log("接受到CLEANUP")
       KFK.doCleanUp();
       break;
     case "SETBGCOLOR":
@@ -3779,8 +3821,6 @@ KFK.onWsMsg = async function (response) {
       break;
     case 'EMAILSHARE':
     case 'SHARECODE':
-    case 'OPENSHARECODE':
-    case 'OPENSHARECODE-FALSE':
       SHARE.onWsMsg(response);
       break;
     case 'ERROR':
@@ -3927,7 +3967,6 @@ KFK.docRowClickHandler = async function (record, index) {
 //-> input passwd, then come to here
 KFK.getDocPwd = async function () {
   KFK.APP.setData("model", "passwordinputok", "ok");
-  console.log(KFK.tryToOpenDocId, KFK.APP.model.opendocpwd);
   await KFK.refreshDesigner(KFK.tryToOpenDocId, KFK.APP.model.opendocpwd);
 };
 KFK.cancelDocPwd = function () {
@@ -4192,13 +4231,10 @@ KFK.base64ToCode = function (base64) {
 
 KFK.getPropertyApplyToJqNode = function () {
   if (KFK.hoverJqDiv() !== null) {
-    console.log("APPLY TO  hoverJqDIV");
     return KFK.hoverJqDiv();
   } else if (KFK.lastFocusOnJqNode != null) {
-    console.log("APPLY TO  lastFocusOnJqNode");
     return KFK.lastFocusOnJqNode;
   } else if (KFK.justCreatedJqNode != null) {
-    console.log("APPLY TO  justCreatedJqNode");
     return KFK.justCreatedJqNode;
   } else {
     return null;
@@ -4718,7 +4754,6 @@ KFK.cleanAllNodes = function () {
   //send cmd to server
 };
 KFK.doCleanUp = async function () {
-  console.log('cocodoc is', KFK.APP.model.cocodoc.doc_id);
   await KFK.refreshDesigner(KFK.APP.model.cocodoc.doc_id, '');
   KFK.scrLog("白板已被发起人擦除");
   KFK.C3.dispatchEvent(KFK.refreshC3event);
@@ -4774,48 +4809,52 @@ KFK.addDocumentEventHandler = function () {
       if ((evt.keyCode >= 48 && evt.keyCode <= 57) || (evt.keyCode >= 65 && evt.keyCode <= 90)) {
         KFK.keypool += evt.key;
         if (KFK.keypool.endsWith('haola') || KFK.keypool.endsWith('hl')) {
-          KFK.startPresentation(); KFK.keypool = ""; return;
+          if (KFK.inPresentingMode === false)
+            KFK.startPresentation();
+          else
+            KFK.endPresentation();
+          KFK.keypool = ""; return;
         } else if (KFK.keypool.endsWith('one')) {
           KFK.toggleOnePage(); KFK.keypool = ""; return;
         } else if (KFK.keypool.endsWith('fs')) {
           KFK.toggleFullScreen(); KFK.keypool = ""; return;
-        } else if (KFK.presenting && KFK.keypool.endsWith('stop')) {
+        } else if (KFK.inPresentingMode && KFK.keypool.endsWith('stop')) {
           KFK.endPresentation(); KFK.keypool = ""; return;
         } else if (KFK.keypool.endsWith('first') || KFK.keypool.endsWith('home')) {
-          if (KFK.presenting) { KFK.presentFirstPage(); }
+          if (KFK.inPresentingMode) { KFK.presentFirstPage(); }
           else { KFK.gotoFirstPage(); }
           KFK.keypool = ""; return;
         } else if (KFK.keypool.endsWith('last') || KFK.keypool.endsWith('end')) {
-          if (KFK.presenting) { KFK.presentLastPage(); }
+          if (KFK.inPresentingMode) { KFK.presentLastPage(); }
           else { KFK.gotoLastPage(); }
           KFK.keypool = ""; return;
         } else if (KFK.keypool.endsWith('prev')) {
-          if (KFK.presenting) { KFK.presentPrevPage(); }
+          if (KFK.inPresentingMode) { KFK.presentPrevPage(); }
           else { KFK.gotoPrevPage(); }
           KFK.keypool = ""; return;
         } else if (KFK.keypool.endsWith('next')) {
-          if (KFK.presenting) { KFK.presentNextPage(); }
+          if (KFK.inPresentingMode) { KFK.presentNextPage(); }
           else { KFK.gotoNextPage(); }
           KFK.keypool = ""; return;
         } else if (KFK.keypool.match(/([0-9]+)g$/)) {
           let m = KFK.keypool.match(/([0-9]+)g$/);
-          let pindex = parseInt(m[1])-1;
-          pindex = Math.max(0, Math.min(pindex, KFK.pageBounding.Pages.length-1));
-          if (KFK.presenting) {
+          let pindex = parseInt(m[1]) - 1;
+          pindex = Math.max(0, Math.min(pindex, KFK.pageBounding.Pages.length - 1));
+          if (KFK.inPresentingMode) {
             KFK.presentAnyPage(pindex);
           } else {
             KFK.gotoAnyPage(pindex);
           }
           KFK.keypool = ""; return;
-        } else if (KFK.presenting && KFK.keypool.endsWith('b')) {
+        } else if (KFK.inPresentingMode && KFK.keypool.endsWith('b')) {
           KFK.presentBlackMask(); KFK.keypool = ""; return;
-        } else if (KFK.presenting && KFK.keypool.endsWith('w')) {
+        } else if (KFK.inPresentingMode && KFK.keypool.endsWith('w')) {
           KFK.presentWhiteMask(); KFK.keypool = ""; return;
         } else if (KFK.keypool.length > 5) {
           KFK.keypool = KFK.keypool.substr(-4);
         }
       }
-      if (KFK.presenting === true) {
+      if (KFK.inPresentingMode === true) {
         if (evt.keyCode === 34 || evt.keyCode === 39 || evt.keyCode === 40) {
           //Page down, arrow right or arrow down
           KFK.presentNextPage();
@@ -4831,13 +4870,25 @@ KFK.addDocumentEventHandler = function () {
           KFK.presentLastPage();
           evt.preventDefault();
         }
-      }else{
-        if (evt.keyCode === 34){
-          //Page down, arrow right or arrow down
+      } else {
+        if (evt.keyCode === 34) {
+          //Page down
           KFK.gotoNextPage();
           evt.preventDefault();
+        } else if (evt.keyCode === 38) { //UP
+          KFK.gotoUpperPage();
+          evt.preventDefault();
+        } else if (evt.keyCode === 40) { //Down
+          KFK.gotoLowerPage();
+          evt.preventDefault();
+        } else if (evt.keyCode === 37) { //Left
+          KFK.gotoLeftPage();
+          evt.preventDefault();
+        } else if (evt.keyCode === 39) { //Right
+          KFK.gotoRightPage();
+          evt.preventDefault();
         } else if (evt.keyCode === 33) {
-          //Page up, arrow left or arrow up
+          //Page up
           KFK.gotoPrevPage();
           evt.preventDefault();
         } else if (evt.keyCode === 36) {
@@ -4880,7 +4931,8 @@ KFK.addDocumentEventHandler = function () {
       case 27:
         //ESC
         //TODO: make real fullscreen? how can Miro do?
-        if (KFK.fullScreen) {
+        if (KFK.inFullScreenMode === true) {
+          evt.preventDefault();
           KFK.toggleFullScreen();
         }
         KFK.cancelAlreadySelected();
@@ -5180,20 +5232,34 @@ KFK.toggleRight = function (flag) {
   if (KFK.APP.model.cocodoc.doclocked) {
     return;
   }
-  if (KFK.fullScreen || KFK.controlButtonsOnly) return;
-  $("#right").toggle("slide", { duration: 100, direction: "right" });
+  if (KFK.inFullScreenMode === true || KFK.controlButtonsOnly === true) return;
+  KFK.showRightTools = !KFK.showRightTools;
+  let display = KFK.showRightTools ? 'block' : 'none';
+  $("#right").css("display", display);
 };
 KFK.toggleFullScreen = function (evt) {
-  KFK.fullScreen = !KFK.fullScreen;
-  KFK.showSection({ minimap: !KFK.fullScreen });
-  let display = KFK.fullScreen ? 'none' : 'block';
-  $("#left").css("display", display);
-  $("#right").css("display", display);
+  if (KFK.inPresentingMode) return;
+  KFK.inFullScreenMode = !KFK.inFullScreenMode;
+  if (KFK.inFullScreenMode === true) {
+    if (KFK.inOverviewMode === false) {
+      KFK.setLayoutDisplay({
+        showgrid: KFK.APP.model.cococonfig.showgrid,
+        minimap: false,
+        toplogo: 'hidden',
+        docHeaderInfo: 'hidden',
+        rtcontrol: 'hidden',
+        left: 'none',
+        right: 'none',
+      });
+    }
+    KFK.scrLog('进入全屏模式: 输入fs退出');
+  } else {
+    KFK.scrLog('');
+    if (KFK.inOverviewMode === false)
+      KFK.restoreLayoutDisplay();
+  }
   KFK.APP.setData('show', 'actionlog', false);
-  $('#docHeaderInfo').css("visibility", KFK.fullScreen ? 'hidden' : 'visible');
-  $('#rtcontrol').css("visibility", KFK.fullScreen ? 'hidden' : 'visible');
-  $('#toplogo').css("visibility", KFK.fullScreen ? 'hidden' : 'visible');
-  if (KFK.fullScreen) {
+  if (KFK.inFullScreenMode === true) {
     KFK.openFullscreen();
   } else {
     KFK.closeFullscreen();
@@ -5220,7 +5286,7 @@ KFK.toggleControlButtonOnly = function (evt) {
   //add a mask layer
 };
 KFK.showHidePanel = function (flag) {
-  if (flag === true && (KFK.fullScreen === false && KFK.controlButtonsOnly === false)) {
+  if (flag === true && (KFK.inFullScreenMode === false && KFK.controlButtonsOnly === false)) {
     $("#left").css("display", "block");
     $("#right").css("display", "block");
   } else {
@@ -5556,13 +5622,43 @@ KFK.gotoAnyPage = function (pageIndex) {
   } else if (pageIndex >= KFK.pageBounding.Page.length) {
     KFK.currentPage = KFK.pageBounding.Pages.length - 1;
     KFK.___gotoPage(KFK.currentPage);
-  }else{
+  } else {
     KFK.currentPage = 0;
     KFK.___gotoPage(KFK.currentPage);
   }
 };
+KFK.gotoUpperPage = function () {
+  let pidx = KFK.currentPage - KFK.PageNumberHori;
+  if (pidx < 0) return;
+  KFK.currentPage = pidx;
+  KFK.___gotoPage(KFK.currentPage);
+};
+KFK.gotoLowerPage = function () {
+  let pidx = KFK.currentPage + KFK.PageNumberHori;
+  if (pidx > KFK.pageBounding.Pages.length - 1) return;
+  KFK.currentPage = pidx;
+  KFK.___gotoPage(KFK.currentPage);
+};
+KFK.gotoLeftPage = function () {
+  let rowIdx = Math.floor(KFK.currentPage / KFK.PageNumberHori);
+  let columIdx = KFK.currentPage % KFK.PageNumberHori;
+  let nextColumIdx = columIdx - 1;
+  if (nextColumIdx < 0) return;
+  let pidx = rowIdx * KFK.PageNumberHori + nextColumIdx;
+  KFK.currentPage = pidx;
+  KFK.___gotoPage(KFK.currentPage);
+};
+KFK.gotoRightPage = function () {
+  let rowIdx = Math.floor(KFK.currentPage / KFK.PageNumberHori);
+  let columIdx = KFK.currentPage % KFK.PageNumberHori;
+  let nextColumIdx = columIdx + 1;
+  if (nextColumIdx > KFK.PageNumberVert - 1) return;
+  let pidx = rowIdx * KFK.PageNumberHori + nextColumIdx;
+  KFK.currentPage = pidx;
+  KFK.___gotoPage(KFK.currentPage);
+};
 KFK.___gotoPage = function (pageIndex) {
-  KFK.scrLog(`goto page ${pageIndex+1}`);
+  // KFK.scrLog(`goto page ${pageIndex + 1}`);
   let main = $("#containermain");
   let scroller = $("#scroll-container");
   let scrCenter = KFK.scrCenter();
@@ -5572,23 +5668,47 @@ KFK.___gotoPage = function (pageIndex) {
   let toLeft = KFK.pageBounding.Pages[pageIndex].left;
   let toTop = KFK.pageBounding.Pages[pageIndex].top;
 
-  console.log(`goto to ${toLeft}, ${toTop}`);
   scroller.scrollLeft(toLeft);
   scroller.scrollTop(toTop);
 };
 
-KFK.startPresentation = function () {
-  KFK.scrLog('Start presentation');
-  KFK.presenting = true;
-  if (KFK.APP.model.cococonfig.showgrid === true)
-    $('#containerbkg').removeClass("grid1");
+KFK.startPresentation = async function () {
+  if (KFK.inOverviewMode) return;
+  KFK.maskScreen();
+  KFK.openFullscreen();
+  await KFK.sleep(500);
+  KFK.setLayoutDisplay({
+    showgrid: false,
+    minimap: false,
+    toplogo: 'hidden',
+    docHeaderInfo: 'hidden',
+    rtcontrol: 'hidden',
+    left: 'none',
+    right: 'none',
+  });
+  KFK.scrLog('进入演示模式: 输入hl退出');
+  KFK.inPresentingMode = true;
   KFK.presentFirstPage();
 };
 KFK.endPresentation = function () {
-  KFK.scrLog('End presentation');
-  KFK.presenting = false;
-  if (KFK.APP.model.cococonfig.showgrid === true)
-    $('#containerbkg').addClass("grid1");
+  if (KFK.inOverviewMode) return;
+  KFK.unmaskScreen();
+  KFK.closeFullscreen();
+  KFK.restoreLayoutDisplay();
+  KFK.scrLog('退出演示模式');
+  KFK.inPresentingMode = false;
+
+  let main = $("#containermain");
+  let scroller = $("#scroll-container");
+  let scrCenter = KFK.scrCenter();
+  let window_width = scrCenter.x * 2;
+  let window_height = scrCenter.y * 2;
+
+  main.css({ 'transform-origin': `0px 0px`, '-webkit-transform-origin': `0px 0px` });
+  main.css("transform", `scale(1, 1)`);
+  setTimeout(function () {
+    main.css("transform", `scale(1, 1) translate(0px, 0px)`);
+  }, 100);
 };
 KFK.presentFirstPage = function () {
   KFK.currentPage = 0;
@@ -5624,8 +5744,7 @@ KFK.presentAnyPage = function (pageIndex) {
   }
 };
 KFK.___presentPage = function (pageIndex) {
-  KFK.scrLog(`Present page ${pageIndex}`);
-  KFK.presenting = true;
+  KFK.inPresentingMode = true;
   let main = $("#containermain");
   let scroller = $("#scroll-container");
   let scrCenter = KFK.scrCenter();
@@ -5635,32 +5754,57 @@ KFK.___presentPage = function (pageIndex) {
   let toLeft = KFK.pageBounding.Pages[pageIndex].left;
   let toTop = KFK.pageBounding.Pages[pageIndex].top;
 
-  console.log(`scroll to ${toLeft}, ${toTop}`);
   scroller.scrollLeft(toLeft);
   scroller.scrollTop(toTop);
 
-  // main.css({ 'transform-origin': '0px 0px', '-webkit-transform-origin': '0px 0px' });
-  // main.css("transform", `scale(${scale}, ${scale})`);
-  // setTimeout(function () {
-  //   main.css("transform", `scale(${scale}, ${scale}) translate(${offsetX}px, ${offsetY}px)`);
-  // }, 200);
-  // console.log("transform", `translate(${offsetX}px, ${offsetY}px)`)
+  let scaleX = window_width / KFK.A4Width;
+  let scaleY = window_height / KFK.A4Height;
+  let scale = Math.min(scaleX, scaleY);
+  let scaledW = scale * KFK.A4Width;
+  let scaledH = scale * KFK.A4Height;
+  let offsetX = (Math.round((window_width - scaledW) * 0.5)) / scale;
+  let offsetY = (Math.round((window_height - scaledH) * 0.5)) / scale;
 
+  main.css({ 'transform-origin': `${toLeft}px ${toTop}px`, '-webkit-transform-origin': `${toLeft}px ${toTop}px` });
+  main.css("transform", `scale(${scale}, ${scale})`);
+  setTimeout(function () {
+    //  main.css("transform", `scale(${scale}, ${scale}) translate(${offsetX}px, ${offsetY}px)`);
+    main.css("transform", `scale(${scale}, ${scale}) translate(${offsetX}px, ${offsetY}px)`);
+  }, 100);
 };
-KFK.toggleOnePage = function () {
+KFK.toggleOnePage = function (pos) {
+  if (KFK.inPresentingMode) return;
   let main = $("#containermain");
   let scroller = $("#scroll-container");
   let scrCenter = KFK.scrCenter();
   let window_width = scrCenter.x * 2;
   let window_height = scrCenter.y * 2;
-  KFK.toggleControlButtonOnly();
-  KFK.debug("here0", KFK.masking);
-  if (KFK.masking === true) {
-
-    KFK.endOnePage();
-    scroller.scrollLeft(KFK.scrollPosToRemember.x);
-    scroller.scrollTop(KFK.scrollPosToRemember.y);
+  KFK.APP.setData('show', 'actionlog', false);
+  if (KFK.inOverviewMode === true) {
+    KFK.scrLog("");
+    main.css({ 'transform-origin': '0px 0px', '-webkit-transform-origin': '0px 0px' });
+    main.css("transform", `scale(1, 1)`);
+    if (pos !== undefined) {
+      scroller.scrollLeft(pos.x - window_width * 0.5);
+      scroller.scrollTop(pos.y - window_height * 0.5);
+    }
+    KFK.unmaskScreen();
+    KFK.inOverviewMode = false;
+    if (KFK.inFullScreenMode === false)
+      KFK.restoreLayoutDisplay();
   } else {
+    if (KFK.inFullScreenMode === false) {
+      KFK.setLayoutDisplay({
+        showgrid: false,
+        minimap: false,
+        toplogo: 'hidden',
+        docHeaderInfo: 'hidden',
+        rtcontrol: 'hidden',
+        left: 'none',
+        right: 'none',
+      });
+    }
+
     if (KFK.APP.model.cococonfig.showgrid === true)
       $('#containerbkg').removeClass("grid1");
     KFK.scrollPosToRemember = { x: scroller.scrollLeft(), y: scroller.scrollTop() };
@@ -5676,87 +5820,24 @@ KFK.toggleOnePage = function () {
     setTimeout(function () {
       main.css("transform", `scale(${scale}, ${scale}) translate(${offsetX}px, ${offsetY}px)`);
     }, 200);
-    console.log("transform", `translate(${offsetX}px, ${offsetY}px)`)
     // main.css( "transform", `translate(${offsetX}px, ${offsetY}px)`)
-    KFK.masking = true;
-    let mask = document.createElement('div');
-    let jmask = $(mask);
-    jmask.width(KFK._width);
-    jmask.height(KFK._height);
-    jmask.addClass("mask");
-    // jmask.appendTo(KFK.JC3);
-    KFK.C3.appendChild(mask);
-    KFK.scrLog("双击某区域以查看")
+    KFK.inOverviewMode = true;
+    KFK.maskScreen();
+    KFK.scrLog("进入全局要览: 要看哪里, 就双击哪里吧");
   }
 };
-KFK.endOnePage = function (pos) {
-  KFK.scrLog("");
-  let main = $("#containermain");
-  let scroller = $("#scroll-container");
-  let scrCenter = KFK.scrCenter();
-  let window_width = scrCenter.x * 2;
-  let window_height = scrCenter.y * 2;
 
-  if (KFK.APP.model.cococonfig.showgrid === true) {
-    KFK.debug("show");
-    $('#containerbkg').addClass('grid1');
-  } else {
-    KFK.debug("noshow");
-  }
-
-  main.css({ 'transform-origin': '0px 0px', '-webkit-transform-origin': '0px 0px' });
-  main.css("transform", `scale(1, 1)`);
-  if (pos !== undefined) {
-    scroller.scrollLeft(pos.x - window_width * 0.5);
-    scroller.scrollTop(pos.y - window_height * 0.5);
-  }
-  KFK.toggleControlButtonOnly();
-  KFK.masking = true;
+KFK.maskScreen = function () {
+  let mask = document.createElement('div');
+  let jmask = $(mask);
+  jmask.width(KFK._width);
+  jmask.height(KFK._height);
+  jmask.addClass("mask");
+  // jmask.appendTo(KFK.JC3);
+  KFK.C3.appendChild(mask);
+};
+KFK.unmaskScreen = function () {
   KFK.JC3.find('.mask').remove();
-  KFK.masking = false;
-
-};
-
-//just before rebuild zoomin/zoomout
-KFK.zoomIn = function () {
-  let main = $("#containermain");
-  let scroller = $("#scroll-container");
-  let scrCenter = KFK.scrCenter();
-  let window_width = scrCenter.x * 2;
-  let window_height = scrCenter.y * 2;
-  let scaleBy = 1.1;
-  let oldScale = KFK.zoomLevel;
-  let newScale = oldScale * scaleBy;
-  // newScaleX = newScaleY = Math.min(newScaleX, newScaleY);
-  KFK.showCenterIndicator();
-
-  let x = (scrCenter.x + scroller.scrollLeft()) / oldScale;
-  let y = (scrCenter.y + scroller.scrollTop()) / oldScale;
-  // let x = (scrCenter.x + scroller.scrollLeft())/oldScaleX; let y = (scrCenter.y + scroller.scrollTop())/oldScaleY;
-  // let x = (scrCenter.x + scroller.scrollLeft())*oldScaleX; let y = (scrCenter.y + scroller.scrollTop())*oldScaleY;
-  KFK.JC3.css(
-    {
-      'transform-origin': KFK.px(x) + ' ' + KFK.px(y) + ' 0px',
-      '-webkit-transform-origin': KFK.px(x) + ' ' + KFK.px(y) + ' 0px',
-    }
-  );
-  KFK.JC3.css(
-    "transform",
-    `scale(${newScale}, ${newScale})`
-  )
-  main.css(
-    {
-      'transform-origin': KFK.px(x) + ' ' + KFK.px(y) + ' 0px',
-      '-webkit-transform-origin': KFK.px(x) + ' ' + KFK.px(y) + ' 0px',
-    }
-  );
-  main.css(
-    "transform",
-    `scale(${newScale}, ${newScale})`
-  )
-  KFK.zoomLevel = newScale;
-  console.log(KFK.JC3.width(), '*', KFK.zoomLevel, '=', main.css('width'));
-  KFK.C3.dispatchEvent(KFK.refreshC3event);
 };
 
 KFK.printCallStack = function () {
@@ -6022,8 +6103,8 @@ KFK.initSvgLayer = function () {
   KFK.debug('svg layer initialized');
   KFK.pageBounding = { Pages: [] };
   let boundingLineOption = {
-    color: 'rgba(255, 255, 255, 0.2)',
-    width: 10,
+    color: 'rgba(255, 255, 255, 0.8)',
+    width: 1,
     linecap: 'square'
   }
   for (let i = 0; i < KFK.PageNumberVert; i++) {
@@ -6469,7 +6550,6 @@ KFK.fsElem = document.documentElement;
 
 /* View in fullscreen */
 KFK.openFullscreen = function () {
-  console.log('open Full screen');
   if (KFK.fsElem.requestFullscreen) {
     KFK.fsElem.requestFullscreen();
   } else if (KFK.fsElem.mozRequestFullScreen) { /* Firefox */
