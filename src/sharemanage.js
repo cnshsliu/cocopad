@@ -69,14 +69,6 @@ SHARE.onWsMsg = async (response) => {
             else
                 KFK.scrLog("分享以配置好,你现在可以选择是否复制到粘贴板");
             break;
-        case 'OPENSHARECODE':
-            //收到根据sharecode翻译过来的doc_id
-            KFK.debug("OPENSHARECODE, got doc_id:", response.doc_id);
-            KFK.refreshDesigner(response.doc_id, '');
-            break;
-        case 'OPENSHAREDOC-FALSE':
-            KFK.scrLog(response.msg);
-            break;
         default:
             KFK.warn('SHARE receied an unknown command');
             break;

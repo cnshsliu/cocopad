@@ -1,3 +1,4 @@
+//TODO: 用分享码分享? 现在是DOU码, {D:xx,O:yy,U:zz} 的base64
 //TODO: 演示模式
 //TODO: 标题字体
 //TODO: 部署
