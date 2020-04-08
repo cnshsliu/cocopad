@@ -224,6 +224,10 @@ body {
   z-index: -10;
   background-color: rgb(208, 224, 227);
 }
+.grid1{
+  background-image: url("../assets/grid1.svg");
+  background-size: 20px 20px;
+}
 
 .liukehong1 {
   background: red;
@@ -631,6 +635,17 @@ select:focus {
   border-radius: 10px;
   padding: 20px;
   z-index: 100;
+}
+#shareDialog img{
+  position: absolute;
+  top: 50px; left:5px;
+  width: 100px;
+  height: 100px;
+}
+.shareItTips{
+  font-size: 20px;
+  justify-content: center;
+  text-align: center;
 }
 
 .userbadge {

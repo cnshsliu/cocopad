@@ -1,6 +1,6 @@
 const ACM = {};
 import KFK from './console';
-import WS from "./ws";
+import BossWS from "./bossws";
 
 ACM.registerUser = function () {
     let tmpRegData = KFK.APP.model.register;
@@ -22,9 +22,9 @@ ACM.registerUser = function () {
         KFK.APP.setData("model", "register", tmpRegData);
         return;
     }
-    WS.start(
+    BossWS.start(
         function () {
-            WS.put("REGUSER", { userid: userid, pwd: pwd, name: name });
+            BossWS.put("REGUSER", { userid: userid, pwd: pwd, name: name });
         },
         async function (response) {
             response = JSON.parse(response);
@@ -51,7 +51,7 @@ ACM.registerUser = function () {
 
                 }
             } catch (error) { console.log(error); }
-            finally { WS.close(); }
+            finally { BossWS.close(); }
         },
         0,
         'registerUser',
@@ -60,10 +60,10 @@ ACM.registerUser = function () {
 };
 
 ACM.resendVerifyCode = async function () {
-    WS.start(
+    BossWS.start(
         function () {
             let regtoken = sessionStorage.getItem("regtoken");
-            WS.put("RESENDCODE", { regtoken: regtoken });
+            BossWS.put("RESENDCODE", { regtoken: regtoken });
         },
         async function (response) {
             response = JSON.parse(response);
@@ -81,7 +81,7 @@ ACM.resendVerifyCode = async function () {
                         break;
                 }
             } catch (error) { console.log(error); }
-            finally { WS.close(); }
+            finally { BossWS.close(); }
         },
         0,
         'resendVerifyCode',
@@ -94,9 +94,9 @@ ACM.signin = function () {
     let userid = KFK.APP.model.signin.userid;
     let pwd = KFK.APP.model.signin.pwd;
     KFK.info("singin " + userid);
-    WS.start(
+    BossWS.start(
         function () {
-            WS.put("SIGNIN", { userid: userid, pwd: pwd });
+            BossWS.put("SIGNIN", { userid: userid, pwd: pwd });
         },
         function (response) {
             response = JSON.parse(response);
@@ -107,7 +107,7 @@ ACM.signin = function () {
                         KFK.updateCocouser(retuser);
                         KFK.resetAllLocalData();
                         KFK.APP.setData('model', 'isDemoEnv', false);
-                        setTimeout(() => { KFK.gotoWork(); }, 500);
+                        setTimeout(() => { KFK.checkSession(); }, 400);
                         break;
                     case "PLSSIGNIN":
                         KFK.scrLog(response.msg);
@@ -123,7 +123,7 @@ ACM.signin = function () {
                         break;
                 }
             } catch (error) { console.log(error); }
-            finally { WS.close(); }
+            finally { BossWS.close(); }
         },
         0,
         'signin',
@@ -131,23 +131,12 @@ ACM.signin = function () {
     );
 };
 
-ACM.signout = function () {
-    KFK.WS.put("SIGNOUT", { userid: KFK.APP.model.cocouser.userid });
-    KFK.resetAllLocalData();
-    localStorage.removeItem('cocouser');
-    KFK.APP.model.cocouser = {
-        userid: "",
-        name: "",
-        avatar: "avatar-0",
-        avatar_src: null
-    };
-};
 
 ACM.verifyRegCode = async function () {
-    WS.start(
+    BossWS.start(
         function () {
             let regtoken = sessionStorage.getItem('regtoken');
-            WS.put("VERIFYREGCODE", { code: KFK.APP.model.register.code, regtoken: regtoken });
+            BossWS.put("VERIFYREGCODE", { code: KFK.APP.model.register.code, regtoken: regtoken });
         },
         function (response) {
             response = JSON.parse(response);
@@ -165,7 +154,7 @@ ACM.verifyRegCode = async function () {
                     case "VERIFY-SUCCESS":
                         KFK.scrLog("验证成功，请登录");
                         sessionStorage.removeItem('regtoken');
-                        localStorage.removeItem("sharecode");
+                        localStorage.removeItem("shareCode");
                         KFK.gotoSignin();
                         break;
                     case "VERIFY-ALREAY":
@@ -173,7 +162,7 @@ ACM.verifyRegCode = async function () {
                         break;
                 }
             } catch (error) { console.log(error); }
-            finally { WS.close(); }
+            finally { BossWS.close(); }
         },
         0,
         'verifyRegCode',
