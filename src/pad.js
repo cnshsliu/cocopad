@@ -161,6 +161,7 @@ const app = new Vue({
         snap: true,
         showgrid: true,
         showlock: true,
+        showbounding: true,
       },
       dragToCreate: true,
       lineToggleMode: false,
@@ -300,22 +301,8 @@ const app = new Vue({
       KFK.alignNodes(direction);
     },
 
-    showGridChanged(checked) {
-      console.log(`showGrid ${checked}`);
-      // if (!checked) { app.setData('model', 'oldSnap', app.model.snap); app.setData('model', 'snap', false); }
-      // else { app.setData('model', 'snap', app.model.oldSnap); }
-      KFK.showGridChanged(checked);
-    },
-    snapChanged(checked) {
-      console.log(`snap ${checked}`);
-    },
     dragToCreateChanged(checked) {
       console.log(`dragToCreate ${checked}`);
-    },
-    setBGto(color) {
-      console.log('Set BG to ' + color);
-      this.setData('model', 'msg', color);
-      $('#containerbkg')[0].style.backgroundColor = color;
     },
     save() {
       KFK.save();

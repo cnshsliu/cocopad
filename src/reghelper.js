@@ -16,16 +16,8 @@ const RegHelper = {
     return g;
   },
   getDocIdInUrl: (pathname) => {
-    let m = pathname.match(/\/doc\/(.+)\/code\/(.+)/);
+    let m = pathname.match(/^\/doc\/(.+)\s*$/);
     return m;
-  },
-  getShareCodeInUrl: (pathname) => {
-    if (pathname.match(/\/share\/(.+)/)) {
-      let sharecode = pathname.substring(pathname.lastIndexOf("/") + 1);
-      return sharecode;
-    } else {
-      return null;
-    }
   },
   validateEmails: (emails)=>{
     let mret = emails.match(/^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})(\s*,\s*([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4}))*$/);

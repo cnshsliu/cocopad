@@ -4,46 +4,38 @@ import RegHelper from './reghelper';
 import ClipboardJs from "clipboard";
 import { BIconFileEarmarkBreak, BIconFileEarmarkSpreadsheet } from 'bootstrap-vue';
 
-/**
- * mode.share中字段说明
- * code： 临时分享的服务器端返回的sharecode, 在redis中记录键值为 share_'sharecode'
- * email: 用户在分享界面所输入的邮件
- * lifeshare: true/false, 长期分享还是临时分享
- * doc_id: 所分享文件的doc_id
- * lifeshareurl: 长期分享地址， HOST/doc/doc_id形式
- * tmpshareurl: 临时分享地址， HOST/share/sharecode形式
- * 
- */
 SHARE.cancelShare = async function () {
-    $('#shareItBtn').css("visibility", "hidden");
-    $('#shareItUrl').css("visibility", "hidden");
-    $('#shareItOut').css("visibility", "visible");
-    $('#shareItEmail').css("visibility", "visible");
-    KFK.mergeAppData("model.share", { code: '', email: '' });
     KFK.showDialog({ shareDialog: false });
 };
 
 // 这个是designer界面上的分享按钮调用的
 //TODO: 是否允许临时用户继续分享？
 SHARE.shareThisDoc = async function () {
-    SHARE.startShare(KFK.APP.model.cocodoc.doc_id);
+    SHARE.startShare({
+        D: KFK.APP.model.cocodoc.doc_id,
+        O: KFK.APP.model.cocodoc.owner,
+        U: KFK.APP.model.cocouser.userid,
+    });
 }
 //这个1是文档列表中用到的，所以有item, 有index
 //item是当前行的文档对象，index是其顺序
 SHARE.shareDoc = async function (item, index, button) {
-    SHARE.startShare(item._id);
+    SHARE.startShare({
+        D: item._id,
+        O: item.owner,
+        U: KFK.APP.model.cocouser.userid,
+    });
 };
 //上面两个函数一起调用过来
-SHARE.startShare = async function (doc_id) {
+SHARE.startShare = async function (share) {
+    let url = "http://localhost:1234/doc/";
+    url = url + KFK.codeToBase64(JSON.stringify(share));
+    KFK.APP.model.share.url = url;
+    KFK.mergeAppData('model.share', {url: url});
+
     //这个dialog使用div实现的，初始设了noshow防止启动时闪现
     $('#shareDialog').removeClass('noshow');
-    $('#shareItBtn').css("visibility", "hidden");
-    $('#shareItUrl').css("visibility", "hidden");
-    $('#shareItOut').css("visibility", "visible");
-    $('#shareItEmail').css("visibility", "visible");
-    await KFK.mergeAppData('model', 'share', { code: '', email: '', doc_id: doc_id });
     //向服务端要临时sharecode
-    KFK.askShareCode(doc_id);
     KFK.showDialog({ shareDialog: true });
     if (KFK.clipboard) { delete KFK.clipboard; }
     //注册分享按钮，实现放入剪贴板

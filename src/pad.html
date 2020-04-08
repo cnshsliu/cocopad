@@ -10,7 +10,7 @@
 </head>
 
 <body>
-  <div id="containerbkg"></div>
+  <div id="containerbkg" class="grid1"></div>
   <img style="display:none;" id='defaultavatar' src='../assets/avatar/avatar-0.svg' />
 
   <div id='app' class='fontFancyColor'>
@@ -213,7 +213,7 @@
             </b-col>
             <div class="w-100"></div>
             <b-col class="bg-none  mt-3">
-              <a href="#" class="card-link" @click="KFK.gotoWork">先不验证，直接使用</a>
+              <a href="#" class="card-link" @click="KFK.checkSession">先不验证，直接使用</a>
             </b-col>
           </b-row>
         </b-form>
@@ -381,7 +381,7 @@
                 </b-row>
               </b-collapse>
             </b-container>
-            <b-containr v-show="show.custombacksvg">
+            <b-container v-show="show.custombacksvg">
             <b-row class="mx-auto my-1">
               <b-col>贴纸颜色</b-col>
               <b-col class='coco'><input name="tipBkgColor" id="tipBkgColor" /></b-col>
@@ -397,7 +397,7 @@
               <b-container id="toolbox3" class="w-100" style="height: 300px; width:100%; overflow-y:scroll; ">
               </b-container>
             </b-collapse>
-            </b-containr>
+            </b-container>
           </b-tab>
           <b-tab title="排列" class="cocoproperty">
             <b-button-toolbar v-show="show.layercontrol" key-nav class="w-100 justify-content-md-center">
@@ -446,10 +446,14 @@
           <b-tab title="COCO" active class='cocoproperty'>
             <p>欢迎使用</p>
             <b-checkbox id="cb-showgrid" v-model="model.cococonfig.showgrid" name="cb-showgrid" switch
-              @change="showGridChanged">
+              @change="KFK.showGridChanged">
               显示网格线
             </b-checkbox>
-            <b-checkbox v-model="model.cococonfig.snap" switch @change="snapChanged">
+            <b-checkbox id="cb-showbounding" v-model="model.cococonfig.showbounding" name="cb-showbounding" switch
+              @change="KFK.showBoundingChanged">
+              显示分页线
+            </b-checkbox>
+            <b-checkbox v-model="model.cococonfig.snap" switch @change="KFK.snapChanged">
               对齐到网格
             </b-checkbox>
             <b-checkbox v-model="model.cococonfig.showlock" switch @change="KFK.toggleShowLock">
@@ -495,24 +499,6 @@
           <b-button id="onepage" variant="outline-success" @click="KFK.toggleOnePage">
             <b-icon icon="grid3x2" shift-h="-1.2" shift-v="1.1"></b-icon>
           </b-button>
-          <!-- <b-button id="zoom_in" variant="outline-success" @click="KFK.zoomIn">
-            <b-iconstack scale="0.6">
-              <b-icon icon="plus" shift-h="-1.2" shift-v="1.1"></b-icon>
-              <b-icon icon="search"></b-icon>
-            </b-iconstack>
-          </b-button>
-          <b-button id="zoom_1" variant="outline-success" @click="KFK.zoomStop">
-            <b-iconstack scale="0.6">
-              <b-icon icon="x" shift-h="-1.2" shift-v="1.1"></b-icon>
-              <b-icon icon="search"></b-icon>
-            </b-iconstack>
-          </b-button>
-          <b-button id="zoom_out" variant="outline-success" @click="KFK.zoomOut">
-            <b-iconstack scale="0.6">
-              <b-icon icon="dash" shift-h="-1.2" shift-v="1.1"></b-icon>
-              <b-icon icon="search"></b-icon>
-            </b-iconstack>
-          </b-button> -->
         </b-button-group>
         <b-button-group class="coco">
           <b-button disable="model.cocodoc.doclocked" id="toggle_all" variant="outline-success"
@@ -592,7 +578,7 @@
               <b-dropdown-divider></b-dropdown-divider>
               <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.upgradeToStartAccount">注册为正式用户
               </b-dropdown-item-button>
-              <b-dropdown-item-button v-else @click="ACM.signout">退出登录状态</b-dropdown-item-button>
+              <b-dropdown-item-button v-else @click="KFK.signout">退出登录状态</b-dropdown-item-button>
               <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.gotoSignin">登录已有账号
               </b-dropdown-item-button>
             </b-dropdown>
@@ -639,7 +625,7 @@
               <b-dropdown-divider></b-dropdown-divider>
               <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.upgradeToStartAccount">注册为正式用户
               </b-dropdown-item-button>
-              <b-dropdown-item-button v-else @click="ACM.signout">退出登录状态</b-dropdown-item-button>
+              <b-dropdown-item-button v-else @click="KFK.signout">退出登录状态</b-dropdown-item-button>
               <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.gotoSignin">登录已有账号
             </b-nav-item-dropdown>
           </b-navbar-nav>
@@ -983,33 +969,24 @@
         <b-container>
           <b-form>
             <b-row>
-              <b-col>
-                点击分享按钮后，无论是否输入邮件地址，分享连接都会放入剪贴板，你可以到任何沟通工具中，把邀请连接粘贴给需要分享的人。
-                <BR>
+              <b-col cols=4>
+                <b-img :src="KFK.images['share'].src"></b-img>
               </b-col>
-              <div class="w-100"></div>
-              <b-col>
-                <b-checkbox id="cb-lifeshare" v-model="model.share.lifeshare" name="cb-lifeshare" switch
-                  @change="model.share.lifeshare=!model.share.lifeshare; model.share.msg=model.share.lifeshare?'永久分享（依然可以使用密码限制访问）':'临时分享, 48小时后过期'">
-                  {{model.share.msg}} </b-checkbox>
-              </b-col>
-              <div class="w-100"></div>
-              <b-col class="mt-3">
-                <b-form-input id="shareItEmail" trim v-model="model.share.email" placeholder="请输入邮件地址，多地址用英文逗号分开">
-                </b-form-input>
-                <b-form-input id="shareItUrl" style="visibility: hidden" trim v-model="model.share.url"></b-form-input>
+              <b-col class="shareItTips">
+                请复制分享地址, 你可以通过任意沟通工具, 把邀请连接粘贴给需要分享的人。
+                接受分享者,在成功注册后,您和白板协作发起人都将获得操作积分奖励
               </b-col>
             </b-row>
-            <b-row class="text-center mt-3">
+            <b-row class="text-center mt-3" cols=8>
+              <b-col class="mt-3">
+                <b-form-input id="shareItUrl" trim v-model="model.share.url"></b-form-input>
+              </b-col>
+              <div class="w-100"></div>
               <b-col>
                 <b-button variant="outline-secondary" size="sm" class="mb-2" v-on:click="SHARE.cancelShare">
                   <b-icon icon="x"></b-icon>取消
                 </b-button>
-                <b-button id="shareItOut" v-on:click="SHARE.doEmailShare" variant="outline-primary" size="sm"
-                  class="mb-2">
-                  <b-icon icon="box-arrow-up"></b-icon>分享出去
-                </b-button>
-                <b-button id="shareItBtn" variant="outline-primary" style="visibility: hidden" size="sm" class="mb-2">
+                <b-button id="shareItBtn" variant="outline-primary"  size="sm" class="mb-2">
                   <b-icon icon="box-arrow-up"></b-icon>复制地址
                 </b-button>
               </b-col>

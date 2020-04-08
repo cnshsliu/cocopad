@@ -2,23 +2,40 @@
 const WS = {};
 WS.ws = null;
 WS.url = "ws://localhost:5008/grume/wsquux";
+WS.isReused = false;
+WS.connectTimes = 0;
 
 WS.reconnectInterval = null;
+WS.resetReconnectCount = function(){
+    WS.connectTimes = 0;
+}
 WS.reconnect = function reconnect() {
-    if (WS.keepFlag === 'KEEP')
+    if (WS.keepFlag === 'KEEP'){
+        WS.ws= null;
         WS.start(WS.onOpenCallback, WS.onMsgcallback, 0, WS.name, WS.keepFlag);
+    }
 }
 WS.start = async (onOpenCallback, onMsgcallback, delay, name, keepFlag) => {
+    if (delay > 0)
+        await new Promise(resolve => setTimeout(resolve, delay));
     WS.onOpenCallback = onOpenCallback;
     WS.onMsgcallback = onMsgcallback;
     WS.name = name;
     WS.keepFlag = keepFlag;
-    if (delay > 0)
-        await new Promise(resolve => setTimeout(resolve, delay));
-    WS.ws = new WebSocket(WS.url);
+    if (WS.ws === null || (WS.ws && (WS.ws.readyState === 2||WS.ws.readyState ===3))) {
+        if(WS.ws) delete WS.ws;
+        WS.ws = new WebSocket(WS.url);
+        WS.isReused = false;
+        WS.resetReconnectCount();
+    }else{
+        WS.isReused = true;
+        console.info("WS>>> ws connection is reused");
+    }
     WS.ws.onopen = function () {
-        console.info("ws opened. name:", WS.name, "flag:", WS.keepFlag);
+        console.info("WS>>> ws opened. name:", WS.name, "flag:", WS.keepFlag);
         //成功连接后，把继续重连的interval清除掉
+        WS.isReused = false;
+        WS.connectTimes += 1;
         if (WS.reconnectInterval != null) {
             clearInterval(WS.reconnectInterval);
             WS.reconnectInterval = null;
@@ -26,7 +43,7 @@ WS.start = async (onOpenCallback, onMsgcallback, delay, name, keepFlag) => {
         onOpenCallback();
     };
     WS.ws.onclose = function () {
-        console.info("ws closed. name:", WS.name, "flag:", WS.keepFlag);
+        console.info("WS>>> ws closed. name:", WS.name, "flag:", WS.keepFlag);
         if (WS.reconnectInterval === null && keepFlag === 'KEEP') {
             WS.reconnectInterval = setInterval(WS.reconnect, 1000);
         }
@@ -35,8 +52,15 @@ WS.start = async (onOpenCallback, onMsgcallback, delay, name, keepFlag) => {
         onMsgcallback(e.data);
     };
     WS.ws.onerror = function (e) {
-        console.error(e);
+        console.error("WS>>> ", e);
     };
+    if(WS.isReused){
+        //重用时,onopen不会被触发,因此这里直接调用onOpenCallback()
+        console.info("WS>>> resue connection, call onopencallback directly");
+        //同样,因为onopen不会发生,所以,重置连接技术为1,只能在这里手动完成
+        WS.connectTimes = 1;
+        onOpenCallback();
+    }
 };
 
 WS.close = () => {
@@ -46,17 +70,17 @@ WS.close = () => {
 WS.put = async (cmd, payload) => {
     payload.cmd = cmd;
     let cocouserStr = localStorage.getItem("cocouser");
-    let sharecode = localStorage.getItem("sharecode");
-    if (cocouserStr){
-        if(cmd !== 'MOUSE')
-        payload.Auth = JSON.parse(cocouserStr)["sessionToken"];
+    let shareCode = localStorage.getItem("shareCode");
+    if (cocouserStr) {
+        if (cmd !== 'MOUSE')
+            payload.Auth = JSON.parse(cocouserStr)["sessionToken"];
     }
-    if(sharecode){
+    if (shareCode) {
         //只要用户没有正式注册，就一直带着带着这个sharecode
         //而且如果本地保存有别人分享的sharecode1的话，就一直待到服务器上
         //当用户执行register操作时，如果同时有sharecode,就去检查是谁share的，然后给这个人加分
         //anyway， 注册完成后，总要检查并删除本地的sharecode
-        payload.sharecode = sharecode;
+        payload.shareCode = shareCode;
     }
     // console.log('readystate=' + WS.ws.readyState);
     let ret = false;
