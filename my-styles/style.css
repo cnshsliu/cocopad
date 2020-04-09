@@ -190,7 +190,7 @@ body {
   overflow: hidden;
 }
 
-#scroll-container {
+#S1 {
   width: 100%;
   height: 100vh;
   overflow: auto;
@@ -201,29 +201,6 @@ body {
   top: 0px;
 }
 
-#containermain {
-  background-color: rgba(0, 0, 0, 0.1);
-  /* width: 100%;
-    height: 100vh; */
-  width: 5052px;
-  height: 3570px;
-  overflow: auto;
-  margin: 0px;
-  position: absolute;
-  left: 0px;
-  top: 0px;
-}
-
-#containerbkg {
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  z-index: -10;
-  background-color: rgb(208, 224, 227);
-}
 .grid1{
   background-image: url("../assets/grid1.svg");
   background-size: 20px 20px;
@@ -290,11 +267,10 @@ body {
 }
 
 .selectingrect {
-  z-index: -1;
-  border-radius: 00px;
-  background-color: transparent;
-  border-color: red;
-  border-width: 1px;
+  z-index: 100000;
+  border-radius: 0px;
+  background-color: rgba(0,0,0,0.2);
+  border-width: 4px;
   border-style: dotted;
   position: absolute;
   left: 300px;
@@ -778,7 +754,7 @@ select:focus {
 #minimap {
   position: absolute;
   width: 168px;
-  height: 119px;
+  height: 120px;   /* 20% of A4*/
   bottom: 5px;
   right: 5px;
   background-color: #eee;
@@ -852,4 +828,29 @@ select:focus {
   width: 100px;
   height:100px;
 
+}
+
+#linetransformer {
+  position: absolute; top:10px; height: 10px; width: 20px; height: 20px; z-index: 9999; visibility: hidden;
+}
+
+#containerbkg {
+  left: 840px; top:600px; width: 5040px; height:3600px;
+  z-index: 1; user-select: none; position: absolute; outline: none;
+  overflow: hidden;
+  position: absolute;
+  background-color: rgb(224, 224, 224);
+}
+#overallbackground{
+  width: 100vw; height: 100vh;
+  background-color: rgb(172, 168, 168);
+  z-index: -1000000;
+};
+#C1 {
+  left: 0px; top: 0px; width: 6720px; height: 4800px;
+  background-color: rgba(0, 0, 0, 0); overflow: auto; margin: 0px; position: absolute;
+}
+#C3{ 
+  left: 840px; top:600px; width: 5040px; height:3600px;
+  z-index: 1; user-select: none; position: absolute; outline: none;
 }

@@ -38,6 +38,13 @@ Array.prototype.remove = function () {
   }
   return this;
 };
+jlog = function (obj) {
+  console.log(JSON.stringify(obj));
+}
+jstr = function (obj) {
+  return (JSON.stringify(obj));
+}
+
 
 const KFK = {};
 KFK.currentPage = 0;
@@ -104,15 +111,17 @@ KFK.badgeIdMap = {};
 // KFK._width = window.innerWidth; KFK._height = window.innerHeight;
 // KFK._width = window.innerWidth * 6; KFK._height = window.innerHeight * 6;
 // A4
-// KFK.A4Width = 842;
-// KFK.A4Height = 595;
+// KFK.PageWidth = 842;
+// KFK.PageHeight = 595;
 //上面是A4的真实大小,但因为网格线是20位单位,所以近似看下面两个值
-KFK.A4Width = 840;
-KFK.A4Height = 600;
+KFK.PageWidth = 840 * 2;
+KFK.PageHeight = 600 * 2;
 KFK.PageNumberHori = 6;
 KFK.PageNumberVert = 6;
-KFK._width = KFK.A4Width * KFK.PageNumberHori;
-KFK._height = KFK.A4Height * KFK.PageNumberVert;
+KFK.LeftB = KFK.PageWidth;
+KFK.TopB = KFK.PageHeight;
+KFK._width = KFK.PageWidth * KFK.PageNumberHori;
+KFK._height = KFK.PageHeight * KFK.PageNumberVert;
 KFK.minimapMouseDown = false;
 
 KFK.nodes = [];
@@ -139,9 +148,10 @@ KFK.KEYDOWN = { ctrl: false, shift: false, alt: false, meta: false };
 KFK.originZIndex = 1;
 KFK.lastActionLogJqDIV = null;
 
-KFK.containermain = document.getElementById("containermain");
-// KFK.containermain.style.width = KFK._width + "px";
-// KFK.containermain.style.height = KFK._height + "px";
+KFK.JC1 = $('#C1');
+KFK.C1 = el(KFK.JC1);
+// KFK.C1.style.width = KFK._width + "px";
+// KFK.C1.style.height = KFK._height + "px";
 KFK.focusOnC3 = () => {
   if (KFK.JC3) {
     KFK.JC3.attr('tabindex', '0');
@@ -154,16 +164,16 @@ KFK.focusOnC3 = () => {
 KFK.myuid = () => {
   return suuid.generate();
 }
-KFK.scrollContainer = $("#scroll-container");
+KFK.scrollContainer = $("#S1");
 KFK.lockMode = false;
 KFK.selectedDIVs = [];
 KFK.mouseIsDown = false;
-KFK.dragToSelectFrom = { x: 0, y: 0 };
-KFK.dragToSelectTo = { x: 0, y: 0 };
+KFK.kuangXuanStartPoint = { x: 0, y: 0 };
+KFK.kuangXuanEndPoint = { x: 0, y: 0 };
 KFK.duringKuangXuan = false;
 
 KFK.currentMousePos = { x: -1, y: -1 };
-KFK.JCM = $('#containerbkg');
+KFK.JCBKG = $('#containerbkg');
 KFK.hoverJqDiv = function (jqdiv) {
   if (jqdiv !== undefined) {
     KFK._jqhoverdiv = jqdiv;
@@ -374,7 +384,7 @@ KFK.logKey = function (...info) {
   // KFK.scrLog(...info);
 }
 
-KFK.scrLog = function (msg) {
+KFK.scrLog = function (msg, staytime = 5000) {
   let parent = $("#MSG").parent();
   let msgDIV = $("#MSG");
   let cloneDIV = $("#fadeoutmsg");
@@ -385,9 +395,9 @@ KFK.scrLog = function (msg) {
   cloneDIV = msgDIV.clone().appendTo(parent);
   cloneDIV.attr("id", "fadeoutmsg");
   cloneDIV.html(msg);
-  cloneDIV.animate({ top: "10px", }, 200, async function () {
-    await KFK.sleep(5000);
-    cloneDIV.animate({ top: "-24px" }, 1000, async function () {
+  cloneDIV.animate({ top: "10px", }, 50, async function () {
+    await KFK.sleep(staytime);
+    cloneDIV.animate({ top: "-24px" }, 50, async function () {
       cloneDIV.remove();
     })
   })
@@ -841,19 +851,42 @@ KFK.redo = async () => {
   }
 };
 
+KFK.initLayout = function () {
+  KFK.JC1 = $('#C1');
+  KFK.C1 = el(KFK.JC1);
+  KFK.JS1 = $('#S1');
+  KFK.S1 = el(KFK.JS1);
+  KFK.JC1.css({
+    'width': KFK.px(KFK.PageWidth * (KFK.PageNumberHori + 2)),
+    'height': KFK.px(KFK.PageHeight * (KFK.PageNumberVert + 2)),
+  })
+};
+
+KFK.scrollToPos = function (pos) {
+  KFK.JS1.scrollLeft(pos.x);
+  KFK.JS1.scrollTop(pos.y);
+  // console.log('scrollTopos', pos.x, pos.y);
+  // KFK.printCallStack();
+};
+
 //create C3 create c3
 KFK.initC3 = function () {
-  KFK.C3 = el($("#C3"));
-  KFK.JC3 = $(KFK.C3);
+  KFK.JC3 = $('#C3');
+  KFK.C3 = el(KFK.JC3);
+  KFK.JC3.css({
+    'width': KFK.px(KFK.PageWidth * KFK.PageNumberHori),
+    'height': KFK.px(KFK.PageHeight * KFK.PageNumberVert),
+    'left': KFK.px(KFK.LeftB),
+    'top': KFK.px(KFK.TopB),
+  });
   KFK.JC3.focus((evt) => { KFK.debug("JC3 got focus"); })
-  KFK.JC3.css("position", "absolute");
-  KFK.JC3.css("user-select", "none");
-  KFK.JC3.css("left", 0);
-  KFK.JC3.css("top", 0);
-  KFK.JC3.css("width", KFK._width);
-  KFK.JC3.css("height", KFK._height);
-  KFK.JC3.css("z-index", 9);
-  KFK.JCM = $('#containerbkg');
+  KFK.JCBKG = $('#containerbkg');
+  KFK.JCBKG.css({
+    'width': KFK.px(KFK.PageWidth * KFK.PageNumberHori),
+    'height': KFK.px(KFK.PageHeight * KFK.PageNumberVert),
+    'left': KFK.px(KFK.LeftB),
+    'top': KFK.px(KFK.TopB),
+  });
 
 
   //click c3  click C3 click canvas click background
@@ -904,8 +937,8 @@ KFK.initC3 = function () {
     }
     if (KFK.mode === "line") {
       KFK.yarkLinePoint(
-        evt.clientX + KFK.scrollContainer.scrollLeft(),
-        evt.clientY + KFK.scrollContainer.scrollTop(),
+        KFK.scrXtoJc3X(evt.clientX),
+        KFK.scrYtoJc3Y(evt.clientY),
         evt.shiftKey
       );
       return;
@@ -918,10 +951,8 @@ KFK.initC3 = function () {
         if (KFK.mode === "yellowtip") {
           variant = config.node.yellowtip.defaultTip;
         }
-        let clientX = evt.clientX;
-        let clientY = evt.clientY;
-        let realX = KFK.scrollX(clientX);
-        let realY = KFK.scrollY(clientY);
+        let realX = KFK.scrXtoJc3X(evt.clientX);
+        let realY = KFK.scrYtoJc3Y(evt.clientY);
         let jqDIV = KFK.placeNode(
           evt.shiftKey,
           KFK.myuid(),
@@ -945,10 +976,11 @@ KFK.initC3 = function () {
     if (KFK.inDesigner() === false) return;
     if (KFK.mode === "pointer" && KFK.docLocked() === false) {
       KFK.mouseIsDown = true;
-      KFK.dragToSelectFrom = {
-        x: KFK.scrollX(evt.clientX),
-        y: KFK.scrollY(evt.clientY)
+      KFK.kuangXuanStartPoint = {
+        x: KFK.scrXtoJc3X(evt.clientX),
+        y: KFK.scrYtoJc3Y(evt.clientY)
       };
+      console.log(JSON.stringify(KFK.kuangXuanStartPoint));
     }
   });
   KFK.JC3.mouseup(async (evt) => {
@@ -973,13 +1005,14 @@ KFK.initC3 = function () {
     }
     if (KFK.mode === "pointer" && KFK.docLocked() === false) {
       KFK.mouseIsDown = false;
-      KFK.dragToSelectTo = {
-        x: KFK.scrollX(evt.clientX),
-        y: KFK.scrollY(evt.clientY)
+      KFK.kuangXuanEndPoint = {
+        x: KFK.scrXtoJc3X(evt.clientX),
+        y: KFK.scrYtoJc3Y(evt.clientY)
       };
+      console.log(JSON.stringify(KFK.kuangXuanEndPoint));
       if (KFK.duringKuangXuan) {
         KFK.ignoreClick = true;
-        KFK.endKuangXuan(KFK.dragToSelectFrom, KFK.dragToSelectTo);
+        KFK.endKuangXuan(KFK.kuangXuanStartPoint, KFK.kuangXuanEndPoint);
         KFK.duringKuangXuan = false;
       }
     }
@@ -999,9 +1032,9 @@ KFK.initC3 = function () {
 
     $("#modeIndicator").css("left", KFK.currentMousePos.x + 10);
     $("#modeIndicator").css("top", KFK.currentMousePos.y + 10);
-    KFK.dragToSelectTo = {
-      x: KFK.scrollX(evt.clientX),
-      y: KFK.scrollY(evt.clientY)
+    KFK.kuangXuanEndPoint = {
+      x: KFK.scrXtoJc3X(evt.clientX),
+      y: KFK.scrYtoJc3Y(evt.clientY)
     };
 
     if (KFK.docLocked()) return;
@@ -1022,11 +1055,11 @@ KFK.initC3 = function () {
       KFK.minimapMouseDown === false
     ) {
       // KFK.scrLog(
-      //   `框选 ${JSON.stringify(KFK.dragToSelectFrom)} - ${JSON.stringify(
-      //     KFK.dragToSelectTo
+      //   `框选 ${JSON.stringify(KFK.kuangXuanStartPoint)} - ${JSON.stringify(
+      //     KFK.kuangXuanEndPoint
       //   )}`
       // );
-      KFK.kuangXuan(KFK.dragToSelectFrom, KFK.dragToSelectTo);
+      KFK.kuangXuan(KFK.kuangXuanStartPoint, KFK.kuangXuanEndPoint);
     }
     if (KFK.lineDragging || KFK.lineMoverDragging || KFK.minimapMouseDown) {
       KFK.duringKuangXuan = false;
@@ -1036,8 +1069,8 @@ KFK.initC3 = function () {
       if (KFK.linkPosNode.length === 1) {
         KFK.lineTemping = true;
         let tmpPoint = {
-          x: KFK.scrollX(KFK.currentMousePos.x),
-          y: KFK.scrollY(KFK.currentMousePos.y)
+          x: KFK.scrXtoJc3X(KFK.currentMousePos.x),
+          y: KFK.scrYtoJc3Y(KFK.currentMousePos.y)
         };
         let fromPoint = null;
         let toPoint = null;
@@ -1065,8 +1098,8 @@ KFK.initC3 = function () {
       if (KFK.linkPosLine.length === 1) {
         KFK.lineTemping = true;
         let tmpPoint = {
-          x: KFK.scrollX(KFK.currentMousePos.x),
-          y: KFK.scrollY(KFK.currentMousePos.y)
+          x: KFK.scrXtoJc3X(KFK.currentMousePos.x),
+          y: KFK.scrYtoJc3Y(KFK.currentMousePos.y)
         };
         KFK.svgDrawTmpLine(
           KFK.linkPosLine[0].center.x,
@@ -1078,8 +1111,8 @@ KFK.initC3 = function () {
       }
     }
     if (KFK.lineDragging && KFK.lineLocked(KFK.lineToDrag) === false) {
-      let realX = KFK.scrollX(evt.clientX);
-      let realY = KFK.scrollY(evt.clientY);
+      let realX = KFK.scrXtoJc3X(evt.clientX);
+      let realY = KFK.scrYtoJc3Y(evt.clientY);
       let deltaX = realX - KFK.lineDraggingStartPoint.x;
       let deltaY = realY - KFK.lineDraggingStartPoint.y;
       KFK.lineToDrag.dmove(deltaX, deltaY);
@@ -1095,7 +1128,7 @@ KFK.initC3 = function () {
 KFK.addMinimap = function () {
   KFK.refreshC3event = new CustomEvent("refreshC3");
   KFK.zoomEvent = new CustomEvent("zoomC3");
-  $("#minimap").minimap(KFK, $("#scroll-container"), KFK.JC3, $('#containermain'));
+  $("#minimap").minimap(KFK, KFK.JS1, KFK.JC3, KFK.JC1);
 };
 
 KFK.get13Number = function (str) {
@@ -1109,7 +1142,7 @@ KFK.get13Number = function (str) {
 };
 
 KFK.showUserMovingBadge = function (user, x, y) {
-  let pos = { x: KFK.scrollX(x), y: KFK.scrollY(y) };
+  let pos = { x: KFK.scrXtoJc3X(x), y: KFK.scrYtoJc3Y(y) };
   let bglabel = user.name;
 
 
@@ -1154,6 +1187,7 @@ KFK.showOtherUserMovingBadge = function (mouse) {
 
   let wwidth = window.innerWidth;
   let wheight = window.innerHeight;
+  //TODO: v这里似乎有问题,需要测试检查 
   if (pos.x < KFK.scrollContainer.scrollLeft()) {
     pos.x = KFK.scrollContainer.scrollLeft();
   } else if (pos.x + width > KFK.scrollContainer.scrollLeft() + wwidth) {
@@ -1187,12 +1221,6 @@ KFK.moveLineMoverTo = function (position) {
   $("#linetransformer").css("left", position.x - 10);
   $("#linetransformer").css("top", position.y - 10);
 };
-KFK.scrollToScreen = function (position) {
-  return {
-    x: position.x - KFK.scrollContainer.scrollLeft(),
-    y: position.y - KFK.scrollContainer.scrollTop()
-  };
-};
 KFK.selectNode = function (jqDIV) {
   jqDIV.addClass("selected");
   KFK.selectedDIVs.push(jqDIV);
@@ -1217,14 +1245,19 @@ KFK.setSelectedNodesBoundingRect = function () {
     $("#boundingrect").hide();
   }
 };
-
 KFK.kuangXuan = function (pt1, pt2) {
+  KFK.debug('pt1', jstr(pt1), 'pt2', jstr(pt2));
+  let x1 = pt1.x + KFK.LeftB;
+  let y1 = pt1.y + KFK.TopB;
+  let x2 = pt2.x + KFK.LeftB;
+  let y2 = pt2.y + KFK.TopB;
+  KFK.debug(x1, y1, x2, y2);
   KFK.duringKuangXuan = true;
   let jqRect = $("#selectingrect");
-  jqRect.css("left", Math.min(pt1.x, pt2.x));
-  jqRect.css("top", Math.min(pt1.y, pt2.y));
-  jqRect.css("width", Math.abs(pt1.x - pt2.x));
-  jqRect.css("height", Math.abs(pt1.y - pt2.y));
+  jqRect.css("left", Math.min(x1, x2));
+  jqRect.css("top", Math.min(y1, y2));
+  jqRect.css("width", Math.abs(x1 - x2));
+  jqRect.css("height", Math.abs(y1 - y2));
   jqRect.show();
 };
 
@@ -2857,8 +2890,8 @@ KFK.makeACopyOfJQ = async function (jqtocopy, shiftKey) {
   let offset = { x: 0, y: 0 };
   let jqNewNode = KFK.jqToCopy.clone(false);
   jqNewNode.attr("id", KFK.myuid());
-  jqNewNode.css("left", KFK.scrollX(KFK.currentMousePos.x) - parseInt(jqNewNode.css("width")) * 0.5);
-  jqNewNode.css("top", KFK.scrollY(KFK.currentMousePos.y) - parseInt(jqNewNode.css("height")) * 0.5);
+  jqNewNode.css("left", KFK.scrXtoJc3X(KFK.currentMousePos.x) - parseInt(jqNewNode.css("width")) * 0.5);
+  jqNewNode.css("top", KFK.scrYtoJc3Y(KFK.currentMousePos.y) - parseInt(jqNewNode.css("height")) * 0.5);
   //按住shift 复制时，也就是META-SHIFT-D, 则保留linkto
   if (!shiftKey) {
     jqNewNode.removeAttr("linkto");
@@ -2885,7 +2918,7 @@ KFK.makeACopyOfLine = async function (linetocopy) {
   //现在是移动指定位置再次META-D才放置对象,因此offset没用.
   //之前的代码在x,y后面分别加了个20, 以便不覆盖到节点
   //现在第一次点取不马上复制了,+offset已经没有了必要
-  newLine.center(KFK.scrollX(KFK.currentMousePos.x), KFK.scrollY(KFK.currentMousePos.y));
+  newLine.center(KFK.scrXtoJc3X(KFK.currentMousePos.x), KFK.scrYtoJc3Y(KFK.currentMousePos.y));
   newLine.addTo(KFK.lineToCopy.parent());
   KFK.addSvgLineEventListner(newLine);
   await KFK.syncLinePut("C", newLine, "duplicate line", null, false);
@@ -2935,12 +2968,27 @@ KFK.setText = function (jqdiv, text) {
   return jqdiv.find(text_filter).text(text);
 };
 
-
-KFK.scrollX = function (x) {
-  return x + KFK.scrollContainer.scrollLeft();
+KFK.jc3PosToJc1Pos = function (pos) {
+  return {
+    x: pos.x + KFK.LeftB,
+    y: pos.y + KFK.TopB
+  };
 };
-KFK.scrollY = function (y) {
-  return y + KFK.scrollContainer.scrollTop();
+
+//Screen pos x to JC3 pos x
+KFK.scrXtoJc3X = function (x) {
+  return KFK.scrXtoJc1X(x) - KFK.LeftB;
+};
+KFK.scrYtoJc3Y = function (y) {
+  return KFK.scrYtoJc1Y(y) - KFK.TopB;
+};
+
+//Screen pos x to JC1 pos x
+KFK.scrXtoJc1X = function (x) {
+  return x + KFK.JS1.scrollLeft();
+};
+KFK.scrYtoJc1Y = function (y) {
+  return y + KFK.JS1.scrollTop();
 };
 
 KFK.saveLocalCocoConfig = function () {
@@ -3023,6 +3071,7 @@ KFK.init = async function () {
     KFK.error("load local cococonfig found error");
   }
   */
+  KFK.initLayout();
   KFK.initC3();
   KFK.initPropertyForm();
   KFK.initLineMover();
@@ -3172,6 +3221,7 @@ KFK.onWsConnected = function () {
 };
 KFK.rememberLayoutDisplay = function () {
   KFK.layoutRemembered = {
+    showbounding: KFK.APP.model.cococonfig.showbounding,
     showgrid: KFK.APP.model.cococonfig.showgrid,
     minimap: KFK.APP.show.section.minimap,
     toplogo: $('#toplogo').css("visibility"),
@@ -3187,6 +3237,13 @@ KFK.restoreLayoutDisplay = function () {
     $('#containerbkg').addClass('grid1');
   else
     $('#containerbkg').removeClass('grid1');
+  KFK.APP.model.cococonfig.showbounding = KFK.layoutRemembered.showbounding;
+  if (KFK.layoutRemembered.showbounding === true)
+      $('.pageBoundingLine').removeClass('noshow');
+  else
+      $('.pageBoundingLine').addClass('noshow');
+
+
   KFK.showSection({ minimap: KFK.layoutRemembered.minimap });
   $('#toplogo').css("visibility", KFK.layoutRemembered.toplogo);
   $('#docHeaderInfo').css("visibility", KFK.layoutRemembered.docHeaderInfo);
@@ -3197,11 +3254,23 @@ KFK.restoreLayoutDisplay = function () {
 KFK.setLayoutDisplay = function (config) {
   KFK.debug('setlayoutdisplay', JSON.stringify(config));
   KFK.rememberLayoutDisplay();
-  KFK.APP.model.cococonfig.showgrid = config.showgrid;
-  if (config.showgrid === true)
-    $('#containerbkg').addClass('grid1');
-  else
-    $('#containerbkg').removeClass('grid1');
+  if (config.showgrid !== null) {
+    KFK.APP.model.cococonfig.showgrid = config.showgrid;
+    if (config.showgrid === true)
+      $('#containerbkg').addClass('grid1');
+    else
+      $('#containerbkg').removeClass('grid1');
+  }
+
+  if (config.showbounding !== undefined) {
+    KFK.APP.model.cococonfig.showbounding = config.showbounding;
+    if (config.showbounding === true) {
+      $('.pageBoundingLine').removeClass('noshow');
+    } else {
+      $('.pageBoundingLine').addClass('noshow');
+    }
+  }
+
   KFK.showSection({ minimap: config.minimap });
   $('#toplogo').css("visibility", config.toplogo);
   $('#docHeaderInfo').css("visibility", config.docHeaderInfo);
@@ -3241,6 +3310,7 @@ KFK.setAppData = (data, key, value) => {
 
 
 KFK.openSharedDoc = async function (shareCode) {
+  KFK.debug('>>>>>>>>openSharedDoc', shareCode);
   //如果是sharecode, 则去服务器取
   await KFK.refreshDesigner(null, '');
   KFK.debug("send OPENSHAREDDOC ", shareCode);
@@ -3280,8 +3350,6 @@ KFK.refreshDesigner = async function (doc_id, docpwd) {
 
   KFK.initShowEditors("none");
   KFK.addDocumentEventHandler();
-  KFK.scrollContainer.scrollTop(0);
-  KFK.scrollContainer.scrollLeft(0);
   KFK.focusOnC3();
   KFK.cancelAlreadySelected();
 
@@ -3622,6 +3690,7 @@ KFK.onWsMsg = async function (response) {
       KFK.scrLog(response.msg);
       break;
     case "OPENDOC":
+      KFK.debug("<<<<OPENDOC");
       if (response.demo) {
         KFK.debug("set isDemoEnv to TRUE. after received OPENDOC");
         KFK.APP.setData('model', 'isDemoEnv', true);
@@ -4049,10 +4118,13 @@ KFK._onDocFullyLoaded = async function () {
   });
   KFK.info(KFK.APP.model.cocodoc);
   KFK.C3.dispatchEvent(KFK.refreshC3event);
-  await KFK.sleep(500);
   KFK.myFadeOut($('.loading'));
-  KFK.myFadeIn(KFK.JC3, 400);
+  KFK.myFadeIn(KFK.JC3, 100);
+  $('#overallbackground').removeClass('grid1');
+  //focusOnC3会导致C3居中
   KFK.focusOnC3();
+  //因此,这里再重新滚动一下.这样保证在文档新导入时,可以滚动到第一屏
+  KFK.scrollToPos({ x: KFK.LeftB, y: KFK.TopB });
 };
 
 KFK.checkLoading = async function (num) {
@@ -4458,6 +4530,7 @@ KFK.setNodeShowEditor = function (jqNode) {
 
 KFK.setBGColorTo = function (color) {
   $('#containerbkg').css('background-color', color);
+  $('#overallbackground').css('background-color', color);
 };
 
 KFK.initColorPicker = function () {
@@ -4808,14 +4881,12 @@ KFK.addDocumentEventHandler = function () {
     if (KFK.inDesigner()) {
       if ((evt.keyCode >= 48 && evt.keyCode <= 57) || (evt.keyCode >= 65 && evt.keyCode <= 90)) {
         KFK.keypool += evt.key;
-        if (KFK.keypool.endsWith('haola') || KFK.keypool.endsWith('hl')) {
+        if (KFK.keypool.endsWith('haola') || KFK.keypool.endsWith('hl') || KFK.keypool.endsWith('pr')) {
           if (KFK.inPresentingMode === false)
             KFK.startPresentation();
           else
             KFK.endPresentation();
           KFK.keypool = ""; return;
-        } else if (KFK.keypool.endsWith('one')) {
-          KFK.toggleOnePage(); KFK.keypool = ""; return;
         } else if (KFK.keypool.endsWith('fs')) {
           KFK.toggleFullScreen(); KFK.keypool = ""; return;
         } else if (KFK.inPresentingMode && KFK.keypool.endsWith('stop')) {
@@ -5040,12 +5111,13 @@ KFK.addDocumentEventHandler = function () {
   });
 
   let timer = null;
-  $("#scroll-container").scroll(() => {
+  $("#S1").scroll(() => {
     if (KFK.inDesigner() === false) return;
-    let sx = $("#scroll-container").scrollLeft();
-    let sy = $("#scroll-container").scrollTop();
+    /*
+    let sx = $("#S1").scrollLeft();
+    let sy = $("#S1").scrollTop();
     if (KFK.scrollBugPatched === false) {
-      KFK.scrollContainer = $("#scroll-container");
+      KFK.scrollContainer = $("#S1");
       KFK.scrollBugPatched = true;
     }
     // $("#linetransformer").css("visibility", "hidden");
@@ -5057,11 +5129,12 @@ KFK.addDocumentEventHandler = function () {
         );
         let deltaX = pt.x - KFK.scrollContainer.scrollLeft();
         let deltaY = pt.y - KFK.scrollContainer.scrollTop();
-        KFK.JCM.css('background-position-x', deltaX);
-        KFK.JCM.css('background-position-y', deltaY);
+        KFK.JCBKG.css('background-position-x', deltaX);
+        KFK.JCBKG.css('background-position-y', deltaY);
         timer = null;
       }, 500);
     }
+    */
   });
 };
 
@@ -5316,12 +5389,14 @@ KFK.gotoExplorer = function () {
     share: false,
     explorerTabIndex: 1
   });
+  $('#overallbackground').addClass('grid1');
 };
 
 KFK.gotoDesigner = function () {
   KFK.showSection({ explorer: false, designer: true });
   KFK.currentView = "designer";
   KFK.focusOnC3();
+  $('#overallbackground').removeClass('grid1');
 };
 
 KFK.dataURLtoFile = function (dataurl, filename) {
@@ -5493,8 +5568,8 @@ KFK.placePastedContent = async function () {
     let box = KFK.APP.model.paste.box;
     let jBox = KFK.placeNode(false, //shiftKey
       KFK.myuid(), "textblock", "default",
-      KFK.currentMousePos.x + KFK.scrollContainer.scrollLeft(),
-      KFK.currentMousePos.y + KFK.scrollContainer.scrollTop(),
+      KFK.currentMousePos.x + KFK.scrollContainer.scrollLeft() - KFK.PageWidth,
+      KFK.currentMousePos.y + KFK.scrollContainer.scrollTop() - KFK.PageHeight,
       100, 100, toAdd);
     switch (box) {
       case 'none':
@@ -5659,17 +5734,19 @@ KFK.gotoRightPage = function () {
 };
 KFK.___gotoPage = function (pageIndex) {
   // KFK.scrLog(`goto page ${pageIndex + 1}`);
-  let main = $("#containermain");
-  let scroller = $("#scroll-container");
+  let main = $("#C1");
+  let scroller = $("#S1");
   let scrCenter = KFK.scrCenter();
   let window_width = scrCenter.x * 2;
   let window_height = scrCenter.y * 2;
 
-  let toLeft = KFK.pageBounding.Pages[pageIndex].left;
-  let toTop = KFK.pageBounding.Pages[pageIndex].top;
+  let pageCenterX = KFK.currentPage % KFK.PageNumberHori * KFK.PageWidth + KFK.PageWidth * 0.5;
+  let pageCenterY = Math.floor(KFK.currentPage / KFK.PageNumberHori) * KFK.PageHeight + KFK.PageHeight * 0.5;
 
-  scroller.scrollLeft(toLeft);
-  scroller.scrollTop(toTop);
+  toLeft = pageCenterX + KFK.LeftB - scrCenter.x;
+  toTop = pageCenterY + KFK.TopB - scrCenter.y;
+
+  KFK.scrollToPos({ x: toLeft, y: toTop });
 };
 
 KFK.startPresentation = async function () {
@@ -5678,6 +5755,7 @@ KFK.startPresentation = async function () {
   KFK.openFullscreen();
   await KFK.sleep(500);
   KFK.setLayoutDisplay({
+    showbounding: false,
     showgrid: false,
     minimap: false,
     toplogo: 'hidden',
@@ -5686,28 +5764,31 @@ KFK.startPresentation = async function () {
     left: 'none',
     right: 'none',
   });
-  KFK.scrLog('进入演示模式: 输入hl退出');
+  KFK.rememberOverallBackgroundColor = $('#overallbackground').css('background-color');
+  $('#overallbackground').css('background-color', 'black');
+  KFK.scrLog('进入演示模式: 输入pr退出');
   KFK.inPresentingMode = true;
-  KFK.presentFirstPage();
+  KFK.___presentPage(KFK.currentPage);
 };
 KFK.endPresentation = function () {
   if (KFK.inOverviewMode) return;
   KFK.unmaskScreen();
-  KFK.closeFullscreen();
+  // KFK.closeFullscreen();
   KFK.restoreLayoutDisplay();
   KFK.scrLog('退出演示模式');
   KFK.inPresentingMode = false;
-
-  let main = $("#containermain");
-  let scroller = $("#scroll-container");
+  KFK.___unsetSlideMask();
+  $('#overallbackground').css('background-color', KFK.rememberOverallBackgroundColor);
+  let main = $("#C1");
+  let scroller = $("#S1");
   let scrCenter = KFK.scrCenter();
   let window_width = scrCenter.x * 2;
   let window_height = scrCenter.y * 2;
 
-  main.css({ 'transform-origin': `0px 0px`, '-webkit-transform-origin': `0px 0px` });
-  main.css("transform", `scale(1, 1)`);
+  KFK.JC3.css({ 'transform-origin': `0px 0px`, '-webkit-transform-origin': `0px 0px` });
+  KFK.JC3.css("transform", `scale(1, 1)`);
   setTimeout(function () {
-    main.css("transform", `scale(1, 1) translate(0px, 0px)`);
+    KFK.JC3.css("transform", `scale(1, 1) translate(0px, 0px)`);
   }, 100);
 };
 KFK.presentFirstPage = function () {
@@ -5745,48 +5826,131 @@ KFK.presentAnyPage = function (pageIndex) {
 };
 KFK.___presentPage = function (pageIndex) {
   KFK.inPresentingMode = true;
-  let main = $("#containermain");
-  let scroller = $("#scroll-container");
+  let pages = KFK.pageBounding.Pages;
+  let main = $("#C1");
+  let scroller = $("#S1");
   let scrCenter = KFK.scrCenter();
   let window_width = scrCenter.x * 2;
   let window_height = scrCenter.y * 2;
+  console.log(pageIndex);
+  console.log(pages);
+  jlog(pages[pageIndex].top);
+  jlog(KFK.TopB);
+  jlog({
+    x: pages[pageIndex].left + KFK.LeftB,
+    y: pages[pageIndex].top + KFK.TopB
+  });
 
-  let toLeft = KFK.pageBounding.Pages[pageIndex].left;
-  let toTop = KFK.pageBounding.Pages[pageIndex].top;
+  KFK.scrollToPos({
+    x: pages[pageIndex].left + KFK.LeftB,
+    y: pages[pageIndex].top + KFK.TopB
+  });
 
-  scroller.scrollLeft(toLeft);
-  scroller.scrollTop(toTop);
+  KFK.___setSlideMask(pageIndex);
 
-  let scaleX = window_width / KFK.A4Width;
-  let scaleY = window_height / KFK.A4Height;
+  let scaleX = window_width / KFK.PageWidth;
+  let scaleY = window_height / KFK.PageHeight;
   let scale = Math.min(scaleX, scaleY);
-  let scaledW = scale * KFK.A4Width;
-  let scaledH = scale * KFK.A4Height;
+  let scaledW = scale * KFK.PageWidth;
+  let scaledH = scale * KFK.PageHeight;
   let offsetX = (Math.round((window_width - scaledW) * 0.5)) / scale;
   let offsetY = (Math.round((window_height - scaledH) * 0.5)) / scale;
 
-  main.css({ 'transform-origin': `${toLeft}px ${toTop}px`, '-webkit-transform-origin': `${toLeft}px ${toTop}px` });
-  main.css("transform", `scale(${scale}, ${scale})`);
-  setTimeout(function () {
-    //  main.css("transform", `scale(${scale}, ${scale}) translate(${offsetX}px, ${offsetY}px)`);
-    main.css("transform", `scale(${scale}, ${scale}) translate(${offsetX}px, ${offsetY}px)`);
-  }, 100);
+  KFK.JC3.css({
+    'transform-origin': `${pages[pageIndex].left}px ${pages[pageIndex].top}px`,
+    '-webkit-transform-origin': `${pages[pageIndex].left}px ${pages[pageIndex].top}px`,
+    'transform': `scale(${scale}, ${scale}) translate(${offsetX}px, ${offsetY}px)`,
+  });
+  // setTimeout(function () {
+  //   //  main.css("transform", `scale(${scale}, ${scale}) translate(${offsetX}px, ${offsetY}px)`);
+  //   KFK.JC3.css("transform", `translate(${offsetX}px, ${offsetY}px)`);
+  // }, 100);
 };
-KFK.toggleOnePage = function (pos) {
+
+KFK.___unsetSlideMask = function (page) {
+  $('.slidemask').remove();
+}
+KFK.___setSlideMask = function (pageIndex) {
+  let pages = KFK.pageBounding.Pages;
+  let jLeft = $('.maskLeft');
+  let jTop = $('.maskTop');
+  let jRight = $('.maskRight');
+  let jBottom = $('.maskBottom');
+  if (jLeft.length === 0) {
+    let maskLeft = document.createElement("div");
+    jLeft = $(maskLeft);
+    jLeft.addClass('maskLeft slidemask');
+    jLeft.css({"background-color":"black", "position":"absolute", "z-index":1000000000});
+    KFK.C3.appendChild(maskLeft);
+  }
+  if (jTop.length === 0) {
+    let maskTop = document.createElement("div");
+    jTop = $(maskTop);
+    jTop.addClass('maskTop slidemask');
+    jTop.css({"background-color":"black", "position":"absolute", "z-index":1000000000});
+    KFK.C3.appendChild(maskTop);
+  }
+  if (jRight.length === 0) {
+    let maskRight = document.createElement("div");
+    jRight = $(maskRight);
+    jRight.addClass('maskRight slidemask');
+    jRight.css({"background-color":"black", "position":"absolute", "z-index":1000000000});
+    KFK.C3.appendChild(maskRight);
+  }
+  if (jBottom.length === 0) {
+    let maskBottom = document.createElement("div");
+    jBottom = $(maskBottom);
+    jBottom.addClass('maskBottom slidemask');
+    jBottom.css({"background-color":"black", "position":"absolute", "z-index":1000000000});
+    KFK.C3.appendChild(maskBottom);
+  }
+
+  jLeft.css({
+    "left": "0px",
+    "top": "0px",
+    "width": KFK.px(pages[pageIndex].left),
+    "height": KFK.px(KFK._height),
+  });
+  jTop.css({
+    "left": KFK.px(pages[pageIndex].left),
+    "top": "0px",
+    "width": KFK.px(KFK.PageWidth),
+    "height": KFK.px(Math.floor(pageIndex / KFK.PageNumberHori) * KFK.PageHeight)
+  });
+  jRight.css({
+    "left": KFK.px(pages[pageIndex].left + KFK.PageWidth),
+    "top": "0px",
+    "width": KFK.px((KFK.PageNumberHori - pageIndex % KFK.PageNumberHori - 1) * KFK.PageWidth),
+    "height": KFK.px(KFK._height),
+  });
+  jBottom.css({
+    "left": KFK.px(pages[pageIndex].left),
+    "top": KFK.px(pages[pageIndex].top + KFK.PageHeight),
+    "width": KFK.px(KFK.PageWidth),
+    "height": KFK.px(KFK.PageNumberVert - Math.floor(pageIndex / KFK.PageNumberHori - 1) * KFK.PageHeight)
+  });
+}
+
+KFK.toggleOnePage = function (jc3MousePos) {
   if (KFK.inPresentingMode) return;
-  let main = $("#containermain");
-  let scroller = $("#scroll-container");
+  let main = $("#C1");
+  let scroller = $("#S1");
   let scrCenter = KFK.scrCenter();
   let window_width = scrCenter.x * 2;
   let window_height = scrCenter.y * 2;
   KFK.APP.setData('show', 'actionlog', false);
   if (KFK.inOverviewMode === true) {
     KFK.scrLog("");
-    main.css({ 'transform-origin': '0px 0px', '-webkit-transform-origin': '0px 0px' });
-    main.css("transform", `scale(1, 1)`);
-    if (pos !== undefined) {
-      scroller.scrollLeft(pos.x - window_width * 0.5);
-      scroller.scrollTop(pos.y - window_height * 0.5);
+    KFK.JC3.css({
+      'transform-origin': '0px 0px',
+      '-webkit-transform-origin': '0px 0px',
+      "transform": `scale(1, 1)`,
+    });
+    if (jc3MousePos !== undefined) {
+      KFK.scrollToPos({
+        x: jc3MousePos.x - scrCenter.x + KFK.LeftB,
+        y: jc3MousePos.y - scrCenter.y + KFK.TopB,
+      });
     }
     KFK.unmaskScreen();
     KFK.inOverviewMode = false;
@@ -5795,7 +5959,7 @@ KFK.toggleOnePage = function (pos) {
   } else {
     if (KFK.inFullScreenMode === false) {
       KFK.setLayoutDisplay({
-        showgrid: false,
+        showgrid: true,
         minimap: false,
         toplogo: 'hidden',
         docHeaderInfo: 'hidden',
@@ -5805,27 +5969,31 @@ KFK.toggleOnePage = function (pos) {
       });
     }
 
-    if (KFK.APP.model.cococonfig.showgrid === true)
-      $('#containerbkg').removeClass("grid1");
     KFK.scrollPosToRemember = { x: scroller.scrollLeft(), y: scroller.scrollTop() };
     let scaleX = window_width / KFK._width;
     let scaleY = window_height / KFK._height;
     let scale = Math.min(scaleX, scaleY);
     let scaledW = scale * KFK._width;
     let scaledH = scale * KFK._height;
+
     let offsetX = (Math.round((window_width - scaledW) * 0.5)) / scale;
     let offsetY = (Math.round((window_height - scaledH) * 0.5)) / scale;
-    main.css({ 'transform-origin': '0px 0px', '-webkit-transform-origin': '0px 0px' });
-    main.css("transform", `scale(${scale}, ${scale})`);
+    KFK.scrollToPos({
+      x: KFK.LeftB,
+      y: KFK.TopB
+    })
+    KFK.JC3.css({ 'transform-origin': '0px 0px', '-webkit-transform-origin': '0px 0px' });
+    KFK.JC3.css("transform", `scale(${scale}, ${scale})`);
     setTimeout(function () {
-      main.css("transform", `scale(${scale}, ${scale}) translate(${offsetX}px, ${offsetY}px)`);
+      KFK.JC3.css("transform", `scale(${scale}, ${scale}) translate(${offsetX}px, ${offsetY}px)`);
     }, 200);
     // main.css( "transform", `translate(${offsetX}px, ${offsetY}px)`)
     KFK.inOverviewMode = true;
     KFK.maskScreen();
-    KFK.scrLog("进入全局要览: 要看哪里, 就双击哪里吧");
+    KFK.scrLog("进入全局要览: 要看哪里, 就双击哪里吧", 1000);
   }
 };
+
 
 KFK.maskScreen = function () {
   let mask = document.createElement('div');
@@ -5900,6 +6068,7 @@ KFK.actionLogLast = function () {
     KFK.actionLogGoto(KFK.actionLogToViewIndex);
   }
 };
+//滚动到某个对象上,并把这个对象放在屏幕中央
 KFK.scrollToNode = function (nodeid) {
   let jqDIV = $(`#${nodeid}`);
   if (jqDIV.length <= 0) {
@@ -5912,12 +6081,16 @@ KFK.scrollToNode = function (nodeid) {
   let left = jqDIV.position().left;
   let width = jqDIV.width();
   let height = jqDIV.height();
+  console.log(top, left, width, height);
 
-  KFK.scrollContainer = $("#scroll-container");
-  let scrollX = left - $(window).width() * 0.5 + width * 0.5;
-  let scrollY = top - $(window).height() * 0.5 + height * 0.5;
-  KFK.scrollContainer.scrollTop(scrollY);
-  KFK.scrollContainer.scrollLeft(scrollX);
+  //TODO: Test scrollToNode
+  KFK.scrollContainer = $("#S1");
+  let scrollX = left - $(window).width() * 0.5 + width * 0.5 + KFK.LeftB;
+  let scrollY = top - $(window).height() * 0.5 + height * 0.5 + KFK.TopB;
+  KFK.scrollToPos({
+    x: scrollX,
+    y: scrollY,
+  })
 
   if (KFK.lastActionLogJqDIV != null && KFK.lastActionLogJqDIV !== jqDIV)
     KFK.lastActionLogJqDIV.removeClass("shadow1");
@@ -6104,23 +6277,23 @@ KFK.initSvgLayer = function () {
   KFK.pageBounding = { Pages: [] };
   let boundingLineOption = {
     color: 'rgba(255, 255, 255, 0.8)',
-    width: 1,
+    width: 4,
     linecap: 'square'
   }
   for (let i = 0; i < KFK.PageNumberVert; i++) {
     for (let j = 0; j < KFK.PageNumberHori; j++) {
       KFK.pageBounding.Pages.push({
-        left: j * KFK.A4Width,
-        top: i * KFK.A4Height
+        left: j * KFK.PageWidth,
+        top: i * KFK.PageHeight
       });
     }
   }
-  for (let i = 1; i < KFK.PageNumberHori; i++) {
-    let tmpLine = KFK.svgDraw.line(i * KFK.A4Width, 0, i * KFK.A4Width, KFK._height);
+  for (let i = 0; i <= KFK.PageNumberHori; i++) {
+    let tmpLine = KFK.svgDraw.line(i * KFK.PageWidth, 0, i * KFK.PageWidth, KFK._height);
     tmpLine.addClass('pageBoundingLine').stroke(boundingLineOption);
   }
-  for (let j = 1; j < KFK.PageNumberVert; j++) {
-    let tmpLine = KFK.svgDraw.line(0, j * KFK.A4Height, KFK._width, j * KFK.A4Height);
+  for (let j = 0; j <= KFK.PageNumberVert; j++) {
+    let tmpLine = KFK.svgDraw.line(0, j * KFK.PageHeight, KFK._width, j * KFK.PageHeight);
     tmpLine.addClass('pageBoundingLine').stroke(boundingLineOption);
   }
 };
@@ -6242,7 +6415,7 @@ KFK.moveDIVCenterToPos = function (jqDiv, pos) {
   jqDiv.css('top', pos.y - KFK.unpx(jqDiv.css('height')) * 0.5);
 }
 KFK.C3MousePos = function (evt) {
-  return { x: KFK.scrollX(evt.clientX), y: KFK.scrollY(evt.clientY) };
+  return { x: KFK.scrXtoJc3X(evt.clientX), y: KFK.scrYtoJc3Y(evt.clientY) };
 }
 KFK.ScreenMousePos = function (pos) {
   return {
@@ -6275,7 +6448,7 @@ KFK.addSvgLineEventListner = function (theLine) {
       KFK.moveLinePoint = "from";
       KFK.lineToResize = theLine;
       KFK.setLineToRemember(theLine);
-      KFK.moveLineMoverTo(KFK.scrollToScreen({ x: parr[0][0], y: parr[0][1] }));
+      KFK.moveLineMoverTo(KFK.jc3PosToJc1Pos({ x: parr[0][0], y: parr[0][1] }));
     } else if (KFK.mouseNear(
       KFK.C3MousePos(evt),
       { x: parr[1][0], y: parr[1][1] },
@@ -6285,7 +6458,7 @@ KFK.addSvgLineEventListner = function (theLine) {
       KFK.moveLinePoint = "to";
       KFK.lineToResize = theLine;
       KFK.setLineToRemember(theLine);
-      KFK.moveLineMoverTo(KFK.scrollToScreen({ x: parr[1][0], y: parr[1][1] }));
+      KFK.moveLineMoverTo(KFK.jc3PosToJc1Pos({ x: parr[1][0], y: parr[1][1] }));
     } else {
       $("#linetransformer").css("visibility", "hidden");
     }
@@ -6308,8 +6481,8 @@ KFK.addSvgLineEventListner = function (theLine) {
     };
     KFK.setLineToRemember(theLine);
     KFK.lineDraggingStartPoint = {
-      x: KFK.scrollX(evt.clientX),
-      y: KFK.scrollY(evt.clientY)
+      x: KFK.scrXtoJc3X(evt.clientX),
+      y: KFK.scrYtoJc3Y(evt.clientY)
     }
   });
   //click line
