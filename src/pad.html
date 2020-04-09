@@ -10,9 +10,8 @@
 </head>
 
 <body>
-  <div id="containerbkg" class="grid1"></div>
   <img style="display:none;" id='defaultavatar' src='../assets/avatar/avatar-0.svg' />
-
+  <div id="overallbackground" class="grid1"></div>
   <div id='app' class='fontFancyColor'>
     <b-button v-show="show.section.signin" pill variant='outline-success' class='regsignin' @click="KFK.gotoRegister">
       注 册</b-button>
@@ -221,13 +220,18 @@
     </div>
 
     <div v-show="show.section.designer" style="display:none;">
-      <div id="scroll-container">
-        <div id="containermain">
+      <div id="S1">
+        <div id="C1">
+          <div id="containerbkg" class="grid1"></div>
           <div id="C3">
           </div>
           <div id="boundingrect" class="boundingrect"></div>
           <div id="selectingrect" class="selectingrect"></div>
-        </div>
+          <div id="modeIndicator" style="position:absolute; top: 0px; left: 0px; display: none; ">
+            <img id="modeIndicatorImg" src="../assets/pointer.svg" style='width: 18px; height: 18px;' />
+            <div id="modeIndicatorDiv" style='width: 18px; height: 18px;'></div>
+          </div>
+          <img id="linetransformer" src="../assets/linetransformer.svg"></div>
       </div>
       <div id="toplogo" class="padlayout">
         <img src="../assets/cocopad.svg" class="logo d-inline-block align-top" alt="COCOPAD">
@@ -375,21 +379,21 @@
               </b-collapse>
             </b-container>
             <b-container v-show="show.custombacksvg">
-            <b-row class="mx-auto my-1">
-              <b-col>贴纸颜色</b-col>
-              <b-col class='coco'><input name="tipBkgColor" id="tipBkgColor" /></b-col>
-            </b-row>
-            <b-button v-b-toggle.collapse-toolgroup2 class="mb-1 p-1 w-100" variant='outline-primary'>基本形状</b-button>
-            <b-collapse visible id="collapse-toolgroup2">
+              <b-row class="mx-auto my-1">
+                <b-col>贴纸颜色</b-col>
+                <b-col class='coco'><input name="tipBkgColor" id="tipBkgColor" /></b-col>
+              </b-row>
+              <b-button v-b-toggle.collapse-toolgroup2 class="mb-1 p-1 w-100" variant='outline-primary'>基本形状</b-button>
+              <b-collapse visible id="collapse-toolgroup2">
 
-              <b-container id="toolbox2" class="w-100" style="height: 300px; width:100%; overflow-y:scroll; ">
-              </b-container>
-            </b-collapse>
-            <b-button v-b-toggle.collapse-toolgroup3 class="mb-1 p-1 w-100" variant='outline-primary'>商务组件</b-button>
-            <b-collapse visible id="collapse-toolgroup3">
-              <b-container id="toolbox3" class="w-100" style="height: 300px; width:100%; overflow-y:scroll; ">
-              </b-container>
-            </b-collapse>
+                <b-container id="toolbox2" class="w-100" style="height: 300px; width:100%; overflow-y:scroll; ">
+                </b-container>
+              </b-collapse>
+              <b-button v-b-toggle.collapse-toolgroup3 class="mb-1 p-1 w-100" variant='outline-primary'>商务组件</b-button>
+              <b-collapse visible id="collapse-toolgroup3">
+                <b-container id="toolbox3" class="w-100" style="height: 300px; width:100%; overflow-y:scroll; ">
+                </b-container>
+              </b-collapse>
             </b-container>
           </b-tab>
           <b-tab title="排列" class="cocoproperty">
@@ -505,8 +509,8 @@
           </b-button>
           <b-button disable="model.cocodoc.doclocked" id="toggle-right" variant="outline-success"
             @click="KFK.toggleRight">
-            <b-icon  v-if="KFK.showRightTools===false" icon="layout-sidebar-reverse"></b-icon>
-            <b-icon  v-else icon="layout-sidebar-inset-reverse"></b-icon>
+            <b-icon v-if="KFK.showRightTools===false" icon="layout-sidebar-reverse"></b-icon>
+            <b-icon v-else icon="layout-sidebar-inset-reverse"></b-icon>
           </b-button>
           <b-button disable="model.cocodoc.doclocked" id="toggle-minimap" variant="outline-success"
             @click="KFK.toggleMinimap">
@@ -588,13 +592,8 @@
         </b-container>
 
       </b-container>
-      <div id="modeIndicator" style="position:absolute; top: 0px; left: 0px; display: none; ">
-        <img id="modeIndicatorImg" src="../assets/pointer.svg" style='width: 18px; height: 18px;' />
-        <div id="modeIndicatorDiv" style='width: 18px; height: 18px;'></div>
-      </div>
-      <img id="linetransformer" src="../assets/linetransformer.svg"
-        style="position: absolute; top:10px; height: 10px; width: 20px; height: 20px; z-index: 9999; visibility: hidden;" />
-    </div>
+     
+    </div><!-- who are you-->
 
     <div class="explorer" v-show="show.section.explorer" style="display:none;">
       <div class="inner">
@@ -985,7 +984,7 @@
                 <b-button variant="outline-secondary" size="sm" class="mb-2" v-on:click="SHARE.cancelShare">
                   <b-icon icon="x"></b-icon>取消
                 </b-button>
-                <b-button id="shareItBtn" variant="outline-primary"  size="sm" class="mb-2">
+                <b-button id="shareItBtn" variant="outline-primary" size="sm" class="mb-2">
                   <b-icon icon="box-arrow-up"></b-icon>复制地址
                 </b-button>
               </b-col>
