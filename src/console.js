@@ -3136,7 +3136,7 @@ KFK.init = async function () {
     }
   })
 
-  KFK.scrLog("欢迎来到共创协作工作平台");
+  KFK.scrLog("欢迎使用在线协作白板", 1000);
   await KFK.checkSession();
 };
 
@@ -3422,7 +3422,7 @@ KFK.onProjectServerFeedback = function () {
   console.log("here1", KFK.APP.model.prjs.length);
   KFK.showProjects();
   console.log("here2", KFK.APP.model.prjs.length);
-  KFK.gotoPrjs();
+  KFK.gotoPrjList();
   console.log("here3", KFK.APP.model.prjs.length);
   KFK.explorerRefreshed = true;
 };
@@ -3527,7 +3527,7 @@ KFK.remoteCheckUserId = function (userid) {
 
 KFK.pickPrjForCreateDoc = function () {
   KFK.onPrjSelected = KFK.showCreateNewDoc;
-  KFK.gotoPrjs("在哪个项目中新建共创文档？", true);
+  KFK.gotoPrjList("在哪个项目中新建共创文档？", true);
 };
 KFK.showCreateNewPrj = function () {
   KFK.APP.setData("show", "form", {
@@ -3577,7 +3577,7 @@ KFK.showProjects = async function () {
       console.log("not found");
       if (KFK.APP.model.prjs.length > 3) {
         console.log("has real projects, select then")
-        KFK.gotoPrjs("请选择一个项目");
+        KFK.gotoPrjList("请选择一个项目");
       } else {
         console.log("no real projects, createj then")
         KFK.showCreateNewPrj();
@@ -3591,7 +3591,7 @@ KFK.showProjects = async function () {
     await KFK.sendCmd("LISTDOC", { prjid: "all" });
   }
 };
-KFK.gotoPrjs = function (msg = null, userealprjs = false) {
+KFK.gotoPrjList = function (msg = null, userealprjs = false) {
   let prjs = KFK.APP.model.prjs;
   if (Array.isArray(prjs) === false)
     prjs = [];
@@ -3814,7 +3814,7 @@ KFK.onWsMsg = async function (response) {
       };
       KFK.setCurrentPrj(cocoprj);
       KFK.showProjects();
-      KFK.gotoPrjs();
+      KFK.gotoPrjList();
       break;
     case "NEWDOC":
       KFK.updatePrjDoclist(response.doc.prjid);
@@ -4070,7 +4070,7 @@ KFK.deletePrj = async function (prjid) {
     KFK.APP.setData("model", "project", KFK.APP.model.prjs[2]);
     KFK.APP.setData("model", "lastrealproject", KFK.APP.model.prjs[2]);
     KFK.sendCmd("LISTDOC", { prjid: KFK.APP.model.prjs[2].prjid });
-    KFK.gotoPrjs();
+    KFK.gotoPrjList();
   } else {
     KFK.showCreateNewPrj();
     KFK.APP.setData("model", "lastrealproject", { prjid: "", name: "" });
@@ -4103,22 +4103,21 @@ KFK.setDocReadonly = async function (doc, index, evt) {
   KFK.sendCmd("TGLREAD", { doc_id: doc._id });
 };
 
-KFK.prjRowClickHandler = function (record, index) {
-  KFK.APP.setData("model", "project", {
-    prjid: record.prjid,
-    name: record.name
-  });
-  if (record.prjid !== "all" && record.prjid !== "mine"
-    && record.prjid !== 'others') {
-    let cocoprj = { prjid: record.prjid, name: record.name };
+KFK.gotoPrj = async function(prjid, name){
+  KFK.APP.setData("model", "project", { prjid: prjid, name: name });
+  if (prjid !== "all" && prjid !== "mine" && prjid !== 'others') {
+    let cocoprj = { prjid: prjid, name: name };
     KFK.setCurrentPrj(cocoprj);
   }
-  KFK.sendCmd("LISTDOC", { prjid: record.prjid });
+  await KFK.sendCmd("LISTDOC", { prjid: prjid });
   if (KFK.onPrjSelected) {
     KFK.onPrjSelected();
   } else {
     KFK.gotoDocs();
   }
+}
+KFK.prjRowClickHandler = function (record, index) {
+    KFK.gotoPrj(record.prjid, record.name);
 };
 
 KFK.gotoRecent = function () {
