@@ -47,6 +47,7 @@ jstr = function (obj) {
 
 
 const KFK = {};
+KFK.accordion={};
 KFK.currentPage = 0;
 KFK.keypool = "";
 KFK.svgDraw = null;   //画svg的画布
@@ -56,6 +57,8 @@ KFK.OSSClient = new OSS({
   accessKeySecret: "ACCESSECRET",
   bucket: config.vault.bucket
 });
+KFK.idRowMap = {};
+KFK.idSwitchMap = {};
 KFK.FROM_SERVER = true; //三个常量
 KFK.FROM_CLIENT = false;
 KFK.NO_SHIFT = false;
@@ -1404,7 +1407,7 @@ KFK.setNodeTextAlignment = function (jqElem, theType, align) {
   }
 };
 
-KFK.editTextNode = function (textnode, theDIV) {
+KFK.editTextNode = function (textnode, theDIV, enterSelect = false) {
   KFK.editting = true;
   theDIV.editting = true;
   textnode.editting = true;
@@ -1422,7 +1425,6 @@ KFK.editTextNode = function (textnode, theDIV) {
   }
   textarea.style.zIndex = "999";
   KFK.C3.appendChild(textarea);
-  textarea.value = oldText;
   textarea.style.position = "absolute";
   textarea.style.top = areaPosition.y + "px";
   textarea.style.left = areaPosition.x + "px";
@@ -1442,9 +1444,6 @@ KFK.editTextNode = function (textnode, theDIV) {
   // textarea.style.padding = textnode.style.padding;
   // }
   textarea.style.padding = "4px";
-
-
-
   textarea.style.margin = textnode.style.margin;
   textarea.style.overflow = "hidden";
   textarea.style.outline = textnode.style.outline;
@@ -1455,6 +1454,8 @@ KFK.editTextNode = function (textnode, theDIV) {
   textarea.style.verticalAlign = "middle";
 
   textarea.focus();
+  textarea.value = oldText;
+  textarea.select();
 
   async function removeTextarea(txtChanged) {
     $(textarea).remove();
@@ -2379,14 +2380,14 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
   });
 };
 
-KFK.startNodeEditing = function (jqNodeDIV) {
+KFK.startNodeEditing = function (jqNodeDIV, enterSelect) {
   if (
     getBoolean(jqNodeDIV.attr("edittable")) &&
     KFK.notAnyLocked(jqNodeDIV)
   ) {
     KFK.fromJQ = jqNodeDIV.clone();
     let innerText = el(jqNodeDIV.find(".innerobj"));
-    KFK.editTextNode(innerText, el(jqNodeDIV));
+    KFK.editTextNode(innerText, el(jqNodeDIV), enterSelect);
   }
 }
 
@@ -2853,10 +2854,14 @@ KFK.deleteHoverOrSelectedDiv = async function (evt) {
   }
 };
 
-KFK.editHoverObject = async function (evt) {
+KFK.editHoverObject = async function (evt, enterSelect = false) {
   if (KFK.hoverJqDiv()) {
     if (KFK.anyLocked(KFK.hoverJqDiv())) return;
-    KFK.startNodeEditing(KFK.hoverJqDiv());
+    //回车的evt要组织掉,否则,在textarea.select()时,会导致文字丢失
+    evt.preventDefault();
+    evt.stopImmediatePropagation();
+    evt.stopPropagation();
+    KFK.startNodeEditing(KFK.hoverJqDiv(), enterSelect);
   }
 };
 
@@ -3239,9 +3244,9 @@ KFK.restoreLayoutDisplay = function () {
     $('#containerbkg').removeClass('grid1');
   KFK.APP.model.cococonfig.showbounding = KFK.layoutRemembered.showbounding;
   if (KFK.layoutRemembered.showbounding === true)
-      $('.pageBoundingLine').removeClass('noshow');
+    $('.pageBoundingLine').removeClass('noshow');
   else
-      $('.pageBoundingLine').addClass('noshow');
+    $('.pageBoundingLine').addClass('noshow');
 
 
   KFK.showSection({ minimap: KFK.layoutRemembered.minimap });
@@ -3405,45 +3410,26 @@ KFK.loadDoc = function (doc_id, pwd) {
 
 
 
-KFK.refreshExplorer = function () {
+KFK.refreshExplorer = async function () {
   // KFK.APP.setData("model", "docLoaded", false);
+  console.log('sendcmd LISTPRJ');
+  await KFK.sendCmd("LISTPRJ", { skip: 0 });
+  KFK.gotoRecent();
+}
+
+KFK.onProjectServerFeedback = function () {
   KFK.showSection({ signin: false, register: false, explorer: true, designer: false });
-  KFK.refreshProjects();
-  KFK.showPrjs();
+  console.log("here1", KFK.APP.model.prjs.length);
+  KFK.showProjects();
+  console.log("here2", KFK.APP.model.prjs.length);
+  KFK.gotoPrjs();
+  console.log("here3", KFK.APP.model.prjs.length);
   KFK.explorerRefreshed = true;
 };
 
-//这里检查是否有project
-KFK.refreshProjects = function () {
-  KFK.showForm({ newdoc: false, newprj: false, prjlist: true, doclist: true });
-  let currentprj = localStorage.getItem("cocoprj");
-  if (!getNull(currentprj)) {
-    let prj = JSON.parse(currentprj);
-    let found = -1;
-    for (let i = 2; i < KFK.APP.model.prjs.length; i++) {
-      if (prj.prjid === KFK.APP.model.prjs[i].prjid) {
-        found = i;
-        break;
-      }
-    }
-    if (found < 0) {
-      if (KFK.APP.model.prjs.length > 3) {
-        KFK.showPrjs("请选择一个项目");
-      } else {
-        KFK.showCreateNewPrj();
-      }
-    } else {
-      KFK.setCurrentPrj(prj);
-      KFK.sendCmd("LISTDOC", { prjid: prj.prjid });
-    }
-  } else {
-    KFK.sendCmd("LISTDOC", { prjid: "all" });
-  }
-
-  KFK.sendCmd("LISTPRJ", { skip: 0 });
-};
 
 KFK.setCurrentPrj = function (prj) {
+  console.log('setCUrrentPrj', prj);
   KFK.APP.setData("model", "project", prj);
   if (prj.prjid !== "all" && prj.prjid !== 'others' && prj.prjid !== "mine") {
     KFK.APP.setData("model", "lastrealproject", prj);
@@ -3452,6 +3438,7 @@ KFK.setCurrentPrj = function (prj) {
 };
 
 KFK.clearCurrentProject = function () {
+  console.log('clearCurrentProject');
   KFK.APP.setData("model", "project", { prjid: '', name: '' });
   KFK.APP.setData("model", "lastrealproject", { prjid: '', name: '' });
   localStorage.removeItem("cocoprj");
@@ -3461,12 +3448,22 @@ KFK.resetAllLocalData = function () {
   localStorage.removeItem("cocodoc");
   KFK.APP.setData("model", "cocodoc", { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', doclocked: false }),
     KFK.APP.setData("model", "cocouser", { userid: '', name: '', avatar: 'avatar-0', avatar_src: null }),
-    KFK.APP.setData("model", "project", { prjid: '', name: '' });
+    console.log('restAllLocalData');
+  KFK.APP.setData("model", "project", { prjid: '', name: '' });
   KFK.APP.setData("model", "lastrealproject", { prjid: '', name: '' });
   KFK.APP.setData("model", "prjs", []);
   KFK.APP.setData("model", "docs", []);
 };
-
+KFK.toggleDetails = function (row) {
+  if (row.detailsShowing) {
+    row.toggleDetails();
+  } else {
+    let theorg = row.item;
+    KFK.APP.model.org.changeorgname = theorg.name;
+    KFK.sendCmd('ORGUSERLIST', { _id: theorg._id });
+    KFK.idRowMap[theorg._id] = row;
+  }
+};
 KFK.showCreateNewDoc = function () {
   if (
     KFK.APP.model.lastrealproject.prjid === "" ||
@@ -3530,7 +3527,7 @@ KFK.remoteCheckUserId = function (userid) {
 
 KFK.pickPrjForCreateDoc = function () {
   KFK.onPrjSelected = KFK.showCreateNewDoc;
-  KFK.showPrjs("在哪个项目中新建共创文档？", true);
+  KFK.gotoPrjs("在哪个项目中新建共创文档？", true);
 };
 KFK.showCreateNewPrj = function () {
   KFK.APP.setData("show", "form", {
@@ -3562,7 +3559,39 @@ KFK.selectDocTab = function () {
     bottomlinks: true
   });
 };
-KFK.showPrjs = function (msg = null, userealprjs = false) {
+//这里检查是否有project
+KFK.showProjects = async function () {
+  KFK.showForm({ newdoc: false, newprj: false, prjlist: true, doclist: true });
+  let currentprj = localStorage.getItem("cocoprj");
+  if (!getNull(currentprj)) {
+    console.log('curentprj is not null.', currentprj, 'check existing');
+    let prj = JSON.parse(currentprj);
+    let found = -1;
+    for (let i = 2; i < KFK.APP.model.prjs.length; i++) {
+      if (prj.prjid === KFK.APP.model.prjs[i].prjid) {
+        found = i;
+        break;
+      }
+    }
+    if (found < 0) {
+      console.log("not found");
+      if (KFK.APP.model.prjs.length > 3) {
+        console.log("has real projects, select then")
+        KFK.gotoPrjs("请选择一个项目");
+      } else {
+        console.log("no real projects, createj then")
+        KFK.showCreateNewPrj();
+      }
+    } else {
+      KFK.setCurrentPrj(prj);
+      await KFK.sendCmd("LISTDOC", { prjid: prj.prjid });
+    }
+  } else {
+    console.log('sendcmd LISTDOC');
+    await KFK.sendCmd("LISTDOC", { prjid: "all" });
+  }
+};
+KFK.gotoPrjs = function (msg = null, userealprjs = false) {
   let prjs = KFK.APP.model.prjs;
   if (Array.isArray(prjs) === false)
     prjs = [];
@@ -3596,7 +3625,7 @@ KFK.showPrjs = function (msg = null, userealprjs = false) {
     KFK.showSection({ explorer: true, designer: false });
   }
 };
-KFK.showDocs = async function () {
+KFK.gotoDocs = async function () {
   await KFK.APP.setData("show", "form", {
     newdoc: false,
     newprj: false,
@@ -3784,8 +3813,8 @@ KFK.onWsMsg = async function (response) {
         name: response.prj.name
       };
       KFK.setCurrentPrj(cocoprj);
-      KFK.refreshProjects();
-      KFK.showPrjs();
+      KFK.showProjects();
+      KFK.gotoPrjs();
       break;
     case "NEWDOC":
       KFK.updatePrjDoclist(response.doc.prjid);
@@ -3837,6 +3866,7 @@ KFK.onWsMsg = async function (response) {
       // let count = option.count;
       let prjs = response.prjs;
       KFK.APP.setData("model", "prjs", prjs);
+      KFK.onProjectServerFeedback();
       break;
 
     case "MOUSE":
@@ -3872,7 +3902,7 @@ KFK.onWsMsg = async function (response) {
         KFK.setCurrentPrj(KFK.APP.model.prjs[found]);
       }
       KFK.sendCmd("LISTDOC", { prjid: gotoPrjId });
-      KFK.showDocs();
+      KFK.gotoDocs();
       break;
     case "SETPROFILE-TRUE":
       KFK.scrLog("基本资料已设置成功");
@@ -3892,9 +3922,103 @@ KFK.onWsMsg = async function (response) {
     case 'SHARECODE':
       SHARE.onWsMsg(response);
       break;
+    case 'UPDATECOCOUSER':
+      console.log(response.data);
+      KFK.updateCocouser(response.data);
+      break;
+    case 'LISTMYORG':
+      KFK.debug('got listmyorg', response);
+      KFK.APP.model.myorgs = [];
+      for (let i = 0; i < response.orgs.length; i++) {
+        KFK.APP.model.myorgs.push(Object.assign({}, response.orgs[i]));
+      }
+      KFK.setAppData('model', 'myorgs', KFK.APP.model.myorgs);
+      break;
+    case 'LISTVORG':
+      KFK.debug('got listvorg', response);
+      KFK.APP.model.vorgs = [];
+      for (let i = 0; i < response.orgs.length; i++) {
+        KFK.APP.model.vorgs.push(Object.assign({}, response.orgs[i]));
+      }
+      KFK.setAppData('model', 'vorgs', KFK.APP.model.vorgs);
+      jlog(KFK.APP.model.vorgs);
+      break;
+    case 'ORGUSERLIST':
+      KFK.debug('got orguserlist', response);
+      let tmp = KFK.APP.model.orgusers;
+      tmp[response._id] = response.userids;
+      KFK.setAppData("model", "orgusers", tmp);
+      if (response.toggle === 'TOGGLE')
+        KFK.idRowMap[response._id].toggleDetails();
+      else {
+        KFK.idRowMap[response._id].toggleDetails();
+        KFK.idRowMap[response._id].toggleDetails();
+      }
+      break;
+    case 'SCRLOG':
+      KFK.scrLog(response.msg);
+      break;
     case 'ERROR':
       KFK.error(response.msg);
       break;
+  }
+};
+KFK.switchOrg = async function(_id){
+  console.log(_id);
+  await KFK.sendCmd('ENTERORG', {_id: _id});
+};
+KFK.deleteOrg = async function(_id){
+  console.log(_id);
+  await KFK.sendCmd('DELETEORG', {_id: _id});
+};
+KFK.createNewOrg = async function () {
+  let orgname = KFK.APP.model.org.neworg.name;
+  if (KFK.validateOrgName(orgname)) {
+    await KFK.sendCmd('NEWORG', { name: orgname });
+  } else {
+    KFK.scrLog("组织名称不符合要求");
+  }
+}
+KFK.addOrgUser = async function (org_id, rowIndex) {
+  let jInput = $('#inline-form-input-newuserid-' + rowIndex);
+  let newuserid = jInput.val();
+  if (KFK.validateUserId(newuserid)) {
+    await KFK.sendCmd('ORGUSERADD', { _id: org_id, tobeadd_userid: newuserid })
+  } else {
+    KFK.scrLog("用户ID格式有误");
+  }
+};
+KFK.changeOrgName = async function (org_id, rowIndex) {
+  let jInput = $('#inline-form-input-changeorgname-'+ rowIndex);
+  let newName = jInput.val();
+  if (KFK.validateOrgName(newName)) {
+    await KFK.sendCmd('CHANGEORGNAME', { _id: org_id, name: newName, cocouser_orgid: KFK.APP.model.cocouser.orgid });
+  } else {
+    KFK.scrLog("新名字不符合要求");
+  }
+};
+KFK.deleteOrgUser = function (_id, item, index, evt) {
+  console.log('DeleteOrgUser', _id, item.userid, index);
+  KFK.sendCmd("ORGUSERDEL", { _id: _id, userid: item.userid });
+};
+
+KFK.toggleAccordionEnteredOrg= async function () {
+  if(KFK.accordion['vorg']===undefined ||
+  KFK.accordion['vorg']===false){
+    KFK.accordion['vorg'] = true;
+    await KFK.sendCmd('LISTVORG', {});
+  }else{
+    KFK.accordion['vorg'] = false;
+  }
+};
+
+KFK.toggleAccordionMyOrg= async function () {
+  if(KFK.accordion['myorg']===undefined ||
+  KFK.accordion['myorg']===false){
+    KFK.accordion['myorg'] = true;
+    await KFK.sendCmd('LISTMYORG', {});
+  }else{
+    KFK.accordion['myorg'] = false;
   }
 };
 
@@ -3932,10 +4056,12 @@ KFK.readLocalCocoUser = async function () {
   }
   return cocouser;
 };
-
+KFK.notImplemented = function () {
+  KFK.debug("not implemented");
+};
 KFK.openDemoDoc = function () {
   KFK.log("Not implemented");
-}
+};
 
 KFK.deletePrj = async function (prjid) {
   let payload = { prjid: prjid };
@@ -3944,7 +4070,7 @@ KFK.deletePrj = async function (prjid) {
     KFK.APP.setData("model", "project", KFK.APP.model.prjs[2]);
     KFK.APP.setData("model", "lastrealproject", KFK.APP.model.prjs[2]);
     KFK.sendCmd("LISTDOC", { prjid: KFK.APP.model.prjs[2].prjid });
-    KFK.showPrjs();
+    KFK.gotoPrjs();
   } else {
     KFK.showCreateNewPrj();
     KFK.APP.setData("model", "lastrealproject", { prjid: "", name: "" });
@@ -3958,7 +4084,7 @@ KFK.msgOK = function () {
     explorer: true,
     designer: false
   });
-  KFK.showDocs();
+  KFK.gotoDocs();
 };
 
 KFK.deleteDoc = async function (doc_id) {
@@ -3967,7 +4093,7 @@ KFK.deleteDoc = async function (doc_id) {
   if (KFK.APP.model.docs.length > 0) {
     let nextdoc = KFK.APP.model.docs[0];
     KFK.APP.setData("model", "cocodoc", nextdoc);
-    KFK.showDocs();
+    KFK.gotoDocs();
   } else {
     KFK.APP.setData("model", "cocodoc", KFK.DocController.getDummyDoc());
   }
@@ -3991,13 +4117,15 @@ KFK.prjRowClickHandler = function (record, index) {
   if (KFK.onPrjSelected) {
     KFK.onPrjSelected();
   } else {
-    KFK.showDocs();
+    KFK.gotoDocs();
   }
 };
 
 KFK.gotoRecent = function () {
+  KFK.setAppData("model", "project", { prjid: 'all', name: '我最近使用过的白板' })
+  console.log("set recent docs list", KFK.APP.model.project);
   KFK.sendCmd("LISTDOC", { prjid: 'all' });
-  KFK.showDocs();
+  KFK.gotoDocs();
   KFK.showForm({
     newdoc: false,
     newprj: false,
@@ -4040,7 +4168,7 @@ KFK.getDocPwd = async function () {
 };
 KFK.cancelDocPwd = function () {
   KFK.APP.setData("model", "passwordinputok", "cancel");
-  KFK.refreshExplorer();
+  KFK.gotoRecent();
 };
 KFK.onDocPwdHidden = function (bvModalEvt) {
   //这个值初始为show,这样，不运行点对话框外部，把对话框隐藏起来
@@ -4997,7 +5125,7 @@ KFK.addDocumentEventHandler = function () {
     if (KFK.editting) return;
     switch (evt.keyCode) {
       case 13:
-        KFK.editHoverObject(evt);
+        KFK.editHoverObject(evt, true);
         break;
       case 27:
         //ESC
@@ -5880,28 +6008,28 @@ KFK.___setSlideMask = function (pageIndex) {
     let maskLeft = document.createElement("div");
     jLeft = $(maskLeft);
     jLeft.addClass('maskLeft slidemask');
-    jLeft.css({"background-color":"black", "position":"absolute", "z-index":1000000000});
+    jLeft.css({ "background-color": "black", "position": "absolute", "z-index": 1000000000 });
     KFK.C3.appendChild(maskLeft);
   }
   if (jTop.length === 0) {
     let maskTop = document.createElement("div");
     jTop = $(maskTop);
     jTop.addClass('maskTop slidemask');
-    jTop.css({"background-color":"black", "position":"absolute", "z-index":1000000000});
+    jTop.css({ "background-color": "black", "position": "absolute", "z-index": 1000000000 });
     KFK.C3.appendChild(maskTop);
   }
   if (jRight.length === 0) {
     let maskRight = document.createElement("div");
     jRight = $(maskRight);
     jRight.addClass('maskRight slidemask');
-    jRight.css({"background-color":"black", "position":"absolute", "z-index":1000000000});
+    jRight.css({ "background-color": "black", "position": "absolute", "z-index": 1000000000 });
     KFK.C3.appendChild(maskRight);
   }
   if (jBottom.length === 0) {
     let maskBottom = document.createElement("div");
     jBottom = $(maskBottom);
     jBottom.addClass('maskBottom slidemask');
-    jBottom.css({"background-color":"black", "position":"absolute", "z-index":1000000000});
+    jBottom.css({ "background-color": "black", "position": "absolute", "z-index": 1000000000 });
     KFK.C3.appendChild(maskBottom);
   }
 
@@ -6213,6 +6341,29 @@ KFK.validateUserName = function (str) {
     .required();
   const schema2 = Joi.string()
     .regex(/^[\u4e00-\u9fa5]{2,10}$/)
+    .required();
+  let { error, value } = schema1.validate(str);
+  if (!error) {
+    KFK.debug("english checking ", str, "true");
+    return true;
+  } else {
+    let { error, value } = schema2.validate(str);
+    if (!error) {
+      KFK.debug("chinese checking ", str, "true");
+      return true;
+    } else {
+      KFK.debug("checking ", str, "false");
+      return false;
+    }
+  }
+};
+
+KFK.validateOrgName = function (str) {
+  const schema1 = Joi.string()
+    .regex(/^[a-zA-Z0-9_\u4e00-\u9fa5]{4,20}$/)
+    .required();
+  const schema2 = Joi.string()
+    .regex(/^[\u4e00-\u9fa5]{4,20}$/)
     .required();
   let { error, value } = schema1.validate(str);
   if (!error) {
