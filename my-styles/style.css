@@ -498,7 +498,7 @@ svg path {
 
 .registerform input,.signinform input {
   border-radius: 20px;
-  background-color: rgba(110, 223, 104, 0.85);
+  background-color: rgba(194, 238, 191, 0.85);
 }
 
 input#regUserCode{
@@ -643,6 +643,13 @@ select:focus {
   top: 50px; left:5px;
   width: 100px;
   height: 100px;
+}
+.docnav {
+  font-size: 14px;
+}
+.docnav img {
+  width: 48px;
+  height: 48px;
 }
 .shareItTips{
   font-size: 20px;
