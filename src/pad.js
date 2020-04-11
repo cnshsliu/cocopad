@@ -19,18 +19,11 @@ const app = new Vue({
   data: {
     selected: 'A',
     state: {
-      profile: {
-        name: null,
-        oldpwd: null,
-        newpwd: null,
-        newpwd2: null,
-      },
-      reg: {
-        userid: null,
-        name: null,
-        pwd: null,
-        pwd2: null,
-      }
+      profile: { name: null, oldpwd: null, newpwd: null, newpwd2: null, },
+      reg: { userid: null, name: null, pwd: null, pwd2: null, },
+      newdoc: { name: null, pwd: null, },
+      newprj:{ name: null, },
+      copydoc:{ name: null},
     },
     RegUserIdState: null,
     RegUserNameState: null,
@@ -69,7 +62,7 @@ const app = new Vue({
           ["biz001", "biz002", "biz003", "biz004", "biz005", "biz006", "biz007", "biz008", "biz009", "biz010", "biz011", "biz012", "biz013", "biz014", "biz015", "biz016", "biz017", "biz018", "biz019", "biz020", "biz021", "biz022", "biz023", "biz024", "biz025", "biz026", "biz027", "biz028", "biz029", "biz030", "biz031", "biz032", "biz033", "biz034", "biz035", "biz036", "biz037", "biz038", "biz039", "biz040", "biz041", "biz042", "biz043", "biz044", "biz045", "biz04", "biz047", "biz048", "biz049", "biz050", "biz051", "biz052", "biz053", "biz054", "biz055", "biz056", "biz057", "biz058", "biz059", "biz060"],
       }
     ],
-    toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'lock': false, 'minimap': false, 'connect': false , 'clean':false},
+    toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'lock': false, 'minimap': false, 'connect': false, 'clean': false },
     show: {
       'loading': false,
       'waiting': true,
@@ -87,12 +80,13 @@ const app = new Vue({
       'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false, copyDocDialog: false, pasteContentDialog: false, MsgBox: false, shareDialog: false },
     },
     model: {
-      org:{
-        neworg:{
-          name:'',
+      showHelp:false,
+      org: {
+        neworg: {
+          name: '',
         },
-        newuserid:'',
-        changeorgname:'',
+        newuserid: '',
+        changeorgname: '',
       },
       share: { code: '', email: '', lifeshare: false, msg: '临时分享, 48小时后过期', url: '' },
       signInButWaitVerify: false,
@@ -147,19 +141,19 @@ const app = new Vue({
       lastrealproject: { prjid: '', name: '' },
       cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', doclocked: false, ownerAvatar_src: '../assets/cocopad.svg' },
       cocouser: { userid: '', name: '', avatar: 'avatar-0', avatar_src: null },
-      cocoorg: { orgid: 'ORGID', name: 'ORGNAME', logo: 'corp-0', logo_src: '',owner:'', ownername:'张三' },
+      cocoorg: { orgid: 'ORGID', name: 'ORGNAME', logo: 'corp-0', logo_src: '', owner: '', ownername: '张三' },
       orgusers: {},
-      vorgs:[],
-      myorgs:[],
+      vorgs: [],
+      myorgs: [],
       listdocoption: {},
       listprjoption: {},
       register: { userid: '', pwd: '', pwd2: '', name: '', step: 'reg', code: '' },
       signin: { userid: '', pwd: '' },
-      docfields: [{ key: 'name', label: '名称' }, { key: 'doclocked_icon', label: '模式' }, { key: 'security_icon', label: '密保' }, { key: 'copydoc', label: '复制',variant:'success' }, { key: 'share_icon', label: '分享',variant:'success' }, { key: 'owner', label: '发起人' }, { key: 'operation', label: '操作', variant:'danger' }],
-      vorgfields: [{ key: 'name', label: '名称' }, { key: 'owner', label: '发起人' }, {key:'operations', label:'相关操作'}],
-      myorgfields: [{ key: 'name', label: '名称' },  {key:'grade', label:'等级'} , {key:'operations', label:'相关操作'}],
-      useridfields: [{ key: 'userid', label: '用户ID' },{ key: 'operation', label: '操作', variant:'danger' }],
-      prjfields: [{ key: 'name', label: '名称' }, { key: 'operation', label: '操作' }],
+      docfields: [{ key: 'name', label: '文档名称' }, { key: 'readonly_icon', label: '模式' }, { key: 'protect_icon', label: '密保' }, { key: 'docduplicate', label: '操作' }, { key: 'share_icon', label: '分享' }, { key: 'owner', label: '发起人' }, { key: 'operations', label: '其它', variant: 'danger' }],
+      vorgfields: [{ key: 'name', label: '名称' }, { key: 'owner', label: '发起人' }, { key: 'operations', label: '相关操作' }],
+      myorgfields: [{ key: 'name', label: '名称' }, { key: 'grade', label: '等级' }, { key: 'operations', label: '相关操作' }],
+      useridfields: [{ key: 'userid', label: '用户ID' }, { key: 'operations', label: '操作', variant: 'danger' }],
+      prjfields: [{ key: 'name', label: '项目名称' }, { key: 'operations', label: '相关操作' }],
       prjwarning: '',
       docs: [],
       prjs: [],
@@ -343,8 +337,8 @@ const app = new Vue({
     deletePrjItem(item, index, button) {
       console.log(item);
       console.log(index);
-      this.$bvModal.msgBoxConfirm('删除项目:' + item.name, {
-        title: '请确认',
+      this.$bvModal.msgBoxConfirm('删除项目: [' + item.name + ']', {
+        title: '请确认删除',
         size: 'md',
         buttonSize: 'sm',
         okVariant: 'danger',
@@ -359,7 +353,6 @@ const app = new Vue({
             for (let i = 0; i < this.model.prjs.length; i++) {
               if (this.model.prjs[i].prjid === item.prjid) {
                 KFK.deletePrj(item.prjid);
-                this.model.prjs.splice(i, 1);
                 break;
               }
             }
@@ -369,8 +362,8 @@ const app = new Vue({
     },
 
     deleteDocItem(item, index, button) {
-      this.$bvModal.msgBoxConfirm('删除文档:' + item.name, {
-        title: '请确认',
+      this.$bvModal.msgBoxConfirm('删除文档: [' + item.name + ']', {
+        title: '请确认删除',
         size: 'sm',
         buttonSize: 'sm',
         okVariant: 'danger',
@@ -385,7 +378,6 @@ const app = new Vue({
             for (let i = 0; i < this.model.docs.length; i++) {
               if (this.model.docs[i]._id === item._id) {
                 KFK.deleteDoc(item._id);
-                this.model.docs.splice(i, 1);
                 break;
               }
             }

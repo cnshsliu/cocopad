@@ -1,6 +1,7 @@
 const ACM = {};
 import KFK from './console';
 import BossWS from "./bossws";
+import Validator from "./validator";
 
 ACM.registerUser = function () {
     let tmpRegData = KFK.APP.model.register;
@@ -9,18 +10,17 @@ ACM.registerUser = function () {
     let name = tmpRegData.name.trim();
     let pwd2 = tmpRegData.pwd2.trim();
     let foundError = false;
-    KFK.APP.state.reg.userid = KFK.validateUserId(userid);
-    KFK.APP.state.reg.name = KFK.validateUserName(name);
-    KFK.APP.state.reg.pwd = KFK.validateUserPassword(pwd);
-    KFK.APP.state.reg.pwd2 = pwd === pwd2;
-    if (!(
-        KFK.APP.state.reg.userid &&
-        KFK.APP.state.reg.name &&
-        KFK.APP.state.reg.pwd &&
-        KFK.APP.state.reg.pwd2
-    )) {
-        KFK.APP.setData("model", "register", tmpRegData);
-        return;
+    if(!Validator.validateUserId(userid)){
+        KFK.scrLog("注册账号需要是一个正确的邮箱地址");  return;
+    }
+    if(!Validator.validateUserName(name)){
+        KFK.scrLog("全称需要是2个以上汉字或4个以上英文，最多10个");  return;
+    }
+    if(!Validator.validateUserPassword(pwd)){
+        KFK.scrLog("密码至少8字符，必须含大小写字母数字和特殊字符");  return;
+    }
+    if(pwd !== pwd2){
+        KFK.scrLog("两次密码输入不一致");  return;
     }
     BossWS.start(
         function () {
@@ -93,6 +93,16 @@ ACM.resendVerifyCode = async function () {
 ACM.signin = function () {
     let userid = KFK.APP.model.signin.userid;
     let pwd = KFK.APP.model.signin.pwd;
+    let useridOkay = Validator.validateUserId(userid);
+    let pwdOkay = Validator.validateUserPassword(pwd);
+    if(!useridOkay){
+        KFK.scrLog("登录名录入不符合要求");
+        return;
+    }
+    if(!pwdOkay){
+        KFK.scrLog("录入密码不符合要求");
+        return;
+    }
     KFK.info("singin " + userid);
     BossWS.start(
         function () {

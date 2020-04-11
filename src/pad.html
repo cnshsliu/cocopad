@@ -105,39 +105,34 @@
               新用户注册
             </b-col>
           </b-row>
-          <b-form-group>
-            <b-form-input id="regUserId" trim v-model="model.register.userid" :state="state.reg.userid"
-              class="mb-2 mr-sm-2 mb-sm-0" required placeholder="请使用正确的邮箱地址" class="w-50"></b-form-input>
-            <b-form-invalid-feedback id="regUserId-feedback">
-              一个正确的邮箱地址
-            </b-form-invalid-feedback>
-          </b-form-group>
-          <b-form-group>
-            <b-form-input id="regUserName" trim v-model="model.register.name" :state="state.reg.name"
-              class="mb-2 mr-sm-2 mb-sm-0" required placeholder="您的全称" class="w-50"></b-form-input>
-            <b-form-invalid-feedback id="regUserName-feedback">
-              2个以上汉字或4个以上英文，最多10个
-            </b-form-invalid-feedback>
-          </b-form-group>
-          <b-form-group>
+          <b-input-group prepend="注册账号" class="mb-1">
+            <b-form-input id="regUserId" trim v-model="model.register.userid" :state="state.reg.userid" required
+              placeholder="请使用正确的邮箱地址" class="w-50"></b-form-input>
+          </b-input-group>
+          <b-input-group prepend="您的全称" class="mb-1">
+            <b-form-input id="regUserName" trim v-model="model.register.name" :state="state.reg.name" required
+              placeholder="2个以上汉字或4个以上英文，最多10个" class="w-50"></b-form-input>
+          </b-input-group>
+          <b-input-group prepend="您的密码" class="mb-1">
             <b-form-input id="regUserPwd" trim :type="model.hidepassword?'password':'text'" v-model="model.register.pwd"
-              :state="state.reg.pwd" class="mb-2 mr-sm-2 mb-sm-0" required placeholder="请输入密码" class="w-50">
+              :state="state.reg.pwd" class="no-right-border" required placeholder="8个以上大小写字母数字和特殊字符" class="w-50">
             </b-form-input>
-            <b-form-invalid-feedback id="regUserPwd-feedback">
-              密码至少8字符，<BR>必须含大小写字母数字和特殊字符
-            </b-form-invalid-feedback>
-          </b-form-group>
-          <b-form-group>
+            <span class="right-round-span">
+              <b-button @click="toggleHidePassword" variant="outline-none">
+                <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
+              </b-button>
+            </span>
+          </b-input-group>
+          <b-input-group prepend="再次录入" class="mb-1">
             <b-form-input id="regUserPwd2" trim :type="model.hidepassword?'password':'text'"
-              v-model="model.register.pwd2" :state="state.reg.pwd2" class="mb-2 mr-sm-2 mb-sm-0" required
+              v-model="model.register.pwd2" :state="state.reg.pwd2" class="no-right-border" required
               placeholder="两次密码输入需要一致" class="w-50"></b-form-input>
-            <b-form-invalid-feedback id="regUserPwd2-feedback">
-              两次密码输入需要一致
-            </b-form-invalid-feedback>
-            <b-button @click="toggleHidePassword" variant="outline-none">
-              <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
-            </b-button>
-          </b-form-group>
+            <span class="right-round-span">
+              <b-button @click="toggleHidePassword" variant="outline-none">
+                <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
+              </b-button>
+            </span>
+          </b-input-group>
           <div class="bg-none">
           </div>
           <b-row>
@@ -178,17 +173,18 @@
             请登录
           </b-col>
         </b-row>
-        <b-form-group>
-          <b-form-input id="userId" trim v-model="model.signin.userid" class="mb-2 mr-sm-2 mb-sm-0" placeholder="你的用户名"
-            class="w-50"></b-form-input>
-        </b-form-group>
-        <b-form-group>
+        <b-input-group prepend="账号" class="mb-1">
+          <b-form-input id="userId" trim v-model="model.signin.userid" placeholder="你的用户名" class="w-50"></b-form-input>
+        </b-input-group>
+        <b-input-group prepend="密码" class="mb-1">
           <b-form-input id="userPwd" trim :type="model.hidepassword?'password':'text'" v-model="model.signin.pwd"
-            class="mb-2 mr-sm-2 mb-sm-0" placeholder="你的密码" class="w-50"></b-form-input>
-          <b-button @click="toggleHidePassword" variant="outline-none">
-            <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
-          </b-button>
-        </b-form-group>
+            class="no-right-border" placeholder="你的密码" class="w-50"></b-form-input>
+          <span class="right-round-span">
+            <b-button @click="toggleHidePassword" variant="outline-none">
+              <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
+            </b-button>
+          </span>
+        </b-input-group>
         <div class="bg-none">
           <b-button @click="ACM.signin" variant="primary">登录 &gt;&gt;</b-button>
         </div>
@@ -604,18 +600,18 @@
           <b-navbar-brand href="#">
           </b-navbar-brand>
         </b-navbar-nav>
-        <b-navbar-nav class="mr-auto">
-          <b-nav-item v-if="model.prjs.length<=3" @click="KFK.showCreateNewPrj">你还没有项目，现在新建一个 </b-nav-item>
+        <b-navbar-nav class="mr-auto" v-on:mouseover="EXP.avatarMouseOver" v-on:mouseout="EXP.avatarMouseOut">
+          <b-nav-item v-if="model.prjs.length<1" @click="KFK.showCreateNewPrj">你还没有项目，现在新建一个 </b-nav-item>
           <b-nav-item v-else @click="KFK.showCreateNewPrj"> 新建项目 </b-nav-item>
         </b-navbar-nav>
-        <b-navbar-nav class="mr-auto">
-          <b-nav-item @click="KFK.showCreateNewDoc">新建文档</b-nav-item>
+        <b-navbar-nav class="mr-auto" v-on:mouseover="EXP.avatarMouseOver" v-on:mouseout="EXP.avatarMouseOut">
+          <b-nav-item @click="KFK.showCreateNewDoc">发起新协作</b-nav-item>
         </b-navbar-nav>
         <b-navbar-nav>
           <div v-show="model.cocouser.avatar_src">
-            <img :src="model.cocouser.avatar_src" style="width:40px; height: 40px;" />
+            <img :src="model.cocouser.avatar_src" class="explorer-user-avatar"></img>
           </div>
-          <b-nav-item-dropdown :text="model.cocouser.name" right>
+          <b-nav-item-dropdown :text="model.cocouser.name" class="explorer-user-dropdown" right>
             <b-dropdown-item-button v-if="!model.isDemoEnv" @click="KFK.showSetProfileDialog()">修改账户信息
             </b-dropdown-item-button>
             <b-dropdown-divider></b-dropdown-divider>
@@ -638,13 +634,15 @@
               <b-card title="新建项目">
                 <b-form>
 
-                  <b-input-group prepend="项目名称" class="mb-2 mr-sm-2 mb-sm-0">
-                    <b-form-input id="prjName" trim v-model="model.newprjname" :state="prjNameState"
-                      class="mb-2 mr-sm-2 mb-sm-0" placeholder=""></b-form-input>
-                    <b-button variant="primary" @click="KFK.createNewPrj">发起</b-button>
+                  <b-input-group prepend="项目名称" class="pt-4 px-5">
+                    <b-form-input id="prjName" trim v-model="model.newprjname" :state="state.newprj.name"
+                      placeholder=""></b-form-input>
                     <b-form-invalid-feedback id="prjName-feedback">
                       名称为3个以上英文或中文字符，不超过20个
                     </b-form-invalid-feedback>
+                  </b-input-group>
+                  <b-input-group class="pt-2 px-5 d-flex justify-content-start">
+                    <b-button variant="primary" @click="KFK.createNewPrj">新建 &gt;&gt;</b-button>
                   </b-input-group>
 
                 </b-form>
@@ -655,14 +653,17 @@
             </div>
             <div v-show="show.form.prjlist">
               <div class='page_title'>{{model.prjwarning}}</div>
+              <!-- prj list -->
               <b-table hover id="my-prj-table" :items="model.prjs" :per-page="model.perPage"
                 :current-page="model.currentPrjPage" small :fields="model.prjfields"
                 @row-clicked="KFK.prjRowClickHandler">
-                <template v-slot:cell(operation)="data">
-                  <b-button v-if="['all','others','mine'].indexOf(data.item.prjid)<0" size="sm"
-                    @click="deletePrjItem(data.item, data.index, $event.target)" class="m-0 p-0"
-                    variant="outline-primary">
-                    <b-icon icon="trash"></b-icon>
+                <template v-slot:cell(operations)="data">
+                  <b-button size="sm" @click="deletePrjItem(data.item, data.index, $event.target)" class="m-0 p-0"
+                    variant="outline-none">
+                    <b-iconstack>
+                      <b-icon stacked icon="x"></b-icon>
+                      <b-icon stacked icon="folder"></b-icon>
+                    </b-iconstack> 删除项目
                   </b-button>
                 </template>
                 <template v-slot:cell()="data">
@@ -671,35 +672,41 @@
               </b-table>
               <div>
                 <b-pagination class="justify-content-center" v-model="model.currentPrjPage" :total-rows="prjcount"
-                  :per-page="model.perPage" aria-controls="my-prj-table" pills></b-pagination>
+                  :per-page="model.perPage" aria-controls="my-prj-table" first-text="第一页" prev-text="上一页"
+                  next-text="下一页" last-text="最后页" pills></b-pagination>
               </div>
             </div>
           </b-tab>
           <b-tab title="我的白板" @click="KFK.selectDocTab">
             <div v-show="show.form.newdoc">
-              <b-card title="新建共创板">
+              <!-- FORM new doc new board create new-->
+              <b-card title="新建白板, 发起协作">
                 <b-card-text>
-                  在项目 <B>{{model.lastrealproject.name}}</B> 中新建
+                  在项目 <span class="cocohighlight-1">{{model.lastrealproject.name}}</span> 中发起
                   <a href="#" class="card-link" @click="KFK.pickPrjForCreateDoc">选择其他项目 &gt;</a>
                 </b-card-text>
                 <b-form>
-                  <b-form-group label-cols="3" label-align="right" label="白板名" label-for="docName">
-                    <b-form-input id="docName" trim v-model="model.newdocname" :state="docNameState"
-                      class="mb-2 mr-sm-2 mb-sm-0" placeholder=""></b-form-input>
-                    <b-form-invalid-feedback id="docName-feedback">
+
+
+                  <b-input-group prepend="白板名称" class="pt-4 px-5">
+                    <b-form-input id="docName" trim v-model="model.newdocname" :state="state.newdoc.name"
+                      placeholder=""></b-form-input>
+                    <b-form-invalid-feedback id="prjName-feedback">
                       名称为3个以上英文或中文字符，不超过20个
                     </b-form-invalid-feedback>
-                  </b-form-group>
-                  <b-form-group label-cols="3" label-align="right" label="访问密码" label-for="docPwd">
+                  </b-input-group>
+                  <b-input-group prepend="访问密码" class="pt-2 px-5">
                     <b-form-input id="docPwd" :type="model.hidepassword?'password':'text'" trim
-                      v-model="model.newdocpwd" class="mb-2 mr-sm-2 mb-sm-0" placeholder=""></b-form-input>
-                    <b-button @click="toggleHidePassword" variant="outline-none">
-                      <b-icon scale="2" :icon="model.hidepassword?'eye':'eye-slash'" />
-                    </b-button>
-                  </b-form-group>
-                  <div class="bg-none text-right">
-                    <b-button variant="primary" @click="KFK.createNewDoc">发起</b-button>
-                  </div>
+                      v-model="model.newdocpwd" placeholder=""></b-form-input>
+                    <b-input-group-append>
+                      <b-button @click="toggleHidePassword">
+                        <b-icon :icon="model.hidepassword?'eye':'eye-slash'" size="sm"></b-icon>
+                      </b-button>
+                    </b-input-group-append>
+                  </b-input-group>
+                  <b-input-group class="pt-2 px-5 d-flex justify-content-start">
+                    <b-button variant="primary" @click="KFK.createNewDoc">发起 &gt;&gt;</b-button>
+                  </b-input-group>
                 </b-form>
                 <div>&nbsp;</div>
                 <div>&nbsp;</div>
@@ -707,90 +714,125 @@
               </b-card>
             </div>
             <div v-show="show.form.doclist" style="overflow-y:scroll">
-              <DIV style="background-color: red; width:100%; height: 40px;">
-                <b-row class="docnav">
-                  <b-col>
-                    <b-img :src="KFK.images['share'].src"></b-img>
-                  </b-col>
-                  <b-col>
-                    <b-img :src="KFK.images['share'].src"></b-img>
-                  </b-col>
-                  <b-col>
-                    <b-img :src="KFK.images['share'].src"></b-img>
-                  </b-col>
-                  <b-col>
-                    <b-img :src="KFK.images['share'].src"></b-img>
-                  </b-col>
-                </b-row>
-              </DIV>
+              <b-row class="docnav w-75 text-center p-2">
+                <b-col v-on:mouseover="EXP.avatarMouseOver" v-on:mouseout="EXP.avatarMouseOut"
+                  @click="KFK.gotoPrj('mine')">
+                  我发起的
+                </b-col>
+                <b-col v-on:mouseover="EXP.avatarMouseOver" v-on:mouseout="EXP.avatarMouseOut"
+                  @click="KFK.gotoPrj('others')">
+                  他人分享的
+                </b-col>
+                <b-col v-on:mouseover="EXP.avatarMouseOver" v-on:mouseout="EXP.avatarMouseOut"
+                  @click="KFK.gotoPrj('all')">
+                  最近访问的
+                </b-col>
+                <b-col v-if="model.lastrealproject.prjid!==''" v-on:mouseover="EXP.avatarMouseOver"
+                  v-on:mouseout="EXP.avatarMouseOut" @click="KFK.gotoLastRealProject('all')">
+                  最近项目的
+                </b-col>
+              </b-row>
               <div class="page_title" v-if="['all','others','mine'].indexOf(model.project.prjid)>=0">
                 {{model.project.name}}
               </div>
-              <div v-else class="page_title">{{model.project.name}} 中的共创白板 </div>
+              <div v-else class="page_title"><span class="cocohighlight-2">{{model.project.name}}</span> 中的共创白板 </div>
+              <!-- doc list -->
               <b-table hover id="my-doc-table" :items="model.docs" :per-page="model.perPage"
                 :current-page="model.currentDocPage" small :fields="model.docfields"
                 @row-clicked="KFK.docRowClickHandler">
-                <template v-slot:cell(copydoc)="data">
-                  <b-button size="sm" class="m-0 p-0" variant="outline-primary"
-                    @click="KFK.showCopyDocDialog(data.item, data.index, $event.target)">
-                    <b-iconstack>
-                      <b-icon stack icon="file" shift-h='-3' shift-v='3' scale="0.5"></b-icon>
-                      <b-icon stack icon="file" scale="0.5" shift-h="-1" shift-v="1"></b-icon>
-                    </b-iconstack>
-                  </b-button>
+
+                <template v-slot:head(name)="data">
+                  <b-button variant="outline-none" class="text-info">{{ data.label }}</b-button>
                 </template>
-                <template v-slot:cell(security_icon)="data">
-                  <b-button v-if="data.item.owner === model.cocouser.userid" size="sm" class="m-0 p-0"
-                    :variant="data.item.security_variant"
-                    @click="KFK.showResetPwdModal(data.item, data.index, $event.target)">
-                    <b-iconstack>
-                      <b-icon stacked :icon="data.item.security_icon" scale="0.85" shift-h="" shift-v="-1">
-                      </b-icon>
-                    </b-iconstack>
-                  </b-button>
+                <template v-slot:head(readonly_icon)="data">
+                  <b-button variant="outline-none" class="text-info" v-b-popover.hover.topright title="在只读模式和可编辑模式之间切换">
+                    {{ data.label }}</b-button>
                 </template>
-                <template v-slot:cell(doclocked_icon)="data">
-                  <b-button size="sm" class="m-0 p-0" :variant="data.item.doclocked_variant"
-                    @click="KFK.setDocReadonly(data.item, data.index, $event.target)">
-                    <b-iconstack v-if="data.item.doclocked_icon==='lock'" size="sm">
-                      <b-icon stacked icon="laptop" flip-v scale="1"></b-icon>
-                      <b-icon stacked icon="pie-chart-fill" scale="0.45" shift-h="-2.5" shift-v="-1"></b-icon>
-                      <b-icon stacked icon="text-indent-left" scale="0.4" shift-h="3"></b-icon>
-                      <b-icon stacked icon="dash" rotate="90" scale="0.6" shift-v="-6"></b-icon>
-                    </b-iconstack>
-                    <b-icon v-else icon="pencil" size="sm" class="m-0 p-0" />
-                  </b-button>
+                <template v-slot:head(protect_icon)="data">
+                  <b-button variant="outline-none" class="text-info" v-b-popover.hover.topright title="设置协作保护密码">
+                    {{ data.label }}</b-button>
+                </template>
+                <template v-slot:head(docduplicate)="data">
+                  <b-button variant="outline-none" class="text-info" v-b-popover.hover.topright title="复制/改名/移动">
+                    {{ data.label }}</b-button>
+                </template>
+                <template v-slot:head(share_icon)="data">
+                  <b-button variant="outline-none" class="text-info" v-b-popover.hover.topright title="获得分享链接地址">
+                    {{ data.label }}</b-button>
+                </template>
+                <template v-slot:head(owner)="data">
+                  <b-button variant="outline-none" class="text-info" v-b-popover.hover.topright title="白板发起人">
+                    {{ data.label }}</b-button>
+                </template>
+                <template v-slot:head(operations)="data">
+                  <b-button variant="outline-none" class="text-info" v-b-popover.hover.topright title="其它相关操作">
+                    {{ data.label }}</b-button>
+                </template>
+
+                <template v-slot:cell(docduplicate)="data">
+                  <b-col class="d-flex align-items-center">
+                    <b-button size="sm" class="m-0 p-0" variant="outline-none"
+                      @click="KFK.showCopyDocDialog(data.item, data.index, $event.target)">
+                      <b-icon icon="files" variant="secondary">
+                    </b-button>
+                  </b-col>
+                </template>
+                <template v-slot:cell(protect_icon)="data">
+                  <b-col class="d-flex align-items-center">
+                    <b-button v-if="data.item.owner === model.cocouser.userid" size="sm" class="m-0 p-0"
+                      variant="outline-none" @click="KFK.showResetPwdModal(data.item, data.index, $event.target)">
+                      <b-icon :icon="data.item.protect_icon"> </b-icon>
+                    </b-button>
+                  </b-col>
+                </template>
+                <template v-slot:cell(readonly_icon)="data">
+                  <b-col class="d-flex align-items-center">
+                    <b-button size="sm" class="m-0 p-0" variant="outline-none"
+                      @click="KFK.setDocReadonly(data.item, data.index, $event.target)">
+                      <b-icon :icon="data.item.readonly_icon" variant="secondary"></b-icon>
+                    </b-button>
+                  </b-col>
                 </template>
                 <template v-slot:cell(share_icon)="data">
-                  <b-button size="sm" class="m-0 p-0 text-center" variant="outline-secondary"
-                    @click="SHARE.shareDoc(data.item, data.index, $event.target)">
-                    <b-icon icon="box-arrow-up" size=" sm" />
-                  </b-button>
-                </template>
-                <template v-slot:cell(operation)="data">
-                  <div v-if="data.item.owner===model.cocouser.userid">
-                    <b-button size="sm" class="m-0 p-0" variant="outline-danger"
-                      @click="deleteDocItem(data.item, data.index, $event.target)" variant="outline-primary">
-                      <b-icon icon="trash"></b-icon>
+                  <b-col class="d-flex align-items-center">
+                    <b-button size="sm" class="m-0 p-0 text-center" variant="outline-none"
+                      @click="SHARE.shareDoc(data.item, data.index, $event.target)">
+                      <b-icon icon="box-arrow-up" variant="secondary"></b-icon>
                     </b-button>
-                  </div>
+                  </b-col>
+                </template>
+                <template v-slot:cell(operations)="data">
+                  <b-col v-if="data.item.owner===model.cocouser.userid" class="d-flex align-items-right">
+                    <b-button size="sm" class="m-0 p-0" variant="outline-none"
+                      @click="deleteDocItem(data.item, data.index, $event.target)">
+                      <b-iconstack>
+                        <b-icon stacked icon="file" variant="secondary"></b-icon>
+                        <b-icon stacked icon="x" variant="secondary"></b-icon>
+                      </b-iconstack>
+                    </b-button>
+                  </b-col>
                 </template>
                 <template v-slot:cell(owner)="data">
-                  <div v-if="data.item.ownerAvatar">
-                    <img :src="data.item.ownerAvatarSrc" style="width:18px; height:18px;" />
-                    {{data.item.ownerName}}
-                  </div>
-                  <div v-else class="roundInitial">
-                    {{data.item.ownerName}}
-                  </div>
+                  <b-col class="d-flex align-items-center">
+                    <div v-if="data.item.ownerAvatar">
+                      <img :src="data.item.ownerAvatarSrc" style="width:18px; height:18px;" />
+                      {{data.item.ownerName}}
+                    </div>
+                    <div v-else class="roundInitial">
+                      {{data.item.ownerName}}
+                    </div>
+                  </b-col>
                 </template>
                 <template v-slot:cell()="data">
-                  {{ data.value }}
+                  <b-col class="d-flex align-items-center">
+                    {{ data.value }}
+                  </b-col>
                 </template>
               </b-table>
               <div>
                 <b-pagination class="justify-content-center" v-model="model.currentDocPage" :total-rows="doccount"
-                  :per-page="model.perPage" aria-controls="my-doc-table" pills></b-pagination>
+                  :per-page="model.perPage" aria-controls="my-doc-table" first-text="第一页" prev-text="上一页"
+                  next-text="下一页" last-text="最后页" pills></b-pagination>
               </div>
             </div>
           </b-tab>
@@ -870,7 +912,7 @@
                           <!-- add org member add member-->
                         </b-form>
                         <b-table :items="model.orgusers[row.item._id]" small :fields="model.useridfields">
-                          <template v-slot:cell(operation)="data">
+                          <template v-slot:cell(operations)="data">
                             <b-button size="sm" class="m-0 p-0" variant="outline-danger"
                               @click="KFK.deleteOrgUser(row.item._id, data.item, data.index, $event.target)"
                               variant="outline-primary">
@@ -926,137 +968,150 @@
         @cancel="KFK.cancelDocPwd" v-model="show.dialog.inputDocPasswordDialog" title="请输入协作码" button-size="sm" centered
         size="md">
         <b-container>
-          <b-row>
-            <b-col cols="4">协作码</b-col>
-            <b-col cols="8">
-              <b-form-input trim :type="model.hidepassword?'password':'text'" v-model="model.opendocpwd"
-                ref="focusThis">
-              </b-form-input>
-            </b-col>
-          </b-row>
-          <b-row>
-            <b-col cols="4">&nbsp;</b-col>
-            <b-col md="auto" cols="8" class="text-left align-middle">
-              <b-button @click="toggleHidePassword" variant="outline-none">
-                <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
+          <b-input-group prepend="协作码">
+            <b-form-input trim :type="model.hidepassword?'password':'text'" v-model="model.opendocpwd" ref="focusThis">
+            </b-form-input>
+            <b-input-group-append>
+              <b-button @click="toggleHidePassword">
+                <b-icon scale="1" :icon="model.hidepassword?'eye':'eye-slash'"></b-icon>
               </b-button>
-            </b-col>
-          </b-row>
+            </b-input-group-append>
+          </b-input-group>
         </b-container>
       </b-modal>
       <b-modal @shown="focusOnOldPwdInput" @ok="KFK.resetDocPwd" v-model="show.dialog.resetDocPasswordDialog"
         title="设置协作密码" button-size="sm" centered size="md">
-        <b-container>
-          <b-row>
-            <b-col cols="4">原协作码</b-col>
-            <b-col cols="8">
-              <b-form-input trim :type="model.hidepassword?'password':'text'" v-model="model.docOldPwd"
-                ref="focusOldPwd">
-              </b-form-input>
-            </b-col>
-            <b-col cols="4">新协作码</b-col>
-            <b-col cols="8">
-              <b-form-input trim :type="model.hidepassword?'password':'text'" v-model="model.docNewPwd">
-              </b-form-input>
-            </b-col>
-            <b-col cols="4">&nbsp;</b-col>
-            <b-col cols="8">
-              <b-button @click="toggleHidePassword" variant="outline-none">
-                <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
-              </b-button>
-            </b-col>
-          </b-row>
+        <b-input-group prepend="原协作码" class="px-5 pt-2">
+          <b-form-input trim :type="model.hidepassword?'password':'text'" v-model="model.docOldPwd" ref="focusOldPwd">
+          </b-form-input>
+        </b-input-group>
+        <b-input-group prepend="新协作码" class="px-5 pt-2">
+          <b-form-input trim :type="model.hidepassword?'password':'text'" v-model="model.docNewPwd">
+          </b-form-input>
+        </b-input-group>
+        <div class="px-5 pt-2">
           <a href="#" class="card-link" @click="KFK.toggleFromResetToRemovePwd">&lt; 如忘记原协作码，可输入用户密码予以清除</a>
-        </b-container>
+          <BR>
+          <b-button variant="outline-none" v-b-popover.hover.top="model.showHelp?'':'点击查看帮助说明'"
+            @click="KFK.toggleShowHelp">
+            <b-icon icon="question-square"></b-icon>
+          </b-button>
+          <div v-if="model.showHelp" class="inner-help">
+            <ul>设置协作密码后,只有知道协作密码才能打开白板
+              <li>如原先无密码,请保持原协作码为空即可</li>
+              <li>如要取消密码,请保持新协作码为空,即可清除密码</li>
+            </ul>
+
+          </div>
+        </div>
       </b-modal>
       <b-modal @shown="focusOnUserPwdInput" @ok="KFK.removeDocPwd" v-model="show.dialog.userPasswordDialog"
         title="请输入你的用户密码" button-size="sm" centered size="md">
-        <b-container>
-          <b-row>
-            <b-col cols="4">密码</b-col>
-            <b-col cols="8">
-              <b-form-input trim :type="model.hidepassword?'password':'text'" v-model="model.inputUserPwd"
-                ref="focusUserPwd">
-              </b-form-input>
-            </b-col>
-            <b-col cols="4">&nbsp;</b-col>
-            <b-col cols="8">
-              <b-button @click="toggleHidePassword" variant="outline-none">
-                <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
-              </b-button>
-            </b-col>
-          </b-row>
-        </b-container>
+        <b-input-group prepend="用户密码" class="pt-2 px-5">
+          <b-form-input trim :type="model.hidepassword?'password':'text'" v-model="model.inputUserPwd"
+            ref="focusUserPwd">
+          </b-form-input>
+          <b-button @click="toggleHidePassword">
+            <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
+          </b-button>
+        </b-input-group>
       </b-modal>
-      <b-modal @ok="KFK.copyDoc" v-model="show.dialog.copyDocDialog" title="拷贝白板" button-size="sm" centered size="md">
-        <b-container>
-          <b-form>
-            <b-form-group label-cols="3" label-align="right" label="新白板名" label-for="docName">
-              <b-form-input id="docName" trim v-model="model.copyToDocName" :state="copyToDocNameState"
-                class="mb-2 mr-sm-2 mb-sm-0" placeholder=""></b-form-input>
-              <b-form-invalid-feedback id="docName-feedback">
-                名称为3个以上英文或中文字符，不超过20个
-              </b-form-invalid-feedback>
-            </b-form-group>
-            <b-form-group label-cols="3" label-align="right" label="拷贝到项目" label-for="docPrj">
-              <b-form-select id="docPrj" v-model="model.copyToPrjId" :options="prjListOptions">
-                <template v-slot:first>
-                  <b-form-select-option :value="null" disabled>-- 请选择项目 --</b-form-select-option>
-                </template>
-              </b-form-select>
-            </b-form-group>
-            <b-form-group v-if="model.showCopyOrMove" label-cols="3" label-align="right" label=""
-              label-for="checkbox-1">
-              <b-form-checkbox id="checkbox-1" v-model="model.check.copyOrMove" name="checkbox-1" value="move"
-                unchecked-value="copy">
-                移动文档到新项目
-              </b-form-checkbox>
-            </b-form-group>
-          </b-form>
-        </b-container>
+      <b-modal @ok="KFK.copyDoc" v-model="show.dialog.copyDocDialog" title="复制白板" button-size="sm" centered size="md">
+        <b-form>
+          <b-input-group prepend="新白板名" class="pt-2 px-5">
+            <b-form-input id="docName" trim v-model="model.copyToDocName" :state="state.copydoc.name"
+              class="mb-2 mr-sm-2 mb-sm-0" placeholder=""></b-form-input>
+            <b-form-invalid-feedback id="docName-feedback">
+              名称为3个以上英文或中文字符，不超过20个
+            </b-form-invalid-feedback>
+          </b-input-group>
+          <b-input-group prepend="拷贝到哪" class="pt-2 px-5">
+            <b-form-select id="docPrj" v-model="model.copyToPrjId" :options="prjListOptions">
+              <template v-slot:first>
+                <b-form-select-option :value="null" disabled>-- 请选择项目 --</b-form-select-option>
+              </template>
+            </b-form-select>
+          </b-input-group>
+          <b-input-group prepend="是否移动" class="pt-2 px-5" v-if="model.showCopyOrMove" label-cols="3" label-align="right"
+            label="" label-for="checkbox-1">
+            <b-form-checkbox id="checkbox-1" v-model="model.check.copyOrMove" name="checkbox-1" value="move"
+              unchecked-value="copy">
+              移动文档到新项目
+            </b-form-checkbox>
+          </b-input-group>
+        </b-form>
+        <b-button variant="outline-none" v-b-popover.hover.top="model.showHelp?'':'点击查看帮助说明'"
+          @click="KFK.toggleShowHelp">
+          <b-icon icon="question-square"></b-icon>
+        </b-button>
+        <div v-if="model.showHelp" class="inner-help">
+          <ul>操作说明
+            <li>
+              <ol>复制白板
+                <li>目标项目与当前项目一致, 输入新白板名, 以复制一个使用新名称的白板出来; </li>
+                <li>目标项目与当前项目不一致, 将复制一个白板到新项目, 复制后的白板名支持同步修改 </li>
+              </ol>
+            </li>
+            <li>
+              <ol>移动白板
+                <li>目标项目与当前项目不一致, 并选择移动模式, 则移动白板到新项目, 同时将移动后的白板名设为新白板名 </li>
+              </ol>
+            </li>
+            <li>
+              <ol>白板改名
+                <li>目标项目与当前项目保持一致, 录入新名字, 并选择移动模式, 即实现在同一个项目中对白板进行改名 </li>
+              </ol>
+            </li>
+          </ul>
+        </div>
       </b-modal>
       <b-modal id="modal-setuserprofile" @ok="KFK.setUserProfile" v-model="show.dialog.setProfileDialog"
-        :title="model.cocouser.userid" button-size="sm" centered>
+        :title="'当前用户: ' + model.cocouser.userid" button-size="sm" centered>
         <b-container class="my-3 ">
           <b-form autocomplete="off" class="w-100 px-2" @submit.stop.prevent="KFK.handleProfileSubmit">
-            <b-form-group label-cols=3 label="显示名" label-for="profile_name" label-align="right">
+            <b-input-group prepend="显示名" class="mb-2 mr-sm-2 mb-sm-0">
               <b-form-input id="profile_name" trim v-model="model.profileToSet.name" :state="state.profile.name"
                 class="mb-2 mr-sm-2 mb-sm-0" required placeholder="新显示名" class="w-50"></b-form-input>
               <b-form-invalid-feedback id="profile_name-feedback">
                 2-10个英文/数字/汉字
               </b-form-invalid-feedback>
-            </b-form-group>
-            <b-form-group label-cols=3 label="原密码" label-for="profile_oldpwd" label-align="right">
+            </b-input-group>
+            <b-input-group prepend="原密码" class="mb-2 mr-sm-2 mb-sm-0">
               <b-form-input id="profile_oldpwd" trim :type="model.hidepassword?'password':'text'"
                 v-model="model.profileToSet.oldpwd" :state="state.profile.oldpwd" class="mb-2 mr-sm-2 mb-sm-0" required
                 class="w-50"></b-form-input>
               <b-form-invalid-feedback id="profile_oldpwd-feedback">
                 密码至少8字符，<BR>必须含大小写字母数字和特殊字符
               </b-form-invalid-feedback>
-            </b-form-group>
-            <b-form-group label-cols=3 label="新密码" label-for="profile_newpwd" label-align="right">
+            </b-input-group>
+            <b-input-group prepend="新密码" class="mb-2 mr-sm-2 mb-sm-0">
               <b-form-input id="profile_newpwd" trim :type="model.hidepassword?'password':'text'"
                 v-model="model.profileToSet.newpwd" :state="state.profile.newpwd" class="mb-2 mr-sm-2 mb-sm-0" required
                 class="w-50" placeholder="无须修改密码请保持为空"></b-form-input>
+              <b-input-group-append>
+                <b-button @click="toggleHidePassword">
+                  <b-icon scale="1" :icon="model.hidepassword?'eye':'eye-slash'"></b-icon>
+                </b-button>
+              </b-input-group-append>
               <b-form-invalid-feedback id="profile_newpwd-feedback">
                 密码至少8字符，<BR>必须含大小写字母数字和特殊字符
               </b-form-invalid-feedback>
-            </b-form-group>
-            <b-form-group label-cols=3 label="再输入一遍" label-for="profile_newpwd2" label-align="right">
+            </b-input-group>
+            <b-input-group prepend="新密码" class="mb-2 mr-sm-2 mb-sm-0">
               <b-form-input id="profile_newpwd2" trim :type="model.hidepassword?'password':'text'"
                 v-model="model.profileToSet.newpwd2" :state="state.profile.newpwd2" class="mb-2 mr-sm-2 mb-sm-0"
-                required class="w-50" placeholder="无须修改密码请保持为空"></b-form-input>
+                required class="w-50" placeholder="密码二次输入确认"></b-form-input>
+              <b-input-group-append>
+                <b-button @click="toggleHidePassword">
+                  <b-icon scale="1" :icon="model.hidepassword?'eye':'eye-slash'"></b-icon>
+                </b-button>
+              </b-input-group-append>
               <b-form-invalid-feedback id="profile_newpwd2-feedback">
                 新密码两次输入必须一样
               </b-form-invalid-feedback>
-            </b-form-group>
+            </b-input-group>
             <b-row>
-              <b-col cols="10"> 换头像需要输入原密码 </b-col>
-              <b-col cols="2" class="text-right">
-                <b-button @click="toggleHidePassword" variant="outline-none">
-                  <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
-                </b-button>
-              </b-col>
+              <b-col cols="12"> 换头像需要输入原密码 </b-col>
             </b-row>
             <b-container class="w-100" style="height: 148px; white-space:nowrap; overflow-x:auto; overflow-y:scroll; ">
               <b-row>
@@ -1088,7 +1143,7 @@
       </b-button-group>
     </div>
   </div> <!-- explorer -->
-  <div id="minimap" v-show="show.section.designer && show.section.minimap"></div>
+  <div id="minimap" v-show="show.section.designer && show.section.minimap" class="noshow"></div>
   <div>
     <div id="shareDialog" v-show="show.dialog.shareDialog" title="分享文档" button-size="sm" centered size="md"
       class="noshow">
@@ -1108,7 +1163,7 @@
               <b-form-input id="shareItUrl" trim v-model="model.share.url"></b-form-input>
             </b-col>
             <div class="w-100"></div>
-            <b-col>
+            <b-col class="mt-2">
               <b-button variant="outline-secondary" size="sm" class="mb-2" v-on:click="SHARE.cancelShare">
                 <b-icon icon="x"></b-icon>取消
               </b-button>
