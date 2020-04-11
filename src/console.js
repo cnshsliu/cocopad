@@ -15,6 +15,7 @@ import avatarIcons from "../assets/avatar/*.svg";
 import "../lib/fontpicker-jquery-plugin/dist/jquery.fontpicker";
 import "../lib/jquery-minimap/jquery-minimap";
 import config from "./config";
+import Validator from './validator';
 import Demo from "./demo";
 import RegHelper from './reghelper';
 import SVGs from "./svgs";
@@ -45,9 +46,27 @@ jstr = function (obj) {
   return (JSON.stringify(obj));
 }
 
+const NotSet = function (val) {
+  if (val === undefined || val === null)
+    return true;
+  else
+    return false;
+}
+const IsSet = function (val) {
+  return !NotSet(val);
+}
+const IsBlank = function (val) {
+  if (val === undefined || val === null || val === '')
+    return true;
+  else
+    return false;
+}
+const NotBlank = function (val) {
+  return !IsBlank(val);
+}
 
 const KFK = {};
-KFK.accordion={};
+KFK.accordion = {};
 KFK.currentPage = 0;
 KFK.keypool = "";
 KFK.svgDraw = null;   //画svg的画布
@@ -163,6 +182,7 @@ KFK.focusOnC3 = () => {
     KFK.warn("focusOnC3 failed. not exist");
   }
 }
+
 
 KFK.myuid = () => {
   return suuid.generate();
@@ -3056,7 +3076,7 @@ KFK.init = async function () {
   }
   KFK.debug("Initializing...");
 
-
+  $("#minimap").removeClass("noshow");
   $("#left_menu").removeClass("noshow");
   /*
   //先不做重新载入,每次进入使用缺省配置可能对培养用户习惯更合适一些
@@ -3427,7 +3447,6 @@ KFK.onProjectServerFeedback = function () {
   KFK.explorerRefreshed = true;
 };
 
-
 KFK.setCurrentPrj = function (prj) {
   console.log('setCUrrentPrj', prj);
   KFK.APP.setData("model", "project", prj);
@@ -3527,7 +3546,7 @@ KFK.remoteCheckUserId = function (userid) {
 
 KFK.pickPrjForCreateDoc = function () {
   KFK.onPrjSelected = KFK.showCreateNewDoc;
-  KFK.gotoPrjList("在哪个项目中新建共创文档？", true);
+  KFK.gotoPrjList("在哪个项目中发起协作？", true);
 };
 KFK.showCreateNewPrj = function () {
   KFK.APP.setData("show", "form", {
@@ -3575,7 +3594,7 @@ KFK.showProjects = async function () {
     }
     if (found < 0) {
       console.log("not found");
-      if (KFK.APP.model.prjs.length > 3) {
+      if (KFK.APP.model.prjs.length > 0) {
         console.log("has real projects, select then")
         KFK.gotoPrjList("请选择一个项目");
       } else {
@@ -3595,16 +3614,16 @@ KFK.gotoPrjList = function (msg = null, userealprjs = false) {
   let prjs = KFK.APP.model.prjs;
   if (Array.isArray(prjs) === false)
     prjs = [];
-  if (prjs.length >= 3 && prjs[0].prjid === 'all' && userealprjs === true) {
-    prjs.splice(0, 3);
-    KFK.APP.setData("model", "prjs", prjs);
-  }
-  if (userealprjs === false && (prjs.length < 3 || prjs[0].prjid !== 'all')) {
-    prjs.unshift({ _id: "mine", prjid: "mine", name: "我创建的所有项目中的白板", owner: "me" });
-    prjs.unshift({ _id: "others", prjid: "others", name: "我参与过的别人共享的白板", owner: "me" });
-    prjs.unshift({ _id: "all", prjid: "all", name: "我最近使用过的白板", owner: "me" });
-    KFK.APP.setData("model", "prjs", prjs);
-  }
+  // if (prjs.length >= 3 && prjs[0].prjid === 'all' && userealprjs === true) {
+  //   prjs.splice(0, 3);
+  //   KFK.APP.setData("model", "prjs", prjs);
+  // }
+  // if (userealprjs === false && (prjs.length < 3 || prjs[0].prjid !== 'all')) {
+  //   prjs.unshift({ _id: "mine", prjid: "mine", name: "我创建的所有项目中的白板", owner: "me" });
+  //   prjs.unshift({ _id: "others", prjid: "others", name: "我参与过的别人共享的白板", owner: "me" });
+  //   prjs.unshift({ _id: "all", prjid: "all", name: "我最近使用过的白板", owner: "me" });
+  //   KFK.APP.setData("model", "prjs", prjs);
+  // }
 
   if (msg && typeof msg === "string") {
     KFK.APP.setData("model", "prjwarning", msg);
@@ -3639,35 +3658,32 @@ KFK.sleep = async function (miliseconds) {
   await new Promise(resolve => setTimeout(resolve, miliseconds));
 };
 
+KFK.toggleShowHelp = function () {
+  KFK.APP.model.showHelp = !KFK.APP.model.showHelp;
+};
+
 KFK.createNewDoc = function () {
   let docName = KFK.APP.model.newdocname;
   let docPwd = KFK.APP.model.newdocpwd;
-  const schema = Joi.string()
-    .regex(/^[a-zA-Z0-9_\u4e00-\u9fa5]{3,20}$/)
-    .required();
-  let { error, value } = schema.validate(docName);
-  if (error === undefined) {
+  KFK.APP.state.newdoc.name = Validator.validateDocName(docName);
+  console.log('new doc validate', docName, docPwd, KFK.APP.state.newdoc.name);
+  console.log('prjid', KFK.APP.model.lastrealproject.prjid);
+  // KFK.APP.state.newdoc.pwd = Validator.validateDocPwd(docPwd);
+  if (KFK.APP.state.newdoc.name) {
     KFK.sendCmd("NEWDOC", {
       prjid: KFK.APP.model.lastrealproject.prjid,
       name: docName,
       pwd: docPwd
     });
-    return true;
-  } else {
-    return false;
   }
 };
 KFK.createNewPrj = function () {
   let prjName = KFK.APP.model.newprjname;
-  const schema = Joi.string()
-    .regex(/^[a-zA-Z0-9_\u4e00-\u9fa5]{3,20}$/)
-    .required();
-  let { error, value } = schema.validate(prjName);
-  if (error === undefined) {
+  if (Validator.validatePrjName(prjName)) {
+    KFK.APP.state.newprj.name = true;
     KFK.sendCmd("NEWPRJ", { name: prjName });
-    return true;
   } else {
-    return false;
+    KFK.APP.state.newprj.name = false;
   }
 };
 KFK.sayHello = function () {
@@ -3757,11 +3773,13 @@ KFK.onWsMsg = async function (response) {
       KFK.APP.model.docs.forEach(doc => {
         if (doc._id === response.doc_id) {
           if (response.pwd === "") {
-            doc.security_icon = "blank";
+            doc.protect_icon = "toggle-off";
             doc.pwd = "";
+            KFK.scrLog("协作密码已清除");
           } else {
-            doc.security_icon = "three-dots";
+            doc.protect_icon = "toggle-on";
             doc.pwd = "*********";
+            KFK.scrLog("已添加密码保护");
           }
         }
       });
@@ -3770,11 +3788,13 @@ KFK.onWsMsg = async function (response) {
       KFK.APP.model.docs.forEach(doc => {
         if (doc._id === response.doc_id) {
           if (response.pwd === "") {
-            doc.security_icon = "blank";
+            doc.protect_icon = "toggle-off";
             doc.pwd = "";
+            KFK.scrLog("协作密码已清除");
           } else {
-            doc.security_icon = "three-dots";
+            doc.protect_icon = "toggle-on";
             doc.pwd = "*********";
+            KFK.scrLog("已保护");
           }
         }
       });
@@ -3793,11 +3813,13 @@ KFK.onWsMsg = async function (response) {
         if (doc._id === response.doc_id) {
           doc.doclocked = response.doclocked;
           if (doc.doclocked === true) {
-            doc.doclocked_icon = "lock";
+            doc.readonly_icon = "eye";
             doc.doclocked_variant = "primary";
+            KFK.scrLog("已设为只读");
           } else {
-            doc.doclocked_icon = "blank";
+            doc.readonly_icon = "pencil";
             doc.doclocked_variant = "outline-primary";
+            KFK.scrLog("已设为可编辑");
           }
         }
       });
@@ -3816,29 +3838,57 @@ KFK.onWsMsg = async function (response) {
       KFK.showProjects();
       KFK.gotoPrjList();
       break;
+    case 'DELPRJ':
+      for (let i = 0; i < KFK.APP.model.prjs.length; i++) {
+        if (KFK.APP.model.prjs[i].prjid === response.prjid) {
+          KFK.APP.model.prjs.splice(i, 1);
+          break;
+        }
+      }
+      if (KFK.APP.model.prjs.length > 0) {
+        KFK.setCurrentPrj(KFK.APP.model.prjs[0]);
+        // KFK.sendCmd("LISTDOC", { prjid: KFK.APP.model.prjs[0].prjid });
+        KFK.gotoPrjList();
+      } else {
+        KFK.showCreateNewPrj();
+        KFK.APP.setData("model", "lastrealproject", { prjid: "", name: "" });
+      }
+      break;
     case "NEWDOC":
-      KFK.updatePrjDoclist(response.doc.prjid);
-      await KFK.refreshDesigner(
-        response.doc._id,
-        KFK.APP.model.newdocpwd.trim()
-      );
+      await KFK.gotoPrj(response.prjid, response.prjname);
+      break;
+    case "DELDOC":
+      console.log('DELDOC', response);
+      for (let i = 0; i < KFK.APP.model.docs.length; i++) {
+        if (KFK.APP.model.docs[i]._id === response.doc_id) {
+          KFK.APP.model.docs.splice(i, 1);
+          break;
+        }
+      }
+      if (KFK.APP.model.docs.length > 0) {
+        let nextdoc = KFK.APP.model.docs[0];
+        KFK.APP.setData("model", "cocodoc", nextdoc);
+      } else {
+        KFK.APP.setData("model", "cocodoc", KFK.DocController.getDummyDoc());
+      }
       break;
     case "LISTDOC":
       KFK.APP.setData("model", "listdocoption", response.option);
+      console.log('LISTDOC in prj', response.prjid);
       let docs = response.docs;
       docs.forEach(doc => {
         if (doc.pwd === "") {
-          doc.security_icon = "blank";
+          doc.protect_icon = "toggle-off";
           doc.security_variant = "outline-success";
         } else {
-          doc.security_icon = "three-dots";
+          doc.protect_icon = "toggle-on";
           doc.security_variant = "success";
         }
         if (doc.doclocked === true) {
-          doc.doclocked_icon = "lock";
+          doc.readonly_icon = "eye";
           doc.doclocked_variant = "primary";
         } else {
-          doc.doclocked_icon = "blank";
+          doc.readonly_icon = "pencil";
           doc.doclocked_variant = "outline-primary";
         }
         if (doc.ownerAvatar !== "") {
@@ -3892,13 +3942,13 @@ KFK.onWsMsg = async function (response) {
     case "GOTOPRJ":
       let gotoPrjId = response.prjid;
       let found = -1;
-      for (let i = 2; i < KFK.APP.model.prjs.length; i++) {
+      for (let i = 0; i < KFK.APP.model.prjs.length; i++) {
         if (gotoPrjId === KFK.APP.model.prjs[i].prjid) {
           found = i;
           break;
         }
       }
-      if (found > 1) {
+      if (found >= 0) {
         KFK.setCurrentPrj(KFK.APP.model.prjs[found]);
       }
       KFK.sendCmd("LISTDOC", { prjid: gotoPrjId });
@@ -3963,17 +4013,17 @@ KFK.onWsMsg = async function (response) {
       break;
   }
 };
-KFK.switchOrg = async function(_id){
+KFK.switchOrg = async function (_id) {
   console.log(_id);
-  await KFK.sendCmd('ENTERORG', {_id: _id});
+  await KFK.sendCmd('ENTERORG', { _id: _id });
 };
-KFK.deleteOrg = async function(_id){
+KFK.deleteOrg = async function (_id) {
   console.log(_id);
-  await KFK.sendCmd('DELETEORG', {_id: _id});
+  await KFK.sendCmd('DELETEORG', { _id: _id });
 };
 KFK.createNewOrg = async function () {
   let orgname = KFK.APP.model.org.neworg.name;
-  if (KFK.validateOrgName(orgname)) {
+  if (Validator.validateOrgName(orgname)) {
     await KFK.sendCmd('NEWORG', { name: orgname });
   } else {
     KFK.scrLog("组织名称不符合要求");
@@ -3982,16 +4032,16 @@ KFK.createNewOrg = async function () {
 KFK.addOrgUser = async function (org_id, rowIndex) {
   let jInput = $('#inline-form-input-newuserid-' + rowIndex);
   let newuserid = jInput.val();
-  if (KFK.validateUserId(newuserid)) {
+  if (Validator.validateUserId(newuserid)) {
     await KFK.sendCmd('ORGUSERADD', { _id: org_id, tobeadd_userid: newuserid })
   } else {
     KFK.scrLog("用户ID格式有误");
   }
 };
 KFK.changeOrgName = async function (org_id, rowIndex) {
-  let jInput = $('#inline-form-input-changeorgname-'+ rowIndex);
+  let jInput = $('#inline-form-input-changeorgname-' + rowIndex);
   let newName = jInput.val();
-  if (KFK.validateOrgName(newName)) {
+  if (Validator.validateOrgName(newName)) {
     await KFK.sendCmd('CHANGEORGNAME', { _id: org_id, name: newName, cocouser_orgid: KFK.APP.model.cocouser.orgid });
   } else {
     KFK.scrLog("新名字不符合要求");
@@ -4002,22 +4052,22 @@ KFK.deleteOrgUser = function (_id, item, index, evt) {
   KFK.sendCmd("ORGUSERDEL", { _id: _id, userid: item.userid });
 };
 
-KFK.toggleAccordionEnteredOrg= async function () {
-  if(KFK.accordion['vorg']===undefined ||
-  KFK.accordion['vorg']===false){
+KFK.toggleAccordionEnteredOrg = async function () {
+  if (KFK.accordion['vorg'] === undefined ||
+    KFK.accordion['vorg'] === false) {
     KFK.accordion['vorg'] = true;
     await KFK.sendCmd('LISTVORG', {});
-  }else{
+  } else {
     KFK.accordion['vorg'] = false;
   }
 };
 
-KFK.toggleAccordionMyOrg= async function () {
-  if(KFK.accordion['myorg']===undefined ||
-  KFK.accordion['myorg']===false){
+KFK.toggleAccordionMyOrg = async function () {
+  if (KFK.accordion['myorg'] === undefined ||
+    KFK.accordion['myorg'] === false) {
     KFK.accordion['myorg'] = true;
     await KFK.sendCmd('LISTMYORG', {});
-  }else{
+  } else {
     KFK.accordion['myorg'] = false;
   }
 };
@@ -4064,17 +4114,7 @@ KFK.openDemoDoc = function () {
 };
 
 KFK.deletePrj = async function (prjid) {
-  let payload = { prjid: prjid };
-  await KFK.sendCmd("DELPRJ", payload);
-  if (KFK.APP.model.prjs.length > 2) {
-    KFK.APP.setData("model", "project", KFK.APP.model.prjs[2]);
-    KFK.APP.setData("model", "lastrealproject", KFK.APP.model.prjs[2]);
-    KFK.sendCmd("LISTDOC", { prjid: KFK.APP.model.prjs[2].prjid });
-    KFK.gotoPrjList();
-  } else {
-    KFK.showCreateNewPrj();
-    KFK.APP.setData("model", "lastrealproject", { prjid: "", name: "" });
-  }
+  await KFK.sendCmd("DELPRJ", {prjid: prjid});
 };
 
 KFK.msgOK = function () {
@@ -4090,25 +4130,29 @@ KFK.msgOK = function () {
 KFK.deleteDoc = async function (doc_id) {
   let payload = { doc_id: doc_id };
   await KFK.sendCmd("DELDOC", payload);
-  if (KFK.APP.model.docs.length > 0) {
-    let nextdoc = KFK.APP.model.docs[0];
-    KFK.APP.setData("model", "cocodoc", nextdoc);
-    KFK.gotoDocs();
-  } else {
-    KFK.APP.setData("model", "cocodoc", KFK.DocController.getDummyDoc());
-  }
+
 };
 
 KFK.setDocReadonly = async function (doc, index, evt) {
   KFK.sendCmd("TGLREAD", { doc_id: doc._id });
 };
 
-KFK.gotoPrj = async function(prjid, name){
-  KFK.APP.setData("model", "project", { prjid: prjid, name: name });
-  if (prjid !== "all" && prjid !== "mine" && prjid !== 'others') {
-    let cocoprj = { prjid: prjid, name: name };
-    KFK.setCurrentPrj(cocoprj);
+KFK.gotoLastRealProject = function () {
+  if (NotBlank(KFK.APP.model.lastrealproject.prjid)) {
+    KFK.gotoPrj(KFK.APP.model.lastrealproject.prjid, KFK.APP.model.lastrealproject.name)
   }
+};
+
+KFK.gotoPrj = async function (prjid, name) {
+  KFK.APP.setData("model", "project", { prjid: prjid, name: name });
+  if (prjid === "all" && name === undefined)
+    name = "最近访问列表";
+  else if (prjid === "others" && name === undefined)
+    name = "所有来自他人的分享";
+  else if (prjid === "mine" && name === undefined)
+    name = "所有我发起的";
+  let cocoprj = { prjid: prjid, name: name };
+  KFK.setCurrentPrj(cocoprj);
   await KFK.sendCmd("LISTDOC", { prjid: prjid });
   if (KFK.onPrjSelected) {
     KFK.onPrjSelected();
@@ -4117,7 +4161,7 @@ KFK.gotoPrj = async function(prjid, name){
   }
 }
 KFK.prjRowClickHandler = function (record, index) {
-    KFK.gotoPrj(record.prjid, record.name);
+  KFK.gotoPrj(record.prjid, record.name);
 };
 
 KFK.gotoRecent = function () {
@@ -4135,9 +4179,6 @@ KFK.gotoRecent = function () {
 
 }
 
-KFK.updatePrjDoclist = function (prjid) {
-  KFK.sendCmd("LISTDOC", { prjid: prjid });
-};
 
 KFK.sendCmd = async function (cmd, payload) {
   if (KFK.WS === null) {
@@ -5520,6 +5561,7 @@ KFK.gotoExplorer = function () {
 };
 
 KFK.gotoDesigner = function () {
+  KFK.debug("...gotoDesigner")
   KFK.showSection({ explorer: false, designer: true });
   KFK.currentView = "designer";
   KFK.focusOnC3();
@@ -6253,15 +6295,20 @@ KFK.showCopyDocDialog = (item, index, target) => {
 };
 
 KFK.copyDoc = () => {
-  let payload = {
-    fromDocId: KFK.tobeCopyDocId,
-    toPrjId: KFK.APP.model.copyToPrjId,
-    toName: KFK.APP.model.copyToDocName,
-    copyOrMove: KFK.APP.model.check.copyOrMove
-  };
-  KFK.sendCmd("COPYDOC", payload);
-  // let payload = { from: from, to: to };
-  // KFK.sendCmd('COPYDOC', payload);
+  let newname = KFK.APP.model.copyToDocName;
+  if (Validator.validateDocName(newname)) {
+    let payload = {
+      fromDocId: KFK.tobeCopyDocId,
+      toPrjId: KFK.APP.model.copyToPrjId,
+      toName: KFK.APP.model.copyToDocName,
+      copyOrMove: KFK.APP.model.check.copyOrMove
+    };
+    KFK.sendCmd("COPYDOC", payload);
+    KFK.APP.state.copydoc.name = true;
+  } else {
+    KFK.scrLog("新文档名不符合要求");
+    KFK.APP.state.copydoc.name = false;
+  }
 };
 
 KFK.onCopyDoc = async function (data) {
@@ -6300,20 +6347,20 @@ KFK.setUserProfile = function (bvModalEvt) {
 };
 
 KFK.handleProfileSubmit = function () {
-  KFK.APP.state.profile.name = KFK.validateUserName(
+  KFK.APP.state.profile.name = Validator.validateUserName(
     KFK.APP.model.profileToSet.name
   );
-  KFK.APP.state.profile.oldpwd = KFK.validateUserPassword(
+  KFK.APP.state.profile.oldpwd = Validator.validateUserPassword(
     KFK.APP.model.profileToSet.oldpwd
   );
   KFK.APP.state.profile.newpwd = true;
   KFK.APP.state.profile.newpwd2 = true;
   //修改Profile时，新密码可以为空，则表示不修改密码，
   if (KFK.APP.model.profileToSet.newpwd.trim() !== "") {
-    KFK.APP.state.profile.newpwd = KFK.validateUserPassword(
+    KFK.APP.state.profile.newpwd = Validator.validateUserPassword(
       KFK.APP.model.profileToSet.newpwd
     );
-    KFK.APP.state.profile.newpwd2 = KFK.validateUserPassword(
+    KFK.APP.state.profile.newpwd2 = Validator.validateUserPassword(
       KFK.APP.model.profileToSet.newpwd2
     );
   }
@@ -6334,83 +6381,6 @@ KFK.handleProfileSubmit = function () {
   }
 };
 
-KFK.validateUserName = function (str) {
-  const schema1 = Joi.string()
-    .regex(/^[a-zA-Z0-9_\u4e00-\u9fa5]{4,10}$/)
-    .required();
-  const schema2 = Joi.string()
-    .regex(/^[\u4e00-\u9fa5]{2,10}$/)
-    .required();
-  let { error, value } = schema1.validate(str);
-  if (!error) {
-    KFK.debug("english checking ", str, "true");
-    return true;
-  } else {
-    let { error, value } = schema2.validate(str);
-    if (!error) {
-      KFK.debug("chinese checking ", str, "true");
-      return true;
-    } else {
-      KFK.debug("checking ", str, "false");
-      return false;
-    }
-  }
-};
-
-KFK.validateOrgName = function (str) {
-  const schema1 = Joi.string()
-    .regex(/^[a-zA-Z0-9_\u4e00-\u9fa5]{4,20}$/)
-    .required();
-  const schema2 = Joi.string()
-    .regex(/^[\u4e00-\u9fa5]{4,20}$/)
-    .required();
-  let { error, value } = schema1.validate(str);
-  if (!error) {
-    KFK.debug("english checking ", str, "true");
-    return true;
-  } else {
-    let { error, value } = schema2.validate(str);
-    if (!error) {
-      KFK.debug("chinese checking ", str, "true");
-      return true;
-    } else {
-      KFK.debug("checking ", str, "false");
-      return false;
-    }
-  }
-};
-
-KFK.validateUserPassword = function (str) {
-  const schema = Joi.string()
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]{8,}/
-      // 至少8个字符，至少1个大写字母，1个小写字母，1个数字和1个特殊字符：
-    )
-    .required();
-  let { error, value } = schema.validate(str);
-  if (!error) {
-    KFK.debug("checking ", str, "true");
-    return true;
-  } else {
-    KFK.debug("checking ", str, "false");
-    return false;
-  }
-};
-
-KFK.validateUserId = function (str) {
-  const schema = Joi.string()
-    .regex(
-      /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/
-      // 邮箱地址  validate email address
-    )
-    .required();
-  let { error, value } = schema.validate(str);
-  if (!error) {
-    KFK.debug("checking ", str, "true");
-    return true;
-  } else KFK.debug("checking ", str, "false");
-  return false;
-};
 
 // localStorage.removeItem('cocouser');
 // KFK.debug(config.defaultDocBgcolor);
