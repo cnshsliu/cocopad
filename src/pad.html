@@ -222,7 +222,6 @@
         <div id="containerbkg" class="grid1"></div>
         <div id="C3">
         </div>
-        <div id="boundingrect" class="boundingrect"></div>
         <div id="selectingrect" class="selectingrect"></div>
         <div id="modeIndicator" style="position:absolute; top: 0px; left: 0px; display: none; ">
           <img id="modeIndicatorImg" src="../assets/pointer.svg" style='width: 18px; height: 18px;' />
@@ -235,7 +234,7 @@
       <img src="../assets/cocopad.svg" class="logo d-inline-block align-top" alt="COCOPAD">
     </div>
 
-    <div id="left" class="bg-white padlayout noshow">
+    <div id="left" class="bg-white padlayout">
       <b-list-group>
         <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('pointer');"
           :active="toolActiveState['pointer']">
@@ -813,14 +812,21 @@
                   </b-col>
                 </template>
                 <template v-slot:cell(owner)="data">
-                  <b-col class="d-flex align-items-center">
+                  <b-col class="d-flex align-items-center doc-owner-width">
                     <div v-if="data.item.ownerAvatar">
-                      <img :src="data.item.ownerAvatarSrc" style="width:18px; height:18px;" />
-                      {{data.item.ownerName}}
+                      <img :id="'docowner-avatar-'+data.index" :src="data.item.ownerAvatarSrc"
+                        style="width:18px; height:18px;"></img>
+                      <b-tooltip :target="'docowner-avatar-'+data.index" variant="success" :title="data.item.ownerName">
+                      </b-tooltip>
                     </div>
                     <div v-else class="roundInitial">
                       {{data.item.ownerName}}
                     </div>
+                  </b-col>
+                </template>
+                <template v-slot:cell(name)="data">
+                  <b-col class="d-flex align-items-center doc-name-width">
+                    {{data.item.name}}
                   </b-col>
                 </template>
                 <template v-slot:cell()="data">
@@ -1143,7 +1149,7 @@
       </b-button-group>
     </div>
   </div> <!-- explorer -->
-  <div id="minimap" v-show="show.section.designer && show.section.minimap" class="noshow"></div>
+  <div id="minimap" v-show="show.section.designer && show.section.minimap" class="padlayout"></div>
   <div>
     <div id="shareDialog" v-show="show.dialog.shareDialog" title="分享文档" button-size="sm" centered size="md"
       class="noshow">

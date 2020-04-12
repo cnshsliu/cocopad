@@ -875,6 +875,7 @@ KFK.redo = async () => {
 };
 
 KFK.initLayout = function () {
+  KFK.debug('...initLayout')
   KFK.JC1 = $('#C1');
   KFK.C1 = el(KFK.JC1);
   KFK.JS1 = $('#S1');
@@ -888,12 +889,11 @@ KFK.initLayout = function () {
 KFK.scrollToPos = function (pos) {
   KFK.JS1.scrollLeft(pos.x);
   KFK.JS1.scrollTop(pos.y);
-  // console.log('scrollTopos', pos.x, pos.y);
-  // KFK.printCallStack();
 };
 
 //create C3 create c3
 KFK.initC3 = function () {
+  KFK.debug('...initC3');
   KFK.JC3 = $('#C3');
   KFK.C3 = el(KFK.JC3);
   KFK.JC3.css({
@@ -914,6 +914,7 @@ KFK.initC3 = function () {
 
   //click c3  click C3 click canvas click background
   KFK.JC3.dblclick(function (evt) {
+    KFK.debug("...JC3.dblclick");
     if (KFK.inOverviewMode === true) {
       KFK.toggleOnePage({ x: evt.offsetX, y: evt.offsetY });
     } else {
@@ -933,7 +934,6 @@ KFK.initC3 = function () {
     KFK.closeActionLog();
     if (KFK.ignoreClick) return;
 
-    KFK.debug('click c3');
     // KFK.focusOnNode(null);
     KFK.justCreatedJqNode = null;
     KFK.justCreatedSvgLine = null;
@@ -960,8 +960,8 @@ KFK.initC3 = function () {
     }
     if (KFK.mode === "line") {
       KFK.yarkLinePoint(
-        KFK.scrXtoJc3X(evt.clientX),
-        KFK.scrYtoJc3Y(evt.clientY),
+        KFK.scrXToJc3X(evt.clientX),
+        KFK.scrYToJc3Y(evt.clientY),
         evt.shiftKey
       );
       return;
@@ -974,8 +974,8 @@ KFK.initC3 = function () {
         if (KFK.mode === "yellowtip") {
           variant = config.node.yellowtip.defaultTip;
         }
-        let realX = KFK.scrXtoJc3X(evt.clientX);
-        let realY = KFK.scrYtoJc3Y(evt.clientY);
+        let realX = KFK.scrXToJc3X(evt.clientX);
+        let realY = KFK.scrYToJc3Y(evt.clientY);
         let jqDIV = KFK.placeNode(
           evt.shiftKey,
           KFK.myuid(),
@@ -1000,10 +1000,9 @@ KFK.initC3 = function () {
     if (KFK.mode === "pointer" && KFK.docLocked() === false) {
       KFK.mouseIsDown = true;
       KFK.kuangXuanStartPoint = {
-        x: KFK.scrXtoJc3X(evt.clientX),
-        y: KFK.scrYtoJc3Y(evt.clientY)
+        x: KFK.scrXToJc3X(evt.clientX),
+        y: KFK.scrYToJc3Y(evt.clientY)
       };
-      console.log(JSON.stringify(KFK.kuangXuanStartPoint));
     }
   });
   KFK.JC3.mouseup(async (evt) => {
@@ -1029,10 +1028,9 @@ KFK.initC3 = function () {
     if (KFK.mode === "pointer" && KFK.docLocked() === false) {
       KFK.mouseIsDown = false;
       KFK.kuangXuanEndPoint = {
-        x: KFK.scrXtoJc3X(evt.clientX),
-        y: KFK.scrYtoJc3Y(evt.clientY)
+        x: KFK.scrXToJc3X(evt.clientX),
+        y: KFK.scrYToJc3Y(evt.clientY)
       };
-      console.log(JSON.stringify(KFK.kuangXuanEndPoint));
       if (KFK.duringKuangXuan) {
         KFK.ignoreClick = true;
         KFK.endKuangXuan(KFK.kuangXuanStartPoint, KFK.kuangXuanEndPoint);
@@ -1056,8 +1054,8 @@ KFK.initC3 = function () {
     $("#modeIndicator").css("left", KFK.currentMousePos.x + 10);
     $("#modeIndicator").css("top", KFK.currentMousePos.y + 10);
     KFK.kuangXuanEndPoint = {
-      x: KFK.scrXtoJc3X(evt.clientX),
-      y: KFK.scrYtoJc3Y(evt.clientY)
+      x: KFK.scrXToJc3X(evt.clientX),
+      y: KFK.scrYToJc3Y(evt.clientY)
     };
 
     if (KFK.docLocked()) return;
@@ -1092,8 +1090,8 @@ KFK.initC3 = function () {
       if (KFK.linkPosNode.length === 1) {
         KFK.lineTemping = true;
         let tmpPoint = {
-          x: KFK.scrXtoJc3X(KFK.currentMousePos.x),
-          y: KFK.scrYtoJc3Y(KFK.currentMousePos.y)
+          x: KFK.scrXToJc3X(KFK.currentMousePos.x),
+          y: KFK.scrYToJc3Y(KFK.currentMousePos.y)
         };
         let fromPoint = null;
         let toPoint = null;
@@ -1121,8 +1119,8 @@ KFK.initC3 = function () {
       if (KFK.linkPosLine.length === 1) {
         KFK.lineTemping = true;
         let tmpPoint = {
-          x: KFK.scrXtoJc3X(KFK.currentMousePos.x),
-          y: KFK.scrYtoJc3Y(KFK.currentMousePos.y)
+          x: KFK.scrXToJc3X(KFK.currentMousePos.x),
+          y: KFK.scrYToJc3Y(KFK.currentMousePos.y)
         };
         KFK.svgDrawTmpLine(
           KFK.linkPosLine[0].center.x,
@@ -1134,8 +1132,8 @@ KFK.initC3 = function () {
       }
     }
     if (KFK.lineDragging && KFK.lineLocked(KFK.lineToDrag) === false) {
-      let realX = KFK.scrXtoJc3X(evt.clientX);
-      let realY = KFK.scrYtoJc3Y(evt.clientY);
+      let realX = KFK.scrXToJc3X(evt.clientX);
+      let realY = KFK.scrYToJc3Y(evt.clientY);
       let deltaX = realX - KFK.lineDraggingStartPoint.x;
       let deltaY = realY - KFK.lineDraggingStartPoint.y;
       KFK.lineToDrag.dmove(deltaX, deltaY);
@@ -1165,7 +1163,7 @@ KFK.get13Number = function (str) {
 };
 
 KFK.showUserMovingBadge = function (user, x, y) {
-  let pos = { x: KFK.scrXtoJc3X(x), y: KFK.scrYtoJc3Y(y) };
+  let pos = { x: KFK.scrXToJc3X(x), y: KFK.scrYToJc3Y(y) };
   let bglabel = user.name;
 
 
@@ -1251,21 +1249,29 @@ KFK.selectNode = function (jqDIV) {
 };
 
 KFK.setSelectedNodesBoundingRect = function () {
+  let brect = $('.boundingrect');
+  if (brect.length <= 0) {
+    let rect = document.createElement('div');
+    brect = $(rect);
+    brect.addClass('boundingrect');
+    brect.appendTo(KFK.JC3);
+    brect.css('z-index', -1);
+  }
   if (KFK.selectedDIVs.length > 1) {
     let rect = KFK.getBoundingRectOfSelectedDIVs();
-    $("#boundingrect").css("left", rect.left - config.ui.boundingrect_padding);
-    $("#boundingrect").css("top", rect.top - config.ui.boundingrect_padding);
-    $("#boundingrect").css(
+    brect.css("left", rect.left - config.ui.boundingrect_padding);
+    brect.css("top", rect.top - config.ui.boundingrect_padding);
+    brect.css(
       "width",
       rect.width + config.ui.boundingrect_padding * 2
     );
-    $("#boundingrect").css(
+    brect.css(
       "height",
       rect.height + config.ui.boundingrect_padding * 2
     );
-    $("#boundingrect").show();
+    brect.show();
   } else {
-    $("#boundingrect").hide();
+    brect.hide();
   }
 };
 KFK.kuangXuan = function (pt1, pt2) {
@@ -1802,11 +1808,9 @@ KFK.syncNodePut = async function (cmd, jqDIV, reason, jqFrom, isUndoRedo, ser, c
             fromId: KFK.opArr_fromId,
             toId: KFK.opArr_toId
           };
-          KFK.debug('Batch :', ser, 'of', count);
-          KFK.debug("Compele batch op_entry: ", opEntry);
+          // KFK.debug('Batch :', ser, 'of', count);
+          // KFK.debug("Compele batch op_entry: ", opEntry);
           KFK.yarkOpEntry(opEntry);
-        } else {
-          KFK.debug('Batch :', ser, 'of', count);
         }
       }
     }
@@ -2268,8 +2272,16 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
       //如果按住了shiftkey, 则只移动当前node, 不移动其他被选定Node
       if (!evt.shiftKey) {
         //拖动其它被同时选中的对象
-        let index = KFK.selectedDIVs.indexOf(jqNodeDIV);
+        let index = -1;
+        for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+          if (KFK.selectedDIVs[i].attr("id") === jqNodeDIV.attr("id")) {
+            index = i;
+            break;
+          }
+        }
+
         if (KFK.selectedDIVs.length > 1 && index >= 0) {
+          KFK.debug("others shuld be moved");
           //要移动的个数是被选中的全部
           movedCount = KFK.selectedDIVs.length;
           let delta = {
@@ -2289,6 +2301,8 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
           for (let i = 0; i < KFK.selectedDIVs.length; i++) {
             KFK.redrawLinkLines(KFK.selectedDIVs[i], "codrag", true);
           }
+        } else {
+          KFK.debug("will not move other nodes, selectedDIVs", KFK.selectedDIVs.length, " first index", index);
         }
       }
 
@@ -2817,9 +2831,10 @@ KFK.getNodeIdsFromConnectId = function (cid) {
   tid = tid.substr(tid.lastIndexOf('_') + 1);
   return [nid, tid];
 };
-KFK.deleteHoverOrSelectedDiv = async function (evt) {
+KFK.deleteHoverOrSelectedDiv = async function (evt, cutMode = false) {
   //如果有多个节点被选择，则优先进行多项删除
   if (KFK.selectedDIVs.length > 1) {
+    KFK.copyCandidateDIVs = [];
     KFK.debug("delete, selected >1");
     let notLockedCount = 0;
     for (let i = 0; i < KFK.selectedDIVs.length; i++) {
@@ -2833,6 +2848,8 @@ KFK.deleteHoverOrSelectedDiv = async function (evt) {
       let delCount = notLockedCount;
       for (let i = 0; i < KFK.selectedDIVs.length;) {
         if (KFK.anyLocked(KFK.selectedDIVs[i]) === false) {
+          if (cutMode === true)
+            KFK.copyCandidateDIVs.push(KFK.selectedDIVs[i]);
           await KFK.syncNodePut("D", KFK.selectedDIVs[i], "delete node", null, false, i, delCount);
           i++;
         }
@@ -2843,11 +2860,13 @@ KFK.deleteHoverOrSelectedDiv = async function (evt) {
     //首先，先处理鼠标滑过的NODE
     if (KFK.hoverJqDiv()) {
       if (KFK.anyLocked(KFK.hoverJqDiv())) return;
+      KFK.copyCandidateDIVs = [KFK.hoverJqDiv().clone()];
       KFK.deleteNode_request(KFK.hoverJqDiv());
       KFK.hoverJqDiv(null);
     } else if (KFK.hoverSvgLine()) {
       //然后，再看鼠标滑过的线条
       if (KFK.anyLocked(KFK.hoverSvgLine())) return;
+      KFK.copyCandidateLines = [KFK.hoverSvgLine().clone()];
       KFK._deleteLine(KFK.hoverSvgLine());
       KFK.hoverSvgLine(null);
     } else if (KFK.hoveredConnectId) {
@@ -2885,48 +2904,110 @@ KFK.editHoverObject = async function (evt, enterSelect = false) {
   }
 };
 
-KFK.duplicateHoverObject = async function (evt) {
+KFK.duplicateHoverObject = async function (evt, action = undefined) {
   KFK.debug("entered duplicateHoverObject");
   if (KFK.docLocked()) return;
   let offset = { x: 0, y: 0 };
-  if (KFK.hoverJqDiv()) {
-    KFK.jqToCopy = KFK.hoverJqDiv();
-    //下面这句代码在第一次按META-D时就粘贴了一条,有些不用,
-    // await KFK.makeACopyOfJQ(KFK.jqToCopy, evt.shiftKey);
-    KFK.lineToCopy = null;
-    KFK.scrLog('对象已复制, 移动鼠标看所需位置再次按META-D安放')
-  } else if (KFK.hoverSvgLine()) {
-    KFK.hoverSvgLine().attr({ 'stroke-width': KFK.hoverSvgLine().attr('origin-width') });
-    KFK.lineToCopy = KFK.hoverSvgLine();
-    KFK.jqToCopy = null;
-    KFK.scrLog('对象已复制, 移动鼠标看所需位置再次按META-D安放')
-    //下面这句代码在第一次按META-D时就粘贴了一条,有些不用,
-    // await KFK.makeACopyOfLine(KFK.lineToCopy, evt.shiftKey);
-  } else if (KFK.jqToCopy) {
-    await KFK.makeACopyOfJQ(KFK.jqToCopy, evt.shiftKey);
-  } else if (KFK.lineToCopy) {
-    await KFK.makeACopyOfLine(KFK.lineToCopy, evt.shiftKey);
+  if (action === "copy") {
+    if (KFK.selectedDIVs.length > 1) { //优先多选
+      KFK.debug("multiple nodes were selected");
+      KFK.copyCandidateDIVs = KFK.selectedDIVs.map(div => {
+        return div.clone();
+      });
+      return true;
+    } else if (KFK.getPropertyApplyToJqNode()) { //然后selected
+      KFK.copyCandidateDIVs = [KFK.getPropertyApplyToJqNode().clone()];
+      KFK.copyCandidateLines = [];
+      return true;
+    } else if (KFK.hoverSvgLine() && (action === undefined || action === "copy")) {
+      KFK.hoverSvgLine().attr({ 'stroke-width': KFK.hoverSvgLine().attr('origin-width') });
+      KFK.copyCandidateLines = [KFK.hoverSvgLine().clone()];
+      KFK.copyCandidateDIVs = [];
+      // KFK.scrLog('对象已复制, 移动鼠标看所需位置再次按META-D或META-V安放')
+      //下面这句代码在第一次按META-D时就粘贴了一条,有些不用,
+      // await KFK.makeACopyOfLine(KFK.lineToCopy, evt.shiftKey);
+      return true;
+    } else {
+      return false;
+    }
+  } else if (action === 'paste') {
+    if (KFK.copyCandidateDIVs && KFK.copyCandidateDIVs.length > 0) {
+      await KFK.makeCopyOfJQs(KFK.copyCandidateDIVs, evt.shiftKey);
+    } else if (KFK.copyCandidateLines && KFK.copyCandidateLines.length > 0) {
+      await KFK.makeCopyOfLines(KFK.copyCandidateLines, evt.shiftKey);
+    }
+    // if (KFK.jqToCopy) {
+    // } else if (KFK.lineToCopy) {
+    //   await KFK.makeACopyOfLine(KFK.lineToCopy, evt.shiftKey);
+    //   //await KFK.makeACopyOfLine(KFK.lineToCopy, evt.shiftKey);
+    // }
+    return true;
   }
+  return true;
   evt.stopPropagation();
 };
 
-KFK.makeACopyOfJQ = async function (jqtocopy, shiftKey) {
+KFK.makeCopyOfJQs = async function (jqstocopy, shiftKey) {
   //现在是移动指定位置再次META-D才放置对象,因此offset没用.事实上,offset在复制node时就一直没有用到
   let offset = { x: 0, y: 0 };
-  let jqNewNode = KFK.jqToCopy.clone(false);
-  jqNewNode.attr("id", KFK.myuid());
-  jqNewNode.css("left", KFK.scrXtoJc3X(KFK.currentMousePos.x) - parseInt(jqNewNode.css("width")) * 0.5);
-  jqNewNode.css("top", KFK.scrYtoJc3Y(KFK.currentMousePos.y) - parseInt(jqNewNode.css("height")) * 0.5);
-  //按住shift 复制时，也就是META-SHIFT-D, 则保留linkto
-  if (!shiftKey) {
-    jqNewNode.removeAttr("linkto");
+  console.log('past DIVs number', jqstocopy.length);
+  console.log('jqstocopy', jqstocopy[0].prop("outerHTML"));
+  let theDIV = el(jqstocopy[0]);
+  console.log(theDIV.style.left, theDIV.style.top);
+  console.log(KFK.divLeft(jqstocopy[0]));
+
+  let startPoint = { x: KFK.divLeft(jqstocopy[0]), y: KFK.divTop(jqstocopy[0]) };
+  console.log(startPoint);
+  for (let i = 0; i < jqstocopy.length; i++) {
+    let oldJqPos = { x: KFK.divLeft(jqstocopy[i]), y: KFK.divTop(jqstocopy[i]) };
+    console.log("here1", oldJqPos);
+    let deltaX = oldJqPos.x - startPoint.x;
+    let deltaY = oldJqPos.y - startPoint.y;
+    console.log("here2", deltaX, deltaY);
+    let jqNewNode = jqstocopy[i].clone(false);
+    jqNewNode.attr("id", KFK.myuid());
+    jqNewNode.css("left", KFK.scrXToJc3X(KFK.currentMousePos.x) - parseInt(jqNewNode.css("width")) * 0.5 + deltaX);
+    jqNewNode.css("top", KFK.scrYToJc3Y(KFK.currentMousePos.y) - parseInt(jqNewNode.css("height")) * 0.5 + deltaY);
+    //按住shift 复制时，也就是META-SHIFT-D, 则保留linkto
+    if (!shiftKey) {
+      jqNewNode.removeAttr("linkto");
+    }
+    KFK.cleanNodeEventFootprint(jqNewNode);
+    jqNewNode.appendTo(KFK.C3);
+    KFK.setNodeEventHandler(jqNewNode);
+    if (i === 0)
+      KFK.focusOnNode(jqNewNode);
+    await KFK.syncNodePut("C", jqNewNode, "duplicate node", null, false, 0, 1);
   }
-  KFK.cleanNodeEventFootprint(jqNewNode);
-  jqNewNode.appendTo(KFK.C3);
-  KFK.setNodeEventHandler(jqNewNode);
-  KFK.focusOnNode(jqNewNode);
-  await KFK.syncNodePut("C", jqNewNode, "duplicate node", null, false, 0, 1);
   return;
+};
+KFK.makeCopyOfLines = async function (linestocopy) {
+  console.log('makeCopyOfLines', linestocopy);
+  let startPoint = { x: linestocopy[0].cx(), y: linestocopy[0].cy() };
+  console.log('makeCopyOfLines', startPoint);
+  for (let i = 0; i < linestocopy.length; i++) {
+    let newLine = linestocopy[i].clone();
+    let deltaX = linestocopy[i].cx() - startPoint.x;
+    let deltaY = linestocopy[i].cy() - startPoint.y;
+    console.log(deltaX, deltaY);
+
+    let newline_id = "line_" + KFK.myuid();
+    let classes = newLine.classes();
+    classes.forEach((className, index) => {
+      if (className !== 'kfkline') {
+        newLine.removeClass(className);
+      }
+    });
+    newLine.attr("id", newline_id);
+    newLine.addClass(newline_id);
+    //现在是移动指定位置再次META-D才放置对象,因此offset没用.
+    //之前的代码在x,y后面分别加了个20, 以便不覆盖到节点
+    //现在第一次点取不马上复制了,+offset已经没有了必要
+    newLine.center(KFK.scrXToJc3X(KFK.currentMousePos.x) + deltaX, KFK.scrYToJc3Y(KFK.currentMousePos.y) + deltaY);
+    newLine.addTo(KFK.lineToCopy.parent());
+    KFK.addSvgLineEventListner(newLine);
+    await KFK.syncLinePut("C", newLine, "duplicate line", null, false);
+  }
 };
 KFK.makeACopyOfLine = async function (linetocopy) {
   let newLine = KFK.lineToCopy.clone();
@@ -2943,7 +3024,7 @@ KFK.makeACopyOfLine = async function (linetocopy) {
   //现在是移动指定位置再次META-D才放置对象,因此offset没用.
   //之前的代码在x,y后面分别加了个20, 以便不覆盖到节点
   //现在第一次点取不马上复制了,+offset已经没有了必要
-  newLine.center(KFK.scrXtoJc3X(KFK.currentMousePos.x), KFK.scrYtoJc3Y(KFK.currentMousePos.y));
+  newLine.center(KFK.scrXToJc3X(KFK.currentMousePos.x), KFK.scrYToJc3Y(KFK.currentMousePos.y));
   newLine.addTo(KFK.lineToCopy.parent());
   KFK.addSvgLineEventListner(newLine);
   await KFK.syncLinePut("C", newLine, "duplicate line", null, false);
@@ -3000,11 +3081,18 @@ KFK.jc3PosToJc1Pos = function (pos) {
   };
 };
 
+KFK.jc3XToJc1X = function (x) {
+  return x + KFK.LeftB;
+}
+KFK.jc3YToJc1Y = function (y) {
+  return y + KFK.TopB;
+}
+
 //Screen pos x to JC3 pos x
-KFK.scrXtoJc3X = function (x) {
+KFK.scrXToJc3X = function (x) {
   return KFK.scrXtoJc1X(x) - KFK.LeftB;
 };
-KFK.scrYtoJc3Y = function (y) {
+KFK.scrYToJc3Y = function (y) {
   return KFK.scrYtoJc1Y(y) - KFK.TopB;
 };
 
@@ -3015,6 +3103,12 @@ KFK.scrXtoJc1X = function (x) {
 KFK.scrYtoJc1Y = function (y) {
   return y + KFK.JS1.scrollTop();
 };
+KFK.jc1XToScrX = function (x) {
+  return x - KFK.JS1.scrollLeft();
+}
+KFK.jc1YToScrY = function (y) {
+  return y - KFK.JS1.scrollTop();
+}
 
 KFK.saveLocalCocoConfig = function () {
   localStorage.setItem('cococonfig', JSON.stringify(KFK.APP.model.cococonfig));
@@ -3160,12 +3254,10 @@ KFK.init = async function () {
   await KFK.checkSession();
 };
 
-//TODO: onPaste, disable when is not in designer
-//TODO: onPaste paste position is wrong, need to fix.
 //checkSesion有两个地方被调用,一个是在第一次进入, init 方法中, 一个是在OPENANN后
 //OPENANN后调用,会发生WS连接被第二次打开的情况,ws.js中使用了重用,杜绝发生连接两个websocket的情况
 KFK.checkSession = async function () {
-  KFK.info(">>>checkSession");
+  KFK.info("...checkSession");
   //WSReconnectTime只用来记录在Designer使用过程中的网络断掉后的重连次数
   //那个是ws.js自动控制重连的,重连时,ws.js会调用KFK.onWSConnected, 在那里,对WSReconnectTime进行技术 
   KFK.setAppData("model", "prjs", []);
@@ -3432,23 +3524,18 @@ KFK.loadDoc = function (doc_id, pwd) {
 
 KFK.refreshExplorer = async function () {
   // KFK.APP.setData("model", "docLoaded", false);
-  console.log('sendcmd LISTPRJ');
   await KFK.sendCmd("LISTPRJ", { skip: 0 });
   KFK.gotoRecent();
 }
 
 KFK.onProjectServerFeedback = function () {
   KFK.showSection({ signin: false, register: false, explorer: true, designer: false });
-  console.log("here1", KFK.APP.model.prjs.length);
   KFK.showProjects();
-  console.log("here2", KFK.APP.model.prjs.length);
   KFK.gotoPrjList();
-  console.log("here3", KFK.APP.model.prjs.length);
   KFK.explorerRefreshed = true;
 };
 
 KFK.setCurrentPrj = function (prj) {
-  console.log('setCUrrentPrj', prj);
   KFK.APP.setData("model", "project", prj);
   if (prj.prjid !== "all" && prj.prjid !== 'others' && prj.prjid !== "mine") {
     KFK.APP.setData("model", "lastrealproject", prj);
@@ -3457,7 +3544,6 @@ KFK.setCurrentPrj = function (prj) {
 };
 
 KFK.clearCurrentProject = function () {
-  console.log('clearCurrentProject');
   KFK.APP.setData("model", "project", { prjid: '', name: '' });
   KFK.APP.setData("model", "lastrealproject", { prjid: '', name: '' });
   localStorage.removeItem("cocoprj");
@@ -3465,9 +3551,8 @@ KFK.clearCurrentProject = function () {
 KFK.resetAllLocalData = function () {
   localStorage.removeItem("cocoprj");
   localStorage.removeItem("cocodoc");
-  KFK.APP.setData("model", "cocodoc", { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', doclocked: false }),
-    KFK.APP.setData("model", "cocouser", { userid: '', name: '', avatar: 'avatar-0', avatar_src: null }),
-    console.log('restAllLocalData');
+  KFK.APP.setData("model", "cocodoc", { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', doclocked: false });
+  KFK.APP.setData("model", "cocouser", { userid: '', name: '', avatar: 'avatar-0', avatar_src: null });
   KFK.APP.setData("model", "project", { prjid: '', name: '' });
   KFK.APP.setData("model", "lastrealproject", { prjid: '', name: '' });
   KFK.APP.setData("model", "prjs", []);
@@ -3583,7 +3668,6 @@ KFK.showProjects = async function () {
   KFK.showForm({ newdoc: false, newprj: false, prjlist: true, doclist: true });
   let currentprj = localStorage.getItem("cocoprj");
   if (!getNull(currentprj)) {
-    console.log('curentprj is not null.', currentprj, 'check existing');
     let prj = JSON.parse(currentprj);
     let found = -1;
     for (let i = 2; i < KFK.APP.model.prjs.length; i++) {
@@ -3593,12 +3677,9 @@ KFK.showProjects = async function () {
       }
     }
     if (found < 0) {
-      console.log("not found");
       if (KFK.APP.model.prjs.length > 0) {
-        console.log("has real projects, select then")
         KFK.gotoPrjList("请选择一个项目");
       } else {
-        console.log("no real projects, createj then")
         KFK.showCreateNewPrj();
       }
     } else {
@@ -3606,7 +3687,6 @@ KFK.showProjects = async function () {
       await KFK.sendCmd("LISTDOC", { prjid: prj.prjid });
     }
   } else {
-    console.log('sendcmd LISTDOC');
     await KFK.sendCmd("LISTDOC", { prjid: "all" });
   }
 };
@@ -3666,8 +3746,6 @@ KFK.createNewDoc = function () {
   let docName = KFK.APP.model.newdocname;
   let docPwd = KFK.APP.model.newdocpwd;
   KFK.APP.state.newdoc.name = Validator.validateDocName(docName);
-  console.log('new doc validate', docName, docPwd, KFK.APP.state.newdoc.name);
-  console.log('prjid', KFK.APP.model.lastrealproject.prjid);
   // KFK.APP.state.newdoc.pwd = Validator.validateDocPwd(docPwd);
   if (KFK.APP.state.newdoc.name) {
     KFK.sendCmd("NEWDOC", {
@@ -3858,7 +3936,6 @@ KFK.onWsMsg = async function (response) {
       await KFK.gotoPrj(response.prjid, response.prjname);
       break;
     case "DELDOC":
-      console.log('DELDOC', response);
       for (let i = 0; i < KFK.APP.model.docs.length; i++) {
         if (KFK.APP.model.docs[i]._id === response.doc_id) {
           KFK.APP.model.docs.splice(i, 1);
@@ -3874,7 +3951,6 @@ KFK.onWsMsg = async function (response) {
       break;
     case "LISTDOC":
       KFK.APP.setData("model", "listdocoption", response.option);
-      console.log('LISTDOC in prj', response.prjid);
       let docs = response.docs;
       docs.forEach(doc => {
         if (doc.pwd === "") {
@@ -3973,7 +4049,6 @@ KFK.onWsMsg = async function (response) {
       SHARE.onWsMsg(response);
       break;
     case 'UPDATECOCOUSER':
-      console.log(response.data);
       KFK.updateCocouser(response.data);
       break;
     case 'LISTMYORG':
@@ -4014,11 +4089,9 @@ KFK.onWsMsg = async function (response) {
   }
 };
 KFK.switchOrg = async function (_id) {
-  console.log(_id);
   await KFK.sendCmd('ENTERORG', { _id: _id });
 };
 KFK.deleteOrg = async function (_id) {
-  console.log(_id);
   await KFK.sendCmd('DELETEORG', { _id: _id });
 };
 KFK.createNewOrg = async function () {
@@ -4048,7 +4121,6 @@ KFK.changeOrgName = async function (org_id, rowIndex) {
   }
 };
 KFK.deleteOrgUser = function (_id, item, index, evt) {
-  console.log('DeleteOrgUser', _id, item.userid, index);
   KFK.sendCmd("ORGUSERDEL", { _id: _id, userid: item.userid });
 };
 
@@ -4114,7 +4186,7 @@ KFK.openDemoDoc = function () {
 };
 
 KFK.deletePrj = async function (prjid) {
-  await KFK.sendCmd("DELPRJ", {prjid: prjid});
+  await KFK.sendCmd("DELPRJ", { prjid: prjid });
 };
 
 KFK.msgOK = function () {
@@ -4166,7 +4238,6 @@ KFK.prjRowClickHandler = function (record, index) {
 
 KFK.gotoRecent = function () {
   KFK.setAppData("model", "project", { prjid: 'all', name: '我最近使用过的白板' })
-  console.log("set recent docs list", KFK.APP.model.project);
   KFK.sendCmd("LISTDOC", { prjid: 'all' });
   KFK.gotoDocs();
   KFK.showForm({
@@ -4515,6 +4586,7 @@ KFK.changeToTransparent = async function () {
 };
 
 KFK.initPropertyForm = function () {
+  KFK.debug('...initPropertyForm');
   let spinnerFontSize = $("#spinner_font_size").spinner({
     min: 8,
     max: 100,
@@ -4702,6 +4774,7 @@ KFK.setBGColorTo = function (color) {
 };
 
 KFK.initColorPicker = function () {
+  KFK.debug('...initColorPicker');
   $("#cocoBkgColor").spectrum({
     type: "color",
     color: KFK.APP.model.cococonfig.bgcolor,
@@ -5085,9 +5158,23 @@ KFK.addDocumentEventHandler = function () {
             KFK.gotoAnyPage(pindex);
           }
           KFK.keypool = ""; return;
+        } else if (KFK.keypool.endsWith('gt')) {
+          //TODO:  Add help icon and key shortcuts pages
+          //TODO:  combine fullscreen, top only and hide right
+          KFK.ZiToTop();
+        } else if (KFK.keypool.endsWith('gb')) {
+          KFK.ZiToBottom();
+        } else if (KFK.keypool.endsWith('gh')) {
+          KFK.ZiToHigher();
+        } else if (KFK.keypool.endsWith('gl')) {
+          KFK.ZiToLower();
+        } else if (KFK.keypool.endsWith('lk') || KFK.keypool.endsWith('lock')) {
+          KFK.tryToLockUnlock();
         } else if (KFK.inPresentingMode && KFK.keypool.endsWith('b')) {
+          //TODO: presentBlackMask();
           KFK.presentBlackMask(); KFK.keypool = ""; return;
         } else if (KFK.inPresentingMode && KFK.keypool.endsWith('w')) {
+          //TODO: presentWhiteMask();
           KFK.presentWhiteMask(); KFK.keypool = ""; return;
         } else if (KFK.keypool.length > 5) {
           KFK.keypool = KFK.keypool.substr(-4);
@@ -5191,48 +5278,6 @@ KFK.addDocumentEventHandler = function () {
           KFK.undo();
         }
         break;
-      case 88:
-        if (evt.metaKey || evt.ctrlKey) {
-          KFK.logKey('META-X');
-          KFK.deleteHoverOrSelectedDiv(evt);
-          KFK.holdEvent(evt);
-        }
-        break;
-      case 68:
-        if (evt.metaKey || evt.ctrlKey) {
-          KFK.logKey('META-D');
-          KFK.duplicateHoverObject(evt);
-          KFK.holdEvent(evt);
-        }
-        break;
-      case 84:
-        if (evt.metaKey || evt.ctrlKey) {
-          KFK.logKey('META-T');
-          KFK.ZiToTop();
-          KFK.holdEvent(evt);
-        }
-        break;
-      case 66:
-        if (evt.metaKey || evt.ctrlKey) {
-          KFK.logKey('META-B');
-          KFK.ZiToBottom();
-          KFK.holdEvent(evt);
-        }
-        break;
-      case 72:
-        if (evt.metaKey || evt.ctrlKey) {
-          KFK.logKey('META-H');
-          KFK.ZiToHigher();
-          KFK.holdEvent(evt);
-        }
-        break;
-      case 71:
-        if (evt.metaKey || evt.ctrlKey) {
-          KFK.logKey('META-G');
-          KFK.ZiToLower();
-          KFK.holdEvent(evt);
-        }
-        break;
       case 76:
         if (evt.metaKey || evt.ctrlKey) {
           KFK.logKey('META-SHIFT-L');
@@ -5240,38 +5285,10 @@ KFK.addDocumentEventHandler = function () {
           KFK.holdEvent(evt);
         }
         break;
-      /*
-    case 55:
-      if (evt.metaKey || evt.ctrlKey) {
-        KFK.logKey('META-7');
-        let tmpJq= KFK.getPropertyApplyToJqNode();
-        if (tmpJq !== null && KFK.notAnyLocked(tmpJq)) {
-          KFK.setAlignmentDirectly(tmpJq, 'flex-start');
-        }
-      }
-      break;
-    case 56:
-      if (evt.metaKey || evt.ctrlKey) {
-        KFK.logKey('META-8');
-        let jqNode = KFK.getPropertyApplyToJqNode();
-        if (jqNode != null && KFK.notAnyLocked(jqNode)) {
-          KFK.setAlignmentDirectly(jqNode, 'center');
-        }
-      }
-      break;
-    case 57:
-      if (evt.metaKey || evt.ctrlKey) {
-        KFK.logKey('META-9');
-        let jqNode = KFK.getPropertyApplyToJqNode();
-        if (jqNode != null && KFK.notAnyLocked(jqNode)) {
-          KFK.setAlignmentDirectly(jqNode, 'flex-end');
-        }
-      }
-      evt.preventDefault();
-      evt.stopImmediatePropagation();
-      evt.stopPropagation();
-      break;
-      */
+      case 8: //Backspace
+      case 46: //Delete
+        KFK.deleteHoverOrSelectedDiv(evt, false);
+        break;
       default:
         preventDefault = false;
 
@@ -5482,22 +5499,22 @@ KFK.toggleFullScreen = function (evt) {
   if (KFK.inPresentingMode) return;
   KFK.inFullScreenMode = !KFK.inFullScreenMode;
   if (KFK.inFullScreenMode === true) {
-    if (KFK.inOverviewMode === false) {
-      KFK.setLayoutDisplay({
-        showgrid: KFK.APP.model.cococonfig.showgrid,
-        minimap: false,
-        toplogo: 'hidden',
-        docHeaderInfo: 'hidden',
-        rtcontrol: 'hidden',
-        left: 'none',
-        right: 'none',
-      });
-    }
+    // if (KFK.inOverviewMode === false) {
+    //   KFK.setLayoutDisplay({
+    //     showgrid: KFK.APP.model.cococonfig.showgrid,
+    //     minimap: false,
+    //     toplogo: 'hidden',
+    //     docHeaderInfo: 'hidden',
+    //     rtcontrol: 'hidden',
+    //     left: 'none',
+    //     right: 'none',
+    //   });
+    // }
     KFK.scrLog('进入全屏模式: 输入fs退出');
   } else {
     KFK.scrLog('');
-    if (KFK.inOverviewMode === false)
-      KFK.restoreLayoutDisplay();
+    // if (KFK.inOverviewMode === false)
+    //   KFK.restoreLayoutDisplay();
   }
   KFK.APP.setData('show', 'actionlog', false);
   if (KFK.inFullScreenMode === true) {
@@ -5678,7 +5695,6 @@ KFK.showTextPasteDialog = async function (content) {
       KFK.showDialog({ pasteContentDialog: true });
     } else {          //Normal plain text
       showbox = KFK.hoverJqDiv() ? false : true;
-      KFK.debug(showbox ? 'showbox' : 'no showbox');
       if (showbox) {
         await KFK.mergeAppData("model", "paste", {
           showcontent: false, showdisplay: false, showbox: showbox,
@@ -5737,8 +5753,8 @@ KFK.placePastedContent = async function () {
     let box = KFK.APP.model.paste.box;
     let jBox = KFK.placeNode(false, //shiftKey
       KFK.myuid(), "textblock", "default",
-      KFK.currentMousePos.x + KFK.scrollContainer.scrollLeft() - KFK.PageWidth,
-      KFK.currentMousePos.y + KFK.scrollContainer.scrollTop() - KFK.PageHeight,
+      KFK.scrXToJc3X(KFK.currentMousePos.x),
+      KFK.scrYToJc3Y(KFK.currentMousePos.y),
       100, 100, toAdd);
     switch (box) {
       case 'none':
@@ -5757,28 +5773,56 @@ KFK.placePastedContent = async function () {
     await KFK.syncNodePut("C", jBox, "create text node", null, false, 0, 1);
   }
 };
+KFK.onCopy = async function (evt) {
+  KFK.logKey('META-C');
+  let someDIVcopyed = await KFK.duplicateHoverObject(evt, 'copy');
+  if (someDIVcopyed) {
+    evt.clipboardData.setData('text/plain', 'usediv');
+    evt.clipboardData.setData('text/html', 'usediv');
+    evt.preventDefault();
+    KFK.holdEvent(evt);
+  }
+  evt.preventDefault();
+  console.log(someDIVcopyed, evt.clipboardData);
+  evt.preventDefault();
+  KFK.holdEvent(evt);
+};
 
-KFK.onPaste = function (evt) {
+KFK.onPaste = async function (evt) {
   if (KFK.docLocked()) return;
   if (KFK.currentView !== 'designer') return;
   let content = { html: "", text: "", image: null };
   content.html = evt.clipboardData.getData("text/html");
   content.text = evt.clipboardData.getData("Text");
-  var items = (evt.clipboardData || evt.originalEvent.clipboardData).items;
-  if (items[1]) {
-    KFK.showTextPasteDialog(content);
-  } else if (items[0]) {
-    if (items[0].kind === "string") {
+  if (content.text === "usediv") {
+    console.log("paste usediv");
+    await KFK.duplicateHoverObject(evt, 'paste');
+    return;
+  } else {
+    var items = (evt.clipboardData || evt.originalEvent.clipboardData).items;
+    console.log("paste", items);
+    if (items[1] && (content.html !== '' || content.text !== '')) {
       KFK.showTextPasteDialog(content);
-    } else if (items[0].kind === "file") {
-      var blob = items[0].getAsFile();
-      KFK.error("paste content is unabled at this time");
-      KFK.saveBlobToOSS(blob);
+    } else if (items[0]) {
+      if (items[0].kind === "string" && (content.html !== '' || content.text !== '')) {
+        KFK.showTextPasteDialog(content);
+      } else if (items[0].kind === "file") {
+        var blob = items[0].getAsFile();
+        KFK.scrLog("剪贴板图片粘贴功能只对AAAA级租户开放, 但您可以自由粘贴网络图片");
+        //KFK.saveBlobToOSS(blob);
+      }
     }
   }
 };
 
+KFK.onCut = async function (evt) {
+  console.log('on cut');
+  KFK.deleteHoverOrSelectedDiv(evt, true);
+};
+
 document.onpaste = KFK.onPaste;
+document.oncopy = KFK.onCopy;
+document.oncut = KFK.onCut;
 
 KFK.addEditorToNode = function (jqNode, editor) {
   let editors = jqNode.attr("editors");
@@ -5831,6 +5875,7 @@ KFK.scrCenter = function () {
   return { x: $(window).width() * 0.5, y: $(window).height() * 0.5 };
 };
 KFK.showCenterIndicator = function (cx, cy) {
+  KFK.debug('...showCenterIndicator');
   let center = KFK.scrCenter();
   let centerX = cx ? cx : center.x;
   let centerY = cy ? cy : center.y;
@@ -6001,8 +6046,6 @@ KFK.___presentPage = function (pageIndex) {
   let scrCenter = KFK.scrCenter();
   let window_width = scrCenter.x * 2;
   let window_height = scrCenter.y * 2;
-  console.log(pageIndex);
-  console.log(pages);
   jlog(pages[pageIndex].top);
   jlog(KFK.TopB);
   jlog({
@@ -6128,7 +6171,7 @@ KFK.toggleOnePage = function (jc3MousePos) {
   } else {
     if (KFK.inFullScreenMode === false) {
       KFK.setLayoutDisplay({
-        showgrid: true,
+        showgrid: false,
         minimap: false,
         toplogo: 'hidden',
         docHeaderInfo: 'hidden',
@@ -6250,7 +6293,6 @@ KFK.scrollToNode = function (nodeid) {
   let left = jqDIV.position().left;
   let width = jqDIV.width();
   let height = jqDIV.height();
-  console.log(top, left, width, height);
 
   //TODO: Test scrollToNode
   KFK.scrollContainer = $("#S1");
@@ -6535,7 +6577,7 @@ KFK.moveDIVCenterToPos = function (jqDiv, pos) {
   jqDiv.css('top', pos.y - KFK.unpx(jqDiv.css('height')) * 0.5);
 }
 KFK.C3MousePos = function (evt) {
-  return { x: KFK.scrXtoJc3X(evt.clientX), y: KFK.scrYtoJc3Y(evt.clientY) };
+  return { x: KFK.scrXToJc3X(evt.clientX), y: KFK.scrYToJc3Y(evt.clientY) };
 }
 KFK.ScreenMousePos = function (pos) {
   return {
@@ -6601,8 +6643,8 @@ KFK.addSvgLineEventListner = function (theLine) {
     };
     KFK.setLineToRemember(theLine);
     KFK.lineDraggingStartPoint = {
-      x: KFK.scrXtoJc3X(evt.clientX),
-      y: KFK.scrYtoJc3Y(evt.clientY)
+      x: KFK.scrXToJc3X(evt.clientX),
+      y: KFK.scrYToJc3Y(evt.clientY)
     }
   });
   //click line
@@ -6641,6 +6683,7 @@ KFK.addSvgLineEventListner = function (theLine) {
 };
 
 KFK.initLineMover = function () {
+  KFK.debug('...initLineMover');
   $("#linetransformer").draggable({
     // move line drag line
     start: (evt, ui) => {

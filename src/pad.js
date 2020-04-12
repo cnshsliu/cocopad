@@ -149,7 +149,7 @@ const app = new Vue({
       listprjoption: {},
       register: { userid: '', pwd: '', pwd2: '', name: '', step: 'reg', code: '' },
       signin: { userid: '', pwd: '' },
-      docfields: [{ key: 'name', label: '文档名称' }, { key: 'readonly_icon', label: '模式' }, { key: 'protect_icon', label: '密保' }, { key: 'docduplicate', label: '操作' }, { key: 'share_icon', label: '分享' }, { key: 'owner', label: '发起人' }, { key: 'operations', label: '其它', variant: 'danger' }],
+      docfields: [{ key: 'name', label: '文档名称' }, { key: 'readonly_icon', label: '模式' }, { key: 'protect_icon', label: '密保' }, { key: 'docduplicate', label: '操作' }, { key: 'share_icon', label: '分享' }, { key: 'owner', label: '发起' }, { key: 'operations', label: '其它', variant: 'danger' }],
       vorgfields: [{ key: 'name', label: '名称' }, { key: 'owner', label: '发起人' }, { key: 'operations', label: '相关操作' }],
       myorgfields: [{ key: 'name', label: '名称' }, { key: 'grade', label: '等级' }, { key: 'operations', label: '相关操作' }],
       useridfields: [{ key: 'userid', label: '用户ID' }, { key: 'operations', label: '操作', variant: 'danger' }],
