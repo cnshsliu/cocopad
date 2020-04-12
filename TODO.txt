@@ -1,8 +1,5 @@
-//TODO: 全局要览下隐藏网格线
-//TODO: fs模式下,left, right应该需要在
 //TODO: Add  Delete/Copy tool on the left toolbox
 //TODO: handler中所有发送回去统一到一个地方,然后便于统一计费, 支持企业?
-//TODO: 更换黑板擦图标
 //TODO: 文档保护码加密
 //TODO: 备份加密secretkey到U盘
 //TODO: 用分享码分享? 现在是DOU码, {D:xx,O:yy,U:zz} 的base64
