@@ -80,6 +80,7 @@ const app = new Vue({
       'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false, copyDocDialog: false, pasteContentDialog: false, MsgBox: false, shareDialog: false },
     },
     model: {
+      invitor: {usrid:'', name:''},
       showHelp: false,
       accordion: { myorg: true },
       org: {

@@ -3260,34 +3260,43 @@ KFK.checkSession = async function () {
   //WSReconnectTime只用来记录在Designer使用过程中的网络断掉后的重连次数
   //那个是ws.js自动控制重连的,重连时,ws.js会调用KFK.onWSConnected, 在那里,对WSReconnectTime进行技术 
   KFK.setAppData("model", "prjs", []);
-  let m = RegHelper.getDocIdInUrl($(location).attr("pathname"));
-  let m2 = RegHelper.getIvtCodeInUrl($(location).attr("pathname"));
-  if (m !== null) {
-    KFK.shareCode = m[1];
-  } else if(m2 !== null) { 
-    KFK.shareCode = m2[1];
-  } else { 
-    KFK.shareCode = null; 
-  }
+
   let cocouser = await KFK.readLocalCocoUser();
   if (cocouser) {
     KFK.debug("checksession: found cocouser" + cocouser.name);
     KFK.setAppData('model', 'isDemoEnv', (cocouser.userid.indexOf("@cocopad_demo.org") > 0));
-  } else {
-    KFK.debug('checksession: NO local user');
   }
   if (cocouser && cocouser.sessionToken) {
-    KFK.debug('checksession: connect server');
     //匿名用户获得临时身份后,会重新进入CheckSession,就也会运行到这里
     //这时,WS.ws已经是处于连接状态的,再次调用WS.start时, ws.js中会重用之前的连接,
     //但是会充值WS.connectTimes为0
+    KFK.debug('checksession: LU yes, connect server');
     await WS.start(KFK.onWsConnected, KFK.onWsMsg, 100, "checkSession", "KEEP");
   } else if (KFK.shareCode) {
     //两种URL形式都连接WS
-    KFK.debug('checksession: connect to server with open shareCode');
+    if (KFK.urlMode === 'ivtcode') {
+      KFK.debug('checksession: LU no, ivtURL yes,  connect server');
+    } else {
+      KFK.debug('checksession: LU no, scURL yes, connect server');
+    }
     await WS.start(KFK.onWsConnected, KFK.onWsMsg, 100, "checkSession", "KEEP");
-  } else {
-    KFK.gotoRegister();
+  } else { //no local user
+    let localShareCode = localStorage.getItem('shareCode');
+    if (localShareCode === null) { //no local user nor local sharecode
+      KFK.debug('checksession: LU no, SCURL no, LSC no, goto fresh register');
+      KFK.gotoRegister();
+    } else { //no local user but has local sharecode
+      if (localShareCode.length === 8) { //local sharecode is a ivtcode
+        KFK.urlMode = "ivtcode";
+        KFK.shareCode = localShareCode;
+        KFK.debug('checksession: LU no, SCURL no, LSC no, LIVT yes, goto register');
+      } else { //local sharecod is a sharecode
+        KFK.urlMode = "sharecode";
+        KFK.shareCode = localShareCode;
+        KFK.debug('checksession: LU no, SCURL no, LSC yes, connect server');
+      }
+      await WS.start(KFK.onWsConnected, KFK.onWsMsg, 100, "checkSession", "KEEP");
+    }
   }
   KFK.setAppData('show', 'waiting', false);
 };
@@ -3303,23 +3312,38 @@ KFK.onWsConnected = function () {
     //refreshExplorer会用到很多需要Auth的操作，但shareDocInUrl不需要
     //如果URL中没有ShareCodeInURL
     //正常情况下，会进入到浏览器界面
-    if (KFK.cocouser && KFK.cocouser.sessionToken && KFK.shareCode === null) {
-      KFK.refreshExplorer();
-    }
-    //如果有shareCodeInURL的话，则尝试直接打开这个分享文档
-    //处理localStorage中的sharecode
-    if (KFK.shareCode !== null) {
-      //已经正常注册登陆的用户，不需要在本地保存shareCode
-      if (KFK.cocouser && KFK.cocouser.sessionToken && KFK.cocouser.userid.indexOf("@cocopad_demo.org") < 0) {
-        //已经正常注册的用户,不需要有shareCode记录在本地
-        localStorage.removeItem("shareCode");
-        KFK.debug("正常用户不保存sharecode");
-      } else {
-        //sharecode根据情况,都放一个,这样后面正式注册时,删除
-        //docIdInUrl时,这个sharecode与其实际doc_id不符,不过无所谓
-        localStorage.setItem('shareCode', KFK.shareCode);
+    if (KFK.cocouser && KFK.cocouser.sessionToken) {
+      if (KFK.shareCode === null) {
+        KFK.refreshExplorer();
+      } else { //URL中有shareCode或者ivtCode
+        if (KFK.cocouser.userid.indexOf("@cocopad_demo.org") < 0) {
+          //已经正常注册的用户,不需要有shareCode记录在本地
+          localStorage.removeItem("shareCode");
+          KFK.debug("正常用户不保存sharecode");
+        } else { //如果是demo用户
+          //sharecode根据情况,都放一个,这样后面正式注册时,删除
+          //docIdInUrl时,这个sharecode与其实际doc_id不符,不过无所谓
+          //这样,本地localStorage中的shareCode即可能是个shareCode, 也可能是个ivtcode
+          localStorage.setItem('shareCode', KFK.shareCode);
+        }
+        if (KFK.urlMode === 'sharecode')
+          KFK.openSharedDoc(KFK.shareCode);
+        else
+          KFK.refreshExplorer();
       }
-      KFK.openSharedDoc(KFK.shareCode);
+    } else { //no local user
+      if (KFK.shareCode === null) { //这个运行不到,因为,只要连接服务器,要么是有本地用户信息,要么有shareCode
+        KFK.gotoRegister();
+      } else { // has sharecode
+        localStorage.setItem('shareCode', KFK.shareCode);
+        if (KFK.urlMode === 'sharecode')
+          KFK.openSharedDoc(KFK.shareCode);
+        else {
+          console.log("urMode is ivtcode, go to register");
+          KFK.sendCmd('GETINVITOR', {});
+          KFK.gotoRegister();
+        }
+      }
     }
   } else {
     //重新连接
@@ -3673,15 +3697,15 @@ KFK.onClickDocTab = function () {
     bottomlinks: true
   });
 };
-KFK.onClickOrgTab = async function(){
+KFK.onClickOrgTab = async function () {
   //用户第一次进入,或者推出登录(此时,在Signout中,orgTabInitialized会被重置为False),重新进入时
-  if(IsFalse(KFK.orgTabInitialized)){
+  if (IsFalse(KFK.orgTabInitialized)) {
     //我创建的组织myorg accordion是否为打开状态?
-    if(KFK.accordion['myorg']){
+    if (KFK.accordion['myorg']) {
       await KFK.sendCmd('LISTMYORG', {});
     }
     //我加入的组织vorg accordion是否为打开状态?
-    if(KFK.accordion['vorg']){
+    if (KFK.accordion['vorg']) {
       await KFK.sendCmd('LISTVORG', {});
     }
     //接下去再点我的组织, 上面if中的过程就不会再执行了
@@ -3715,7 +3739,7 @@ KFK.showProjects = async function () {
     await KFK.sendCmd("LISTDOC", { prjid: "all" });
   }
 };
-KFK.onClickPrjTab = function(){
+KFK.onClickPrjTab = function () {
   KFK.gotoPrjList();
 }
 KFK.gotoPrjList = function (msg = null, userealprjs = false) {
@@ -4109,6 +4133,9 @@ KFK.onWsMsg = async function (response) {
         KFK.idRowMap[response._id].toggleDetails();
       }
       break;
+    case 'GETINVITOR':
+      KFK.mergeAppData("model.invitor", {userid: response.userid, name: response.name});
+      break;
     case 'SCRLOG':
       KFK.scrLog(response.msg);
       break;
@@ -4178,12 +4205,12 @@ KFK.signout = async function () {
   await KFK.sendCmd("SIGNOUT", { userid: KFK.APP.model.cocouser.userid });
 };
 
-KFK.getInvitationUrl = function(){
-  if(KFK.APP.model.cocouser.ivtcode === null){
+KFK.getInvitationUrl = function () {
+  if (KFK.APP.model.cocouser.ivtcode === null) {
     return '';
-  }else{
+  } else {
     let jloc = $(location);
-    return jloc.attr('protocol') + "//" + jloc.attr('host') + "/r/"+KFK.APP.model.cocouser.ivtcode;
+    return jloc.attr('protocol') + "//" + jloc.attr('host') + "/r/" + KFK.APP.model.cocouser.ivtcode;
   }
 };
 
@@ -5813,7 +5840,7 @@ KFK.placePastedContent = async function () {
 };
 KFK.onCopy = async function (evt) {
   KFK.logKey('META-C');
-  if(KFK.APP.show.dialog.ivtCodeDialog){
+  if (KFK.APP.show.dialog.ivtCodeDialog) {
     return;
   }
   let someDIVcopyed = await KFK.duplicateHoverObject(evt, 'copy');
@@ -6472,12 +6499,20 @@ let host = $(location).attr('host');
 let protocol = $(location).attr('protocol');
 let navigoRoot = protocol + "//" + host + "/";
 KFK.router = new Navigo(navigoRoot);
+KFK.urlMode = "";
+KFK.shareCode = null;
 KFK.router.on({
-  '/r/:ivtcode': function(params){
-    console.log('this is a invitation', params.ivtcode);
+  '/r/:ivtcode': function (params) {
+    KFK.urlMode = "ivtcode";
+    KFK.shareCode = params.ivtcode;
+    // console.log('this is a invitation', params.ivtcode);
+    window.history.replaceState({}, null, navigoRoot);
   },
-  '/doc/:sharecode': function(params){
-    console.log('this is a sharecode', params.sharecode);
+  '/doc/:sharecode': function (params) {
+    KFK.urlMode = "sharecode";
+    KFK.shareCode = params.sharecode;
+    // console.log('this is a sharecode', params.sharecode);
+    window.history.replaceState({}, null, navigoRoot);
   },
 }).resolve();
 KFK.loadImages();
@@ -6964,8 +6999,8 @@ KFK.closeFullscreen = function () {
   }
 };
 
-KFK.showIvtCodeDialog = function(){
-      KFK.showDialog({ ivtCodeDialog: true });
+KFK.showIvtCodeDialog = function () {
+  KFK.showDialog({ ivtCodeDialog: true });
 }
 export default KFK;
 
