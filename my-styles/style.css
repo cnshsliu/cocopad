@@ -463,6 +463,10 @@ svg path {
   font-size: 20px;
 }
 
+.show-password svg{
+  width: 12px;
+}
+
 /* .signinform input#userId{
   background-image: url("../assets/email.svg");
 }
@@ -471,20 +475,12 @@ svg path {
 } */
 
 
-.signinform input::-webkit-input-placeholder,.registerform input::-webkit-input-placeholder { /* Edge */
-  color: #b8b3d3c9;
-  font-size: 14px;
-}
-
-.signinform input::-ms-input-placeholder,.registerform input::-ms-input-placeholder { /* Internet Explorer 10-11 */
-  color: #b8b3d3c9;
-  font-size: 14px;
-}
-
-.signinform input::placeholder,.registerform input::placeholder { 
-  color: #b8b3d3c9;
-  font-size: 14px;
-}
+.signinform input::-webkit-input-placeholder { /* Edge */ color: #b8b3d3c9; font-size: 18px; }
+.signinform input::-ms-input-placeholder { /* Internet Explorer 10-11 */ color: #b8b3d3c9; font-size: 18px; }
+.signinform input::placeholder { color: #b8b3d3c9; font-size: 18px; }
+.registerform input::-webkit-input-placeholder { /* Edge */ color: #b8b3d3c9; font-size: 18px; }
+.registerform input::-ms-input-placeholder { /* Internet Explorer 10-11 */ color: #b8b3d3c9; font-size: 18px; }
+.registerform input::placeholder { color: #b8b3d3c9; font-size: 18px; }
 /* 
 .registerform input#regUserId{
   background-image: url("../assets/email.svg");
@@ -603,6 +599,7 @@ select:focus {
   left: 64px;
   font-size: 24px;
   color: #777777;
+  z-index: 9999999;
 }
 
 .docpeople {
@@ -933,4 +930,10 @@ select:focus {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.footnote{
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
 }

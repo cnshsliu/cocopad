@@ -111,14 +111,14 @@
           </b-input-group>
           <b-input-group prepend="您的全称" class="mb-1">
             <b-form-input id="regUserName" trim v-model="model.register.name" :state="state.reg.name" required
-              placeholder="2个以上汉字或4个以上英文，最多10个" class="w-50"></b-form-input>
+              placeholder="2个以上汉字或4个以上英文" class="w-50"></b-form-input>
           </b-input-group>
           <b-input-group prepend="您的密码" class="mb-1">
             <b-form-input id="regUserPwd" trim :type="model.hidepassword?'password':'text'" v-model="model.register.pwd"
-              :state="state.reg.pwd" class="no-right-border" required placeholder="8个以上大小写字母数字和特殊字符" class="w-50">
+              :state="state.reg.pwd" class="no-right-border" required placeholder="8个以上字母数字特殊字符" class="w-50">
             </b-form-input>
             <span class="right-round-span">
-              <b-button @click="toggleHidePassword" variant="outline-none">
+              <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword" variant="outline-none">
                 <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
               </b-button>
             </span>
@@ -128,7 +128,7 @@
               v-model="model.register.pwd2" :state="state.reg.pwd2" class="no-right-border" required
               placeholder="两次密码输入需要一致" class="w-50"></b-form-input>
             <span class="right-round-span">
-              <b-button @click="toggleHidePassword" variant="outline-none">
+              <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword" variant="outline-none">
                 <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
               </b-button>
             </span>
@@ -162,6 +162,9 @@
             </b-col>
           </b-row>
         </div>
+        <div v-if="KFK.urlMode==='ivtcode'" class="mt-3">
+          {{model.invitor.name}} 邀请您使用在线协同白板
+        </div>
       </b-form>
     </b-container>
   </div>
@@ -180,7 +183,7 @@
           <b-form-input id="userPwd" trim :type="model.hidepassword?'password':'text'" v-model="model.signin.pwd"
             class="no-right-border" placeholder="你的密码" class="w-50"></b-form-input>
           <span class="right-round-span">
-            <b-button @click="toggleHidePassword" variant="outline-none">
+            <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword" variant="outline-none">
               <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
             </b-button>
           </span>
@@ -555,7 +558,7 @@
         </b-list-group-item>
       </b-list-group>
     </div>
-    <b-container class="noshow" id="docHeaderInfo">
+    <b-container class="padlayout" id="docHeaderInfo">
       <b-container class="docname" v-if="show.section.designer">
         <b-icon v-if="model.cocodoc.doclocked" icon="lock" variant="secondary"></b-icon>
         <b-icon v-else icon="book" variant="secondary"></b-icon>
@@ -700,7 +703,7 @@
                     <b-form-input id="docPwd" :type="model.hidepassword?'password':'text'" trim
                       v-model="model.newdocpwd" placeholder=""></b-form-input>
                     <b-input-group-append>
-                      <b-button @click="toggleHidePassword">
+                      <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword">
                         <b-icon :icon="model.hidepassword?'eye':'eye-slash'" size="sm"></b-icon>
                       </b-button>
                     </b-input-group-append>
@@ -974,11 +977,14 @@
           </b-col>
         </b-row>
         <div class="footnote">
-          <b-row>
-            <b-col>邀请使用</b-col>
+          <b-row v-if="model.cocouser.ivtcode">
+            <b-col><b-button class="m-0 p-0" variant='link' @click="KFK.showIvtCodeDialog">邀请同事或好友使用</b-button></b-col>
           </b-row>
-          <b-row>
-            <b-col>查看说明</b-col>
+          <b-row v-if="model.cocouser.ivtcode">
+            <b-col><b-button class="m-0 p-0" variant='link' @click="KFK.showIvtCodeDialog">获奖操作积分</b-button></b-col>
+          </b-row>
+          <b-row role="link">
+            <b-col><b-link :target="'_blank'" class="m-0 p-0" href='http://weibo.com/cocopad'>@COCOPAD</b-link></b-col>
           </b-row>
         </div>
       </div>
@@ -990,7 +996,7 @@
             <b-form-input trim :type="model.hidepassword?'password':'text'" v-model="model.opendocpwd" ref="focusThis">
             </b-form-input>
             <b-input-group-append>
-              <b-button @click="toggleHidePassword">
+              <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword">
                 <b-icon scale="1" :icon="model.hidepassword?'eye':'eye-slash'"></b-icon>
               </b-button>
             </b-input-group-append>
@@ -1029,7 +1035,7 @@
           <b-form-input trim :type="model.hidepassword?'password':'text'" v-model="model.inputUserPwd"
             ref="focusUserPwd">
           </b-form-input>
-          <b-button @click="toggleHidePassword">
+          <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword">
             <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
           </b-button>
         </b-input-group>
@@ -1107,7 +1113,7 @@
                 v-model="model.profileToSet.newpwd" :state="state.profile.newpwd" class="mb-2 mr-sm-2 mb-sm-0" required
                 class="w-50" placeholder="无须修改密码请保持为空"></b-form-input>
               <b-input-group-append>
-                <b-button @click="toggleHidePassword">
+                <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword">
                   <b-icon scale="1" :icon="model.hidepassword?'eye':'eye-slash'"></b-icon>
                 </b-button>
               </b-input-group-append>
@@ -1120,7 +1126,7 @@
                 v-model="model.profileToSet.newpwd2" :state="state.profile.newpwd2" class="mb-2 mr-sm-2 mb-sm-0"
                 required class="w-50" placeholder="密码二次输入确认"></b-form-input>
               <b-input-group-append>
-                <b-button @click="toggleHidePassword">
+                <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword">
                   <b-icon scale="1" :icon="model.hidepassword?'eye':'eye-slash'"></b-icon>
                 </b-button>
               </b-input-group-append>
@@ -1151,7 +1157,7 @@
           </b-form>
         </b-container>
       </b-modal>
-      <b-modal  v-model="show.dialog.ivtCodeDialog" title="邀请使用可获得操作积分奖励" button-size="sm" centered size="md">
+      <b-modal v-model="show.dialog.ivtCodeDialog" title="邀请使用可获得操作积分奖励" button-size="sm" centered size="md">
         请复制一下地址,分享给你的同事或朋友, 他们成功注册后,你将获得1000个操作积分!
         <b-form-input :value="getInvitationUrl()">hello</b-form-input>
       </b-modal>

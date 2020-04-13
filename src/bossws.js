@@ -55,7 +55,7 @@ BOSSWS.start = async (onOpenCallback, onMsgcallback, delay, name, keepFlag) => {
             console.info("set reconnect interval ame:", BOSSWS.name, "flag:", BOSSWS.keepFlag, 'Reconnect>', keepFlag === 'KEEP' ? 'YES' : 'NO');
             BOSSWS.reconnectTimeout = setTimeout(BOSSWS.reconnect, 1000);
         } else {
-            console.log("Not setTimeout, because reconnectTimeout is not null");
+            console.log("No reconnect, because no KEEP or reconnectTimeout is not null");
 
         }
     };
