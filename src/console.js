@@ -22,6 +22,7 @@ import SVGs from "./svgs";
 import WS from "./ws";
 import ACM from "./accountmanage";
 import SHARE from "./sharemanage";
+import Navigo from "navigo";
 
 Array.prototype.clear = function () {
   this.splice(0, this.length);
@@ -6467,6 +6468,18 @@ config.defaultDocBgcolor = "#ABABAB";
 // KFK.debug(config.defaultDocBgcolor);
 // KFK.debug("console.js begin loadimages");
 //Start the APP
+let host = $(location).attr('host');
+let protocol = $(location).attr('protocol');
+let navigoRoot = protocol + "//" + host + "/";
+KFK.router = new Navigo(navigoRoot);
+KFK.router.on({
+  '/r/:ivtcode': function(params){
+    console.log('this is a invitation', params.ivtcode);
+  },
+  '/doc/:sharecode': function(params){
+    console.log('this is a sharecode', params.sharecode);
+  },
+}).resolve();
 KFK.loadImages();
 KFK.loadAvatars();
 
