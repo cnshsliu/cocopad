@@ -19,7 +19,7 @@ SHARE.shareThisDoc = async function () {
 }
 //这个1是文档列表中用到的，所以有item, 有index
 //item是当前行的文档对象，index是其顺序
-SHARE.shareDoc = async function (item, index, button) {
+SHARE.shareDoc = async function (item) {
     SHARE.startShare({
         D: item._id,
         O: item.owner,

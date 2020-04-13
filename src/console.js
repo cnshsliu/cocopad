@@ -1945,6 +1945,34 @@ function getBoolean(value) {
   }
 }
 
+KFK.showDocOpMenu = function (doc, index, evt) {
+  evt.stopPropagation();
+  let docopmenu = $('.docopmenu');
+  KFK.APP.setData('model', 'currentDoc', doc);
+  if (docopmenu.hasClass('noshow') || index !== KFK.lastDocOpIndex) {
+    console.log(evt);
+    console.log(evt.pageX, evt.pageY);
+    let x = evt.pageX;
+    let y = evt.pageY;
+    console.log(x, y);
+    docopmenu.css({
+      'position': "absolute",
+      'left': x - 135,
+      'top': y - 10,
+      'z-index': 999999
+    });
+    docopmenu.removeClass('noshow');
+    KFK.lastDocOpIndex = index;
+  } else {
+    docopmenu.addClass('noshow');
+  }
+};
+
+KFK.hideDocOpMenu = function () {
+  let docopmenu = $('.docopmenu');
+    docopmenu.addClass('noshow');
+}
+
 //jqNode can be a node or even a svgline
 KFK.anyLocked = function (jqNode) {
   if (jqNode)
@@ -3489,6 +3517,13 @@ KFK.refreshDesigner = async function (doc_id, docpwd) {
     explorer: false,
     designer: true
   });
+  KFK.showForm({
+    newdoc: false,
+    newprj: false,
+    prjlist: false,
+    doclist: false,
+    share: false,
+  });
   KFK.tryToOpenDocId = doc_id;
   // KFK.APP.setData("model", "cocodoc", KFK.DocController.getDummyDoc());
   // localStorage.removeItem("cocodoc");
@@ -4020,6 +4055,13 @@ KFK.onWsMsg = async function (response) {
           doc.readonly_icon = "pencil";
           doc.readonly_variant = "outline-primary";
         }
+        if(doc.acl === 'S'){
+          doc.acl_desc = "仅发起人";
+        }else if(doc.acl === 'O'){
+          doc.acl_desc = "所在组织";
+        }else if(doc.acl === 'P'){
+          doc.acl_desc = "公开使用";
+        }
         if (doc.ownerAvatar !== "") {
           doc.ownerAvatarSrc = KFK.avatars[doc.ownerAvatar].src;
         }
@@ -4134,7 +4176,7 @@ KFK.onWsMsg = async function (response) {
       }
       break;
     case 'GETINVITOR':
-      KFK.mergeAppData("model.invitor", {userid: response.userid, name: response.name});
+      KFK.mergeAppData("model.invitor", { userid: response.userid, name: response.name });
       break;
     case 'SCRLOG':
       KFK.scrLog(response.msg);
@@ -4270,7 +4312,7 @@ KFK.deleteDoc = async function (doc_id) {
 
 };
 
-KFK.setDocReadonly = async function (doc, index, evt) {
+KFK.setDocReadonly = async function (doc) {
   KFK.sendCmd("TGLREAD", { doc_id: doc._id });
 };
 
@@ -4351,7 +4393,7 @@ KFK.onDocPwdHidden = function (bvModalEvt) {
   if (KFK.APP.model.passwordinputok === "show") bvModalEvt.preventDefault();
 };
 
-KFK.showResetPwdModal = function (item, index, button) {
+KFK.showResetPwdModal = function (item) {
   KFK.tryToResetPwdDoc = item;
   KFK.APP.setData("model", "docOldPwd", "");
   KFK.APP.setData("model", "docNewPwd", "");
@@ -5645,6 +5687,13 @@ KFK.gotoExplorer = function () {
 KFK.gotoDesigner = function () {
   KFK.debug("...gotoDesigner")
   KFK.showSection({ explorer: false, designer: true });
+  KFK.showForm({
+    newdoc: false,
+    newprj: false,
+    prjlist: false,
+    doclist: false,
+    share: false,
+  });
   KFK.currentView = "designer";
   KFK.focusOnC3();
   $('#overallbackground').removeClass('grid1');
@@ -6393,16 +6442,29 @@ KFK.isMyDoc = () => {
   return KFK.APP.model.cocouser.userid === KFK.APP.model.cocodoc.owner;
 };
 
-KFK.showCopyDocDialog = (item, index, target) => {
-  KFK.tobeCopyDocId = item._id;
-  KFK.setAppData("model", "copyToDocName", item.name);
+KFK.showCopyDocDialog = (doc) => {
+  KFK.tobeCopyDocId = doc._id;
+  KFK.setAppData("model", "copyToDocName", doc.name);
   KFK.setAppData(
     "model",
     "showCopyOrMove",
-    item.owner === KFK.APP.model.cocouser.userid
+    doc.owner === KFK.APP.model.cocouser.userid
   );
   KFK.showDialog({ copyDocDialog: true });
 };
+
+KFK.showSetAclDialog = (doc) => {
+  KFK.showDialog({ setAclDialog: true });
+};
+KFK.setAcl = async()=>{
+  let desc = {
+    'S': '仅发起人',
+    'O': '所在组织',
+    'P': '公开使用'
+  }
+    KFK.APP.model.currentDoc.acl_desc = desc[KFK.APP.model.currentDoc.acl];
+    await KFK.sendCmd('CHGACL', {doc_id: KFK.APP.model.currentDoc._id, acl:KFK.APP.model.currentDoc.acl});
+}
 
 KFK.copyDoc = () => {
   let newname = KFK.APP.model.copyToDocName;
