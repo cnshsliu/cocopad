@@ -22,8 +22,8 @@ const app = new Vue({
       profile: { name: null, oldpwd: null, newpwd: null, newpwd2: null, },
       reg: { userid: null, name: null, pwd: null, pwd2: null, },
       newdoc: { name: null, pwd: null, },
-      newprj:{ name: null, },
-      copydoc:{ name: null},
+      newprj: { name: null, },
+      copydoc: { name: null },
     },
     RegUserIdState: null,
     RegUserNameState: null,
@@ -80,7 +80,8 @@ const app = new Vue({
       'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false, copyDocDialog: false, pasteContentDialog: false, MsgBox: false, shareDialog: false },
     },
     model: {
-      showHelp:false,
+      showHelp: false,
+      accordion: { myorg: true },
       org: {
         neworg: {
           name: '',
@@ -278,6 +279,14 @@ const app = new Vue({
     },
   },
   methods: {
+    getInvitationUrl() {
+      if (this.model.cocouser.ivtcode === null) {
+        return '';
+      } else {
+        let jloc = $(location);
+        return jloc.attr('protocol') + "//" + jloc.attr('host') + "/r/" + this.model.cocouser.ivtcode;
+      }
+    },
     getAvatarSrc(name) {
       // console.log(">>GOt avatar: ", name);
       if (this.model.avatars && this.model.avatars[name])

@@ -19,6 +19,10 @@ const RegHelper = {
     let m = pathname.match(/^\/doc\/(.+)\s*$/);
     return m;
   },
+  getIvtCodeInUrl: (pathname) => {
+    let m = pathname.match(/^\/r\/(.+)\s*$/);
+    return m;
+  },
   validateEmails: (emails)=>{
     let mret = emails.match(/^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})(\s*,\s*([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4}))*$/);
     return mret;
