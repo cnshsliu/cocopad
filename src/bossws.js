@@ -1,76 +1,85 @@
 'use strict'
-const BossWS = {};
-BossWS.BossWS = null;
-BossWS.url = "ws://localhost:5008/grume/wsquux";
-BossWS.isReused = false;
-BossWS.connectTimes = 0;
+const BOSSWS = {};
+BOSSWS.ws = null;
+BOSSWS.url = "ws://localhost:5008/grume/wsquux";
+BOSSWS.isReused = false;
+BOSSWS.connectTimes = 0;
 
-BossWS.reconnectInterval = null;
-BossWS.resetReconnectCount = function () {
-    BossWS.connectTimes = 0;
+BOSSWS.reconnectTimeout = null;
+BOSSWS.resetReconnectCount = function () {
+    BOSSWS.connectTimes = 0;
 }
-BossWS.reconnect = function reconnect() {
-    if (BossWS.keepFlag === 'KEEP') {
-        BossWS.BossWS = null;
-        BossWS.start(BossWS.onOpenCallback, BossWS.onMsgcallback, 0, BossWS.name, BossWS.keepFlag);
+BOSSWS.reconnect = function reconnect() {
+    if (BOSSWS.keepFlag === 'KEEP') {
+        BOSSWS.start(BOSSWS.onOpenCallback, BOSSWS.onMsgcallback, 0, BOSSWS.name, BOSSWS.keepFlag);
     }
 }
-BossWS.start = async (onOpenCallback, onMsgcallback, delay, name, keepFlag) => {
+BOSSWS.start = async (onOpenCallback, onMsgcallback, delay, name, keepFlag) => {
+    console.log("!!!! Entered BOSSWS.start...");
     if (delay > 0)
         await new Promise(resolve => setTimeout(resolve, delay));
-    if (keepFlag === true) {
-        console.warn("It should be better to use BOSSWS in NO-AUTO-RECONNECT mode");
-    }
-    BossWS.onOpenCallback = onOpenCallback;
-    BossWS.onMsgcallback = onMsgcallback;
-    BossWS.name = name;
-    BossWS.keepFlag = keepFlag;
-    if (BossWS.BossWS === null || (BossWS.BossWS && (BossWS.BossWS.readyState === 2 || BossWS.BossWS.readyState === 3))) {
-        if (BossWS.BossWS) delete BossWS.BossWS;
-        BossWS.BossWS = new WebSocket(BossWS.url);
-        BossWS.isReused = false;
-        BossWS.resetReconnectCount();
+    BOSSWS.onOpenCallback = onOpenCallback;
+    BOSSWS.onMsgcallback = onMsgcallback;
+    BOSSWS.name = name;
+    BOSSWS.keepFlag = keepFlag;
+    if (BOSSWS.ws === null || (BOSSWS.ws && (BOSSWS.ws.readyState !== 1))) {
+        if (BOSSWS.ws) {
+            console.log("terminate existing BOSSWS.ws");
+            BOSSWS.ws.close();
+            if (BOSSWS.reconnectTimeout != null) {
+                clearTimeout(BOSSWS.reconnectTimeout);
+                BOSSWS.reconnectTimeout = null;
+            }
+        }
+        BOSSWS.ws = new WebSocket(BOSSWS.url);
+        BOSSWS.isReused = false;
+        BOSSWS.resetReconnectCount();
     } else {
-        BossWS.isReused = true;
-        console.info("BossWS>>> BossWS connection is reused");
+        BOSSWS.isReused = true;
+        console.info("BOSSWS>>> ws connection is reused");
     }
-    BossWS.BossWS.onopen = function () {
-        console.info("BossWS>>> BossWS opened. name:", BossWS.name, "flag:", BossWS.keepFlag);
+    BOSSWS.ws.onopen = function () {
+        console.info("BOSSWS>>> ws opened. name:", BOSSWS.name, "flag:", BOSSWS.keepFlag);
         //成功连接后，把继续重连的interval清除掉
-        BossWS.isReused = false;
-        BossWS.connectTimes += 1;
-        if (BossWS.reconnectInterval != null) {
-            clearInterval(BossWS.reconnectInterval);
-            BossWS.reconnectInterval = null;
+        BOSSWS.isReused = false;
+        BOSSWS.connectTimes += 1;
+        if (BOSSWS.reconnectTimeout != null) {
+            clearTimeout(BOSSWS.reconnectTimeout);
+            BOSSWS.reconnectTimeout = null;
         }
         onOpenCallback();
     };
-    BossWS.BossWS.onclose = function () {
-        console.info("BossWS>>> BossWS closed. name:", BossWS.name, "flag:", BossWS.keepFlag);
-        if (BossWS.reconnectInterval === null && keepFlag === 'KEEP') {
-            BossWS.reconnectInterval = setInterval(BossWS.reconnect, 1000);
+    BOSSWS.ws.onclose = function () {
+        console.log("onclose");
+        if (BOSSWS.reconnectTimeout === null && keepFlag === 'KEEP') {
+            console.info("set reconnect interval ame:", BOSSWS.name, "flag:", BOSSWS.keepFlag, 'Reconnect>', keepFlag === 'KEEP' ? 'YES' : 'NO');
+            BOSSWS.reconnectTimeout = setTimeout(BOSSWS.reconnect, 1000);
+        } else {
+            console.log("Not setTimeout, because reconnectTimeout is not null");
+
         }
     };
-    BossWS.BossWS.onmessage = function (e) {
+    BOSSWS.ws.onmessage = function (e) {
         onMsgcallback(e.data);
     };
-    BossWS.BossWS.onerror = function (e) {
-        console.error("BossWS>>> ", e);
+    BOSSWS.ws.onerror = function (e) {
+        console.log("BOSSWS>>> error occured, close it");
+        BOSSWS.ws.close();
     };
-    if (BossWS.isReused) {
+    if (BOSSWS.isReused) {
         //重用时,onopen不会被触发,因此这里直接调用onOpenCallback()
-        console.info("BossWS>>> resue connection, call onopencallback directly");
+        console.info("BOSSWS>>> resue connection, call onopencallback directly");
         //同样,因为onopen不会发生,所以,重置连接技术为1,只能在这里手动完成
-        BossWS.connectTimes = 1;
+        BOSSWS.connectTimes = 1;
         onOpenCallback();
     }
 };
 
-BossWS.close = () => {
-    BossWS.BossWS.close();
+BOSSWS.close = () => {
+    BOSSWS.ws.close();
 };
 
-BossWS.put = async (cmd, payload) => {
+BOSSWS.put = async (cmd, payload) => {
     payload.cmd = cmd;
     let cocouserStr = localStorage.getItem("cocouser");
     let shareCode = localStorage.getItem("shareCode");
@@ -85,13 +94,13 @@ BossWS.put = async (cmd, payload) => {
         //anyway， 注册完成后，总要检查并删除本地的sharecode
         payload.shareCode = shareCode;
     }
-    // console.log('readystate=' + BossWS.BossWS.readyState);
+    // console.log('readystate=' + BOSSWS.ws.readyState);
     let ret = false;
-    if (BossWS.BossWS.readyState === 1) {
-        await BossWS.BossWS.send(JSON.stringify(payload));
+    if (BOSSWS.ws.readyState === 1) {
+        await BOSSWS.ws.send(JSON.stringify(payload));
         ret = true;
     }
     // console.log("return " + ret);
     return ret;
 };
-export default BossWS;
+export default BOSSWS;

@@ -5,29 +5,36 @@ WS.url = "ws://localhost:5008/grume/wsquux";
 WS.isReused = false;
 WS.connectTimes = 0;
 
-WS.reconnectInterval = null;
-WS.resetReconnectCount = function(){
+WS.reconnectTimeout = null;
+WS.resetReconnectCount = function () {
     WS.connectTimes = 0;
 }
 WS.reconnect = function reconnect() {
-    if (WS.keepFlag === 'KEEP'){
-        WS.ws= null;
+    if (WS.keepFlag === 'KEEP') {
         WS.start(WS.onOpenCallback, WS.onMsgcallback, 0, WS.name, WS.keepFlag);
     }
 }
 WS.start = async (onOpenCallback, onMsgcallback, delay, name, keepFlag) => {
+    console.log("!!!! Entered WS.start...");
     if (delay > 0)
         await new Promise(resolve => setTimeout(resolve, delay));
     WS.onOpenCallback = onOpenCallback;
     WS.onMsgcallback = onMsgcallback;
     WS.name = name;
     WS.keepFlag = keepFlag;
-    if (WS.ws === null || (WS.ws && (WS.ws.readyState === 2||WS.ws.readyState ===3))) {
-        if(WS.ws) delete WS.ws;
+    if (WS.ws === null || (WS.ws && (WS.ws.readyState !== 1))) {
+        if (WS.ws) {
+            console.log("terminate existing WS.ws");
+            WS.ws.close();
+            if (WS.reconnectTimeout != null) {
+                clearTimeout(WS.reconnectTimeout);
+                WS.reconnectTimeout = null;
+            }
+        }
         WS.ws = new WebSocket(WS.url);
         WS.isReused = false;
         WS.resetReconnectCount();
-    }else{
+    } else {
         WS.isReused = true;
         console.info("WS>>> ws connection is reused");
     }
@@ -36,25 +43,30 @@ WS.start = async (onOpenCallback, onMsgcallback, delay, name, keepFlag) => {
         //成功连接后，把继续重连的interval清除掉
         WS.isReused = false;
         WS.connectTimes += 1;
-        if (WS.reconnectInterval != null) {
-            clearInterval(WS.reconnectInterval);
-            WS.reconnectInterval = null;
+        if (WS.reconnectTimeout != null) {
+            clearTimeout(WS.reconnectTimeout);
+            WS.reconnectTimeout = null;
         }
         onOpenCallback();
     };
     WS.ws.onclose = function () {
-        console.info("WS>>> ws closed. name:", WS.name, "flag:", WS.keepFlag);
-        if (WS.reconnectInterval === null && keepFlag === 'KEEP') {
-            WS.reconnectInterval = setInterval(WS.reconnect, 1000);
+        console.log("onclose");
+        if (WS.reconnectTimeout === null && keepFlag === 'KEEP') {
+            console.info("set reconnect interval ame:", WS.name, "flag:", WS.keepFlag, 'Reconnect>', keepFlag === 'KEEP' ? 'YES' : 'NO');
+            WS.reconnectTimeout = setTimeout(WS.reconnect, 1000);
+        } else {
+            console.log("Not setTimeout, because reconnectTimeout is not null");
+
         }
     };
     WS.ws.onmessage = function (e) {
         onMsgcallback(e.data);
     };
     WS.ws.onerror = function (e) {
-        console.error("WS>>> ", e);
+        console.log("WS>>> error occured, close it");
+        WS.ws.close();
     };
-    if(WS.isReused){
+    if (WS.isReused) {
         //重用时,onopen不会被触发,因此这里直接调用onOpenCallback()
         console.info("WS>>> resue connection, call onopencallback directly");
         //同样,因为onopen不会发生,所以,重置连接技术为1,只能在这里手动完成

@@ -1,12 +1,6 @@
-//TODO: Add  Delete/Copy tool on the left toolbox
-//TODO: handler中所有发送回去统一到一个地方,然后便于统一计费, 支持企业?
 //TODO: 文档保护码加密
+//TODO: 人数限制功能
 //TODO: 备份加密secretkey到U盘
-//TODO: 用分享码分享? 现在是DOU码, {D:xx,O:yy,U:zz} 的base64
 //TODO: 部署
-//TODO: 邀请码
-//TODO: 企业计费
-//TODO: 缩小缺省大小
-//TODO: 提供合理化建议获得操作点, 分享获得操作点, 
 //TODO: chat mode
 //TODO: GROUP unGROUP?

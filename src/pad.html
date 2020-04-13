@@ -570,6 +570,8 @@
           </b-img>
           <b-dropdown :text="model.cocouser.name" right size="sm" variant="link" class="m-0 p-0 userinfo">
             <b-dropdown-item-button>{{model.cocouser.name}}</b-dropdown-item-button>
+            <b-dropdown-item-button v-if="!model.isDemoEnv" @click="KFK.showIvtCodeDialog">邀请获奖励
+            </b-dropdown-item-button>
             <b-dropdown-item-button v-if="!model.isDemoEnv" @click="KFK.showSetProfileDialog()">修改账户信息
             </b-dropdown-item-button>
             <b-dropdown-divider></b-dropdown-divider>
@@ -628,7 +630,7 @@
         v-show="show.form.newdoc || show.form.newprj || show.form.doclist || show.form.prjlist">
         <b-tabs card id="tabs-main" v-model="show.form.explorerTabIndex" vertical
           active-nav-item-class="font-weight-bold text-uppercase text-danger" active-tab-class="">
-          <b-tab title="我的项目" @click="KFK.gotoPrjList">
+          <b-tab title="我的项目" @click="KFK.onClickPrjTab">
             <div v-show="show.form.newprj">
               <b-card title="新建项目">
                 <b-form>
@@ -676,7 +678,7 @@
               </div>
             </div>
           </b-tab>
-          <b-tab title="我的白板" @click="KFK.selectDocTab">
+          <b-tab title="我的白板" @click="KFK.onClickDocTab">
             <div v-show="show.form.newdoc">
               <!-- FORM new doc new board create new-->
               <b-card title="新建白板, 发起协作">
@@ -842,8 +844,9 @@
               </div>
             </div>
           </b-tab>
-          <b-tab title="我的组织">
-            <div>
+          <b-tab title="我的组织" @click="KFK.onClickOrgTab">
+            <!-- https://bootstrap-vue.js.org/docs/components/collapse/#accordion-support -->
+            <div role="tablist">
               <b-card no-body class="mb-1">
                 <b-card-header header-tag="header" class="p-1" role="tab">
                   <b-button block href="#" v-b-toggle.accordion_currentorg variant="info">当前组织:
@@ -885,7 +888,8 @@
                     我拥有的组织
                   </b-button>
                 </b-card-header>
-                <b-collapse id="accordion_myorg" accordion="my-accordion" role="tabpanel">
+                <b-collapse id="accordion_myorg" v-model="model.accordion.myorg" accordion="my-accordion"
+                  role="tabpanel">
                   <b-card-body>
                     <b-table hover id="my-myorg-table" :items="model.myorgs" small :fields="model.myorgfields">
                       <template v-slot:cell(operations)="row">
@@ -969,6 +973,14 @@
             <a href="#" class="card-link" @click="KFK.gotoSignin" style='font-size:18px'>已有账号？请登录</a>
           </b-col>
         </b-row>
+        <div class="footnote">
+          <b-row>
+            <b-col>邀请使用</b-col>
+          </b-row>
+          <b-row>
+            <b-col>查看说明</b-col>
+          </b-row>
+        </div>
       </div>
       <b-modal @shown="focusOnPwdInput" @ok="KFK.getDocPwd" @hide="KFK.onDocPwdHidden" @close="KFK.cancelDocPwd"
         @cancel="KFK.cancelDocPwd" v-model="show.dialog.inputDocPasswordDialog" title="请输入协作码" button-size="sm" centered
@@ -1138,6 +1150,10 @@
               </div> -->
           </b-form>
         </b-container>
+      </b-modal>
+      <b-modal  v-model="show.dialog.ivtCodeDialog" title="邀请使用可获得操作积分奖励" button-size="sm" centered size="md">
+        请复制一下地址,分享给你的同事或朋友, 他们成功注册后,你将获得1000个操作积分!
+        <b-form-input :value="getInvitationUrl()">hello</b-form-input>
       </b-modal>
 
     </div> <!-- explorer inner -->

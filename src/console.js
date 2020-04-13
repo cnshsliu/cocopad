@@ -64,6 +64,12 @@ const IsBlank = function (val) {
 const NotBlank = function (val) {
   return !IsBlank(val);
 }
+const IsFalse = function (val) {
+  if (val === undefined || val === null || val === false)
+    return true;
+  else
+    return false;
+}
 
 const KFK = {};
 KFK.accordion = {};
@@ -2425,14 +2431,6 @@ KFK.startNodeEditing = function (jqNodeDIV, enterSelect) {
   }
 }
 
-KFK.dumpNode = function (node) {
-  let jqNode = node;
-  if (!(node instanceof jQuery)) {
-    jqNode = $(node);
-  }
-  KFK.info(jqNode.prop("outerHTML"));
-};
-
 KFK.divLeft = function (jqDiv) {
   return KFK.unpx(jqDiv.css('left'));
 };
@@ -3262,9 +3260,14 @@ KFK.checkSession = async function () {
   //那个是ws.js自动控制重连的,重连时,ws.js会调用KFK.onWSConnected, 在那里,对WSReconnectTime进行技术 
   KFK.setAppData("model", "prjs", []);
   let m = RegHelper.getDocIdInUrl($(location).attr("pathname"));
+  let m2 = RegHelper.getIvtCodeInUrl($(location).attr("pathname"));
   if (m !== null) {
     KFK.shareCode = m[1];
-  } else { KFK.shareCode = null; }
+  } else if(m2 !== null) { 
+    KFK.shareCode = m2[1];
+  } else { 
+    KFK.shareCode = null; 
+  }
   let cocouser = await KFK.readLocalCocoUser();
   if (cocouser) {
     KFK.debug("checksession: found cocouser" + cocouser.name);
@@ -3462,8 +3465,8 @@ KFK.refreshDesigner = async function (doc_id, docpwd) {
     designer: true
   });
   KFK.tryToOpenDocId = doc_id;
-  KFK.APP.setData("model", "cocodoc", KFK.DocController.getDummyDoc());
-  localStorage.removeItem("cocodoc");
+  // KFK.APP.setData("model", "cocodoc", KFK.DocController.getDummyDoc());
+  // localStorage.removeItem("cocodoc");
 
   KFK.initShowEditors("none");
   KFK.addDocumentEventHandler();
@@ -3557,6 +3560,12 @@ KFK.resetAllLocalData = function () {
   KFK.APP.setData("model", "lastrealproject", { prjid: '', name: '' });
   KFK.APP.setData("model", "prjs", []);
   KFK.APP.setData("model", "docs", []);
+  //清除vorgs和 myorgs数据
+  KFK.APP.setData("model", "vorgs", []);
+  KFK.APP.setData("model", "myorgs", []);
+  KFK.APP.setData("model", "org", { neworg: { name: '', }, newuserid: '', changeorgname: '', });
+  //标志 左侧的org tab没有被打开过
+  KFK.orgTabInitialized = false;
 };
 KFK.toggleDetails = function (row) {
   if (row.detailsShowing) {
@@ -3653,7 +3662,7 @@ KFK.selectPrjTab = function () {
     bottomlinks: true
   });
 };
-KFK.selectDocTab = function () {
+KFK.onClickDocTab = function () {
   KFK.APP.setData("show", "form", {
     newdoc: false,
     newprj: false,
@@ -3662,6 +3671,21 @@ KFK.selectDocTab = function () {
     explorerTabIndex: 1,
     bottomlinks: true
   });
+};
+KFK.onClickOrgTab = async function(){
+  //用户第一次进入,或者推出登录(此时,在Signout中,orgTabInitialized会被重置为False),重新进入时
+  if(IsFalse(KFK.orgTabInitialized)){
+    //我创建的组织myorg accordion是否为打开状态?
+    if(KFK.accordion['myorg']){
+      await KFK.sendCmd('LISTMYORG', {});
+    }
+    //我加入的组织vorg accordion是否为打开状态?
+    if(KFK.accordion['vorg']){
+      await KFK.sendCmd('LISTVORG', {});
+    }
+    //接下去再点我的组织, 上面if中的过程就不会再执行了
+    KFK.orgTabInitialized = true;
+  }
 };
 //这里检查是否有project
 KFK.showProjects = async function () {
@@ -3690,6 +3714,9 @@ KFK.showProjects = async function () {
     await KFK.sendCmd("LISTDOC", { prjid: "all" });
   }
 };
+KFK.onClickPrjTab = function(){
+  KFK.gotoPrjList();
+}
 KFK.gotoPrjList = function (msg = null, userealprjs = false) {
   let prjs = KFK.APP.model.prjs;
   if (Array.isArray(prjs) === false)
@@ -3831,15 +3858,16 @@ KFK.onWsMsg = async function (response) {
       KFK.resetAllLocalData();
       setTimeout(() => { KFK.checkSession(); }, 500);
       break;
-    case "UPD":
+    case "U":
       KFK.updateReceived++;
       KFK.recreateObject(response.block);
       break;
-    case "SYNC":
+    case "C":
       KFK.updateReceived++;
+      console.log("I received a create message");
       KFK.recreateObject(response.block);
       break;
-    case "DEL":
+    case "D":
       KFK.updateReceived++;
       KFK.deleteObject_for_Response(response.block);
       break;
@@ -4048,7 +4076,7 @@ KFK.onWsMsg = async function (response) {
     case 'SHARECODE':
       SHARE.onWsMsg(response);
       break;
-    case 'UPDATECOCOUSER':
+    case 'UPDUSRORG':
       KFK.updateCocouser(response.data);
       break;
     case 'LISTMYORG':
@@ -4147,6 +4175,15 @@ KFK.toggleAccordionMyOrg = async function () {
 
 KFK.signout = async function () {
   await KFK.sendCmd("SIGNOUT", { userid: KFK.APP.model.cocouser.userid });
+};
+
+KFK.getInvitationUrl = function(){
+  if(KFK.APP.model.cocouser.ivtcode === null){
+    return '';
+  }else{
+    let jloc = $(location);
+    return jloc.attr('protocol') + "//" + jloc.attr('host') + "/r/"+KFK.APP.model.cocouser.ivtcode;
+  }
 };
 
 KFK.updateCocouser = function (data) {
@@ -4355,7 +4392,7 @@ KFK._onDocFullyLoaded = async function () {
     }
     KFK.redrawLinkLines(jqNode, ' after designer ready', false);
   });
-  KFK.info(KFK.APP.model.cocodoc);
+  // KFK.info('ondocFullyLoaded, doc is', KFK.APP.model.cocodoc);
   KFK.C3.dispatchEvent(KFK.refreshC3event);
   KFK.myFadeOut($('.loading'));
   KFK.myFadeIn(KFK.JC3, 100);
@@ -5775,6 +5812,9 @@ KFK.placePastedContent = async function () {
 };
 KFK.onCopy = async function (evt) {
   KFK.logKey('META-C');
+  if(KFK.APP.show.dialog.ivtCodeDialog){
+    return;
+  }
   let someDIVcopyed = await KFK.duplicateHoverObject(evt, 'copy');
   if (someDIVcopyed) {
     evt.clipboardData.setData('text/plain', 'usediv');
@@ -6353,9 +6393,6 @@ KFK.copyDoc = () => {
   }
 };
 
-KFK.onCopyDoc = async function (data) {
-  KFK.info(data);
-};
 KFK.onLinkConnect = async function (data) {
   let selectorFrom = `#${response.from}`;
   let selectorTo = `#${response.to}`;
@@ -6914,6 +6951,9 @@ KFK.closeFullscreen = function () {
   }
 };
 
+KFK.showIvtCodeDialog = function(){
+      KFK.showDialog({ ivtCodeDialog: true });
+}
 export default KFK;
 
 //TODO: direct loginas demo user story

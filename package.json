@@ -23,6 +23,7 @@
     "jq": "^1.7.2",
     "jquery": "^3.4.1",
     "jquery-ui-dist": "^1.12.1",
+    "navigo": "^7.1.2",
     "popper.js": "^1.16.1",
     "short-uuid": "^3.1.1",
     "spectrum-colorpicker2": "^2.0.0",
