@@ -950,7 +950,7 @@ KFK.initC3 = function () {
     // if (KFK.mode === 'lock' || KFK.mode === 'connect') {
     //   KFK.setMode('pointer');
     // }
-    if (KFK.docLocked()) return;
+    if (KFK.docIsReadOnly()) return;
 
     if (KFK.tobeTransformJqLine) KFK.tobeTransformJqLine.removeClass("shadow2");
     $("#linetransformer").css("visibility", "hidden");
@@ -1004,7 +1004,7 @@ KFK.initC3 = function () {
 
   KFK.JC3.mousedown(evt => {
     if (KFK.inDesigner() === false) return;
-    if (KFK.mode === "pointer" && KFK.docLocked() === false) {
+    if (KFK.mode === "pointer" && KFK.docIsReadOnly() === false) {
       KFK.mouseIsDown = true;
       KFK.kuangXuanStartPoint = {
         x: KFK.scrXToJc3X(evt.clientX),
@@ -1032,7 +1032,7 @@ KFK.initC3 = function () {
       KFK.lineToDrag = null;
       $(document.body).css("cursor", "default");
     }
-    if (KFK.mode === "pointer" && KFK.docLocked() === false) {
+    if (KFK.mode === "pointer" && KFK.docIsReadOnly() === false) {
       KFK.mouseIsDown = false;
       KFK.kuangXuanEndPoint = {
         x: KFK.scrXToJc3X(evt.clientX),
@@ -1065,7 +1065,7 @@ KFK.initC3 = function () {
       y: KFK.scrYToJc3Y(evt.clientY)
     };
 
-    if (KFK.docLocked()) return;
+    if (KFK.docIsReadOnly()) return;
 
     if (KFK.lineToDrag && KFK.lineLocked(KFK.lineToDrag) === false) {
       if (KFK.distance(KFK.mousePosToRemember, KFK.currentMousePos) > 5) {
@@ -1731,7 +1731,7 @@ KFK.cleanNodeEventFootprint = function (jqNodeDIV) {
 };
 
 KFK.syncNodePut = async function (cmd, jqDIV, reason, jqFrom, isUndoRedo, ser, count) {
-  if (KFK.docLocked()) return;
+  if (KFK.docIsReadOnly()) return;
   if (KFK.nodeLocked(jqDIV)) return;
   if (ser === undefined || count === undefined) {
     KFK.error("syncNodePut call must have ser and count provided");
@@ -1837,7 +1837,7 @@ KFK.syncNodePut = async function (cmd, jqDIV, reason, jqFrom, isUndoRedo, ser, c
 };
 
 KFK.syncLinePut = async function (cmd, svgLine, reason, svgFrom, isUndoRedo) {
-  if (KFK.docLocked()) return;
+  if (KFK.docIsReadOnly()) return;
 
   try {
     if (!(KFK.APP.model.cocouser && KFK.APP.model.cocouser.name)) {
@@ -1948,17 +1948,17 @@ function getBoolean(value) {
 //jqNode can be a node or even a svgline
 KFK.anyLocked = function (jqNode) {
   if (jqNode)
-    return KFK.docLocked() || KFK.nodeLocked(jqNode);
+    return KFK.docIsReadOnly() || KFK.nodeLocked(jqNode);
   else
-    return KFK.docLocked();
+    return KFK.docIsReadOnly();
 };
 
 KFK.notAnyLocked = function (jqNode) {
   return !KFK.anyLocked(jqNode);
 };
 
-KFK.docLocked = function () {
-  return KFK.APP.model.cocodoc.doclocked;
+KFK.docIsReadOnly = function () {
+  return KFK.APP.model.cocodoc.readonly;
 };
 
 KFK.nodeLocked = function (jqNode) {
@@ -2870,7 +2870,7 @@ KFK.deleteHoverOrSelectedDiv = async function (evt, cutMode = false) {
       KFK.hoverSvgLine(null);
     } else if (KFK.hoveredConnectId) {
       //最后看鼠标滑过的connect（节点间连接线）
-      if (KFK.docLocked()) return;
+      if (KFK.docIsReadOnly()) return;
       //Find ids of the two nodes connected by this connect.
       let tmpNodeIdPair = KFK.getNodeIdsFromConnectId(KFK.hoveredConnectId);
       nid = tmpNodeIdPair[0];
@@ -2905,7 +2905,7 @@ KFK.editHoverObject = async function (evt, enterSelect = false) {
 
 KFK.duplicateHoverObject = async function (evt, action = undefined) {
   KFK.debug("entered duplicateHoverObject");
-  if (KFK.docLocked()) return;
+  if (KFK.docIsReadOnly()) return;
   let offset = { x: 0, y: 0 };
   if (action === "copy") {
     if (KFK.selectedDIVs.length > 1) { //优先多选
@@ -3579,7 +3579,7 @@ KFK.clearCurrentProject = function () {
 KFK.resetAllLocalData = function () {
   localStorage.removeItem("cocoprj");
   localStorage.removeItem("cocodoc");
-  KFK.APP.setData("model", "cocodoc", { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', doclocked: false });
+  KFK.APP.setData("model", "cocodoc", { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', readonly: false });
   KFK.APP.setData("model", "cocouser", { userid: '', name: '', avatar: 'avatar-0', avatar_src: null });
   KFK.APP.setData("model", "project", { prjid: '', name: '' });
   KFK.APP.setData("model", "lastrealproject", { prjid: '', name: '' });
@@ -3942,20 +3942,20 @@ KFK.onWsMsg = async function (response) {
     case "TGLREAD":
       KFK.APP.model.docs.forEach(doc => {
         if (doc._id === response.doc_id) {
-          doc.doclocked = response.doclocked;
-          if (doc.doclocked === true) {
+          doc.readonly = response.readonly;
+          if (doc.readonly === true) {
             doc.readonly_icon = "eye";
-            doc.doclocked_variant = "primary";
+            doc.readonly_variant = "primary";
             KFK.scrLog("已设为只读");
           } else {
             doc.readonly_icon = "pencil";
-            doc.doclocked_variant = "outline-primary";
+            doc.readonly_variant = "outline-primary";
             KFK.scrLog("已设为可编辑");
           }
         }
       });
       if (response.doc_id === KFK.APP.model.cocodoc.doc_id) {
-        KFK.APP.model.cocodoc.doclocked = response.doclocked;
+        KFK.APP.model.cocodoc.readonly = response.readonly;
         KFK.APP.setData("model", "cocodoc", KFK.APP.model.cocodoc);
         localStorage.setItem("cocodoc", JSON.stringify(KFK.APP.model.cocodoc));
       }
@@ -4013,12 +4013,12 @@ KFK.onWsMsg = async function (response) {
           doc.protect_icon = "toggle-on";
           doc.security_variant = "success";
         }
-        if (doc.doclocked === true) {
+        if (doc.readonly === true) {
           doc.readonly_icon = "eye";
-          doc.doclocked_variant = "primary";
+          doc.readonly_variant = "primary";
         } else {
           doc.readonly_icon = "pencil";
-          doc.doclocked_variant = "outline-primary";
+          doc.readonly_variant = "outline-primary";
         }
         if (doc.ownerAvatar !== "") {
           doc.ownerAvatarSrc = KFK.avatars[doc.ownerAvatar].src;
@@ -4394,7 +4394,7 @@ KFK._onDocFullyLoaded = async function () {
   KFK.docDuringLoading = null;
   // KFK.JC3.removeClass("noshow");
   KFK.APP.setData("model", "docLoaded", true);
-  if (KFK.APP.model.cocodoc.doclocked) {
+  if (KFK.APP.model.cocodoc.readonly) {
     $("#linetransformer").draggable("disable");
     $("#right").toggle("slide", { duration: 100, direction: "right" });
     $("#left").toggle("slide", { duration: 100, direction: "left" });
@@ -4551,7 +4551,7 @@ KFK.recreateNode = function (obj, callback) {
         KFK.JC3.append(jqDIV);
       }
       jqDIV = $(`#${nodeid}`);
-      if (KFK.APP.model.cocodoc.doclocked === false) {
+      if (KFK.APP.model.cocodoc.readonly === false) {
         KFK.setNodeEventHandler(jqDIV);
         if (isALockedNode) {
           // KFK.debug('is a locked');
@@ -5039,7 +5039,7 @@ KFK.getOSSFileName = basename => {
 
 
 KFK.setMode = function (mode) {
-  if (KFK.docLocked()) mode = "pointer";
+  if (KFK.docIsReadOnly()) mode = "pointer";
 
   let oldMode = KFK.mode;
   KFK.mode = mode;
@@ -5494,7 +5494,7 @@ KFK.ZiToLower = function () {
 
 KFK.tryToLockUnlock = function (shiftKey) {
   //对于节点，只有文档未锁定，以及这是当前用户为发起人时才能执行加解锁
-  if (KFK.hoverJqDiv() && KFK.isMyDoc() && KFK.docLocked() === false) {
+  if (KFK.hoverJqDiv() && KFK.isMyDoc() && KFK.docIsReadOnly() === false) {
     if (KFK.nodeLocked(KFK.hoverJqDiv())) {
       let opEntry = {
         cmd: "UNLOCK",
@@ -5518,7 +5518,7 @@ KFK.tryToLockUnlock = function (shiftKey) {
         nodeid: KFK.hoverJqDiv().attr("id")
       });
     }
-  } else if (KFK.hoverSvgLine() && KFK.isMyDoc() && KFK.docLocked() === false) {
+  } else if (KFK.hoverSvgLine() && KFK.isMyDoc() && KFK.docIsReadOnly() === false) {
     //对于直线，只有文档未锁定，以及这是当前用户为发起人时才能执行加解锁
     if (KFK.lineLocked(KFK.hoverSvgLine())) {
       KFK.lineToDrag = null;
@@ -5552,7 +5552,7 @@ KFK.tryToLockUnlock = function (shiftKey) {
   }
 };
 KFK.toggleRight = function (flag) {
-  if (KFK.APP.model.cocodoc.doclocked) {
+  if (KFK.APP.model.cocodoc.readonly) {
     return;
   }
   if (KFK.inFullScreenMode === true || KFK.controlButtonsOnly === true) return;
@@ -5591,7 +5591,7 @@ KFK.toggleFullScreen = function (evt) {
 
 KFK.toggleControlButtonOnly = function (evt) {
   KFK.controlButtonsOnly = !KFK.controlButtonsOnly;
-  if (KFK.APP.model.cocodoc.doclocked) {
+  if (KFK.APP.model.cocodoc.readonly) {
     //文档锁定时，依然可以对minimap切换显示与否
     KFK.showSection({ minimap: !KFK.controlButtonsOnly });
     return;
@@ -5857,7 +5857,7 @@ KFK.onCopy = async function (evt) {
 };
 
 KFK.onPaste = async function (evt) {
-  if (KFK.docLocked()) return;
+  if (KFK.docIsReadOnly()) return;
   if (KFK.currentView !== 'designer') return;
   let content = { html: "", text: "", image: null };
   content.html = evt.clipboardData.getData("text/html");

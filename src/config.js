@@ -8,7 +8,7 @@ const config = {
     badge: {
         lastSeconds: 3000,
     },
-    cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', doclocked:false },
+    cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', readonly:false },
     vault: {
         bucket: 'vts',
     },
