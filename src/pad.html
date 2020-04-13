@@ -498,21 +498,21 @@
         </b-button>
       </b-button-group>
       <b-button-group class="coco">
-        <b-button disable="model.cocodoc.doclocked" id="toggle_all" variant="outline-success"
+        <b-button disable="model.cocodoc.readonly" id="toggle_all" variant="outline-success"
           @click="KFK.toggleFullScreen">
           <b-icon icon="arrows-fullscreen"></b-icon>
         </b-button>
-        <b-button disable="model.cocodoc.doclocked" id="toggle_cbonly" variant="outline-success"
+        <b-button disable="model.cocodoc.readonly" id="toggle_cbonly" variant="outline-success"
           @click="KFK.toggleControlButtonOnly">
           <b-icon v-if="KFK.controlButtonsOnly===false" icon="layout-sidebar-reverse" rotate="270"></b-icon>
           <b-icon v-else icon="layout-sidebar-inset-reverse" rotate="270"></b-icon>
         </b-button>
-        <b-button disable="model.cocodoc.doclocked" id="toggle-right" variant="outline-success"
+        <b-button disable="model.cocodoc.readonly" id="toggle-right" variant="outline-success"
           @click="KFK.toggleRight">
           <b-icon v-if="KFK.showRightTools===false" icon="layout-sidebar-reverse"></b-icon>
           <b-icon v-else icon="layout-sidebar-inset-reverse"></b-icon>
         </b-button>
-        <b-button disable="model.cocodoc.doclocked" id="toggle-minimap" variant="outline-success"
+        <b-button disable="model.cocodoc.readonly" id="toggle-minimap" variant="outline-success"
           @click="KFK.toggleMinimap">
           <b-icon icon="map"></b-icon>
         </b-button>
@@ -560,7 +560,7 @@
     </div>
     <b-container class="padlayout" id="docHeaderInfo">
       <b-container class="docname" v-if="show.section.designer">
-        <b-icon v-if="model.cocodoc.doclocked" icon="lock" variant="secondary"></b-icon>
+        <b-icon v-if="model.cocodoc.readonly" icon="lock" variant="secondary"></b-icon>
         <b-icon v-else icon="book" variant="secondary"></b-icon>
         {{model.cocodoc.name}}
       </b-container>
