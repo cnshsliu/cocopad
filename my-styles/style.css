@@ -199,7 +199,7 @@ body {
 
 #S1 {
   width: 100%;
-  height: 100vh;
+  height: 100%;
   overflow: auto;
   margin: 0px;
   border: 0px solid grey;
@@ -230,6 +230,7 @@ body {
 }
 
 .msgarea {
+  white-space: nowrap;
   font-size: 24px;
   z-index: 100;
   color: rgb(83, 79, 79);
@@ -664,6 +665,11 @@ select:focus {
   top: 2px;
   left: 84px;
   z-index: 999999;
+  margin-top: 2px;
+  padding: 0px 20px 0px 20px;
+  border-radius: 10px;
+  background-color: rgba(238, 238, 238, 0.411);
+  border: 1px solid #aaa;
 }
 
 .docname {
@@ -752,10 +758,12 @@ select:focus {
   font-family: "monospace";
   font-size: 10px;
   position: absolute;
+  white-space: nowrap;
+  width: fit-content;
   z-index: 998;
   background-color: #e5dbff;
-  border-radius: 10px;
-  padding: 0px 2px 0px 2px;
+  border-radius: 5px;
+  padding: 0px;
 }
 
 .userbadge_0 {
@@ -875,6 +883,15 @@ select:focus {
   width: 100px;
   background-color: #afbbc6;
   cursor: move;
+}
+
+#readonlyDesc {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  background-color: rgba(238, 238, 238, 0.411);
+  border: 1px solid #aaa;
+  z-index: 10000000;
 }
 
 #minimap {

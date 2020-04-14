@@ -1015,7 +1015,7 @@ KFK.initC3 = function () {
   KFK.JC3.mouseup(async (evt) => {
     if (KFK.inDesigner() === false) return;
     KFK.ignoreClick = false;
-    if (KFK.lineDragging) {
+    if (KFK.lineDragging && KFK.docIsReadOnly() === false) {
       let parr = KFK.lineToDrag.array();
       if (KFK.APP.model.cococonfig.snap) {
         let p1 = { x: parr[0][0], y: parr[0][1] };
@@ -1070,7 +1070,7 @@ KFK.initC3 = function () {
 
     if (KFK.docIsReadOnly()) return;
 
-    if (KFK.lineToDrag && KFK.lineLocked(KFK.lineToDrag) === false) {
+    if (KFK.lineToDrag && KFK.docIsReadOnly() === false && KFK.lineLocked(KFK.lineToDrag) === false) {
       if (KFK.distance(KFK.mousePosToRemember, KFK.currentMousePos) > 5) {
         KFK.lineDragging = true;
       }
@@ -1141,7 +1141,7 @@ KFK.initC3 = function () {
         );
       }
     }
-    if (KFK.lineDragging && KFK.lineLocked(KFK.lineToDrag) === false) {
+    if (KFK.lineDragging && KFK.docIsReadOnly() === false && KFK.lineLocked(KFK.lineToDrag) === false) {
       let realX = KFK.scrXToJc3X(evt.clientX);
       let realY = KFK.scrYToJc3Y(evt.clientY);
       let deltaX = realX - KFK.lineDraggingStartPoint.x;
@@ -1173,7 +1173,7 @@ KFK.get13Number = function (str) {
 };
 
 KFK.showUserMovingBadge = function (user, x, y) {
-  let pos = { x: KFK.scrXToJc3X(x), y: KFK.scrYToJc3Y(y) };
+  let pos = { x: KFK.scrXToJc1X(x), y: KFK.scrYToJc1Y(y) };
   let bglabel = user.name;
 
 
@@ -1184,7 +1184,8 @@ KFK.showUserMovingBadge = function (user, x, y) {
   KFK.mouseTimer = setTimeout(function () {
     KFK.WS.put("MOUSE", { user: consisedUser, pos: pos });
     KFK.mouseTimer = null;
-  }, 200);
+  }, 5);
+  //  KFK.WS.put("MOUSE", { user: consisedUser, pos: pos });
 
 };
 
@@ -1207,10 +1208,6 @@ KFK.showOtherUserMovingBadge = function (mouse) {
     jqBadgeDIV.addClass(`userbadge userbadge_${class_ser}`);
   }
   jqBadgeDIV.css("display", "block");
-  jqBadgeDIV.css("top", pos.y);
-  jqBadgeDIV.css("left", pos.x);
-  jqBadgeDIV.css("width", "fit-content");
-  jqBadgeDIV.css("height", "fit-content");
   jqBadgeDIV.html(bglabel);
 
   let width = jqBadgeDIV.width();
@@ -1218,24 +1215,29 @@ KFK.showOtherUserMovingBadge = function (mouse) {
 
   let wwidth = window.innerWidth;
   let wheight = window.innerHeight;
-  //TODO: v这里似乎有问题,需要测试检查 
-  if (pos.x < KFK.scrollContainer.scrollLeft()) {
-    pos.x = KFK.scrollContainer.scrollLeft();
-  } else if (pos.x + width > KFK.scrollContainer.scrollLeft() + wwidth) {
-    pos.x = KFK.scrollContainer.scrollLeft() + wwidth - width;
+  let x = KFK.jc1XToJc3X(pos.x);
+  let y = KFK.jc1YToJc3Y(pos.y);
+  let sc = $('#S1');
+  let deltaX = sc.scrollLeft() - KFK.LeftB;
+  let deltaY = sc.scrollTop() - KFK.TopB;
+  if(x - deltaX > wwidth){
+    x = deltaX + wwidth - width;
+  }else if(x < deltaX){
+    x = deltaX;
   }
-  if (pos.y < KFK.scrollContainer.scrollTop()) {
-    pos.y = KFK.scrollContainer.scrollTop();
-  } else if (pos.y + height > KFK.scrollContainer.scrollTop() + wheight) {
-    pos.y = KFK.scrollContainer.scrollTop() + wheight - height;
+  if(y-deltaY > wheight){
+    y = deltaY + wheight - height;
+  }else if(y < deltaY){
+    y  = deltaY;
   }
-  jqBadgeDIV.css("top", pos.y);
-  jqBadgeDIV.css("left", pos.x);
+
+  jqBadgeDIV.css("top", y);
+  jqBadgeDIV.css("left", x);
 
   if (KFK.badgeTimers[bgid] !== undefined) {
     clearTimeout(KFK.badgeTimers[bgid]);
-  }
-
+  } 
+  //过一段时后消失, 如果其他用户再动, 再显示
   KFK.badgeTimers[bgid] = setTimeout(() => {
     jqBadgeDIV.css("display", "none");
     delete KFK.badgeTimers[bgid];
@@ -3117,6 +3119,12 @@ KFK.jc3XToJc1X = function (x) {
 KFK.jc3YToJc1Y = function (y) {
   return y + KFK.TopB;
 }
+KFK.jc1XToJc3X = function(x){
+  return x- KFK.LeftB;
+}
+KFK.jc1YToJc3Y = function(y){
+  return y-KFK.TopB;
+}
 
 //Screen pos x to JC3 pos x
 KFK.scrXToJc3X = function (x) {
@@ -3586,20 +3594,11 @@ KFK.loadDoc = function (doc_id, pwd) {
   }
 };
 
-
-
 KFK.refreshExplorer = async function () {
   // KFK.APP.setData("model", "docLoaded", false);
   await KFK.sendCmd("LISTPRJ", { skip: 0 });
-  KFK.gotoRecent();
+  // KFK.gotoRecent();
 }
-
-KFK.onProjectServerFeedback = function () {
-  KFK.showSection({ signin: false, register: false, explorer: true, designer: false });
-  KFK.showProjects();
-  KFK.gotoPrjList();
-  KFK.explorerRefreshed = true;
-};
 
 KFK.setCurrentPrj = function (prj) {
   KFK.APP.setData("model", "project", prj);
@@ -3614,21 +3613,25 @@ KFK.clearCurrentProject = function () {
   KFK.APP.setData("model", "lastrealproject", { prjid: '', name: '' });
   localStorage.removeItem("cocoprj");
 };
-KFK.resetAllLocalData = function () {
+KFK.resetAllLocalData = function (keep = {}) {
   localStorage.removeItem("cocoprj");
   localStorage.removeItem("cocodoc");
   KFK.APP.setData("model", "cocodoc", { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', readonly: false });
-  KFK.APP.setData("model", "cocouser", { userid: '', name: '', avatar: 'avatar-0', avatar_src: null });
+  if (NotSet(keep.user))
+    KFK.APP.setData("model", "cocouser", { userid: '', name: '', avatar: 'avatar-0', avatar_src: null });
   KFK.APP.setData("model", "project", { prjid: '', name: '' });
   KFK.APP.setData("model", "lastrealproject", { prjid: '', name: '' });
   KFK.APP.setData("model", "prjs", []);
   KFK.APP.setData("model", "docs", []);
   //清除vorgs和 myorgs数据
-  KFK.APP.setData("model", "vorgs", []);
-  KFK.APP.setData("model", "myorgs", []);
+  if (NotSet(keep.vorgs))
+    KFK.APP.setData("model", "vorgs", []);
+  if (NotSet(keep.myorgs))
+    KFK.APP.setData("model", "myorgs", []);
   KFK.APP.setData("model", "org", { neworg: { name: '', }, newuserid: '', changeorgname: '', });
   //标志 左侧的org tab没有被打开过
   KFK.orgTabInitialized = false;
+  KFK.explorerRefreshed = false;
 };
 KFK.toggleDetails = function (row) {
   if (row.detailsShowing) {
@@ -4092,9 +4095,11 @@ KFK.onWsMsg = async function (response) {
       let option = response.option;
       // let skip = option.skip;
       // let count = option.count;
-      let prjs = response.prjs;
-      KFK.APP.setData("model", "prjs", prjs);
-      KFK.onProjectServerFeedback();
+      KFK.APP.setData("model", "prjs", response.prjs);
+      KFK.showSection({ signin: false, register: false, explorer: true, designer: false });
+      KFK.showProjects();
+      KFK.gotoPrjList();
+      KFK.explorerRefreshed = true;
       break;
 
     case "MOUSE":
@@ -4153,6 +4158,12 @@ KFK.onWsMsg = async function (response) {
     case 'UPDUSRORG':
       KFK.updateCocouser(response.data);
       break;
+    case 'ENTERORG':
+      KFK.updateCocouser(response.data);
+      //切换组织时, 本地的用户, 已经拉取的vorgs, 以及myorgs不用清空
+      KFK.resetAllLocalData({ user: true, vorgs: true, myorgs: true });
+      KFK.refreshExplorer();
+      break;
     case 'LISTMYORG':
       KFK.debug('got listmyorg', response);
       KFK.APP.model.myorgs = [];
@@ -4185,6 +4196,19 @@ KFK.onWsMsg = async function (response) {
     case 'GETINVITOR':
       KFK.mergeAppData("model.invitor", { userid: response.userid, name: response.name });
       break;
+    case 'BOSSLIMIT':
+      KFK.setAppData('model', 'readonlyDesc', '只读: 协作者人数超过组织设定的' + response.limit + '人');
+      let cocodoc = KFK.APP.model.cocodoc;
+      cocodoc.readonly = true;
+      KFK.setAppData("model", "cocodoc", cocodoc);
+      $("#linetransformer").draggable("disable");
+      $('.kfknode').draggable("disabled");
+      $('.kfknode').resizable("disabled");
+      $('.kfknode').droppable("disabled");
+      $("#right").toggle("slide", { duration: 100, direction: "right" });
+      $("#left").toggle("slide", { duration: 100, direction: "left" });
+      $("#top").toggle("slide", { duration: 100, direction: "left" });
+      break;
     case 'SCRLOG':
       KFK.scrLog(response.msg);
       break;
@@ -4193,12 +4217,19 @@ KFK.onWsMsg = async function (response) {
       break;
   }
 };
-KFK.switchOrg = async function (_id) {
+KFK.enterOrg = async function (_id) {
   await KFK.sendCmd('ENTERORG', { _id: _id });
 };
-KFK.deleteOrg = async function (_id) {
-  await KFK.sendCmd('DELETEORG', { _id: _id });
+KFK.deleteOrg = async function (_id, name) {
+  KFK.APP.$bvModal.msgBoxConfirm('删除组织: [' + name + ']', {
+    title: '请确认删除', size: 'sm', buttonSize: 'sm', okVariant: 'danger',
+    okTitle: '确认', cancelTitle: '取消',
+    footerClass: 'p-2', hideHeaderClose: false, centered: true
+  }).then(async (isOkay) => {
+    if (isOkay) { await KFK.sendCmd('DELETEORG', { _id: _id }); }
+  }).catch(err => { })
 };
+
 KFK.createNewOrg = async function () {
   let orgname = KFK.APP.model.org.neworg.name;
   if (Validator.validateOrgName(orgname)) {
@@ -4554,6 +4585,8 @@ KFK.recreateDoc = function (obj, callback) {
     docRet.ownerAvatar_src = KFK.avatars[docRet.ownerAvatar].src;
     KFK.debug('recreateDoc()', docRet);
     KFK.APP.setData("model", "cocodoc", docRet);
+    KFK.setAppData('model', 'readonlyDesc', (docRet.readonlyReason === 'OWNER' ? '只读: 白板发起人设置为只读' :
+      docRet.readonlyReason.startsWith('BOSS') ? '只读: 协作者人数超过组织设定的' + docRet.readonlyReason.substr(4) + '人' : ''));
     if (docRet.bgcolor !== undefined) {
       KFK.setBGColorTo(docRet.bgcolor);
       $("#cocoBkgColor").spectrum("set", docRet.bgcolor);
@@ -5699,6 +5732,10 @@ KFK.getAclOwnerDescription = function (doc) {
   }
 };
 
+KFK.iAmOwner = function (doc) {
+  return doc.owner === KFK.APP.model.cocouser.userid;
+};
+
 KFK.getAclAccessable = function (doc) {
   let ret = false;
   if (doc.acl === 'S') {
@@ -5748,6 +5785,7 @@ KFK.gotoExplorer = function () {
     explorerTabIndex: 1
   });
   $('#overallbackground').addClass('grid1');
+  KFK.sendCmd("SETWSSEC", { section: 'EXPLORER' });
 };
 
 KFK.gotoDesigner = function () {
@@ -5763,6 +5801,7 @@ KFK.gotoDesigner = function () {
   KFK.currentView = "designer";
   KFK.focusOnC3();
   $('#overallbackground').removeClass('grid1');
+  KFK.sendCmd("SETWSSEC", { section: 'DESIGNER' });
 };
 
 KFK.dataURLtoFile = function (dataurl, filename) {
@@ -5955,6 +5994,7 @@ KFK.placePastedContent = async function () {
 };
 KFK.onCopy = async function (evt) {
   KFK.logKey('META-C');
+  if (KFK.inDesigner() === false) return;
   if (KFK.APP.show.dialog.ivtCodeDialog) {
     return;
   }
@@ -6529,7 +6569,7 @@ KFK.setAcl = async () => {
     'P': '公开使用'
   }
   KFK.APP.model.currentDoc.acl_desc = desc[KFK.APP.model.currentDoc.acl];
-  await KFK.sendCmd('CHGACL', { doc_id: KFK.APP.model.currentDoc._id, acl: KFK.APP.model.currentDoc.acl });
+  await KFK.sendCmd('SETACL', { doc_id: KFK.APP.model.currentDoc._id, acl: KFK.APP.model.currentDoc.acl });
 }
 
 KFK.copyDoc = () => {
@@ -6898,7 +6938,7 @@ KFK.addSvgLineEventListner = function (theLine) {
 KFK.initLineMover = function () {
   KFK.debug('...initLineMover');
   $("#linetransformer").draggable({
-    // move line drag line
+    // move line resize line transform line
     start: (evt, ui) => {
       KFK.closeActionLog();
       KFK.lineMoverDragging = true;
