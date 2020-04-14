@@ -80,6 +80,7 @@ const app = new Vue({
       'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false, copyDocDialog: false, setAclDialog: false, pasteContentDialog: false, MsgBox: false, shareDialog: false },
     },
     model: {
+      readonlyDesc: '只读',
       currentDoc: { acl: 'O' },
       invitor: { usrid: '', name: '' },
       showHelp: false,

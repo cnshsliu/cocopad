@@ -1,3 +1,13 @@
+//TODO: user badge在滚动时显示位置不对
+//TODO: Readonly时,连接线不重画
+//TODO: 设置WS重连间隔和重连次数到合理范围,重连多少次后放弃重连
+//TODO: 显示重现连接中,重连超过多少次,提示放弃重连,请稍后刷新
+//TODO: writing-mode: exampleText {
+  writing-mode: vertical-lr;
+  padding-inline-end: 20px;
+  background-color: #C8C800;
+}
+
 //TODO: 文档保护码加密
 //TODO: 人数限制功能
 //TODO: 备份加密secretkey到U盘
