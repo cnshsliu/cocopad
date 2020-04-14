@@ -657,7 +657,7 @@
           <b-tabs card id="tabs-main" v-model="show.form.explorerTabIndex" vertical
             active-nav-item-class="font-weight-bold text-uppercase text-danger" active-tab-class="">
          
-            <b-tab title="我的项目" @click="KFK.onClickPrjTab">
+            <b-tab title="我的项目" @click="KFK.gotoPrjList">
               <div v-show="show.form.newprj">
                 <b-card title="新建项目">
                   <b-form>
@@ -705,7 +705,7 @@
                 </div>
               </div>
             </b-tab>
-            <b-tab title="我的白板" @click="KFK.onClickDocTab">
+            <b-tab title="我的白板" @click="KFK.gotoDocs">
               <div v-show="show.form.newdoc">
                 <!-- FORM new doc new board create new-->
                 <b-card title="新建白板, 发起协作">
@@ -757,10 +757,10 @@
                     最近项目的
                   </b-col>
                 </b-row>
-                <div class="page_title" v-if="['all','others','mine'].indexOf(model.project.prjid)>=0">
-                  {{model.project.name}}
+                <div class="page_title" v-if="['all','others','mine'].indexOf(model.cocoprj.prjid)>=0">
+                  {{model.cocoprj.name}}
                 </div>
-                <div v-else class="page_title"><span class="cocohighlight-2">{{model.project.name}}</span> 中的共创白板 </div>
+                <div v-else class="page_title"><span class="cocohighlight-2">{{model.cocoprj.name}}</span> 中的共创白板 </div>
                 <!-- doc list -->
                 <b-table hover id="my-doc-table" :items="model.docs" :per-page="model.perPage"
                   :current-page="model.currentDocPage" small :fields="model.docfields"

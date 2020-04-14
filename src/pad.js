@@ -141,7 +141,7 @@ const app = new Vue({
       newdocpwd: '',
       opendocpwd: '',
       docLoaded: false,
-      project: { prjid: 'all', name: '我最近使用过的白板' },
+      cocoprj: { prjid: 'all', name: '我最近使用过的白板' },
       lastrealproject: { prjid: '', name: '' },
       cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', readonly: false, ownerAvatar_src: '../assets/cocopad.svg' },
       cocouser: { userid: '', name: '', avatar: 'avatar-0', avatar_src: null },
