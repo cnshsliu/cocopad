@@ -75,6 +75,7 @@ const IsFalse = function (val) {
 const KFK = {};
 KFK.accordion = {};
 KFK.currentPage = 0;
+KFK.loadedProjectId = null;
 KFK.keypool = "";
 KFK.svgDraw = null;   //画svg的画布
 KFK.OSSClient = new OSS({
@@ -1220,15 +1221,15 @@ KFK.showOtherUserMovingBadge = function (mouse) {
   let sc = $('#S1');
   let deltaX = sc.scrollLeft() - KFK.LeftB;
   let deltaY = sc.scrollTop() - KFK.TopB;
-  if(x - deltaX > wwidth){
+  if (x - deltaX > wwidth) {
     x = deltaX + wwidth - width;
-  }else if(x < deltaX){
+  } else if (x < deltaX) {
     x = deltaX;
   }
-  if(y-deltaY > wheight){
+  if (y - deltaY > wheight) {
     y = deltaY + wheight - height;
-  }else if(y < deltaY){
-    y  = deltaY;
+  } else if (y < deltaY) {
+    y = deltaY;
   }
 
   jqBadgeDIV.css("top", y);
@@ -1236,7 +1237,7 @@ KFK.showOtherUserMovingBadge = function (mouse) {
 
   if (KFK.badgeTimers[bgid] !== undefined) {
     clearTimeout(KFK.badgeTimers[bgid]);
-  } 
+  }
   //过一段时后消失, 如果其他用户再动, 再显示
   KFK.badgeTimers[bgid] = setTimeout(() => {
     jqBadgeDIV.css("display", "none");
@@ -3119,11 +3120,11 @@ KFK.jc3XToJc1X = function (x) {
 KFK.jc3YToJc1Y = function (y) {
   return y + KFK.TopB;
 }
-KFK.jc1XToJc3X = function(x){
-  return x- KFK.LeftB;
+KFK.jc1XToJc3X = function (x) {
+  return x - KFK.LeftB;
 }
-KFK.jc1YToJc3Y = function(y){
-  return y-KFK.TopB;
+KFK.jc1YToJc3Y = function (y) {
+  return y - KFK.TopB;
 }
 
 //Screen pos x to JC3 pos x
@@ -3595,13 +3596,11 @@ KFK.loadDoc = function (doc_id, pwd) {
 };
 
 KFK.refreshExplorer = async function () {
-  // KFK.APP.setData("model", "docLoaded", false);
   await KFK.sendCmd("LISTPRJ", { skip: 0 });
-  // KFK.gotoRecent();
 }
 
 KFK.setCurrentPrj = function (prj) {
-  KFK.APP.setData("model", "project", prj);
+  KFK.APP.setData("model", "cocoprj", prj);
   if (prj.prjid !== "all" && prj.prjid !== 'others' && prj.prjid !== "mine") {
     KFK.APP.setData("model", "lastrealproject", prj);
   }
@@ -3609,7 +3608,7 @@ KFK.setCurrentPrj = function (prj) {
 };
 
 KFK.clearCurrentProject = function () {
-  KFK.APP.setData("model", "project", { prjid: '', name: '' });
+  KFK.APP.setData("model", "cocoprj", { prjid: '', name: '' });
   KFK.APP.setData("model", "lastrealproject", { prjid: '', name: '' });
   localStorage.removeItem("cocoprj");
 };
@@ -3619,7 +3618,7 @@ KFK.resetAllLocalData = function (keep = {}) {
   KFK.APP.setData("model", "cocodoc", { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', readonly: false });
   if (NotSet(keep.user))
     KFK.APP.setData("model", "cocouser", { userid: '', name: '', avatar: 'avatar-0', avatar_src: null });
-  KFK.APP.setData("model", "project", { prjid: '', name: '' });
+  KFK.APP.setData("model", "cocoprj", { prjid: '', name: '' });
   KFK.APP.setData("model", "lastrealproject", { prjid: '', name: '' });
   KFK.APP.setData("model", "prjs", []);
   KFK.APP.setData("model", "docs", []);
@@ -3650,7 +3649,10 @@ KFK.showCreateNewDoc = function () {
     KFK.APP.model.lastrealproject.prjid === "others" ||
     KFK.APP.model.lastrealproject.prjid === "mine"
   ) {
-    KFK.pickPrjForCreateDoc();
+    //如果没有选择项目,则去选择项目
+    //设置选择项目(gotoPrj)后的回调方法
+    KFK.onPrjSelected = KFK.showCreateNewDoc;
+    KFK.gotoPrjList("在哪个项目中发起协作？", true);
   } else {
     KFK.onPrjSelected = undefined;
     KFK.APP.setData("show", "form", {
@@ -3704,10 +3706,6 @@ KFK.remoteCheckUserId = function (userid) {
 
 
 
-KFK.pickPrjForCreateDoc = function () {
-  KFK.onPrjSelected = KFK.showCreateNewDoc;
-  KFK.gotoPrjList("在哪个项目中发起协作？", true);
-};
 KFK.showCreateNewPrj = function () {
   KFK.APP.setData("show", "form", {
     newdoc: false,
@@ -3725,16 +3723,6 @@ KFK.selectPrjTab = function () {
     prjlist: true,
     doclist: true,
     explorerTabIndex: 0,
-    bottomlinks: true
-  });
-};
-KFK.onClickDocTab = function () {
-  KFK.APP.setData("show", "form", {
-    newdoc: false,
-    newprj: false,
-    prjlist: true,
-    doclist: true,
-    explorerTabIndex: 1,
     bottomlinks: true
   });
 };
@@ -3783,9 +3771,6 @@ KFK.showProjects = async function () {
     await KFK.sendCmd("LISTDOC", { prjid: "all" });
   }
 };
-KFK.onClickPrjTab = function () {
-  KFK.gotoPrjList();
-}
 KFK.gotoPrjList = function (msg = null, userealprjs = false) {
   let prjs = KFK.APP.model.prjs;
   if (Array.isArray(prjs) === false)
@@ -3820,16 +3805,7 @@ KFK.gotoPrjList = function (msg = null, userealprjs = false) {
     KFK.showSection({ explorer: true, designer: false });
   }
 };
-KFK.gotoDocs = async function () {
-  await KFK.APP.setData("show", "form", {
-    newdoc: false,
-    newprj: false,
-    prjlist: true,
-    doclist: true,
-    bottomlinks: true,
-    explorerTabIndex: 1
-  });
-};
+
 KFK.sleep = async function (miliseconds) {
   await new Promise(resolve => setTimeout(resolve, miliseconds));
 };
@@ -4361,7 +4337,6 @@ KFK.gotoLastRealProject = function () {
 };
 
 KFK.gotoPrj = async function (prjid, name) {
-  KFK.APP.setData("model", "project", { prjid: prjid, name: name });
   if (prjid === "all" && name === undefined)
     name = "最近访问列表";
   else if (prjid === "others" && name === undefined)
@@ -4371,30 +4346,41 @@ KFK.gotoPrj = async function (prjid, name) {
   let cocoprj = { prjid: prjid, name: name };
   KFK.setCurrentPrj(cocoprj);
   await KFK.sendCmd("LISTDOC", { prjid: prjid });
+  KFK.loadedProjectId = prjid;
   if (KFK.onPrjSelected) {
+    //回调方法, 在选择了项目(gotoPrj)后,回调选择项目后的动作
+    //用于选择项目做某件事
     KFK.onPrjSelected();
   } else {
     KFK.gotoDocs();
   }
 }
-KFK.prjRowClickHandler = function (record, index) {
-  KFK.gotoPrj(record.prjid, record.name);
-};
-
 KFK.gotoRecent = function () {
-  KFK.setAppData("model", "project", { prjid: 'all', name: '我最近使用过的白板' })
-  KFK.sendCmd("LISTDOC", { prjid: 'all' });
-  KFK.gotoDocs();
-  KFK.showForm({
+  KFK.gotoPrj('all');
+}
+KFK.gotoDocs = async function () {
+  console.log('model.cocoprj', KFK.APP.model.cocoprj);
+  if(KFK.loadedProjectId === null){
+    KFK.gotoRecent();
+  }
+  await KFK.APP.setData("show", "form", {
     newdoc: false,
     newprj: false,
     prjlist: true,
     doclist: true,
-    explorerTabIndex: 1,
+    explorerTabIndex: 1
   });
+};
 
-}
 
+
+KFK.pickPrjForCreateDoc = function () {
+  KFK.onPrjSelected = KFK.showCreateNewDoc;
+  KFK.gotoPrjList("在哪个项目中发起协作？", true);
+};
+KFK.prjRowClickHandler = function (record, index) {
+  KFK.gotoPrj(record.prjid, record.name);
+};
 
 KFK.sendCmd = async function (cmd, payload) {
   if (KFK.WS === null) {
@@ -5764,8 +5750,8 @@ KFK.showNotAclAccessable = function (doc) {
 };
 
 KFK.gotoExplorer = function () {
-  if (KFK.APP.model.project.name === '') {
-    KFK.setAppData("model", "project", { "prjid": "all", "name": "我最近使用过的白板" });
+  if (KFK.APP.model.cocoprj.name === '') {
+    KFK.setAppData("model", "cocoprj", { "prjid": "all", "name": "我最近使用过的白板" });
   }
   //不用每次gotoExplorer都refreshExplorer, 因为refreshExplorer要跟服务器刷新数据
   //仅仅是切换explorer或者designer视图，没必要拉取数据
