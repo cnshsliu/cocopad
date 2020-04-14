@@ -562,13 +562,13 @@
           </b-list-group-item>
         </b-list-group>
       </div>
-      <b-container class="padlayout" id="docHeaderInfo">
-        <b-container class="docname" v-if="show.section.designer">
+      <div class="padlayout docHeaderInfo">
+        <div class="docname" v-if="show.section.designer">
           <b-icon v-if="model.cocodoc.readonly" icon="lock" variant="secondary"></b-icon>
           <b-icon v-else icon="book" variant="secondary"></b-icon>
           {{model.cocodoc.name}}
-        </b-container>
-        <b-container class="docpeople padlayout" v-if="show.section.designer">
+        </div>
+        <div class="docpeople padlayout" v-if="show.section.designer">
           <b-row>
             <b-img v-if="model.cocodoc.owner !== model.cocouser.userid" rounded="circle"
               :src="model.cocodoc.ownerAvatar_src" title="共创发起人"></b-img>
@@ -595,9 +595,8 @@
               <b-icon icon="people"></b-icon>
             </b-button>{{model.actionlog.length}}
           </b-row>
-        </b-container>
-
-      </b-container>
+        </div>
+      </div>
 
     </div><!-- designer-->
     <div class="explorer" v-show="show.section.explorer" style="display:none;">
@@ -614,24 +613,41 @@
           <b-navbar-nav class="mr-auto myhovered">
             <b-nav-item @click="KFK.showCreateNewDoc">发起新协作</b-nav-item>
           </b-navbar-nav>
-          <b-navbar-nav>
-            <div v-show="model.cocouser.avatar_src">
-              <img :src="model.cocouser.avatar_src" class="explorer-user-avatar"></img>
-            </div>
-            <b-nav-item-dropdown :text="model.cocouser.name" class="explorer-user-dropdown" right>
-              <b-dropdown-item-button v-if="!model.isDemoEnv" @click="KFK.showSetProfileDialog()">修改账户信息
-              </b-dropdown-item-button>
-              <b-dropdown-divider></b-dropdown-divider>
-              <b-dropdown-item-button @click="KFK.gotoPrjList">我的项目</b-dropdown-item-button>
-              <b-dropdown-item-button @click="KFK.gotoDocs">我的白板</b-dropdown-item-button>
-              <b-dropdown-divider></b-dropdown-divider>
-              <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.upgradeToStartAccount">注册为正式用户
-              </b-dropdown-item-button>
-              <b-dropdown-item-button v-else @click="KFK.signout">退出登录状态</b-dropdown-item-button>
-              <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.gotoSignin">登录已有账号
-            </b-nav-item-dropdown>
+          <b-navbar-nav class="mr-auto">
+            <b-navbar-brand href="#">
+            </b-navbar-brand>
           </b-navbar-nav>
+
         </b-navbar>
+        <div class="explorer-user-info">
+          <b-row>
+            <b-col cols="12">
+              <div v-show="model.cocouser.avatar_src">
+                <img :src="model.cocouser.avatar_src" class="explorer-user-avatar"></img>
+              </div>
+              <div class="explorer-user-dropdown">
+                <b-dropdown variant="outline-none" class="m-0 p-0" :text="model.cocouser.name">
+                  <b-dropdown-item-button v-if="!model.isDemoEnv" @click="KFK.showSetProfileDialog()">修改账户信息
+                  </b-dropdown-item-button>
+                  <b-dropdown-divider></b-dropdown-divider>
+                  <b-dropdown-item-button @click="KFK.gotoPrjList">我的项目</b-dropdown-item-button>
+                  <b-dropdown-item-button @click="KFK.gotoDocs">我的白板</b-dropdown-item-button>
+                  <b-dropdown-divider></b-dropdown-divider>
+                  <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.upgradeToStartAccount">注册为正式用户
+                  </b-dropdown-item-button>
+                  <b-dropdown-item-button v-else @click="KFK.signout">退出登录状态</b-dropdown-item-button>
+                  <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.gotoSignin">登录已有账号
+                </b-dropdown>
+              </div>
+            </b-col>
+          </b-row>
+          <b-row>
+            <b-col cols="12">
+              <b-link  v-on:click="KFK.gotoExplorerTab(2)" class="explorer-user-orgname">
+                {{model.cocouser.orgname}}</b-link>
+            </b-col>
+          </b-row>
+        </div>
         <div class="explorer-content"
           v-show="show.form.newdoc || show.form.newprj || show.form.doclist || show.form.prjlist">
           <b-tabs card id="tabs-main" v-model="show.form.explorerTabIndex" vertical
@@ -746,35 +762,34 @@
                   @row-clicked="KFK.docRowClickHandler">
 
                   <template v-slot:head(name)="data">
-                    <b-button variant="outline-none" >{{ data.label }}</b-button>
+                    <b-button variant="outline-none">{{ data.label }}</b-button>
                   </template>
                   <template v-slot:head(acl)="data">
-                    <b-button variant="outline-none"  v-b-popover.hover.topright title="设置访问范围">
+                    <b-button variant="outline-none" v-b-popover.hover.topright title="设置访问范围">
                       {{ data.label }}</b-button>
                   </template>
                   <template v-slot:head(readonly_icon)="data">
-                    <b-button variant="outline-none"  v-b-popover.hover.topright
-                      title="在只读模式和可编辑模式之间切换">
+                    <b-button variant="outline-none" v-b-popover.hover.topright title="在只读模式和可编辑模式之间切换">
                       {{ data.label }}</b-button>
                   </template>
                   <template v-slot:head(protect_icon)="data">
-                    <b-button variant="outline-none"  v-b-popover.hover.topright title="设置协作保护密码">
+                    <b-button variant="outline-none" v-b-popover.hover.topright title="设置协作保护密码">
                       {{ data.label }}</b-button>
                   </template>
                   <template v-slot:head(docduplicate)="data">
-                    <b-button variant="outline-none"  v-b-popover.hover.topright title="复制/改名/移动">
+                    <b-button variant="outline-none" v-b-popover.hover.topright title="复制/改名/移动">
                       {{ data.label }}</b-button>
                   </template>
                   <template v-slot:head(share_icon)="data">
-                    <b-button variant="outline-none"  v-b-popover.hover.topright title="获得分享链接地址">
+                    <b-button variant="outline-none" v-b-popover.hover.topright title="获得分享链接地址">
                       {{ data.label }}</b-button>
                   </template>
                   <template v-slot:head(owner)="data">
-                    <b-button variant="outline-none"  v-b-popover.hover.topright title="白板发起人">
+                    <b-button variant="outline-none" v-b-popover.hover.topright title="白板发起人">
                       {{ data.label }}</b-button>
                   </template>
                   <template v-slot:head(operations)="data">
-                    <b-button variant="outline-none"  v-b-popover.hover.topright title="其它相关操作">
+                    <b-button variant="outline-none" v-b-popover.hover.topright title="其它相关操作">
                       {{ data.label }}</b-button>
                   </template>
 
@@ -788,7 +803,7 @@
                   </template>
                   <template v-slot:cell(protect_icon)="data">
                     <b-col class="d-flex align-items-center">
-                      <b-button v-if="data.item.owner === model.cocouser.userid" size="sm" class="m-0 p-0 myhovered"
+                      <b-button v-if="KFK.getAclAccessable(data.item)" size="sm" class="m-0 p-0 myhovered"
                         variant="outline-none" @click="KFK.showResetPwdModal(data.item, data.index, $event.target)">
                         <b-icon :icon="data.item.protect_icon" class="opicon"> </b-icon>
                       </b-button>
@@ -797,7 +812,7 @@
                   </template>
                   <template v-slot:cell(readonly_icon)="data">
                     <b-col class="d-flex align-items-center">
-                      <b-button v-if="data.item.owner===model.cocouser.userid" size="sm" class="m-0 p-0 myhovered"
+                      <b-button v-if="KFK.getAclAccessable(data.item)" size="sm" class="m-0 p-0 myhovered"
                         variant="outline-none" @click="KFK.setDocReadonly(data.item, data.index, $event.target)">
                         <b-icon :icon="data.item.readonly_icon" variant="secondary" class="opicon"></b-icon>
                       </b-button>
@@ -834,14 +849,16 @@
                   <template v-slot:cell(name)="data">
                     <b-col class="d-flex align-items-center doc-name-width">
                       <div class="doc-name-inner">
-                      {{data.item.name}}
+                        {{data.item.name}}
                       </div>
                     </b-col>
                   </template>
                   <template v-slot:cell(acl)="data">
-                    <b-col :id="'orgName-'+data.index" :class="'d-flex align-items-center doc-acl-width doc-acl-' + data.item.acl">
+                    <b-col :id="'orgName-'+data.index"
+                      :class="'d-flex align-items-center doc-acl-width doc-acl-' + data.item.acl">
                       {{data.item.acl_desc}}
-                      <b-tooltip :target="'orgName-'+data.index" variant="success" :title="data.item.orgName">
+                      <b-tooltip :target="'orgName-'+data.index" variant="primary"
+                        :title="KFK.getAclOwnerDescription(data.item)">
                       </b-tooltip>
                     </b-col>
                   </template>

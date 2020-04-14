@@ -558,14 +558,21 @@ input#regUserCode {
 
 .explorer .inner {
   /*距离顶部100px, 左右两侧等距(auto)*/
-  margin: 100px auto;
+  position: absolute;
+  top: 110px;
+  left: 50%;
+  -webkit-transform: translate(0%, 0%);
+  -moz-transform: translate(-50%, 0%);
+  -ms-transform: translate(-50%, 0%);
+  -o-transform: translate(-50%, 0%);
+  transform: translate(-50%, 0%);
   background-color: #ffffffbb;
   /*最大1000px, 窗口宽度的90%*/
   width: min(90vw, 1000px);
   height: calc(100vh - 120px);
   padding: 20px;
   box-shadow: -1px 0 15px #919191, 0 1px 15px #919191, 1px 0 15px #919191, 0 -1px 15px #919191;
-  border-radius: 20px;
+  border-radius: 10px;
 }
 
 .explorer .inner .card {
@@ -587,17 +594,33 @@ input#regUserCode {
   overflow: auto;
 }
 
-.explorer-user-avatar {
-  width: 60px;
-  height: 60px;
-  position: relative;
-  top: -20px;
+.explorer-user-info{
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  width: 300px;
+  background-color: red;
+  z-index: 9999;
 }
 
-.explorer-user-dropdown {
-  position: relative;
-  top: 10px;
+.explorer-user-avatar {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  top: -20px;
+  right: 20px;
 }
+.explorer-user-dropdown{
+  position: absolute;
+  right: 80px;
+  top: 8px;
+}
+.explorer-user-orgname{
+  position: absolute;
+  right: 20px;
+  top: 40px;
+}
+
 
 #app {
   width: 100%;
@@ -636,19 +659,19 @@ select:focus {
   outline: none !important;
 }
 
-.docname {
+.docHeaderInfo{
   position: absolute;
   top: 2px;
-  left: 64px;
+  left: 84px;
+  z-index: 999999;
+}
+
+.docname {
   font-size: 24px;
   color: #777777;
-  z-index: 9999999;
 }
 
 .docpeople {
-  position: absolute;
-  top: 32px;
-  left: 78px;
   font-size: 16px;
   color: #777777;
   padding-top: 4px;
@@ -678,7 +701,7 @@ select:focus {
 
 .docpeople .btn-link {
   font-size: 16px;
-  color: #777777;
+  color: #555555;
 }
 
 .docpeople .dropdown-menu {
@@ -976,6 +999,10 @@ select:focus {
   user-select: none;
   position: absolute;
   outline: none;
+}
+
+input {
+  outline: none !important;
 }
 
 .invalid-feedback {
