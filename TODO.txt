@@ -1,5 +1,3 @@
-//TODO: 第二行菜单添加图标
-//TODO: 更换头部 "协作白板"为 图片, 与好友一起写写画画
 //TODO: writing-mode: exampleText {
   writing-mode: vertical-lr;
   padding-inline-end: 20px;

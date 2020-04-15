@@ -12,8 +12,8 @@ import url from "url";
 // import uuidv4 from "uuid/v4";
 import assetIcons from "../assets/*.svg";
 import avatarIcons from "../assets/avatar/*.svg";
-import "../lib/fontpicker-jquery-plugin/dist/jquery.fontpicker";
-import "../lib/jquery-minimap/jquery-minimap";
+import "./fontpicker/jquery.fontpicker";
+import "./minimap/jquery-minimap";
 import config from "./config";
 import Validator from './validator';
 import Demo from "./demo";
@@ -185,7 +185,7 @@ KFK.C1 = el(KFK.JC1);
 // KFK.C1.style.height = KFK._height + "px";
 KFK.focusOnC3 = () => {
   if (KFK.JC3) {
-    KFK.JC3.attr('tabindex', '0');
+    KFK.JC3.attr('tabIndex', '0');
     KFK.JC3.focus();
   } else {
     KFK.warn("focusOnC3 failed. not exist");
@@ -327,9 +327,9 @@ KFK.focusOnNode = function (jqNodeDIV) {
     KFK.updatePropertyFormWithNode(jqNodeDIV);
 };
 
-KFK.setRightTabIndex = function (tabindex) {
-  if (tabindex !== undefined) {
-    KFK.APP.setData("model", "rightTabIndex", tabindex);
+KFK.setRightTabIndex = function (tabIndex) {
+  if (tabIndex !== undefined) {
+    KFK.APP.setData("model", "rightTabIndex", tabIndex);
   } else {
     if (KFK.selectedDIVs.length === 1
       || KFK.pickedSvgLine !== null
@@ -1737,7 +1737,7 @@ KFK.cleanNodeEventFootprint = function (jqNodeDIV) {
   );
 };
 
-KFK.syncNodePut = async function (cmd, jqDIV, reason, jqFrom, isUndoRedo, ser, count) {
+KFK.syncNodePut = async function (cmd, jqDIV, reason, jqFrom, isUndoRedo=false, ser=0, count=1) {
   if (KFK.docIsReadOnly()) return;
   if (KFK.nodeLocked(jqDIV)) return;
   if (ser === undefined || count === undefined) {
@@ -3375,7 +3375,7 @@ KFK.onWsConnected = function () {
     //如果URL中没有ShareCodeInURL
     //正常情况下，会进入到浏览器界面
     if (KFK.cocouser && KFK.cocouser.sessionToken) {
-      KFK.sendCmd('UPDMYORG',{});
+      KFK.sendCmd('UPDMYORG', {});
       if (KFK.shareCode === null) {
         KFK.refreshExplorer();
       } else { //URL中有shareCode或者ivtCode
@@ -3513,6 +3513,7 @@ KFK.mergeAppData = async (data, key, value) => {
 };
 
 KFK.setAppData = (data, key, value) => {
+  console.log('setAppData', data, key);
   KFK.APP.setData(data, key, value);
 };
 
@@ -3766,6 +3767,11 @@ KFK.onClickOrgTab = async function () {
 KFK.gotoExplorerTab = function (tabIndex) {
   KFK.mergeAppData("show.form", { explorerTabIndex: tabIndex });
 }
+KFK.gotoDocNavTab = function (tabIndex) {
+  console.log('gotoDocNavTab', tabIndex);
+  KFK.APP.docNavTabIndex = tabIndex;
+};
+
 //这里检查是否有project
 KFK.showProjects = async function () {
   KFK.showForm({ newdoc: false, newprj: false, prjlist: true, doclist: true });
@@ -3835,7 +3841,7 @@ KFK.deletePrjItem = function (item, index, button) {
     footerClass: 'p-2', hideHeaderClose: false, centered: true
   }).then(isOkay => {
     if (isOkay) { KFK.deletePrj(item.prjid); }
-  }).catch(err => {console.error(err.message); })
+  }).catch(err => { console.error(err.message); })
 };
 
 KFK.deleteDocItem = function (item, index, button) {
@@ -3845,7 +3851,7 @@ KFK.deleteDocItem = function (item, index, button) {
     footerClass: 'p-2', hideHeaderClose: false, centered: true
   }).then(isOkay => {
     if (isOkay) { KFK.deleteDoc(item._id); }
-  }) .catch(err => {console.error(err.message); })
+  }).catch(err => { console.error(err.message); })
 };
 
 KFK.sleep = async function (miliseconds) {
@@ -4054,6 +4060,7 @@ KFK.onWsMsg = async function (response) {
       }
       break;
     case "NEWDOC":
+      KFK.APP.docNavTabIndex = 0;
       await KFK.gotoPrj(response.prjid, response.prjname);
       break;
     case "DELDOC":
@@ -4281,17 +4288,17 @@ KFK.addOrgUser = async function (org_id, rowIndex) {
     KFK.scrLog("用户ID格式有误");
   }
 };
-KFK.changeOrgName = async function (org_id, rowIndex) {
+KFK.changeOrgName = async function (org, rowIndex) {
   let jInput = $('#inline-form-input-changeorgname-' + rowIndex);
   let newName = jInput.val();
   if (Validator.validateOrgName(newName)) {
-    await KFK.sendCmd('CHANGEORGNAME', { _id: org_id, name: newName, cocouser_orgid: KFK.APP.model.cocouser.orgid });
+    await KFK.sendCmd('SETORGNAME', { orgid: org.orgid, name: newName, cocouser_orgid: KFK.APP.model.cocouser.orgid });
   } else {
     KFK.scrLog("新名字不符合要求");
   }
 };
 KFK.deleteOrgUser = function (org, orguser, index, evt) {
-  KFK.sendCmd("ORGUSERDEL", { _id: org._id, orgid: org.orgid, userid: orguser.userid });
+  KFK.sendCmd("ORGUSERDEL", { _id: org._id, orgid: org.orgid, memberid: orguser.userid });
 };
 
 KFK.toggleAccordionEnteredOrg = async function () {
@@ -4389,18 +4396,16 @@ KFK.setDocReadonly = async function (doc) {
 
 KFK.gotoLastRealProject = function () {
   if (NotBlank(KFK.APP.model.lastrealproject.prjid)) {
+    // KFK.APP.docNavTabIndex = 3;
     KFK.gotoPrj(KFK.APP.model.lastrealproject.prjid, KFK.APP.model.lastrealproject.name)
+  } else {
+    KFK.APP.model.docs = [];
+    KFK.scrLog("尚没有选定的项目", 1000);
   }
 };
 
 KFK.gotoPrj = async function (prjid, name) {
   try {
-    if (prjid === "all" && name === undefined)
-      name = "最近访问列表";
-    else if (prjid === "others" && name === undefined)
-      name = "所有来自他人的分享";
-    else if (prjid === "mine" && name === undefined)
-      name = "所有我发起的";
     let cocoprj = { prjid: prjid, name: name };
     KFK.setCurrentPrj(cocoprj);
     await KFK.sendCmd("LISTDOC", { prjid: prjid });
@@ -4410,36 +4415,37 @@ KFK.gotoPrj = async function (prjid, name) {
       //用于选择项目做某件事
       KFK.onPrjSelected();
     } else {
-      KFK.gotoDocs();
+      await KFK.mergeAppData("show", "form", {
+        newdoc: false,
+        newprj: false,
+        prjlist: true,
+        doclist: true,
+        explorerTabIndex: 1
+      });
     }
   } catch (error) {
     console.error("gotoPrj found error", error.message);
   }
-}
+};
 KFK.gotoRecent = function () {
-  KFK.gotoPrj('all');
-}
+  KFK.APP.docNavTabIndex = 2;
+  KFK.gotoPrj('all', '最近访问的');
+};
 KFK.gotoDocs = async function () {
-  console.log('model.cocoprj', KFK.APP.model.cocoprj);
+  console.log('KFK.loadedProjectIdl', KFK.loadedProjectId);
   if (KFK.loadedProjectId === null) {
     KFK.gotoRecent();
   }
-  await KFK.APP.setData("show", "form", {
-    newdoc: false,
-    newprj: false,
-    prjlist: true,
-    doclist: true,
-    explorerTabIndex: 1
-  });
+  console.log(KFK.APP.docNavTabIndex);
+  console.log("[" + KFK.APP.model.lastrealproject.prjid + "]");
 };
-
-
 
 KFK.pickPrjForCreateDoc = function () {
   KFK.onPrjSelected = KFK.showCreateNewDoc;
   KFK.gotoPrjList("在哪个项目中发起协作？", true);
 };
 KFK.prjRowClickHandler = function (record, index) {
+  KFK.APP.docNavTabIndex = 3;
   KFK.gotoPrj(record.prjid, record.name);
 };
 
@@ -4795,7 +4801,13 @@ KFK.changeToTransparent = async function () {
     await KFK.syncNodePut("U", jqNode, "set border radius", KFK.fromJQ, false, 0, 1);
   }
 };
-
+KFK.setWritingMode = async function (wmode) {
+  let jqNode = KFK.getPropertyApplyToJqNode();
+  if (NotSet(jqNode) || KFK.anyLocked(jqNode)) return;
+  KFK.fromJQ = jqNode.clone();
+  jqNode.css("writing-mode", wmode);
+  await KFK.syncNodePut("U", jqNode, "set font writing-mode", KFK.fromJQ, false, 0, 1);
+};
 KFK.initPropertyForm = function () {
   KFK.debug('...initPropertyForm');
   let spinnerFontSize = $("#spinner_font_size").spinner({
@@ -4875,7 +4887,7 @@ KFK.initPropertyForm = function () {
   spinnerLineWidth.spinner("value", 1);
   $("#spinner_line_width").height("6px");
 
-  $("input.fonts")
+  $("input.fonts-selector")
     .fontpicker({
       lang: "zh-CN",
       variants: true,
@@ -4886,41 +4898,43 @@ KFK.initPropertyForm = function () {
       ),
       localFonts: {
         // Default: web safe fonts
-        Arial: { category: "sans-serif", variants: "400,400i,600,600i" },
-        "Courier New": { category: "monospace", variants: "400,400i,600,600i" },
-        Georgia: { category: "serif", variants: "400,400i,600,600i" },
-        Tahoma: { category: "sans-serif", variants: "400,400i,600,600i" },
-        "Times New Roman": { category: "serif", variants: "400,400i,600,600i" },
+        Arial: { category: "sans-serif", variants: "400,400i,600,600i,900,900i" },
+        "Courier New": { category: "monospace", variants: "400,400i,600,600i,900,900i" },
+        Georgia: { category: "serif", variants: "400,400i,600,600i,900,900i" },
+        Tahoma: { category: "sans-serif", variants: "400,400i,600,600i,900,900i" },
+        "Times New Roman": { category: "serif", variants: "400,400i,600,600i,900,900i" },
         "Trebuchet MS": {
           category: "sans-serif",
-          variants: "400,400i,600,600i"
+          variants: "400,400i,600,600i,900,900i"
         },
-        Verdana: { category: "sans-serif", variants: "400,400i,600,600i" },
-        SimSun: { category: "sans-serif", variants: "400,400i,600,600i" },
-        SimHei: { category: "sans-serif", variants: "400,400i,600,600i" },
+        Verdana: { category: "sans-serif", variants: "400,400i,600,600i,900,900i" },
+        SimSun: { label:'宋体简', category: "sans-serif", variants: "400,400i,600,600i,900,900i" },
+        SimHei: { label: '黑体简', category: "sans-serif", variants: "400,400i,600,600i,900,900i" },
         "Microsoft Yahei": {
+          label: '微软雅黑',
           category: "sans-serif",
-          variants: "400,400i,600,600i"
+          variants: "400,400i,600,600i,900,900i"
         },
-        KaiTi: { category: "sans-serif", variants: "400,400i,600,600i" },
-        FangSong: { category: "sans-serif", variants: "400,400i,600,600i" },
-        STHeiti: { category: "sans-serif", variants: "400,400i,600,600i" },
+        KaiTi: { label: '楷体', category: "sans-serif", variants: "400,400i,600,600i,900,900i" },
+        FangSong: { label: '仿宋', category: "sans-serif", variants: "400,400i,600,600i,900,900i" },
+        STHeiti: { label: '黑体繁', category: "sans-serif", variants: "400,400i,600,600i,900,900i" },
         "Hanzipen SC": {
+          label: '钢笔手写体',
           category: "sans-serif",
-          variants: "400,400i,600,600i"
+          variants: "400,400i,600,600i,900,900i"
         },
         "Hannotate SC": {
+          label: '手札体',
           category: "sans-serif",
-          variants: "400,400i,600,600i"
+          variants: "400,400i,600,600i,900,900i"
         },
-        "Xingkai SC": { category: "sans-serif", variants: "400,400i,600,600i" },
-        "Yapi SC": { category: "sans-serif", variants: "400,400i,600,600i" },
-        "Yuanti SC": { category: "sans-serif", variants: "400,400i,600,600i" }
+        "Xingkai SC": { label: '行楷', category: "sans-serif", variants: "400,400i,600,600i,900,900i" },
+        "Yuanti SC": { label: '圆体', category: "sans-serif", variants: "400,400i,600,600i,900,900i" }
       }
     })
     .on("change", async function () {
       // Split font into family and weight/style
-      var fontInfo = $("input.fonts").val().split(":"),
+      var fontInfo = $("input.fonts-selector").val().split(":"),
         family = fontInfo[0],
         variant = fontInfo[1] || "400",
         weight = parseInt(variant, 10),
@@ -4944,7 +4958,7 @@ KFK.initPropertyForm = function () {
 
       KFK.focusOnC3();
     });
-  $("input.fonts").height(12);
+  $("input.fonts-selector").height(12);
 };
 
 KFK.initShowEditors = function (show_editor) {
