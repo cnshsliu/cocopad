@@ -98,7 +98,6 @@
       </b-container>
     </div><!-- waiting-->
     <div id="registerform" class="registerform" v-show="show.section.register" style="display:none;">
-      <b-container class="my-3 ">
         <b-form autocomplete="off" class="w-100 text-center px-2">
           <div v-show="model.register.step==='reg'">
             <b-row>
@@ -108,16 +107,16 @@
             </b-row>
             <b-input-group prepend="注册账号" class="mb-1">
               <b-form-input id="regUserId" tabindex="1" trim v-model="model.register.userid" :state="state.reg.userid"
-                required placeholder="请使用正确的邮箱地址" class="w-50"></b-form-input>
+                required placeholder="请使用正确的邮箱地址"></b-form-input>
             </b-input-group>
             <b-input-group prepend="您的全称" class="mb-1">
               <b-form-input id="regUserName" tabindex="2" trim v-model="model.register.name" :state="state.reg.name"
-                required placeholder="2个以上汉字或4个以上英文" class="w-50"></b-form-input>
+                required placeholder="2个以上汉字或4个以上英文"></b-form-input>
             </b-input-group>
             <b-input-group prepend="您的密码" class="mb-1">
               <b-form-input id="regUserPwd" tabindex="3" trim :type="model.hidepassword?'password':'text'"
                 v-model="model.register.pwd" :state="state.reg.pwd" class="no-right-border" required
-                placeholder="8个以上字母数字特殊字符" class="w-50">
+                placeholder="8个以上字母数字特殊字符">
               </b-form-input>
               <span class="right-round-span">
                 <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword"
@@ -129,7 +128,7 @@
             <b-input-group prepend="再次录入" class="mb-1">
               <b-form-input id="regUserPwd2" tabindex="4" trim :type="model.hidepassword?'password':'text'"
                 v-model="model.register.pwd2" :state="state.reg.pwd2" class="no-right-border" required
-                placeholder="两次密码输入需要一致" class="w-50"></b-form-input>
+                placeholder="两次密码输入需要一致"></b-form-input>
               <span class="right-round-span">
                 <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword"
                   variant="outline-none">
@@ -153,7 +152,7 @@
             </b-row>
             <b-form-group>
               <b-form-input id="regUserCode" tabindex="10" trim v-model="model.register.code"
-                class="mb-2 mr-sm-2 mb-sm-0" required placeholder="请输入六位验证码" class="w-50"></b-form-input>
+                class="mb-2 mr-sm-2 mb-sm-0" required placeholder="请输入六位验证码"></b-form-input>
             </b-form-group>
             <b-row>
               <b-col class="bg-none">
@@ -170,10 +169,8 @@
             {{model.invitor.name}} 邀请您使用在线协同白板
           </div>
         </b-form>
-      </b-container>
     </div> <!-- register form-->
     <div id="signinform" class="signinform" v-show="show.section.signin" style="display:none;">
-      <b-container class="my-3 ">
         <b-form v-if="model.signInButWaitVerify===false" autocomplete="off" class="w-100 px-2 text-center">
           <b-row>
             <b-col class="pb-4" style="font-size:28px">
@@ -181,12 +178,12 @@
             </b-col>
           </b-row>
           <b-input-group prepend="账号" class="mb-1">
-            <b-form-input tabindex="1" id="userId" trim v-model="model.signin.userid" placeholder="你的用户名" class="w-50">
+            <b-form-input tabindex="1" id="userId" trim v-model="model.signin.userid" placeholder="你的用户名">
             </b-form-input>
           </b-input-group>
           <b-input-group prepend="密码" class="mb-1">
             <b-form-input tabindex="2" id="userPwd" trim :type="model.hidepassword?'password':'text'"
-              v-model="model.signin.pwd" class="no-right-border" placeholder="你的密码" class="w-50"></b-form-input>
+              v-model="model.signin.pwd" class="no-right-border" placeholder="你的密码"></b-form-input>
             <span class="right-round-span">
               <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword" variant="outline-none">
                 <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
@@ -205,7 +202,7 @@
           </b-row>
           <b-form-group>
             <b-form-input id="regUserCode" trim v-model="model.register.code" class="mb-2 mr-sm-2 mb-sm-0" required
-              placeholder="请输入六位验证码" class="w-50"></b-form-input>
+              placeholder="请输入六位验证码"></b-form-input>
           </b-form-group>
           <b-row>
             <b-col class="bg-none">
@@ -221,7 +218,6 @@
             </b-col>
           </b-row>
         </b-form>
-      </b-container>
     </div><!-- signin form-->
     <div v-show="show.section.designer" style="display:none;">
       <div id="S1">
@@ -645,12 +641,6 @@
               </div>
             </b-col>
           </b-row>
-          <b-row>
-            <b-col cols="12">
-              <b-link v-on:click="KFK.gotoExplorerTab(2)" class="explorer-user-orgname">
-                {{model.cocouser.orgname}}</b-link>
-            </b-col>
-          </b-row>
         </div>
         <div class="explorer-content"
           v-show="show.form.newdoc || show.form.newprj || show.form.doclist || show.form.prjlist">
@@ -833,8 +823,8 @@
                     </b-col>
                   </template>
                   <template v-slot:cell(operations)="data">
-                    <b-col class="d-flex align-items-right">
-                      <b-button size="sm" class="m-0 px-2 py-0" variant="info"
+                    <b-col class="d-flex align-items-right" style="padding:0px;">
+                      <b-button size="sm" class="m-0 p-0" variant="info"
                         v-on:click="KFK.showDocOpMenu(data.item, data.index, $event)">
                         操作
                       </b-button>
@@ -1188,48 +1178,45 @@
           </div>
         </b-modal>
         <b-modal id="modal-setuserprofile" @ok="KFK.setUserProfile" v-model="show.dialog.setProfileDialog"
-          :title="'当前用户: ' + model.cocouser.userid" button-size="sm" centered>
-          <b-container class="my-3 ">
+          :title="'当前用户: ' + model.cocouser.userid" button-size="sm" centered class="profileform">
+          <div class="profileform">
             <b-form autocomplete="off" class="w-100 px-2" @submit.stop.prevent="KFK.handleProfileSubmit">
-              <b-input-group prepend="显示名" class="mb-2 mr-sm-2 mb-sm-0">
+              <b-input-group prepend="显示名" class="mb-1">
                 <b-form-input id="profile_name" trim v-model="model.profileToSet.name" :state="state.profile.name"
-                  class="mb-2 mr-sm-2 mb-sm-0" required placeholder="新显示名" class="w-50"></b-form-input>
+                  required placeholder="新显示名"></b-form-input>
                 <b-form-invalid-feedback id="profile_name-feedback">
                   2-10个英文/数字/汉字
                 </b-form-invalid-feedback>
               </b-input-group>
-              <b-input-group prepend="原密码" class="mb-2 mr-sm-2 mb-sm-0">
+              <b-input-group prepend="原密码" class="mb-1">
                 <b-form-input id="profile_oldpwd" trim :type="model.hidepassword?'password':'text'"
-                  v-model="model.profileToSet.oldpwd" :state="state.profile.oldpwd" class="mb-2 mr-sm-2 mb-sm-0"
-                  required class="w-50"></b-form-input>
+                  v-model="model.profileToSet.oldpwd" :state="state.profile.oldpwd"
+                  required></b-form-input>
                 <b-form-invalid-feedback id="profile_oldpwd-feedback">
                   密码至少8字符，<BR>必须含大小写字母数字和特殊字符
                 </b-form-invalid-feedback>
               </b-input-group>
-              <b-input-group prepend="新密码" class="mb-2 mr-sm-2 mb-sm-0">
-                <b-form-input id="profile_newpwd" trim :type="model.hidepassword?'password':'text'"
-                  v-model="model.profileToSet.newpwd" :state="state.profile.newpwd" class="mb-2 mr-sm-2 mb-sm-0"
-                  required class="w-50" placeholder="无须修改密码请保持为空"></b-form-input>
-                <b-input-group-append>
-                  <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword">
-                    <b-icon scale="1" :icon="model.hidepassword?'eye':'eye-slash'"></b-icon>
-                  </b-button>
-                </b-input-group-append>
+              <b-input-group prepend="新密码" class="mb-1">
+                <b-form-input :type="model.hidepassword?'password':'text'" class="no-right-border" required trim
+                  id="profile_newpwd" tabindex="3" 
+                  v-model="model.profileToSet.newpwd" 
+                  :state="state.profile.newpwd" 
+                  placeholder="8个以上字母数字特殊字符">
+                </b-form-input>
+                <span class="right-eye-span"> <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword" variant="outline-none"> <b-icon scale="1" :icon="model.hidepassword?'eye':'eye-slash'" /> </b-button> </span>
                 <b-form-invalid-feedback id="profile_newpwd-feedback">
                   密码至少8字符，<BR>必须含大小写字母数字和特殊字符
                 </b-form-invalid-feedback>
               </b-input-group>
-              <b-input-group prepend="新密码" class="mb-2 mr-sm-2 mb-sm-0">
+              <b-input-group prepend="新密码" class="mb-1">
                 <b-form-input id="profile_newpwd2" trim :type="model.hidepassword?'password':'text'"
-                  v-model="model.profileToSet.newpwd2" :state="state.profile.newpwd2" class="mb-2 mr-sm-2 mb-sm-0"
-                  required class="w-50" placeholder="密码二次输入确认"></b-form-input>
-                <b-input-group-append>
-                  <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword">
-                    <b-icon scale="1" :icon="model.hidepassword?'eye':'eye-slash'"></b-icon>
-                  </b-button>
-                </b-input-group-append>
+                  v-model="model.profileToSet.newpwd2" :state="state.profile.newpwd2" class="no-right-border"
+                  required placeholder="密码二次输入确认"></b-form-input>
+                <span class="right-eye-span">
+                  <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword" variant="outline-none"> <b-icon scale="1" :icon="model.hidepassword?'eye':'eye-slash'" /> </b-button>
+                </span>
                 <b-form-invalid-feedback id="profile_newpwd2-feedback">
-                  新密码两次输入必须一样
+                  两次输入密码必须一样
                 </b-form-invalid-feedback>
               </b-input-group>
               <b-row>
@@ -1245,15 +1232,8 @@
                   </b-col>
                 </b-row>
               </b-container>
-              <!--               
-              <div class="w-100" display="inline" style="white-space:nowrap; overflow-x:auto; overflow-y:hidden; ">
-                <b-button variant="light" size="lg" class="mx-1" @click='EXP.setProfileAvatar(avatar.id)'
-                  v-for="avatar in model.avatars" v-bind:key="avatar.id">
-                  <img :src="avatar.src" style="width:48px; height:48px" />
-                </b-button>
-              </div> -->
             </b-form>
-          </b-container>
+          </div>
         </b-modal>
         <b-modal v-model="show.dialog.ivtCodeDialog" title="邀请使用可获得操作积分奖励" button-size="sm" centered size="md">
           请复制一下地址,分享给你的同事或朋友, 他们成功注册后,你将获得1000个操作积分!
@@ -1267,6 +1247,9 @@
             <b-icon icon="pencil"></b-icon>
           </b-button>
         </b-button-group>
+      </div>
+      <div> <b-link v-on:click="KFK.gotoExplorerTab(2)" class="explorer-user-orgname">
+            {{model.cocouser.orgname}}</b-link>
       </div>
     </div> <!-- explorer -->
     <!--minimap-->
@@ -1286,7 +1269,7 @@
             </b-row>
             <b-row class="text-center mt-3" cols=8>
               <b-col class="mt-3">
-                <b-form-input id="shareItUrl" trim v-model="model.share.url"></b-form-input>
+                <b-form-input id="shareItUrl" class="share-it-url" trim v-model="model.share.url"></b-form-input>
               </b-col>
               <div class="w-100"></div>
               <b-col class="mt-2">
@@ -1334,7 +1317,7 @@
         </b-container>
       </b-modal>
     </div> <!-- modals-->
-    <div class="w-50 mb-2 loading noshow  text-center">
+    <div class="mb-2 loading noshow  text-center">
       {{ model.loading_value }}%加载中请稍候
     </div>
     <!--doc loading-->

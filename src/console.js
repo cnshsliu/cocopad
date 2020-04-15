@@ -3679,7 +3679,6 @@ KFK.gotoSignin = function () {
     explorer: false,
     designer: false
   });
-  KFK.removeCocouser();
 };
 
 KFK.gotoRegister = function () {
@@ -3862,9 +3861,14 @@ KFK.onWsMsg = async function (response) {
   if (response.payload) { KFK.error("Still has payload response", response.cmd) };
   if (response.cmd === "PING") { KFK.WS.put("PONG", {}); }
   switch (response.cmd) {
+    case "ONLY":
+      KFK.scrLog(response.msg);
+      KFK.WS.keepFlag = "ONCE";
+      KFK.WS.close();
+      KFK.gotoSignin();
+      break;
     case "NEEDAUTH":
-      KFK.scrLog('需要先登录，谢谢');
-      KFK.debug(response.msg);
+      KFK.scrLog(response.msg);
       KFK.removeCocouser("cocouser");
       KFK.WS.keepFlag = "ONCE";
       KFK.WS.close();
@@ -4049,7 +4053,12 @@ KFK.onWsMsg = async function (response) {
           doc.acl_desc = "公开使用";
         }
         if (doc.ownerAvatar !== "") {
-          doc.ownerAvatarSrc = KFK.avatars[doc.ownerAvatar].src;
+          try {
+            doc.ownerAvatarSrc = KFK.avatars[doc.ownerAvatar].src;
+          } catch (error) {
+            console.log("set doc avatar src failed", error.message);
+            console.log("doc.ownerAvatar is", doc.ownerAvatar);
+          }
         }
       });
       KFK.APP.setData("model", "docs", docs);
@@ -4181,9 +4190,9 @@ KFK.onWsMsg = async function (response) {
       $('.kfknode').draggable("disabled");
       $('.kfknode').resizable("disabled");
       $('.kfknode').droppable("disabled");
-      $("#right").toggle("slide", { duration: 100, direction: "right" });
-      $("#left").toggle("slide", { duration: 100, direction: "left" });
-      $("#top").toggle("slide", { duration: 100, direction: "left" });
+      $("#right").css("display", 'none');
+      $("#left").css("display", "none");
+      $("#top").toggle("display", "none");
       break;
     case 'SCRLOG':
       KFK.scrLog(response.msg);
@@ -4337,22 +4346,26 @@ KFK.gotoLastRealProject = function () {
 };
 
 KFK.gotoPrj = async function (prjid, name) {
-  if (prjid === "all" && name === undefined)
-    name = "最近访问列表";
-  else if (prjid === "others" && name === undefined)
-    name = "所有来自他人的分享";
-  else if (prjid === "mine" && name === undefined)
-    name = "所有我发起的";
-  let cocoprj = { prjid: prjid, name: name };
-  KFK.setCurrentPrj(cocoprj);
-  await KFK.sendCmd("LISTDOC", { prjid: prjid });
-  KFK.loadedProjectId = prjid;
-  if (KFK.onPrjSelected) {
-    //回调方法, 在选择了项目(gotoPrj)后,回调选择项目后的动作
-    //用于选择项目做某件事
-    KFK.onPrjSelected();
-  } else {
-    KFK.gotoDocs();
+  try {
+    if (prjid === "all" && name === undefined)
+      name = "最近访问列表";
+    else if (prjid === "others" && name === undefined)
+      name = "所有来自他人的分享";
+    else if (prjid === "mine" && name === undefined)
+      name = "所有我发起的";
+    let cocoprj = { prjid: prjid, name: name };
+    KFK.setCurrentPrj(cocoprj);
+    await KFK.sendCmd("LISTDOC", { prjid: prjid });
+    KFK.loadedProjectId = prjid;
+    if (KFK.onPrjSelected) {
+      //回调方法, 在选择了项目(gotoPrj)后,回调选择项目后的动作
+      //用于选择项目做某件事
+      KFK.onPrjSelected();
+    } else {
+      KFK.gotoDocs();
+    }
+  } catch (error) {
+    console.error("gotoPrj found error", error.message);
   }
 }
 KFK.gotoRecent = function () {
@@ -4360,7 +4373,7 @@ KFK.gotoRecent = function () {
 }
 KFK.gotoDocs = async function () {
   console.log('model.cocoprj', KFK.APP.model.cocoprj);
-  if(KFK.loadedProjectId === null){
+  if (KFK.loadedProjectId === null) {
     KFK.gotoRecent();
   }
   await KFK.APP.setData("show", "form", {
@@ -4644,10 +4657,8 @@ KFK.recreateNode = function (obj, callback) {
           // KFK.debug('is a locked');
           KFK.NodeController.lock(jqDIV);
         }
-        //不能有下面这个判断，因为即便一个节点没有linkTo, 但可能还有节点的linkTO指向这个节点
-        // if (jqDIV.attr("linkto") && jqDIV.attr("linkto").length > 0)
-        KFK.redrawLinkLines(jqDIV, 'server update');
       }
+      KFK.redrawLinkLines(jqDIV, 'server update');
     }
   } catch (error) {
     KFK.error(error);
