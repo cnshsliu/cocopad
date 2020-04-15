@@ -63,6 +63,7 @@ const app = new Vue({
       }
     ],
     toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'lock': false, 'minimap': false, 'connect': false, 'clean': false },
+    docNavTabIndex: 0,
     show: {
       'loading': false,
       'waiting': true,

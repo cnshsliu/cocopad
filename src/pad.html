@@ -28,7 +28,7 @@
         <b-col style='font-size: 28px;'>协作白板</b-col>
       </b-row>
       <b-row class="text-center" v-show="!show.section.designer" class="m-0 p-0">
-        <b-col style='font-size:18px;'>在线共创 高效沟通</b-col>
+        <b-col style='font-size:18px;'>远程办公 异地协同</b-col>
       </b-row>
     </div> <!-- first page-->
     <div class="leftbkg" v-show="!show.section.designer">
@@ -281,11 +281,11 @@
         <b-tabs v-model="model.rightTabIndex" content-class="mt-1 w-100" justified>
           <b-tab title="样式" class='cocoproperty'>
             <b-container v-show="show.customfont" class='border-top'>
-              <b-button v-b-toggle.collapse-customfont class="mb-1 p-1 w-100" variant='outline-primary'>字体式样</b-button>
+              <b-button v-b-toggle.collapse-customfont class="mb-1 p-1 w-100" variant='outline-primary'>文字式样</b-button>
               <b-collapse visible id="collapse-customfont">
                 <div class="row mx-auto my-1">
                   <div class="col">文本字体</div>
-                  <div class="col coco"><input class="fonts p-0" /></div>
+                  <div class="col coco"><input class="fonts-selector p-0" /></div>
                 </div>
                 <div class="row mx-auto my-1">
                   <div class="col">字体大小</div>
@@ -314,6 +314,16 @@
                       @change="vertAlignChanged">
                     </b-form-select>
                   </div>
+                </div>
+                <div class="row mx-auto my-1"> <div class="col">书写方向</div>
+                  <b-button-group class="d-flex w-100">
+                    <b-button variant="light" title="一般" class="flex-fill p-0" @click="KFK.setWritingMode('horizontal-tb')"><img
+                        src="../assets/wm_tb.svg" class="toolbar"></b-button>
+                    <b-button variant="light" title="纵向右到左" class="flex-fill p-0" @click="KFK.setWritingMode('vertical-rl')"><img
+                        src="../assets/wm_rl.svg" class="toolbar"></b-button>
+                    <b-button variant="light" title="纵向左到右" class="flex-fill p-0" @click="KFK.setWritingMode('vertical-lr')"><img
+                        src="../assets/wm_lr.svg" class="toolbar"></b-button>
+                  </b-button-group>
                 </div>
               </b-collapse>
             </b-container>
@@ -416,25 +426,25 @@
             <b-button-toolbar v-show="show.arrange_multi_nodes" key-nav class="w-100 justify-content-md-center">
               <p>对齐设置</p>
               <b-button-group class="d-flex w-100">
-                <b-button variant="light" title="对齐左侧" class="flex-fill p-0" @click="KfkAlign('left')"><img
+                <b-button variant="light" title="对齐左侧" class="flex-fill p-0" @click="KFK.alignNodes('left')"><img
                     src="../assets/align_left.svg" class="toolbar"></b-button>
-                <b-button variant="light" title="对齐垂直中线" class="flex-fill p-0" @click="KfkAlign('center')"><img
+                <b-button variant="light" title="对齐垂直中线" class="flex-fill p-0" @click="KFK.alignNodes('center')"><img
                     src="../assets/align_center.svg" class="toolbar"></b-button>
-                <b-button variant="light" title="对齐右侧" class="flex-fill p-0" @click="KfkAlign('right')"><img
+                <b-button variant="light" title="对齐右侧" class="flex-fill p-0" @click="KFK.alignNodes('right')"><img
                     src="../assets/align_right.svg" class="toolbar"></b-button>
-                <b-button variant="light" title="对齐顶部" class="flex-fill p-0" @click="KfkAlign('top')"><img
+                <b-button variant="light" title="对齐顶部" class="flex-fill p-0" @click="KFK.alignNodes('top')"><img
                     src="../assets/align_top.svg" class="toolbar"></b-button>
-                <b-button variant="light" title="对齐水平中线" class="flex-fill p-0" @click="KfkAlign('middle')"><img
+                <b-button variant="light" title="对齐水平中线" class="flex-fill p-0" @click="KFK.alignNodes('middle')"><img
                     src="../assets/align_middle.svg" class="toolbar"></b-button>
-                <b-button variant="light" title="对齐底部" class="flex-fill p-0" @click="KfkAlign('bottom')"><img
+                <b-button variant="light" title="对齐底部" class="flex-fill p-0" @click="KFK.alignNodes('bottom')"><img
                     src="../assets/align_bottom.svg" class="toolbar"></b-button>
               </b-button-group>
             </b-button-toolbar>
             <b-button-toolbar v-show="show.arrange_multi_nodes" key-nav class="w-100 justify-content-md-center">
               <b-button-group class="d-flex w-100">
-                <b-button variant="light" class="flex-fill" title="横向均匀分布" @click="KfkAlign('hori')"><img
+                <b-button variant="light" class="flex-fill" title="横向均匀分布" @click="KFK.alignNodes('hori')"><img
                     src="../assets/align_hori.svg" class="toolbar"></b-button>
-                <b-button variant="light" class="flex-fill" title="纵向均匀分布" @click="KfkAlign('vert')"><img
+                <b-button variant="light" class="flex-fill" title="纵向均匀分布" @click="KFK.alignNodes('vert')"><img
                     src="../assets/align_vert.svg" class="toolbar"></b-button>
               </b-button-group>
             </b-button-toolbar>
@@ -689,6 +699,9 @@
                 </div>
               </div>
             </b-tab>
+
+
+
             <b-tab title="我的白板" @click="KFK.gotoDocs">
               <div v-show="show.form.newdoc">
                 <!-- FORM new doc new board create new-->
@@ -697,10 +710,10 @@
                     在项目 <span class="cocohighlight-2">{{model.lastrealproject.name}}</span> 中发起
                     <a href="#" class="card-link" @click="KFK.pickPrjForCreateDoc">选择其他项目 &gt;</a>
                   </b-card-text>
-                  <b-form class="office-form">
+                  <b-form class="office-form" autocomplete="off" >
                     <b-input-group prepend="白板名称" class="pt-4 px-5">
                       <b-form-input id="docName" trim v-model="model.newdocname" :state="state.newdoc.name"
-                        placeholder=""></b-form-input>
+                        placeholder="请输入白板名称"></b-form-input>
                       <b-form-invalid-feedback id="prjName-feedback">
                         名称为3个以上英文或中文字符，不超过20个
                       </b-form-invalid-feedback>
@@ -725,25 +738,24 @@
                 </b-card>
               </div>
               <div v-show="show.form.doclist" style="overflow-y:scroll">
-                <b-row class="docnav w-75 text-center p-2">
-                  <b-col class="myhovered" @click="KFK.gotoPrj('mine')">
-                    我发起的
-                  </b-col>
-                  <b-col class="myhovered" @click="KFK.gotoPrj('others')">
-                    他人分享的
-                  </b-col>
-                  <b-col class="myhovered" @click="KFK.gotoPrj('all')">
-                    最近访问的
-                  </b-col>
-                  <b-col v-if="model.lastrealproject.prjid!==''" class="myhovered"
-                    @click="KFK.gotoLastRealProject('all')">
-                    最近项目的
-                  </b-col>
-                </b-row>
-                <div class="page_title" v-if="['all','others','mine'].indexOf(model.cocoprj.prjid)>=0">
+                <b-tabs v-model="docNavTabIndex" active-nav-item-class="text-danger"
+                active-tab-class="text-success">
+                  <b-tab title="我发起的" @click="KFK.gotoPrj('mine', '所有我发起的协作文档')">
+                  </b-tab>
+                  <b-tab title="他人分享的" @click="KFK.gotoPrj('others', '所有他人分享给我的协作文档')">
+                  </b-tab>
+                  <b-tab title="最近访问的" @click="KFK.gotoPrj('all', '所有最近使用过的协作文档')">
+                  </b-tab>
+                  <b-tab title="最近项目的" @click="KFK.gotoLastRealProject">
+                  </b-tab>
+                </b-tabs>
+
+                <div class="w-100 d-flex justify-content-center cocohighlight-3">
+                <span class="page-title">
                   {{model.cocoprj.name}}
-                </div>
-                <div v-else class="page_title"><span class="cocohighlight-2">{{model.cocoprj.name}}</span> 中的共创白板 </div>
+                </span>
+              </div>
+
                 <!-- doc list -->
                 <b-table hover id="my-doc-table" :items="model.docs" :per-page="model.perPage"
                   :current-page="model.currentDocPage" small :fields="model.docfields"
@@ -866,6 +878,9 @@
 
               </div>
             </b-tab>
+
+
+
             <b-tab title="我的组织" @click="KFK.onClickOrgTab">
               <!-- org list -->
               <!-- https://bootstrap-vue.js.org/docs/components/collapse/#accordion-support -->
@@ -928,8 +943,7 @@
                             <b-input-group prepend="改名" class="mb-2 w-100">
                               <b-input :id="'inline-form-input-changeorgname-'+ aOrg.index"
                                 placeholder="新名字, 4-20个英文字母或汉字"></b-input>
-                              <b-button @click="KFK.changeOrgName(aOrg.item._id, aOrg.index)" size="sm"
-                                variant="primary">
+                              <b-button @click="KFK.changeOrgName(aOrg.item, aOrg.index)" size="sm" variant="primary">
                                 修改名称</b-button>
                             </b-input-group>
                             <!-- add org member add member-->
@@ -966,7 +980,7 @@
                   <!-- my vorg myvog my joined org-->
                   <b-card-header header-tag="header" class="p-1" role="tab">
                     <b-button block href="#" v-b-toggle.accordion_vorg variant="info"
-                      @click="KFK.toggleAccordionEnteredOrg">我加入的他人管理的组织
+                      @click="KFK.toggleAccordionEnteredOrg">我可以加入的由他人管理组织
                     </b-button>
                   </b-card-header>
                   <b-collapse id="accordion_vorg" accordion="my-accordion" role="tabpanel">
