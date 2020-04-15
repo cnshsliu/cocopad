@@ -456,14 +456,19 @@ svg path {
   transform: translate(-50%, -50%);
 }
 
-.signinform input, .registerform input {
-  background-size: 24px 24px;
-  background-repeat: no-repeat;
-  background-position: 5px;
-  /* padding-left: 40px; */
+.signinform input, .registerform input{
   font-family: monospace;
   font-size: 20px;
+  border-radius: 20px;
+  background-color: rgba(194, 238, 191, 0.85);
 }
+
+.profileform input{
+  font-family: monospace;
+  font-size: 20px;
+  background-color: rgba(194, 238, 191, 0.85);
+}
+
 
 .show-password svg {
   width: 12px;
@@ -524,10 +529,6 @@ svg path {
   background-image: url("../assets/pwd.svg");
 }  */
 
-.registerform input, .signinform input {
-  border-radius: 20px;
-  background-color: rgba(194, 238, 191, 0.85);
-}
 
 .right-round-span {
   border-radius: 20px;
@@ -540,6 +541,14 @@ svg path {
 
 .no-right-border {
   border-right-width: 0px !important;
+}
+
+.right-eye-span {
+  border: 1px solid #ced4da;
+  border-left: 0px;
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
+  background-color: rgba(194, 238, 191, 0.85);
 }
 
 input#regUserCode {
@@ -619,7 +628,7 @@ input#regUserCode {
 .explorer-user-orgname{
   position: absolute;
   right: 20px;
-  top: 40px;
+  top: 20px;
 }
 
 
@@ -1136,6 +1145,10 @@ input {
   background-color: #e5dbff;
 }
 
+.myhovered{
+  white-space: nowrap;
+}
+
 .opicon:hover {
   transform-origin: center;
   transform: scale(1.5);
@@ -1143,4 +1156,10 @@ input {
 
 .my-doc-table td {
   padding: 0px !important;
+}
+
+.share-it-url{
+  font-family: monospace;
+  font-size: xx-small;
+  background-color: whitesmoke;
 }

@@ -1,21 +1,31 @@
 'use strict'
+import suuid from "short-uuid";
 const WS = {};
 WS.ws = null;
 WS.url = "ws://localhost:5008/grume/wsquux";
 WS.isReused = false;
 WS.connectTimes = 0;
 
+WS.myuid = () => {
+    return suuid.generate();
+}
 WS.reconnectTimeout = null;
 WS.resetReconnectCount = function () {
     WS.connectTimes = 0;
 }
+WS.reconnectTries = 0;
 WS.reconnect = function reconnect() {
     if (WS.keepFlag === 'KEEP') {
-        WS.start(WS.onOpenCallback, WS.onMsgcallback, 0, WS.name, WS.keepFlag);
+        WS.reconnectTries++;
+        if (WS.reconnectTries > 60) {
+            console.log('Give up');
+        } else {
+            WS.start(WS.onOpenCallback, WS.onMsgcallback, 0, WS.name, WS.keepFlag);
+        }
     }
 }
 WS.start = async (onOpenCallback, onMsgcallback, delay, name, keepFlag) => {
-    console.log("!!!! Entered WS.start...");
+    console.log("connect tries." + WS.reconnectTries);
     if (delay > 0)
         await new Promise(resolve => setTimeout(resolve, delay));
     WS.onOpenCallback = onOpenCallback;
@@ -48,6 +58,8 @@ WS.start = async (onOpenCallback, onMsgcallback, delay, name, keepFlag) => {
             WS.reconnectTimeout = null;
         }
         onOpenCallback();
+        WS.sayHello();
+
     };
     WS.ws.onclose = function () {
         console.log("onclose");
@@ -72,6 +84,7 @@ WS.start = async (onOpenCallback, onMsgcallback, delay, name, keepFlag) => {
         //同样,因为onopen不会发生,所以,重置连接技术为1,只能在这里手动完成
         WS.connectTimes = 1;
         onOpenCallback();
+        WS.sayHello();
     }
 };
 
@@ -79,6 +92,14 @@ WS.close = () => {
     WS.ws.close();
 };
 
+WS.sayHello = async function () {
+    let localSession = localStorage.getItem('lto');
+    if (localSession === undefined || localSession === null) {
+        localSession = WS.myuid();
+        localStorage.setItem('lto', localSession);
+    }
+    WS.put('PONG', { lto: localSession });
+}
 WS.put = async (cmd, payload) => {
     payload.cmd = cmd;
     let cocouserStr = localStorage.getItem("cocouser");
