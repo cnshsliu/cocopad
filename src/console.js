@@ -78,6 +78,7 @@ KFK.currentPage = 0;
 KFK.loadedProjectId = null;
 KFK.keypool = "";
 KFK.svgDraw = null;   //画svg的画布
+KFK.wsTryTimesBeforeGiveup = 60;
 KFK.OSSClient = new OSS({
   region: "oss-cn-hangzhou",
   accessKeyId: "ACCESSKEY",
@@ -3301,49 +3302,70 @@ KFK.checkSession = async function () {
   //那个是ws.js自动控制重连的,重连时,ws.js会调用KFK.onWSConnected, 在那里,对WSReconnectTime进行技术 
   KFK.setAppData("model", "prjs", []);
 
-  let cocouser = await KFK.readLocalCocoUser();
-  if (cocouser) {
-    KFK.debug("checksession: found cocouser" + cocouser.name);
-    KFK.setAppData('model', 'isDemoEnv', (cocouser.userid.indexOf("@cocopad_demo.org") > 0));
+  KFK.cocouser = null;
+  await KFK.readLocalCocoUser();
+  if (KFK.cocouser) {
+    KFK.debug("checksession: found KFK.cocouser" + KFK.cocouser.name);
+    KFK.setAppData('model', 'isDemoEnv', (KFK.cocouser.userid.indexOf("@cocopad_demo.org") > 0));
   }
-  if (cocouser && cocouser.sessionToken) {
+  if (KFK.cocouser && KFK.cocouser.sessionToken) {
     //匿名用户获得临时身份后,会重新进入CheckSession,就也会运行到这里
     //这时,WS.ws已经是处于连接状态的,再次调用WS.start时, ws.js中会重用之前的连接,
     //但是会充值WS.connectTimes为0
     KFK.debug('checksession: LU yes, connect server');
-    await WS.start(KFK.onWsConnected, KFK.onWsMsg, 100, "checkSession", "KEEP");
-  } else if (KFK.shareCode) {
+    await WS.start(KFK.onWsConnected, KFK.onWsMsg, KFK.onWsClosed, KFK.onWsReconnect, KFK.onWsGiveup, 100, "checkSession", "KEEP", KFK.wsTryTimesBeforeGiveup);
+  } else if (KFK.shareCode) { //没有localUser, but URL中有shareCode
     //两种URL形式都连接WS
     if (KFK.urlMode === 'ivtcode') {
       KFK.debug('checksession: LU no, ivtURL yes,  connect server');
     } else {
       KFK.debug('checksession: LU no, scURL yes, connect server');
     }
-    await WS.start(KFK.onWsConnected, KFK.onWsMsg, 100, "checkSession", "KEEP");
-  } else { //no local user
+    await WS.start(KFK.onWsConnected, KFK.onWsMsg, KFK.onWsClosed, KFK.onWsReconnect, KFK.onWsGiveup, 100, "checkSession", "KEEP", KFK.wsTryTimesBeforeGiveup);
+  } else { //no local user, URL中无shareCode
+    //读本地存储shareCode
     let localShareCode = localStorage.getItem('shareCode');
     if (localShareCode === null) { //no local user nor local sharecode
       KFK.debug('checksession: LU no, SCURL no, LSC no, goto fresh register');
       KFK.gotoRegister();
+      KFK.setAppData('show', 'waiting', false);
     } else { //no local user but has local sharecode
       if (localShareCode.length === 8) { //local sharecode is a ivtcode
         KFK.urlMode = "ivtcode";
         KFK.shareCode = localShareCode;
         KFK.debug('checksession: LU no, SCURL no, LSC no, LIVT yes, goto register');
+        KFK.gotoRegister();
+        KFK.setAppData('show', 'waiting', false);
       } else { //local sharecod is a sharecode
         KFK.urlMode = "sharecode";
         KFK.shareCode = localShareCode;
         KFK.debug('checksession: LU no, SCURL no, LSC yes, connect server');
+        await WS.start(KFK.onWsConnected, KFK.onWsMsg, KFK.onWsClosed, KFK.onWsReconnect, KFK.onWsGiveup, 100, "checkSession", "KEEP", KFK.wsTryTimesBeforeGiveup);
       }
-      await WS.start(KFK.onWsConnected, KFK.onWsMsg, 100, "checkSession", "KEEP");
     }
   }
-  KFK.setAppData('show', 'waiting', false);
 };
 
+KFK.onWsClosed = function () {
+  KFK.debug("WS Closed");
+};
+
+KFK.onWsGiveup = function () {
+  KFK.debug("WS connect giveup");
+  KFK.setAppData('show', 'waiting', false);
+  $('.reconnect-mask').removeClass('nodisplay');
+  $('#reconnect-warning').html('服务器连接失败, 请稍后刷新重试');
+};
+KFK.onWsReconnect = function () {
+  $('.reconnect-mask').removeClass('nodisplay');
+  $('#reconnect-warning').html('Reconnecting...');
+  KFK.setAppData('show', 'waiting', true);
+};
 KFK.onWsConnected = function () {
   KFK.WS = WS;
   KFK.info(">>>>>>>>>Connect Times", KFK.WS.connectTimes);
+  KFK.setAppData('show', 'waiting', false);
+  $('.reconnect-mask').addClass('nodisplay');
   KFK.APP.setData("show", "wsready", true);
   //第一次连接，这条消息会被kj迎回来覆盖，正常
   if (KFK.WS.connectTimes === 1) {
@@ -3353,6 +3375,7 @@ KFK.onWsConnected = function () {
     //如果URL中没有ShareCodeInURL
     //正常情况下，会进入到浏览器界面
     if (KFK.cocouser && KFK.cocouser.sessionToken) {
+      KFK.sendCmd('UPDMYORG',{});
       if (KFK.shareCode === null) {
         KFK.refreshExplorer();
       } else { //URL中有shareCode或者ivtCode
@@ -3805,6 +3828,26 @@ KFK.gotoPrjList = function (msg = null, userealprjs = false) {
   }
 };
 
+KFK.deletePrjItem = function (item, index, button) {
+  KFK.APP.$bvModal.msgBoxConfirm('删除项目: [' + item.name + ']', {
+    title: '请确认删除', size: 'md', buttonSize: 'sm', okVariant: 'danger',
+    okTitle: '确认', cancelTitle: '取消',
+    footerClass: 'p-2', hideHeaderClose: false, centered: true
+  }).then(isOkay => {
+    if (isOkay) { KFK.deletePrj(item.prjid); }
+  }).catch(err => {console.error(err.message); })
+};
+
+KFK.deleteDocItem = function (item, index, button) {
+  KFK.APP.$bvModal.msgBoxConfirm('删除文档: [' + item.name + ']', {
+    title: '请确认删除', size: 'sm', buttonSize: 'sm', okVariant: 'danger',
+    okTitle: '确认', cancelTitle: '取消',
+    footerClass: 'p-2', hideHeaderClose: false, centered: true
+  }).then(isOkay => {
+    if (isOkay) { KFK.deleteDoc(item._id); }
+  }) .catch(err => {console.error(err.message); })
+};
+
 KFK.sleep = async function (miliseconds) {
   await new Promise(resolve => setTimeout(resolve, miliseconds));
 };
@@ -4141,6 +4184,7 @@ KFK.onWsMsg = async function (response) {
       SHARE.onWsMsg(response);
       break;
     case 'UPDUSRORG':
+      console.log("Received UPDUSROG", response.data)
       KFK.updateCocouser(response.data);
       break;
     case 'ENTERORG':
@@ -4205,14 +4249,19 @@ KFK.onWsMsg = async function (response) {
 KFK.enterOrg = async function (_id) {
   await KFK.sendCmd('ENTERORG', { _id: _id });
 };
-KFK.deleteOrg = async function (_id, name) {
+KFK.deleteOrg = async function (aOrg, name) {
+  if (aOrg.grade === 'C') {
+    KFK.scrLog('缺省组织不能删除');
+    return;
+  }
   KFK.APP.$bvModal.msgBoxConfirm('删除组织: [' + name + ']', {
     title: '请确认删除', size: 'sm', buttonSize: 'sm', okVariant: 'danger',
     okTitle: '确认', cancelTitle: '取消',
     footerClass: 'p-2', hideHeaderClose: false, centered: true
   }).then(async (isOkay) => {
-    if (isOkay) { await KFK.sendCmd('DELETEORG', { _id: _id }); }
-  }).catch(err => { })
+    console.log(isOkay);
+    if (isOkay) { await KFK.sendCmd('DELETEORG', { _id: aOrg._id }); }
+  }).catch(err => { console.error(err.message); })
 };
 
 KFK.createNewOrg = async function () {
@@ -4241,8 +4290,8 @@ KFK.changeOrgName = async function (org_id, rowIndex) {
     KFK.scrLog("新名字不符合要求");
   }
 };
-KFK.deleteOrgUser = function (_id, item, index, evt) {
-  KFK.sendCmd("ORGUSERDEL", { _id: _id, userid: item.userid });
+KFK.deleteOrgUser = function (org, orguser, index, evt) {
+  KFK.sendCmd("ORGUSERDEL", { _id: org._id, orgid: org.orgid, userid: orguser.userid });
 };
 
 KFK.toggleAccordionEnteredOrg = async function () {
@@ -4306,7 +4355,6 @@ KFK.readLocalCocoUser = async function () {
   } else {
     KFK.cocouser = null;
   }
-  return cocouser;
 };
 KFK.notImplemented = function () {
   KFK.debug("not implemented");
@@ -5212,27 +5260,12 @@ KFK.setMode = function (mode) {
 
 KFK.cleanAllNodes = function () {
   KFK.APP.$bvModal.msgBoxConfirm('请确认要清空白板, 其他协作用户的白板也会一起清除, 且本操作无法回退.', {
-    title: '请确认',
-    size: 'sm',
-    buttonSize: 'sm',
-    okVariant: 'danger',
-    okTitle: '确认清除白板',
-    cancelTitle: '放弃',
-    footerClass: 'p-2',
-    hideHeaderClose: false,
-    centered: true
-  })
-    .then(async (value) => {
-      if (value === true) {
-        await KFK.sendCmd("CLEANUP", { doc_id: KFK.APP.model.cocodoc.doc_id });
-      }
-    })
-    .catch(err => {
-      // An error occurred
-    })
-  //Dialog to confirm, 提示不能回退
-  //check if doc owner 
-  //send cmd to server
+    title: '请确认', size: 'sm', buttonSize: 'sm',
+    okVariant: 'danger', okTitle: '确认清除白板',
+    cancelTitle: '放弃', footerClass: 'p-2', hideHeaderClose: false, centered: true
+  }).then(async (isOkay) => {
+    if (isOkay === true) { await KFK.sendCmd("CLEANUP", { doc_id: KFK.APP.model.cocodoc.doc_id }); }
+  }).catch(err => { console.error(err.message); })
 };
 KFK.doCleanUp = async function () {
   await KFK.refreshDesigner(KFK.APP.model.cocodoc.doc_id, '');
@@ -5833,9 +5866,7 @@ KFK.saveBlobToOSS = function (blob) {
         );
         await KFK.syncNodePut("C", jqDIV, "create image node", null, false, 0, 1);
       })
-      .catch(err => {
-        KFK.error(err);
-      });
+      .catch(err => { KFK.error(err); });
   }; // data url!
   reader.readAsDataURL(blob);
 };

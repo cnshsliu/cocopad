@@ -17,20 +17,26 @@ WS.reconnectTries = 0;
 WS.reconnect = function reconnect() {
     if (WS.keepFlag === 'KEEP') {
         WS.reconnectTries++;
-        if (WS.reconnectTries > 60) {
-            console.log('Give up');
+        if (WS.reconnectTries > WS.tryTimesBeforeGiveup) {
+            console.log('Give up for ', WS.connectLabel);
+            WS.onGiveupCallback();
         } else {
-            WS.start(WS.onOpenCallback, WS.onMsgcallback, 0, WS.name, WS.keepFlag);
+            WS.onReconnectCallback();
+            WS.start(WS.onOpenCallback, WS.onMsgcallback, WS.onClosedCallback, WS.onReconnectCallback,WS.onGiveupCallback,  0, WS.connectLabel, WS.keepFlag, WS.tryTimesBeforeGiveup);
         }
     }
 }
-WS.start = async (onOpenCallback, onMsgcallback, delay, name, keepFlag) => {
+WS.start = async (onOpenCallback, onMsgcallback, onClosedCallback, onReconnectCallback, onGiveupCallback, delay, connectLabel, keepFlag, tryTimesBeforeGiveup=60) => {
     console.log("connect tries." + WS.reconnectTries);
     if (delay > 0)
         await new Promise(resolve => setTimeout(resolve, delay));
     WS.onOpenCallback = onOpenCallback;
     WS.onMsgcallback = onMsgcallback;
-    WS.name = name;
+    WS.onClosedCallback = onClosedCallback;
+    WS.onReconnectCallback = onReconnectCallback;
+    WS.onGiveupCallback = onGiveupCallback;
+    WS.tryTimesBeforeGiveup = tryTimesBeforeGiveup;
+    WS.connectLabel = connectLabel;
     WS.keepFlag = keepFlag;
     if (WS.ws === null || (WS.ws && (WS.ws.readyState !== 1))) {
         if (WS.ws) {
@@ -49,7 +55,8 @@ WS.start = async (onOpenCallback, onMsgcallback, delay, name, keepFlag) => {
         console.info("WS>>> ws connection is reused");
     }
     WS.ws.onopen = function () {
-        console.info("WS>>> ws opened. name:", WS.name, "flag:", WS.keepFlag);
+        console.info("WS>>> ws opened. connectLabel:", WS.connectLabel, "flag:", WS.keepFlag);
+        WS.reconnectTries = 0;
         //成功连接后，把继续重连的interval清除掉
         WS.isReused = false;
         WS.connectTimes += 1;
@@ -64,12 +71,12 @@ WS.start = async (onOpenCallback, onMsgcallback, delay, name, keepFlag) => {
     WS.ws.onclose = function () {
         console.log("onclose");
         if (WS.reconnectTimeout === null && keepFlag === 'KEEP') {
-            console.info("set reconnect interval ame:", WS.name, "flag:", WS.keepFlag, 'Reconnect>', keepFlag === 'KEEP' ? 'YES' : 'NO');
+            console.info("set reconnect interval ame:", WS.connectLabel, "flag:", WS.keepFlag, 'Reconnect>', keepFlag === 'KEEP' ? 'YES' : 'NO');
             WS.reconnectTimeout = setTimeout(WS.reconnect, 1000);
         } else {
             console.log("Not setTimeout, because reconnectTimeout is not null");
-
         }
+        onClosedCallback();
     };
     WS.ws.onmessage = function (e) {
         onMsgcallback(e.data);
