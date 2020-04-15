@@ -80,6 +80,7 @@
       </div>
     </div> <!-- leftbkg-->
     <div id="waiting" v-show="show.waiting" class="waitinglogo">
+      <!-- connect to cloud waiting-->
       <b-container>
         <b-row cols="3" align-v='center'>
           <b-col>
@@ -98,126 +99,124 @@
       </b-container>
     </div><!-- waiting-->
     <div id="registerform" class="registerform" v-show="show.section.register" style="display:none;">
-        <b-form autocomplete="off" class="w-100 text-center px-2">
-          <div v-show="model.register.step==='reg'">
-            <b-row>
-              <b-col class="pb-4" style="font-size:28px">
-                新用户注册
-              </b-col>
-            </b-row>
-            <b-input-group prepend="注册账号" class="mb-1">
-              <b-form-input id="regUserId" tabindex="1" trim v-model="model.register.userid" :state="state.reg.userid"
-                required placeholder="请使用正确的邮箱地址"></b-form-input>
-            </b-input-group>
-            <b-input-group prepend="您的全称" class="mb-1">
-              <b-form-input id="regUserName" tabindex="2" trim v-model="model.register.name" :state="state.reg.name"
-                required placeholder="2个以上汉字或4个以上英文"></b-form-input>
-            </b-input-group>
-            <b-input-group prepend="您的密码" class="mb-1">
-              <b-form-input id="regUserPwd" tabindex="3" trim :type="model.hidepassword?'password':'text'"
-                v-model="model.register.pwd" :state="state.reg.pwd" class="no-right-border" required
-                placeholder="8个以上字母数字特殊字符">
-              </b-form-input>
-              <span class="right-round-span">
-                <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword"
-                  variant="outline-none">
-                  <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
-                </b-button>
-              </span>
-            </b-input-group>
-            <b-input-group prepend="再次录入" class="mb-1">
-              <b-form-input id="regUserPwd2" tabindex="4" trim :type="model.hidepassword?'password':'text'"
-                v-model="model.register.pwd2" :state="state.reg.pwd2" class="no-right-border" required
-                placeholder="两次密码输入需要一致"></b-form-input>
-              <span class="right-round-span">
-                <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword"
-                  variant="outline-none">
-                  <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
-                </b-button>
-              </span>
-            </b-input-group>
-            <div class="bg-none">
-            </div>
-            <b-row>
-              <b-col class="bg-none">
-                <b-button @click="ACM.registerUser" tabindex="5" variant="primary">注册 &gt;&gt;</b-button>
-              </b-col>
-            </b-row>
-          </div>
-          <div v-show="model.register.step==='code'">
-            <b-row>
-              <b-col class="pb-4" style="font-size:28px">
-                新用户注册
-              </b-col>
-            </b-row>
-            <b-form-group>
-              <b-form-input id="regUserCode" tabindex="10" trim v-model="model.register.code"
-                class="mb-2 mr-sm-2 mb-sm-0" required placeholder="请输入六位验证码"></b-form-input>
-            </b-form-group>
-            <b-row>
-              <b-col class="bg-none">
-                <b-button @click="ACM.verifyRegCode" tabindex="11" variant="primary">验证 &gt;&gt;</b-button>
-              </b-col>
-            </b-row>
-            <b-row>
-              <b-col class="bg-none">
-                <a href="#" class="card-link" @click="ACM.resendVerifyCode">没有收到验证码？点这里重新发送</a>
-              </b-col>
-            </b-row>
-          </div>
-          <div v-if="KFK.urlMode==='ivtcode'" class="mt-3">
-            {{model.invitor.name}} 邀请您使用在线协同白板
-          </div>
-        </b-form>
-    </div> <!-- register form-->
-    <div id="signinform" class="signinform" v-show="show.section.signin" style="display:none;">
-        <b-form v-if="model.signInButWaitVerify===false" autocomplete="off" class="w-100 px-2 text-center">
+      <b-form autocomplete="off" class="w-100 text-center px-2">
+        <div v-show="model.register.step==='reg'">
           <b-row>
             <b-col class="pb-4" style="font-size:28px">
-              请登录
+              新用户注册
             </b-col>
           </b-row>
-          <b-input-group prepend="账号" class="mb-1">
-            <b-form-input tabindex="1" id="userId" trim v-model="model.signin.userid" placeholder="你的用户名">
-            </b-form-input>
+          <b-input-group prepend="注册账号" class="mb-1">
+            <b-form-input id="regUserId" tabindex="1" trim v-model="model.register.userid" :state="state.reg.userid"
+              required placeholder="请使用正确的邮箱地址"></b-form-input>
           </b-input-group>
-          <b-input-group prepend="密码" class="mb-1">
-            <b-form-input tabindex="2" id="userPwd" trim :type="model.hidepassword?'password':'text'"
-              v-model="model.signin.pwd" class="no-right-border" placeholder="你的密码"></b-form-input>
-            <span class="right-round-span">
+          <b-input-group prepend="您的全称" class="mb-1">
+            <b-form-input id="regUserName" tabindex="2" trim v-model="model.register.name" :state="state.reg.name"
+              required placeholder="2个以上汉字或4个以上英文"></b-form-input>
+          </b-input-group>
+          <b-input-group prepend="您的密码" class="mb-1">
+            <b-form-input id="regUserPwd" tabindex="3" trim :type="model.hidepassword?'password':'text'"
+              v-model="model.register.pwd" :state="state.reg.pwd" class="no-right-border" required
+              placeholder="8个以上字母数字特殊字符">
+            </b-form-input>
+            <span class="right-eye">
+              <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword" variant="outline-none">
+                <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
+              </b-button>
+            </span>
+          </b-input-group>
+          <b-input-group prepend="再次录入" class="mb-1">
+            <b-form-input id="regUserPwd2" tabindex="4" trim :type="model.hidepassword?'password':'text'"
+              v-model="model.register.pwd2" :state="state.reg.pwd2" class="no-right-border" required
+              placeholder="两次密码输入需要一致"></b-form-input>
+            <span class="right-eye">
               <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword" variant="outline-none">
                 <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
               </b-button>
             </span>
           </b-input-group>
           <div class="bg-none">
-            <b-button tabindex="3" @click="ACM.signin" variant="primary">登录 &gt;&gt;</b-button>
           </div>
-        </b-form>
-        <b-form v-else autocomplete="off" class="w-100 px-2 text-center">
+          <b-row>
+            <b-col class="bg-none mt-3">
+              <b-button @click="ACM.registerUser" tabindex="5" variant="primary">注册 &gt;&gt;</b-button>
+            </b-col>
+          </b-row>
+        </div>
+        <div v-show="model.register.step==='code'">
           <b-row>
             <b-col class="pb-4" style="font-size:28px">
-              你的邮箱地址尚未验证
+              新用户注册
             </b-col>
           </b-row>
           <b-form-group>
-            <b-form-input id="regUserCode" trim v-model="model.register.code" class="mb-2 mr-sm-2 mb-sm-0" required
-              placeholder="请输入六位验证码"></b-form-input>
+            <b-form-input id="regUserCode" tabindex="10" trim v-model="model.register.code" class="mb-2 mr-sm-2 mb-sm-0"
+              required placeholder="请输入六位验证码"></b-form-input>
           </b-form-group>
           <b-row>
-            <b-col class="bg-none">
-              <b-button @click="ACM.verifyRegCode" variant="primary">现在验证 &gt;&gt;</b-button>
-            </b-col>
-            <div class="w-100"></div>
             <b-col class="bg-none mt-3">
-              <a href="#" class="card-link" @click="ACM.resendVerifyCode">没有收到验证码？点这里重新发送</a>
-            </b-col>
-            <div class="w-100"></div>
-            <b-col class="bg-none  mt-3">
-              <a href="#" class="card-link" @click="KFK.checkSession">先不验证，直接使用</a>
+              <b-button @click="ACM.verifyRegCode" tabindex="11" variant="primary">验证 &gt;&gt;</b-button>
             </b-col>
           </b-row>
-        </b-form>
+          <b-row>
+            <b-col class="bg-none">
+              <a href="#" class="card-link" @click="ACM.resendVerifyCode">没有收到验证码？点这里重新发送</a>
+            </b-col>
+          </b-row>
+        </div>
+        <div v-if="KFK.urlMode==='ivtcode'" class="mt-3">
+          {{model.invitor.name}} 邀请您使用在线协同白板
+        </div>
+      </b-form>
+    </div> <!-- register form-->
+    <div id="signinform" class="signinform" v-show="show.section.signin" style="display:none;">
+      <b-form v-if="model.signInButWaitVerify===false" autocomplete="off" class="w-100 px-2 text-center">
+        <b-row>
+          <b-col class="pb-4" style="font-size:28px">
+            请登录
+          </b-col>
+        </b-row>
+        <b-input-group prepend="账号" class="mb-1">
+          <b-form-input tabindex="1" id="userId" trim v-model="model.signin.userid" placeholder="你的用户名">
+          </b-form-input>
+        </b-input-group>
+        <b-input-group prepend="密码" class="mb-1">
+          <b-form-input tabindex="2" id="userPwd" trim :type="model.hidepassword?'password':'text'"
+            v-model="model.signin.pwd" class="no-right-border" placeholder="你的密码"></b-form-input>
+          <span class="right-eye">
+            <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword" variant="outline-none">
+              <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
+            </b-button>
+          </span>
+        </b-input-group>
+        <div class="bg-none mt-3">
+          <b-button tabindex="3" @click="ACM.signin" variant="primary">登录 &gt;&gt;</b-button>
+        </div>
+      </b-form>
+      <b-form v-else autocomplete="off" class="w-100 px-2 text-center">
+        <b-row>
+          <b-col class="pb-4" style="font-size:28px">
+            你的邮箱地址尚未验证
+          </b-col>
+        </b-row>
+        <b-form-group>
+          <b-form-input id="regUserCode" trim v-model="model.register.code" class="mb-2 mr-sm-2 mb-sm-0" required
+            placeholder="请输入六位验证码"></b-form-input>
+        </b-form-group>
+        <b-row>
+          <b-col class="bg-none">
+            <b-button @click="ACM.verifyRegCode" variant="primary">现在验证 &gt;&gt;</b-button>
+          </b-col>
+          <div class="w-100"></div>
+          <b-col class="bg-none mt-3">
+            <a href="#" class="card-link" @click="ACM.resendVerifyCode">没有收到验证码？点这里重新发送</a>
+          </b-col>
+          <div class="w-100"></div>
+          <b-col class="bg-none  mt-3">
+            <a href="#" class="card-link" @click="KFK.checkSession">先不验证，直接使用</a>
+          </b-col>
+        </b-row>
+      </b-form>
     </div><!-- signin form-->
     <div v-show="show.section.designer" style="display:none;">
       <div id="S1">
@@ -593,11 +592,11 @@
           </div>
         </div>
       </div>
-    <div id="readonlyDesc" v-show="show.section.designer" class="padlayout">
-      {{model.readonlyDesc}}
-    </div>
-    <div id="minimap" v-show="show.section.designer && show.section.minimap" class="padlayout">
-    </div>
+      <div id="readonlyDesc" v-show="show.section.designer" class="padlayout">
+        {{model.readonlyDesc}}
+      </div>
+      <div id="minimap" v-show="show.section.designer && show.section.minimap" class="padlayout">
+      </div>
     </div><!-- designer-->
     <div class="explorer" v-show="show.section.explorer" style="display:none;">
       <div class="inner" @click="KFK.hideDocOpMenu();">
@@ -617,36 +616,31 @@
             <b-navbar-brand href="#">
             </b-navbar-brand>
           </b-navbar-nav>
-
+          <b-navbar-nav class="ml-auto">
+            <b-nav-item right class="ml-auto">
+              <img v-if="model.cocouser.avatar_src" :src="model.cocouser.avatar_src" class="explorer-user-avatar"></img>
+            </b-nav-item>
+          </b-navbar-nav>
+          <b-navbar-nav>
+            <b-nav-item-dropdown variant="outline-none" right :text="model.cocouser.name">
+              <b-dropdown-item-button v-if="!model.isDemoEnv" @click="KFK.showSetProfileDialog()">修改账户信息
+              </b-dropdown-item-button>
+              <b-dropdown-divider></b-dropdown-divider>
+              <b-dropdown-item-button @click="KFK.gotoPrjList">我的项目</b-dropdown-item-button>
+              <b-dropdown-item-button @click="KFK.gotoDocs">我的白板</b-dropdown-item-button>
+              <b-dropdown-divider></b-dropdown-divider>
+              <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.upgradeToStartAccount">注册为正式用户
+              </b-dropdown-item-button>
+              <b-dropdown-item-button v-else @click="KFK.signout">退出登录状态</b-dropdown-item-button>
+              <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.gotoSignin">登录已有账号
+            </b-nav-item-dropdown>
+          </b-navbar-nav>
         </b-navbar>
-        <div class="explorer-user-info">
-          <b-row>
-            <b-col cols="12">
-              <div v-show="model.cocouser.avatar_src">
-                <img :src="model.cocouser.avatar_src" class="explorer-user-avatar"></img>
-              </div>
-              <div class="explorer-user-dropdown">
-                <b-dropdown variant="outline-none" class="m-0 p-0" :text="model.cocouser.name">
-                  <b-dropdown-item-button v-if="!model.isDemoEnv" @click="KFK.showSetProfileDialog()">修改账户信息
-                  </b-dropdown-item-button>
-                  <b-dropdown-divider></b-dropdown-divider>
-                  <b-dropdown-item-button @click="KFK.gotoPrjList">我的项目</b-dropdown-item-button>
-                  <b-dropdown-item-button @click="KFK.gotoDocs">我的白板</b-dropdown-item-button>
-                  <b-dropdown-divider></b-dropdown-divider>
-                  <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.upgradeToStartAccount">注册为正式用户
-                  </b-dropdown-item-button>
-                  <b-dropdown-item-button v-else @click="KFK.signout">退出登录状态</b-dropdown-item-button>
-                  <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.gotoSignin">登录已有账号
-                </b-dropdown>
-              </div>
-            </b-col>
-          </b-row>
-        </div>
         <div class="explorer-content"
           v-show="show.form.newdoc || show.form.newprj || show.form.doclist || show.form.prjlist">
           <b-tabs card id="tabs-main" v-model="show.form.explorerTabIndex" vertical
             active-nav-item-class="font-weight-bold text-uppercase text-danger" active-tab-class="">
-         
+
             <b-tab title="我的项目" @click="KFK.gotoPrjList">
               <div v-show="show.form.newprj">
                 <b-card title="新建项目">
@@ -675,8 +669,8 @@
                 <b-table hover id="my-prj-table" :items="model.prjs" :per-page="model.perPage"
                   :current-page="model.currentPrjPage" small :fields="model.prjfields"
                   @row-clicked="KFK.prjRowClickHandler">
-                  <template v-slot:cell(operations)="data">
-                    <b-button size="sm" @click="deletePrjItem(data.item, data.index, $event.target)"
+                  <template v-slot:cell(operations)="aPrj">
+                    <b-button size="sm" @click="KFK.deletePrjItem(aPrj.item, aPrj.index, $event.target)"
                       class="m-0 p-0 myhovered" variant="outline-none">
                       <b-iconstack>
                         <b-icon stacked icon="x"></b-icon>
@@ -684,8 +678,8 @@
                       </b-iconstack> 删除项目
                     </b-button>
                   </template>
-                  <template v-slot:cell()="data">
-                    {{ data.value }}
+                  <template v-slot:cell()="aPrj">
+                    {{ aPrj.value }}
                   </template>
                 </b-table>
                 <div>
@@ -703,9 +697,7 @@
                     在项目 <span class="cocohighlight-2">{{model.lastrealproject.name}}</span> 中发起
                     <a href="#" class="card-link" @click="KFK.pickPrjForCreateDoc">选择其他项目 &gt;</a>
                   </b-card-text>
-                  <b-form>
-
-
+                  <b-form class="office-form">
                     <b-input-group prepend="白板名称" class="pt-4 px-5">
                       <b-form-input id="docName" trim v-model="model.newdocname" :state="state.newdoc.name"
                         placeholder=""></b-form-input>
@@ -716,11 +708,12 @@
                     <b-input-group prepend="访问密码" class="pt-2 px-5">
                       <b-form-input id="docPwd" :type="model.hidepassword?'password':'text'" trim
                         v-model="model.newdocpwd" placeholder=""></b-form-input>
-                      <b-input-group-append>
-                        <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword">
-                          <b-icon :icon="model.hidepassword?'eye':'eye-slash'" size="sm"></b-icon>
+                      <span class="right-eye">
+                        <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword"
+                          variant="outline-none">
+                          <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
                         </b-button>
-                      </b-input-group-append>
+                      </span>
                     </b-input-group>
                     <b-input-group class="pt-2 px-5 d-flex justify-content-start">
                       <b-button variant="primary" @click="KFK.createNewDoc">发起 &gt;&gt;</b-button>
@@ -756,110 +749,112 @@
                   :current-page="model.currentDocPage" small :fields="model.docfields"
                   @row-clicked="KFK.docRowClickHandler">
 
-                  <template v-slot:head(name)="data">
-                    <b-button variant="outline-none">{{ data.label }}</b-button>
+                  <template v-slot:head(name)="aField">
+                    <b-button variant="outline-none">{{ aField.label }}</b-button>
                   </template>
-                  <template v-slot:head(acl)="data">
+                  <template v-slot:head(acl)="aField">
                     <b-button variant="outline-none" v-b-popover.hover.topright title="设置访问范围">
-                      {{ data.label }}</b-button>
+                      {{ aField.label }}</b-button>
                   </template>
-                  <template v-slot:head(readonly_icon)="data">
+                  <template v-slot:head(readonly_icon)="aField">
                     <b-button variant="outline-none" v-b-popover.hover.topright title="在只读模式和可编辑模式之间切换">
-                      {{ data.label }}</b-button>
+                      {{ aField.label }}</b-button>
                   </template>
-                  <template v-slot:head(protect_icon)="data">
+                  <template v-slot:head(protect_icon)="aField">
                     <b-button variant="outline-none" v-b-popover.hover.topright title="设置协作保护密码">
-                      {{ data.label }}</b-button>
+                      {{ aField.label }}</b-button>
                   </template>
-                  <template v-slot:head(docduplicate)="data">
+                  <template v-slot:head(docduplicate)="aField">
                     <b-button variant="outline-none" v-b-popover.hover.topright title="复制/改名/移动">
-                      {{ data.label }}</b-button>
+                      {{ aField.label }}</b-button>
                   </template>
-                  <template v-slot:head(share_icon)="data">
+                  <template v-slot:head(share_icon)="aField">
                     <b-button variant="outline-none" v-b-popover.hover.topright title="获得分享链接地址">
-                      {{ data.label }}</b-button>
+                      {{ aField.label }}</b-button>
                   </template>
-                  <template v-slot:head(owner)="data">
+                  <template v-slot:head(owner)="aField">
                     <b-button variant="outline-none" v-b-popover.hover.topright title="白板发起人">
-                      {{ data.label }}</b-button>
+                      {{ aField.label }}</b-button>
                   </template>
-                  <template v-slot:head(operations)="data">
-                    <b-button variant="outline-none" v-b-popover.hover.topright title="其它相关操作">
-                      {{ data.label }}</b-button>
+                  <template v-slot:head(operations)="aField">
+                    <div class="d-flex justify-content-center">
+                      <b-button variant="outline-none" v-b-popover.hover.topright title="其它相关操作">
+                        {{ aField.label }}</b-button>
+                    </div>
                   </template>
 
-                  <template v-slot:cell(docduplicate)="data">
+                  <template v-slot:cell(docduplicate)="aDoc">
                     <b-col class="d-flex align-items-center">
                       <b-button size="sm" class="m-0 p-0" variant="outline-none"
-                        @click="KFK.showCopyDocDialog(data.item, data.index, $event.target)">
+                        @click="KFK.showCopyDocDialog(aDoc.item, aDoc.index, $event.target)">
                         <b-icon icon="files" variant="secondary">
                       </b-button>
                     </b-col>
                   </template>
-                  <template v-slot:cell(protect_icon)="data">
+                  <template v-slot:cell(protect_icon)="aDoc">
                     <b-col class="d-flex align-items-center">
-                      <b-button v-if="KFK.iAmOwner(data.item)" size="sm" class="m-0 p-0 myhovered"
-                        variant="outline-none" @click="KFK.showResetPwdModal(data.item, data.index, $event.target)">
-                        <b-icon :icon="data.item.protect_icon" class="opicon"> </b-icon>
+                      <b-button v-if="KFK.iAmOwner(aDoc.item)" size="sm" class="m-0 p-0 myhovered"
+                        variant="outline-none" @click="KFK.showResetPwdModal(aDoc.item, aDoc.index, $event.target)">
+                        <b-icon :icon="aDoc.item.protect_icon" class="opicon"> </b-icon>
                       </b-button>
-                      <b-icon v-else :icon="data.item.protect_icon"> </b-icon>
+                      <b-icon v-else :icon="aDoc.item.protect_icon"> </b-icon>
                     </b-col>
                   </template>
-                  <template v-slot:cell(readonly_icon)="data">
+                  <template v-slot:cell(readonly_icon)="aDoc">
                     <b-col class="d-flex align-items-center">
-                      <b-button v-if="KFK.iAmOwner(data.item)" size="sm" class="m-0 p-0 myhovered"
-                        variant="outline-none" @click="KFK.setDocReadonly(data.item, data.index, $event.target)">
-                        <b-icon :icon="data.item.readonly_icon" variant="secondary" class="opicon"></b-icon>
+                      <b-button v-if="KFK.iAmOwner(aDoc.item)" size="sm" class="m-0 p-0 myhovered"
+                        variant="outline-none" @click="KFK.setDocReadonly(aDoc.item, aDoc.index, $event.target)">
+                        <b-icon :icon="aDoc.item.readonly_icon" variant="secondary" class="opicon"></b-icon>
                       </b-button>
-                      <b-icon v-else :icon="data.item.readonly_icon" variant="secondary"></b-icon>
+                      <b-icon v-else :icon="aDoc.item.readonly_icon" variant="secondary"></b-icon>
                     </b-col>
                   </template>
-                  <template v-slot:cell(share_icon)="data">
+                  <template v-slot:cell(share_icon)="aDoc">
                     <b-col class="d-flex align-items-center">
                       <b-button size="sm" class="m-0 p-0 text-center" variant="outline-none"
-                        @click="SHARE.shareDoc(data.item, data.index, $event.target)">
+                        @click="SHARE.shareDoc(aDoc.item, aDoc.index, $event.target)">
                         <b-icon icon="box-arrow-up" variant="secondary"></b-icon>
                       </b-button>
                     </b-col>
                   </template>
-                  <template v-slot:cell(operations)="data">
-                    <b-col class="d-flex align-items-right" style="padding:0px;">
+                  <template v-slot:cell(operations)="aDoc">
+                    <b-col class="d-flex justify-content-center" style="padding:0px;">
                       <b-button size="sm" class="m-0 p-0" variant="info"
-                        v-on:click="KFK.showDocOpMenu(data.item, data.index, $event)">
+                        v-on:click="KFK.showDocOpMenu(aDoc.item, aDoc.index, $event)">
                         操作
                       </b-button>
                     </b-col>
                   </template>
-                  <template v-slot:cell(owner)="data">
+                  <template v-slot:cell(owner)="aDoc">
                     <b-col class="d-flex align-items-center doc-owner-width">
-                      <div v-if="data.item.ownerAvatar">
-                        <img :src="data.item.ownerAvatarSrc" style="width:18px; height:18px;"></img>
-                        {{data.item.ownerName}}
+                      <div v-if="aDoc.item.ownerAvatar">
+                        <img :src="aDoc.item.ownerAvatarSrc" style="width:18px; height:18px;"></img>
+                        {{aDoc.item.ownerName}}
                       </div>
                       <div v-else class="roundInitial">
-                        {{data.item.ownerName}}
+                        {{aDoc.item.ownerName}}
                       </div>
                     </b-col>
                   </template>
-                  <template v-slot:cell(name)="data">
+                  <template v-slot:cell(name)="aDoc">
                     <b-col class="d-flex align-items-center doc-name-width">
                       <div class="doc-name-inner">
-                        {{data.item.name}}
+                        {{aDoc.item.name}}
                       </div>
                     </b-col>
                   </template>
-                  <template v-slot:cell(acl)="data">
-                    <b-col :id="'orgName-'+data.index"
-                      :class="'d-flex align-items-center doc-acl-width doc-acl-' + data.item.acl">
-                      {{data.item.acl_desc}}
-                      <b-tooltip :target="'orgName-'+data.index" variant="primary"
-                        :title="KFK.getAclOwnerDescription(data.item)">
+                  <template v-slot:cell(acl)="aDoc">
+                    <b-col :id="'orgName-'+aDoc.index"
+                      :class="'d-flex align-items-center doc-acl-width doc-acl-' + aDoc.item.acl">
+                      {{aDoc.item.acl_desc}}
+                      <b-tooltip :target="'orgName-'+aDoc.index" variant="primary"
+                        :title="KFK.getAclOwnerDescription(aDoc.item)">
                       </b-tooltip>
                     </b-col>
                   </template>
-                  <template v-slot:cell()="data">
+                  <template v-slot:cell()="aDoc">
                     <b-col class="d-flex align-items-center">
-                      {{ data.value }}
+                      {{ aDoc.value }}
                     </b-col>
                   </template>
                 </b-table>
@@ -899,53 +894,69 @@
                     role="tabpanel">
                     <b-card-body>
                       <b-table hover id="my-myorg-table" :items="model.myorgs" small :fields="model.myorgfields">
-                        <template v-slot:cell(operations)="row">
-                          <b-button size="sm" @click="KFK.toggleDetails(row)" class="mr-2">
-                            {{ row.detailsShowing ? '隐藏' : '查看'}} 详情
-                          </b-button>
-                          <b-button size="sm" @click="KFK.deleteOrg(row.item._id, row.item.name)" class="mr-2">
-                            删除组织
-                          </b-button>
-                          <b-button size="sm" @click="KFK.enterOrg(row.item._id)" class="mr-2">
-                            切换到
-                          </b-button>
+                        <template v-slot:cell(name)="aOrg">
+                          <div class="cocohighlight-2">{{aOrg.item.name}}</div>
                         </template>
-                        <template v-slot:row-details="row">
+                        <template v-slot:cell(operations)="aOrg">
+                          <div class="d-flex justify-content-end">
+                            <b-button size="sm" @click="KFK.toggleDetails(aOrg)" class="mr-2">
+                              {{ aOrg.detailsShowing ? '隐藏' : '查看'}} 详情
+                            </b-button>
+                            <b-button size="sm" @click="KFK.deleteOrg(aOrg.item, aOrg.item.name)" class="mr-2">
+                              删除组织
+                            </b-button>
+                            <b-button size="sm" @click="KFK.enterOrg(aOrg.item._id)" class="mr-2">
+                              切换到
+                            </b-button>
+                          </div>
+                        </template>
+                        <template v-slot:head(operations)="aOrg">
+                          <div class="d-flex justify-content-center"> {{ aOrg.label }}</div>
+                        </template>
+                        <template v-slot:row-details="aOrg">
                           <b-form inline>
-                            <label class="sr-only" for="inline-form-input-newuserid">userId Email</label>
-                            <b-input-group prepend="@" class="mb-2 mr-sm-2 mb-sm-0">
-                              <b-input :id="'inline-form-input-newuserid-' + row.index" placeholder="userId email">
+                            <b-input-group prepend="@" class="mb-2 w-100">
+                              <b-input :id="'inline-form-input-newuserid-' + aOrg.index" placeholder="userId email">
                               </b-input>
-                              <b-button @click="KFK.addOrgUser(row.item._id, row.index)" size="sm" variant="primary">
+                              <b-button @click="KFK.addOrgUser(aOrg.item._id, aOrg.index)" size="sm" variant="primary">
                                 添加成员
                               </b-button>
                             </b-input-group>
                             <!-- add org member add member-->
-                            <b-input-group prepend="改名" class="mb-2 mr-sm-2 mb-sm-0">
-                              <b-input :id="'inline-form-input-changeorgname-'+ row.index"
+                          </b-form>
+                          <b-form inline>
+                            <b-input-group prepend="改名" class="mb-2 w-100">
+                              <b-input :id="'inline-form-input-changeorgname-'+ aOrg.index"
                                 placeholder="新名字, 4-20个英文字母或汉字"></b-input>
-                              <b-button @click="KFK.changeOrgName(row.item._id, row.index)" size="sm" variant="primary">
+                              <b-button @click="KFK.changeOrgName(aOrg.item._id, aOrg.index)" size="sm"
+                                variant="primary">
                                 修改名称</b-button>
                             </b-input-group>
                             <!-- add org member add member-->
                           </b-form>
-                          <b-table :items="model.orgusers[row.item._id]" small :fields="model.useridfields">
-                            <template v-slot:cell(operations)="data">
-                              <b-button size="sm" class="m-0 p-0" variant="outline-danger"
-                                @click="KFK.deleteOrgUser(row.item._id, data.item, data.index, $event.target)"
-                                variant="outline-primary">
-                                <b-icon icon="trash"></b-icon>
-                              </b-button>
+                          <b-table :items="model.orgusers[aOrg.item._id]" small :fields="model.useridfields">
+                            <template v-slot:head(operations)="aLabel">
+                              <div class="d-flex justify-content-center"> {{ aLabel.label }}</div>
                             </template>
-                            <template v-slot:cell()="data">
+                            <template v-slot:cell(operations)="aOrgUser">
+                              <div class="d-flex justify-content-center">
+                                <!-- remove org user, delete org user, delete orguser -->
+                                <b-button size="sm" class="m-0 p-0" variant="outline-danger"
+                                  @click="KFK.deleteOrgUser(aOrg.item, aOrgUser.item, aOrgUser.index, $event.target)"
+                                  variant="outline-primary">
+                                  <b-icon icon="trash"></b-icon>
+                                </b-button>
+                              </div>
+                            </template>
+                            <template v-slot:cell()="aOrgUser">
                               <!-- 每个orguser的缺省显示-->
-                              {{ data.value }}
+                              {{ aOrgUser.value }}
                             </template>
                           </b-table>
                         </template>
-                        <template v-slot:cell()="data">
+                        <template v-slot:cell()="aOrg">
                           <!-- 每个org的缺省显示 -->
-                          {{ data.value }}
+                          {{ aOrg.value }}
                         </template>
                       </b-table>
                     </b-card-body>
@@ -966,8 +977,8 @@
                             切换到
                           </b-button>
                         </template>
-                        <template v-slot:cell()="data">
-                          {{ data.value }}
+                        <template v-slot:cell()="aVorg">
+                          {{ aVorg.value }}
                         </template>
                       </b-table>
                     </b-card-body>
@@ -1053,28 +1064,30 @@
             </b-input-group>
           </b-container>
         </b-modal>
-        <b-modal @ok="KFK.resetDocPwd" v-model="show.dialog.resetDocPasswordDialog"
-          title="设置协作密码" button-size="sm" centered size="md">
-          <b-input-group prepend="原协作码" class="px-5 pt-2">
-            <b-form-input tabindex="1" trim :type="model.hidepassword?'password':'text'" v-model="model.docOldPwd">
-            </b-form-input>
-            <span class="right-round-span">
-              <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword"
-                variant="outline-none">
-                <b-icon :icon="model.hidepassword?'eye':'eye-slash'" size="sm"></b-icon>
-              </b-button>
-            </span>
-          </b-input-group>
-          <b-input-group prepend="新协作码" class="px-5 pt-2">
-            <b-form-input tabindex="2" trim :type="model.hidepassword?'password':'text'" v-model="model.docNewPwd">
-            </b-form-input>
-            <span class="right-round-span">
-              <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword"
-                variant="outline-none">
-                <b-icon :icon="model.hidepassword?'eye':'eye-slash'" size="sm"></b-icon>
-              </b-button>
-            </span>
-          </b-input-group>
+        <b-modal @ok="KFK.resetDocPwd" v-model="show.dialog.resetDocPasswordDialog" title="设置协作密码" button-size="sm"
+          centered size="md">
+          <b-form class="office-form">
+            <b-input-group prepend="原协作码" class="px-5 pt-2">
+              <b-form-input tabindex="1" trim :type="model.hidepassword?'password':'text'" v-model="model.docOldPwd">
+              </b-form-input>
+              <span class="right-eye">
+                <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword"
+                  variant="outline-none">
+                  <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" size="sm"></b-icon>
+                </b-button>
+              </span>
+            </b-input-group>
+            <b-input-group prepend="新协作码" class="px-5 pt-2">
+              <b-form-input tabindex="2" trim :type="model.hidepassword?'password':'text'" v-model="model.docNewPwd">
+              </b-form-input>
+              <span class="right-eye">
+                <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword"
+                  variant="outline-none">
+                  <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" size="sm"></b-icon>
+                </b-button>
+              </span>
+            </b-input-group>
+          </b-form>
           <div class="px-5 pt-2">
             <a href="#" class="card-link" @click="KFK.toggleFromResetToRemovePwd">&lt; 如忘记原协作码，可输入用户密码予以清除</a>
             <BR>
@@ -1190,30 +1203,35 @@
               </b-input-group>
               <b-input-group prepend="原密码" class="mb-1">
                 <b-form-input id="profile_oldpwd" trim :type="model.hidepassword?'password':'text'"
-                  v-model="model.profileToSet.oldpwd" :state="state.profile.oldpwd"
-                  required></b-form-input>
+                  v-model="model.profileToSet.oldpwd" :state="state.profile.oldpwd" required></b-form-input>
                 <b-form-invalid-feedback id="profile_oldpwd-feedback">
                   密码至少8字符，<BR>必须含大小写字母数字和特殊字符
                 </b-form-invalid-feedback>
               </b-input-group>
               <b-input-group prepend="新密码" class="mb-1">
                 <b-form-input :type="model.hidepassword?'password':'text'" class="no-right-border" required trim
-                  id="profile_newpwd" tabindex="3" 
-                  v-model="model.profileToSet.newpwd" 
-                  :state="state.profile.newpwd" 
+                  id="profile_newpwd" tabindex="3" v-model="model.profileToSet.newpwd" :state="state.profile.newpwd"
                   placeholder="8个以上字母数字特殊字符">
                 </b-form-input>
-                <span class="right-eye-span"> <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword" variant="outline-none"> <b-icon scale="1" :icon="model.hidepassword?'eye':'eye-slash'" /> </b-button> </span>
+                <span class="right-eye">
+                  <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword"
+                    variant="outline-none">
+                    <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
+                  </b-button>
+                </span>
                 <b-form-invalid-feedback id="profile_newpwd-feedback">
                   密码至少8字符，<BR>必须含大小写字母数字和特殊字符
                 </b-form-invalid-feedback>
               </b-input-group>
               <b-input-group prepend="新密码" class="mb-1">
                 <b-form-input id="profile_newpwd2" trim :type="model.hidepassword?'password':'text'"
-                  v-model="model.profileToSet.newpwd2" :state="state.profile.newpwd2" class="no-right-border"
-                  required placeholder="密码二次输入确认"></b-form-input>
-                <span class="right-eye-span">
-                  <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword" variant="outline-none"> <b-icon scale="1" :icon="model.hidepassword?'eye':'eye-slash'" /> </b-button>
+                  v-model="model.profileToSet.newpwd2" :state="state.profile.newpwd2" class="no-right-border" required
+                  placeholder="密码二次输入确认"></b-form-input>
+                <span class="right-eye">
+                  <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword"
+                    variant="outline-none">
+                    <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
+                  </b-button>
                 </span>
                 <b-form-invalid-feedback id="profile_newpwd2-feedback">
                   两次输入密码必须一样
@@ -1248,8 +1266,9 @@
           </b-button>
         </b-button-group>
       </div>
-      <div> <b-link v-on:click="KFK.gotoExplorerTab(2)" class="explorer-user-orgname">
-            {{model.cocouser.orgname}}</b-link>
+      <div>
+        <b-link v-on:click="KFK.gotoExplorerTab(2)" class="explorer-user-orgname">
+          {{model.cocouser.orgname}}</b-link>
       </div>
     </div> <!-- explorer -->
     <!--minimap-->
@@ -1333,7 +1352,7 @@
             <b-icon icon="box-arrow-up" variant="secondary"></b-icon>分享
           </b-button>
         </b-col>
-        <b-col class="myhovered" @click="deleteDocItem(model.currentDoc); KFK.hideDocOpMenu();">
+        <b-col class="myhovered" @click="KFK.deleteDocItem(model.currentDoc); KFK.hideDocOpMenu();">
           <b-button v-if="model.currentDoc && model.currentDoc.owner===model.cocouser.userid" class="m-0 p-0 avatarimg"
             variant="outline-none">
             <b-icon icon="trash" variant="secondary"></b-icon>删除
@@ -1350,6 +1369,11 @@
     </div>
     <div id="copydiv" style="display: none; z-index: -99999"></div>
     <div id="centerpoint" class="centerpoint noshow"></div>
+    <div class="reconnect-mask nodisplay">
+      <div class="reconnect-msg">
+        <p id='reconnect-warning'>Reconnecting...</p>
+      </div>
+    </div>
   </div>
   <!--app-->
 </body>

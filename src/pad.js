@@ -71,7 +71,6 @@ const app = new Vue({
       'shape_property': false,
       'customfont': false,
       'customline': true,
-      'waitingws': true,
       'signinform': false,
       'explorer': true,
       'actionlog': false,
@@ -345,57 +344,6 @@ const app = new Vue({
     handleTipHover(tip) {
       console.log('Hover on ' + tip);
       // $('#tipvariant_'+tip).style.visibility= "hidden";
-    },
-    deletePrjItem(item, index, button) {
-      console.log(item);
-      console.log(index);
-      this.$bvModal.msgBoxConfirm('删除项目: [' + item.name + ']', {
-        title: '请确认删除',
-        size: 'md',
-        buttonSize: 'sm',
-        okVariant: 'danger',
-        okTitle: '确认',
-        cancelTitle: '取消',
-        footerClass: 'p-2',
-        hideHeaderClose: false,
-        centered: true
-      })
-        .then(value => {
-          if (value) {
-            for (let i = 0; i < this.model.prjs.length; i++) {
-              if (this.model.prjs[i].prjid === item.prjid) {
-                KFK.deletePrj(item.prjid);
-                break;
-              }
-            }
-          }
-        })
-        .catch(err => { })
-    },
-
-    deleteDocItem(item, index, button) {
-      this.$bvModal.msgBoxConfirm('删除文档: [' + item.name + ']', {
-        title: '请确认删除',
-        size: 'sm',
-        buttonSize: 'sm',
-        okVariant: 'danger',
-        okTitle: '确认',
-        cancelTitle: '取消',
-        footerClass: 'p-2',
-        hideHeaderClose: false,
-        centered: true
-      })
-        .then(value => {
-          if (value) {
-            for (let i = 0; i < this.model.docs.length; i++) {
-              if (this.model.docs[i]._id === item._id) {
-                KFK.deleteDoc(item._id);
-                break;
-              }
-            }
-          }
-        })
-        .catch(err => { })
     },
   },
 }).$mount("#app");

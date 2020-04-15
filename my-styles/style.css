@@ -421,6 +421,27 @@ svg path {
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 999999999;
+}
+.reconnect-mask{
+  position: absolute;
+  top: 0px; left:0px;
+  z-index: 999999998;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3)
+}
+
+.reconnect-msg{
+  display: flex;
+  position: absolute;
+  width: 100%; height: 40px;
+  left: 0px; bottom: 20px;
+  background-color: rgba(76, 0, 255, 0.151);
+}
+.reconnect-mask p{
+  margin: auto;
+  text-align: center;
 }
 
 .waitinglogo .logo {
@@ -434,6 +455,13 @@ svg path {
 
 .padlogo {
   z-index: 999;
+}
+
+.nodisplay{
+  display: none;
+}
+.displayblock{
+  display: block;
 }
 
 .noshow {
@@ -530,7 +558,7 @@ svg path {
 }  */
 
 
-.right-round-span {
+.signinform .right-eye, .registerform .right-eye{
   border-radius: 20px;
   border: 1px solid #ced4da;
   border-left: 0px;
@@ -543,8 +571,15 @@ svg path {
   border-right-width: 0px !important;
 }
 
-.right-eye-span {
+.profileform .right-eye{
   border: 1px solid #ced4da;
+  border-left: 0px;
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
+  background-color: rgba(194, 238, 191, 0.85);
+}
+
+.office-form .right-eye{
   border-left: 0px;
   border-top-left-radius: 0px;
   border-bottom-left-radius: 0px;
@@ -604,26 +639,10 @@ input#regUserCode {
   overflow: auto;
 }
 
-.explorer-user-info{
-  position: absolute;
-  top: 0px;
-  right: 0px;
-  width: 300px;
-  background-color: red;
-  z-index: 9999;
-}
-
 .explorer-user-avatar {
-  position: absolute;
-  width: 60px;
-  height: 60px;
-  top: -20px;
-  right: 20px;
-}
-.explorer-user-dropdown{
-  position: absolute;
-  right: 80px;
-  top: 8px;
+  position: relative;
+  width: 80px; height: 80px;
+  top: -20px; right: 0px;
 }
 .explorer-user-orgname{
   position: absolute;

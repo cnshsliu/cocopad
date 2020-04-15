@@ -1,4 +1,5 @@
-//TODO: 设置WS重连间隔和重连次数到合理范围,重连多少次后放弃重连
+//TODO: 第二行菜单添加图标
+//TODO: 更换头部 "协作白板"为 图片, 与好友一起写写画画
 //TODO: writing-mode: exampleText {
   writing-mode: vertical-lr;
   padding-inline-end: 20px;
