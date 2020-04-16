@@ -2,5 +2,5 @@
 //TODO: 备份加密secretkey到U盘
 //TODO: 部署
 //TODO: chat mode
-//TODO: GROUP unGROUP?
+//TODO: GROUP unGROUP解决解决jjjj解决解决解决?
 //TODO: prevent ESC on fullscreen mode
