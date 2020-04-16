@@ -199,7 +199,7 @@ KFK.myuid = () => {
 KFK.scrollContainer = $("#S1");
 KFK.lockMode = false;
 KFK.selectedDIVs = [];
-KFK.mouseIsDown = false;
+KFK.kuangXuanMouseIsDown = false;
 KFK.kuangXuanStartPoint = { x: 0, y: 0 };
 KFK.kuangXuanEndPoint = { x: 0, y: 0 };
 KFK.duringKuangXuan = false;
@@ -1007,7 +1007,7 @@ KFK.initC3 = function () {
   KFK.JC3.mousedown(evt => {
     if (KFK.inDesigner() === false) return;
     if (KFK.mode === "pointer" && KFK.docIsReadOnly() === false) {
-      KFK.mouseIsDown = true;
+      KFK.kuangXuanMouseIsDown = true;
       KFK.kuangXuanStartPoint = {
         x: KFK.scrXToJc3X(evt.clientX),
         y: KFK.scrYToJc3Y(evt.clientY)
@@ -1035,7 +1035,7 @@ KFK.initC3 = function () {
       $(document.body).css("cursor", "default");
     }
     if (KFK.mode === "pointer" && KFK.docIsReadOnly() === false) {
-      KFK.mouseIsDown = false;
+      KFK.kuangXuanMouseIsDown = false;
       KFK.kuangXuanEndPoint = {
         x: KFK.scrXToJc3X(evt.clientX),
         y: KFK.scrYToJc3Y(evt.clientY)
@@ -1065,10 +1065,10 @@ KFK.initC3 = function () {
 
     $("#modeIndicator").css("left", indicatorX + 10);
     $("#modeIndicator").css("top", indicatorY + 10);
-    KFK.kuangXuanEndPoint = {
-      x: KFK.scrXToJc3X(evt.clientX),
-      y: KFK.scrYToJc3Y(evt.clientY)
-    };
+    // KFK.kuangXuanEndPoint = {
+    //   x: KFK.scrXToJc3X(evt.clientX),
+    //   y: KFK.scrYToJc3Y(evt.clientY)
+    // };
 
     if (KFK.docIsReadOnly()) return;
 
@@ -1080,20 +1080,9 @@ KFK.initC3 = function () {
       KFK.lineToDrag = null;
     }
     //支持按下鼠标， 框选多个node
-    if (
-      KFK.mode === "pointer" &&
-      KFK.mouseIsDown &&
-      KFK.lineDragging === false &&
-      KFK.lineMoverDragging === false &&
-      KFK.minimapMouseDown === false
-    ) {
-      // KFK.scrLog(
-      //   `框选 ${JSON.stringify(KFK.kuangXuanStartPoint)} - ${JSON.stringify(
-      //     KFK.kuangXuanEndPoint
-      //   )}`
-      // );
-      KFK.kuangXuan(KFK.kuangXuanStartPoint, KFK.kuangXuanEndPoint);
-    }
+    // if (KFK.isDuringKuangXuan()){
+    //   KFK.kuangXuan(KFK.kuangXuanStartPoint, KFK.kuangXuanEndPoint);
+    // }
     if (KFK.lineDragging || KFK.lineMoverDragging || KFK.minimapMouseDown) {
       KFK.duringKuangXuan = false;
     }
@@ -1157,6 +1146,17 @@ KFK.initC3 = function () {
   KFK.zoomLevel = 1;
   KFK.addMinimap();
 };
+
+KFK.isDuringKuangXuan = function () {
+  if (
+    KFK.mode === "pointer" &&
+    KFK.kuangXuanMouseIsDown &&
+    KFK.lineDragging === false &&
+    KFK.lineMoverDragging === false &&
+    KFK.minimapMouseDown === false
+  ) return true;
+  else return false;
+}
 
 KFK.addMinimap = function () {
   KFK.refreshC3event = new CustomEvent("refreshC3");
@@ -1295,12 +1295,16 @@ KFK.kuangXuan = function (pt1, pt2) {
   let x2 = pt2.x + KFK.LeftB;
   let y2 = pt2.y + KFK.TopB;
   KFK.debug(x1, y1, x2, y2);
-  KFK.duringKuangXuan = true;
   let jqRect = $("#selectingrect");
   jqRect.css("left", Math.min(x1, x2));
   jqRect.css("top", Math.min(y1, y2));
   jqRect.css("width", Math.abs(x1 - x2));
   jqRect.css("height", Math.abs(y1 - y2));
+  if (Math.abs(x1 - x2) < 10 && Math.abs(y1 - y2) < 10){
+    //这里，如果滑动大小横向和纵向都小于10， 则不作为框选
+    return;
+  }
+  KFK.duringKuangXuan = true;
   jqRect.show();
 };
 
@@ -1313,6 +1317,10 @@ KFK.endKuangXuan = function (pt1, pt2) {
     width: Math.abs(pt1.x - pt2.x),
     height: Math.abs(pt1.y - pt2.y)
   };
+  if (rect.width < 10 && rect.height < 10){
+    //这里，如果滑动大小横向和纵向都小于10， 则不作为框选
+    return;
+  }
   rect.right = rect.left + rect.width;
   rect.bottom = rect.top + rect.height;
 
@@ -5569,6 +5577,23 @@ KFK.addDocumentEventHandler = function () {
       default:
         preventDefault = false;
 
+    }
+  });
+
+  //标记框选开始，是在JC3的mousedown中做记录的
+  //标记框选结束，也是在JC3的mouseup中做记录的
+  //但mousemove需要在document的mousemove事件处理中进行处理。 
+  //因为，如果不这样做，滑动鼠标出现选择框后，如果鼠标回到选择框内，则JC3抓不到mousemove事件
+  //导致的现象就是选择框只可以放大，不可以缩小
+  $(document).on("mousemove", function (evt) {
+    if (KFK.inDesigner() === false) return;
+    if (KFK.inPresentingMode || KFK.inOverviewMode) return;
+    KFK.kuangXuanEndPoint = {
+      x: KFK.scrXToJc3X(evt.clientX),
+      y: KFK.scrYToJc3Y(evt.clientY)
+    };
+    if (KFK.isDuringKuangXuan()) {
+      KFK.kuangXuan(KFK.kuangXuanStartPoint, KFK.kuangXuanEndPoint);
     }
   });
 

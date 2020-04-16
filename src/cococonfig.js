@@ -61,7 +61,7 @@ const config = {
             edittable: true,
             customshape: true,
             content: '',
-            usequill:true,
+            useQuill:true,
         },
         pin: {
             width: 40,
