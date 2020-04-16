@@ -1,9 +1,3 @@
-//TODO: writing-mode: exampleText {
-  writing-mode: vertical-lr;
-  padding-inline-end: 20px;
-  background-color: #C8C800;
-}
-
 //TODO: 文档保护码加密
 //TODO: 备份加密secretkey到U盘
 //TODO: 部署
