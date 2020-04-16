@@ -1194,3 +1194,13 @@ input {
   font-size: xx-small;
   background-color: whitesmoke;
 }
+
+table.quick-help-table{
+  border: 1px solid #3e3ecc;
+}
+table.quick-help-table .title{
+  background-color: #e5dbff;
+}
+table.quick-help-table tr{
+  border: 1px solid #e5dbff;
+}

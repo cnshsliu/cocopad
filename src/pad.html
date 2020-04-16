@@ -315,14 +315,18 @@
                     </b-form-select>
                   </div>
                 </div>
-                <div class="row mx-auto my-1"> <div class="col">书写方向</div>
+                <div class="row mx-auto my-1">
+                  <div class="col">书写方向</div>
                   <b-button-group class="d-flex w-100">
-                    <b-button variant="light" title="一般" class="flex-fill p-0" @click="KFK.setWritingMode('horizontal-tb')"><img
-                        src="../assets/wm_tb.svg" class="toolbar"></b-button>
-                    <b-button variant="light" title="纵向右到左" class="flex-fill p-0" @click="KFK.setWritingMode('vertical-rl')"><img
-                        src="../assets/wm_rl.svg" class="toolbar"></b-button>
-                    <b-button variant="light" title="纵向左到右" class="flex-fill p-0" @click="KFK.setWritingMode('vertical-lr')"><img
-                        src="../assets/wm_lr.svg" class="toolbar"></b-button>
+                    <b-button variant="light" title="一般" class="flex-fill p-0"
+                      @click="KFK.setWritingMode('horizontal-tb')"><img src="../assets/wm_tb.svg" class="toolbar">
+                    </b-button>
+                    <b-button variant="light" title="纵向右到左" class="flex-fill p-0"
+                      @click="KFK.setWritingMode('vertical-rl')"><img src="../assets/wm_rl.svg" class="toolbar">
+                    </b-button>
+                    <b-button variant="light" title="纵向左到右" class="flex-fill p-0"
+                      @click="KFK.setWritingMode('vertical-lr')"><img src="../assets/wm_lr.svg" class="toolbar">
+                    </b-button>
                   </b-button-group>
                 </div>
               </b-collapse>
@@ -493,39 +497,47 @@
       </div>
 
       <div id="rtcontrol" class="padlayout noshow">
-        <b-button-group class="coco">
+        <div>
           <b-button id="goto_explorer" variant="outline-success" @click="KFK.gotoExplorer">
             <b-icon icon="house"></b-icon>
           </b-button>
           <b-button id='sharethisbutton' @click="SHARE.shareThisDoc" class="" variant="outline-success">
             <b-icon icon="box-arrow-up"></b-icon>分享
           </b-button>
-        </b-button-group>
-        <b-button-group class="coco">
-          <b-button id="onepage" variant="outline-success" @click="KFK.toggleOnePage">
-            <b-icon icon="grid3x2" shift-h="-1.2" shift-v="1.1"></b-icon>
-          </b-button>
-        </b-button-group>
-        <b-button-group class="coco">
-          <b-button disable="model.cocodoc.readonly" id="toggle_all" variant="outline-success"
-            @click="KFK.toggleFullScreen">
-            <b-icon icon="arrows-fullscreen"></b-icon>
-          </b-button>
-          <b-button disable="model.cocodoc.readonly" id="toggle_cbonly" variant="outline-success"
-            @click="KFK.toggleControlButtonOnly">
-            <b-icon v-if="KFK.controlButtonsOnly===false" icon="layout-sidebar-reverse" rotate="270"></b-icon>
-            <b-icon v-else icon="layout-sidebar-inset-reverse" rotate="270"></b-icon>
-          </b-button>
-          <b-button disable="model.cocodoc.readonly" id="toggle-right" variant="outline-success"
-            @click="KFK.toggleRight">
-            <b-icon v-if="KFK.showRightTools===false" icon="layout-sidebar-reverse"></b-icon>
-            <b-icon v-else icon="layout-sidebar-inset-reverse"></b-icon>
-          </b-button>
-          <b-button disable="model.cocodoc.readonly" id="toggle-minimap" variant="outline-success"
-            @click="KFK.toggleMinimap">
-            <b-icon icon="map"></b-icon>
-          </b-button>
-        </b-button-group>
+          <b-dropdown right variant="outline-success" class="m-2">
+            <template v-slot:button-content>使用说明</template>
+            <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle_all" variant="outline-success"
+            v-b-modal.modal-key-shortcut>
+              <b-icon icon="arrows-fullscreen"></b-icon>&nbsp;快捷键
+            </b-dropdown-item>
+            <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle_all" variant="outline-success"
+              @click="KFK.toggleFullScreen">
+              <b-icon icon="arrows-fullscreen"></b-icon>&nbsp;完整帮助
+            </b-dropdown-item>
+          </b-dropdown>
+          <b-dropdown right text="显示设置" variant="outline-success" class="m-2">
+            <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle_all" variant="outline-success"
+              @click="KFK.toggleFullScreen">
+              <b-icon icon="arrows-fullscreen"></b-icon>&nbsp;全屏(fs)
+            </b-dropdown-item>
+            <b-dropdown-item id="onepage" variant="outline-success" @click="KFK.toggleOnePage">
+              <b-icon icon="grid3x2" shift-h="-1.2" shift-v="1.1"></b-icon>&nbsp;全局概览
+            </b-dropdown-item>
+            <b-dropdown-item href="#" id="toggle_cbonly" variant="outline-success" @click="KFK.toggleControlButtonOnly">
+              <b-icon v-if="KFK.controlButtonsOnly===false" icon="layout-sidebar-reverse" rotate="270"></b-icon>
+              <b-icon v-else icon="layout-sidebar-inset-reverse" rotate="270"></b-icon>&nbsp;切换工具栏
+            </b-dropdown-item>
+            <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle-right" variant="outline-success"
+              @click="KFK.toggleRight">
+              <b-icon v-if="KFK.showRightTools===false" icon="layout-sidebar-reverse"></b-icon>
+              <b-icon v-else icon="layout-sidebar-inset-reverse"></b-icon>&nbsp;切换属性栏
+            </b-dropdown-item>
+            <b-dropdown-item disable="model.cocodoc.readonly" id="toggle-minimap" variant="outline-success"
+              @click="KFK.toggleMinimap">
+              <b-icon icon="map"></b-icon>切换小地图
+            </b-dropdown-item>
+          </b-dropdown>
+        </div>
       </div>
       <div id="actionloglist" v-show="show.actionlog" style="overflow-y:scroll" class="p-3">
         协作参与者
@@ -710,7 +722,7 @@
                     在项目 <span class="cocohighlight-2">{{model.lastrealproject.name}}</span> 中发起
                     <a href="#" class="card-link" @click="KFK.pickPrjForCreateDoc">选择其他项目 &gt;</a>
                   </b-card-text>
-                  <b-form class="office-form" autocomplete="off" >
+                  <b-form class="office-form" autocomplete="off">
                     <b-input-group prepend="白板名称" class="pt-4 px-5">
                       <b-form-input id="docName" trim v-model="model.newdocname" :state="state.newdoc.name"
                         placeholder="请输入白板名称"></b-form-input>
@@ -738,8 +750,7 @@
                 </b-card>
               </div>
               <div v-show="show.form.doclist" style="overflow-y:scroll">
-                <b-tabs v-model="docNavTabIndex" active-nav-item-class="text-danger"
-                active-tab-class="text-success">
+                <b-tabs v-model="docNavTabIndex" active-nav-item-class="text-danger" active-tab-class="text-success">
                   <b-tab title="我发起的" @click="KFK.gotoPrj('mine', '所有我发起的协作文档')">
                   </b-tab>
                   <b-tab title="他人分享的" @click="KFK.gotoPrj('others', '所有他人分享给我的协作文档')">
@@ -751,10 +762,10 @@
                 </b-tabs>
 
                 <div class="w-100 d-flex justify-content-center cocohighlight-3">
-                <span class="page-title">
-                  {{model.cocoprj.name}}
-                </span>
-              </div>
+                  <span class="page-title">
+                    {{model.cocoprj.name}}
+                  </span>
+                </div>
 
                 <!-- doc list -->
                 <b-table hover id="my-doc-table" :items="model.docs" :per-page="model.perPage"
@@ -942,7 +953,7 @@
                           <b-form inline>
                             <b-input-group prepend="改名" class="mb-2 w-100">
                               <b-input :id="'inline-form-input-changeorgname-'+ aOrg.index"
-                                placeholder="新名字, 4-20个英文字母或汉字"></b-input>
+                                placeholder="新名字, 4-20个英文字母或汉字" :value="aOrg.item.name"></b-input>
                               <b-button @click="KFK.changeOrgName(aOrg.item, aOrg.index)" size="sm" variant="primary">
                                 修改名称</b-button>
                             </b-input-group>
@@ -1388,6 +1399,50 @@
         <p id='reconnect-warning'>Reconnecting...</p>
       </div>
     </div>
+    <b-modal id="modal-key-shortcut" scrollable title="操作快捷键">
+      <table class="quick-help-table">
+        <tr class="title"><td colspan=2>模式切换</td></tr>
+        <tr><td>fs</td><td>切换全屏</td></tr>
+        <tr><td>鼠标双击空白区域</td><td> 进入全局概览模式</td></tr>
+        <tr><td>概览模式下鼠标双击</td><td> 切换会正常编辑模式，且居中在双击位置</td></tr>
+        <tr><td>haola或hl或pr</td><td> 进入幻灯片模式</td></tr>
+
+        <tr class="title"><td colspan=2>正常模式下的操作</td></tr>
+        <tr><td>gt gd gh gl</td><td> 选中对象到 最顶层 最下层 上一层 下一层</td></tr>
+        <tr><td>回车或双击对象</td><td> 编辑选中对象文字</td></tr>
+        <tr><td>Ctrl-回车/Meta-回车</td><td> 结束文字编辑</td></tr>
+        <tr><td>lk或lock</td><td>切换选中对象的加解锁状态。加锁后对象不可修改。也可通过选择左侧工具栏的锁工具，然后点要加解锁的对象来操作</td></tr>
+        <tr><td>Ctrl-C/Meta-C</td><td>拷贝当前对象。当前对象是指鼠标悬浮对象，选中对象，或刚创建的对象。</td></tr>
+        <tr><td>Ctrl-V/Meta-V</td><td>粘贴当前对象、粘贴文字、图片。如拷贝了对象，则在鼠标当前位置粘贴对象。
+          如在其他应用中复制了文字、图片，则将文字或图片粘贴到白板上，如粘贴时鼠标悬浮在一个对象上，
+          则文字图片粘贴到对象上，否则，粘贴在白板上鼠标所在位置。
+          在浏览网页时，在需要复制的图片上点右键，复制图片，回到白板上，可粘贴所复制的图片到白板。
+          URL地址在粘贴时，会提示地址说明，并粘贴一个地址链接到白板上
+        </td></tr>
+        <tr><td>Ctrl-Z/Meta-Z</td><td>取消前一步操作</td></tr>
+        <tr><td>Ctrl-Shift-Z/Meta-Shift-Z</td><td>撤回取消</td></tr>
+        <tr><td>Ctrl-X/Meta-X</td><td>剪切当前对象</td></tr>
+        <tr><td>数字g</td><td>1-36数字，然后按g，切换到相应区域。 白板一共36个区域，横向6列、纵向6行。编号从左到右，从上到下，第一行编号分别是1-6， 第二行为7-12，以此类推。</td></tr>
+        <tr><td>PageUp/PageDown</td><td> 依次切换到前一区域、后一区域。</td></tr>
+        <tr><td>Home/End</td><td> 切换到1号区域、第36号区域。</td></tr>
+        <tr><td>上下左右箭头</td><td> 切换到上下左右相邻的区域</td></tr>
+
+        <tr class="title"><td colspan=2>概览模式下的操作</td></tr>
+        <tr><td>概览模式下鼠标双击</td><td> 切换会正常编辑模式，且居中在双击位置</td></tr>
+
+        <tr class="title"><td colspan=2>幻灯片模式下的操作</td></tr>
+        <tr><td>b</td><td>黑色遮罩</td></tr>
+        <tr><td>w</td><td>白色遮罩</td></tr>
+        <tr><td>haola或hl或pr或stop</td><td> 退出幻灯片模式，进入正常模式</td></tr>
+        <tr><td>PageUp/PageDown</td><td> 依次切换到前一区域、后一区域。</td></tr>
+        <tr><td>上下左右箭头</td><td> 切换到上下左右相邻的区域</td></tr>
+        <tr><td>Home/End</td><td> 切换到1号区域、第36号区域。</td></tr>
+        <tr><td>last或end</td><td>到最后一页</td></tr>
+        <tr><td>prev</td><td>到前一页</td></tr>
+        <tr><td>next</td><td>到后一页</td></tr>
+        <tr><td>数字g</td><td>1-36数字，然后按g，切换到相应区域。 白板一共36个区域，横向6列、纵向6行。编号从左到右，从上到下，第一行编号分别是1-6， 第二行为7-12，以此类推。</td></tr>
+      </table>
+    </b-modal>
   </div>
   <!--app-->
 </body>

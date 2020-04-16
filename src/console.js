@@ -3411,7 +3411,6 @@ KFK.onWsConnected = function () {
   } else {
     //重新连接
     KFK.debug('>>>>>>>>WS Reconnect success...');
-    //TODO: sames like line is not offline marked
     let count = 0;
     $(document)
       .find(".offline")
