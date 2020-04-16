@@ -3,3 +3,4 @@
 //TODO: 部署
 //TODO: chat mode
 //TODO: GROUP unGROUP?
+//TODO: prevent ESC on fullscreen mode

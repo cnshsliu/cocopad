@@ -101,20 +101,20 @@ body {
   left: 5px;
   width: 70px;
   height: calc(100vh - 200px);
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  box-shadow: 0 4px 8px 0 #000000CC, 0 6px 20px 0 #000000CC;
   border-radius: 15px;
 }
 
 #right {
   padding: 5px;
   background: #ffffff;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  box-shadow: 0 4px 8px 0 #000000CC, 0 6px 20px 0 #000000CC;
   position: absolute;
   top: 100px;
   right: 5px;
   width: 240px;
   height: calc(100vh - 200px);
-  border: 1px solid rgba(0, 0, 0, 0.2);
+  border: 1px solid #0000004C;
   border-radius: 15px;
 }
 
@@ -152,13 +152,13 @@ body {
 #actionloglist {
   padding: 5px;
   background: #ffffff;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  box-shadow: 0 4px 8px 0 #000000CC, 0 6px 20px 0 #000000CC;
   position: absolute;
   top: 100px;
   right: 5px;
   width: 240px;
   height: calc(100vh - 200px);
-  border: 1px solid rgba(0, 0, 0, 0.2);
+  border: 1px solid #000000CC;
   border-radius: 15px;
   z-index: 999;
 }
@@ -212,6 +212,11 @@ body {
   background-image: url("../assets/grid1.svg");
   background-size: 20px 20px;
 }
+.grid2 {
+  background-image: url("../assets/grid2.svg");
+  background-size: 20px 20px;
+}
+
 
 .liukehong1 {
   background: red;
@@ -233,7 +238,7 @@ body {
   white-space: nowrap;
   font-size: 24px;
   z-index: 100;
-  color: rgb(83, 79, 79);
+  color: #534f4f;
   position: absolute;
   top: -24px;
   width: fit-content;
@@ -262,7 +267,7 @@ body {
 .boundingrect {
   z-index: 0;
   border-radius: 20px;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: #0000004C;
   border-color: red;
   border-width: 1px;
   border-style: dotted;
@@ -277,7 +282,7 @@ body {
 .selectingrect {
   z-index: 100000;
   border-radius: 0px;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: #0000004C;
   border-width: 4px;
   border-style: dotted;
   position: absolute;
@@ -334,7 +339,7 @@ body {
 
 .btn-group.coco {
   background-color: white;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  box-shadow: 0 4px 8px 0 #0000004C, 0 6px 20px 0 #0000004C;
   border-radius: 10px;
 }
 
@@ -373,7 +378,7 @@ svg path {
   overflow: show;
   text-align: right;
   color: black;
-  background-color: rgb(194, 194, 243);
+  background-color: #c2c2f3;
   border-radius: 5px;
   padding: 0px 2px 0px 2px;
 }
@@ -428,13 +433,26 @@ svg path {
   align-items: center;
   z-index: 999999999;
 }
+.present-mask{
+  position: absolute;
+  top: 0px; left:0px;
+  z-index: 999999998;
+  width: 100%;
+  height: 100%;
+}
+.black-mask{
+  background-color: #000000;
+}
+.white-mask{
+  background-color: #FFFFFF;
+}
 .reconnect-mask{
   position: absolute;
   top: 0px; left:0px;
   z-index: 999999998;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.3)
+  background-color: #0000004D
 }
 
 .reconnect-msg{
@@ -442,7 +460,7 @@ svg path {
   position: absolute;
   width: 100%; height: 40px;
   left: 0px; bottom: 20px;
-  background-color: rgba(76, 0, 255, 0.151);
+  background-color: #4c00ff26;
 }
 .reconnect-mask p{
   margin: auto;
@@ -493,13 +511,13 @@ svg path {
   font-family: monospace;
   font-size: 20px;
   border-radius: 20px;
-  background-color: rgba(194, 238, 191, 0.85);
+  background-color: #c2eebfD9;
 }
 
 .profileform input{
   font-family: monospace;
   font-size: 20px;
-  background-color: rgba(194, 238, 191, 0.85);
+  background-color: #c2eebfD9;
 }
 
 
@@ -569,7 +587,7 @@ svg path {
   border-left: 0px;
   border-top-left-radius: 0px;
   border-bottom-left-radius: 0px;
-  background-color: rgba(194, 238, 191, 0.85);
+  background-color: #c2eebfD9;
 }
 
 .no-right-border {
@@ -581,14 +599,14 @@ svg path {
   border-left: 0px;
   border-top-left-radius: 0px;
   border-bottom-left-radius: 0px;
-  background-color: rgba(194, 238, 191, 0.85);
+  background-color: #c2eebfD9;
 }
 
 .office-form .right-eye{
   border-left: 0px;
   border-top-left-radius: 0px;
   border-bottom-left-radius: 0px;
-  background-color: rgba(194, 238, 191, 0.85);
+  background-color: #c2eebfD9;
 }
 
 input#regUserCode {
@@ -701,7 +719,7 @@ select:focus {
   margin-top: 2px;
   padding: 0px 20px 0px 20px;
   border-radius: 10px;
-  background-color: rgba(238, 238, 238, 0.411);
+  background-color: #eeeeee69;
   border: 1px solid #aaa;
 }
 
@@ -922,7 +940,7 @@ select:focus {
   position: absolute;
   bottom: 5px;
   left: 5px;
-  background-color: rgba(238, 238, 238, 0.411);
+  background-color: #eeeeee69;
   border: 1px solid #aaa;
   z-index: 10000000;
 }
@@ -942,13 +960,13 @@ select:focus {
 
 .minimap-node {
   position: absolute;
-  background-color: rgb(96, 122, 134);
+  background-color: #607a86;
 }
 
 .minimap-viewport {
   position: absolute;
   box-sizing: border-box;
-  background-color: rgba(79, 111, 126, 0.4);
+  background-color: #4f6f7e66;
   z-index: 1000000000;
   cursor: move;
 }
@@ -986,7 +1004,7 @@ select:focus {
 
 .mask {
   z-index: 999999999;
-  background-color: rgba(255, 255, 255, 0.005);
+  background-color: #ffffff03;
   position: absolute;
   left: 0px;
   top: 0px;
@@ -1018,13 +1036,13 @@ select:focus {
   outline: none;
   overflow: hidden;
   position: absolute;
-  background-color: rgb(224, 224, 224);
+  background-color: #e0e0e0;
 }
 
 #overallbackground {
   width: 100vw;
   height: 100vh;
-  background-color: rgb(242, 237, 237);
+  background-color: #e0e0e0;
   z-index: -1000000;
 }
 
@@ -1034,7 +1052,7 @@ select:focus {
   top: 0px;
   width: 6720px;
   height: 4800px;
-  background-color: rgba(0, 0, 0, 0);
+  background-color: #00000000;
   overflow: auto;
   margin: 0px;
   position: absolute;
@@ -1147,7 +1165,7 @@ input {
   border: 1px solid #aaa;
   width: 120px;
   height: 130px;
-  background-color: rgb(255, 255, 255);
+  background-color: #ffffff;
   border-radius: 10px;
   padding-left: 10px;
   padding-right: 10px;
@@ -1155,7 +1173,7 @@ input {
   padding-bottom: 10px;
   z-index: 2;
   position: absolute;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.8), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  box-shadow: 0 4px 8px 0 #000000CC 0 6px 20px 0 #000000CC
 }
 
 .docopmenu_pointer {
@@ -1168,7 +1186,7 @@ input {
   right: -5px;
   transform: rotateZ(45deg);
   z-index: 1;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.8), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  box-shadow: 0 4px 8px 0 #0000004C 0 6px 20px 0 #000000CC
 }
 
 .myhovered:hover {
@@ -1200,7 +1218,12 @@ table.quick-help-table{
 }
 table.quick-help-table .title{
   background-color: #e5dbff;
+  font-weight: bolder;
 }
 table.quick-help-table tr{
+  border: 1px solid #e5dbffCC;
+}
+table.quick-help-table td:first-of-type{
   border: 1px solid #e5dbff;
+  background-color: #f5fbff22;
 }
