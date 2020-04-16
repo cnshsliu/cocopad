@@ -498,41 +498,41 @@
 
       <div id="rtcontrol" class="padlayout noshow">
         <div>
-          <b-button id="goto_explorer" variant="outline-success" @click="KFK.gotoExplorer">
+          <b-button id="goto_explorer" variant="success" @click="KFK.gotoExplorer">
             <b-icon icon="house"></b-icon>
           </b-button>
-          <b-button id='sharethisbutton' @click="SHARE.shareThisDoc" class="" variant="outline-success">
+          <b-button id='sharethisbutton' @click="SHARE.shareThisDoc" class="" variant="success">
             <b-icon icon="box-arrow-up"></b-icon>分享
           </b-button>
-          <b-dropdown right variant="outline-success" class="m-2">
+          <b-dropdown right variant="success" class="m-2">
             <template v-slot:button-content>使用说明</template>
-            <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle_all" variant="outline-success"
-            v-b-modal.modal-key-shortcut>
-              <b-icon icon="arrows-fullscreen"></b-icon>&nbsp;快捷键
+            <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle_all" variant="success"
+              v-b-modal.modal-key-shortcut>
+              <img src="../assets/keyboard.svg" class="toolbar" style="width:24px; height:24px;"></img>&nbsp;快捷键
             </b-dropdown-item>
-            <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle_all" variant="outline-success"
+            <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle_all" variant="success"
               @click="KFK.toggleFullScreen">
-              <b-icon icon="arrows-fullscreen"></b-icon>&nbsp;完整帮助
+              <img src="../assets/manual.svg" class="toolbar" style="width:24px; height:24px;"></img>&nbsp;帮助文档
             </b-dropdown-item>
           </b-dropdown>
-          <b-dropdown right text="显示设置" variant="outline-success" class="m-2">
-            <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle_all" variant="outline-success"
+          <b-dropdown right text="显示设置" variant="success" class="m-2">
+            <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle_all" variant="success"
               @click="KFK.toggleFullScreen">
               <b-icon icon="arrows-fullscreen"></b-icon>&nbsp;全屏(fs)
             </b-dropdown-item>
-            <b-dropdown-item id="onepage" variant="outline-success" @click="KFK.toggleOnePage">
+            <b-dropdown-item id="onepage" variant="success" @click="KFK.toggleOnePage">
               <b-icon icon="grid3x2" shift-h="-1.2" shift-v="1.1"></b-icon>&nbsp;全局概览
             </b-dropdown-item>
-            <b-dropdown-item href="#" id="toggle_cbonly" variant="outline-success" @click="KFK.toggleControlButtonOnly">
+            <b-dropdown-item href="#" id="toggle_cbonly" variant="success" @click="KFK.toggleControlButtonOnly">
               <b-icon v-if="KFK.controlButtonsOnly===false" icon="layout-sidebar-reverse" rotate="270"></b-icon>
               <b-icon v-else icon="layout-sidebar-inset-reverse" rotate="270"></b-icon>&nbsp;切换工具栏
             </b-dropdown-item>
-            <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle-right" variant="outline-success"
+            <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle-right" variant="success"
               @click="KFK.toggleRight">
               <b-icon v-if="KFK.showRightTools===false" icon="layout-sidebar-reverse"></b-icon>
               <b-icon v-else icon="layout-sidebar-inset-reverse"></b-icon>&nbsp;切换属性栏
             </b-dropdown-item>
-            <b-dropdown-item disable="model.cocodoc.readonly" id="toggle-minimap" variant="outline-success"
+            <b-dropdown-item disable="model.cocodoc.readonly" id="toggle-minimap" variant="success"
               @click="KFK.toggleMinimap">
               <b-icon icon="map"></b-icon>切换小地图
             </b-dropdown-item>
@@ -1399,48 +1399,144 @@
         <p id='reconnect-warning'>Reconnecting...</p>
       </div>
     </div>
-    <b-modal id="modal-key-shortcut" scrollable title="操作快捷键">
+    <div class="present-mask nodisplay">
+    </div>
+    <b-modal id="modal-key-shortcut" scrollable title="操作快捷键" body-bg-variant="light" body-text-variant="dark" >
       <table class="quick-help-table">
-        <tr class="title"><td colspan=2>模式切换</td></tr>
-        <tr><td>fs</td><td>切换全屏</td></tr>
-        <tr><td>鼠标双击空白区域</td><td> 进入全局概览模式</td></tr>
-        <tr><td>概览模式下鼠标双击</td><td> 切换会正常编辑模式，且居中在双击位置</td></tr>
-        <tr><td>haola或hl或pr</td><td> 进入幻灯片模式</td></tr>
+        <tr class="title">
+          <td colspan=2>模式切换</td>
+        </tr>
+        <tr>
+          <td>输入<span class="cocohighlight-2">fs</span></td>
+          <td>切换全屏</td>
+        </tr>
+        <tr>
+          <td>鼠标<span class="cocohighlight-2">双击</span>空白区域</td>
+          <td> 进入全局概览模式，再次双击返回</td>
+        </tr>
+        <tr>
+          <td>输入<span class="cocohighlight-2">haola</span>或<span class="cocohighlight-2">hl</span>或<span class="cocohighlight-2">pr</span></td>
+          <td>进入幻灯片模式，再次输入返回</td>
+        </tr>
 
-        <tr class="title"><td colspan=2>正常模式下的操作</td></tr>
-        <tr><td>gt gd gh gl</td><td> 选中对象到 最顶层 最下层 上一层 下一层</td></tr>
-        <tr><td>回车或双击对象</td><td> 编辑选中对象文字</td></tr>
-        <tr><td>Ctrl-回车/Meta-回车</td><td> 结束文字编辑</td></tr>
-        <tr><td>lk或lock</td><td>切换选中对象的加解锁状态。加锁后对象不可修改。也可通过选择左侧工具栏的锁工具，然后点要加解锁的对象来操作</td></tr>
-        <tr><td>Ctrl-C/Meta-C</td><td>拷贝当前对象。当前对象是指鼠标悬浮对象，选中对象，或刚创建的对象。</td></tr>
-        <tr><td>Ctrl-V/Meta-V</td><td>粘贴当前对象、粘贴文字、图片。如拷贝了对象，则在鼠标当前位置粘贴对象。
-          如在其他应用中复制了文字、图片，则将文字或图片粘贴到白板上，如粘贴时鼠标悬浮在一个对象上，
-          则文字图片粘贴到对象上，否则，粘贴在白板上鼠标所在位置。
-          在浏览网页时，在需要复制的图片上点右键，复制图片，回到白板上，可粘贴所复制的图片到白板。
-          URL地址在粘贴时，会提示地址说明，并粘贴一个地址链接到白板上
-        </td></tr>
-        <tr><td>Ctrl-Z/Meta-Z</td><td>取消前一步操作</td></tr>
-        <tr><td>Ctrl-Shift-Z/Meta-Shift-Z</td><td>撤回取消</td></tr>
-        <tr><td>Ctrl-X/Meta-X</td><td>剪切当前对象</td></tr>
-        <tr><td>数字g</td><td>1-36数字，然后按g，切换到相应区域。 白板一共36个区域，横向6列、纵向6行。编号从左到右，从上到下，第一行编号分别是1-6， 第二行为7-12，以此类推。</td></tr>
-        <tr><td>PageUp/PageDown</td><td> 依次切换到前一区域、后一区域。</td></tr>
-        <tr><td>Home/End</td><td> 切换到1号区域、第36号区域。</td></tr>
-        <tr><td>上下左右箭头</td><td> 切换到上下左右相邻的区域</td></tr>
+        <tr class="title">
+          <td colspan=2>正常模式下的操作</td>
+        </tr>
+        <tr>
+          <td>输入
+            <span class="cocohighlight-2">gt</span>
+            <span class="cocohighlight-2">gd</span> 
+            <span class="cocohighlight-2">gh</span> 
+            <span class="cocohighlight-2">gl</span>
+          </td>
+          <td> 选中对象到 <span class="cocohighlight-2">最顶层</span> <span class="cocohighlight-2">最下层</span> <span class="cocohighlight-2">上一层</span> <span class="cocohighlight-2">下一层</span></td>
+        </tr>
+        <tr>
+          <td><span class="cocohighlight-2">回车</span>或<span class="cocohighlight-2">双击</span>对象</td>
+          <td> 编辑选中对象文字</td>
+        </tr>
+        <tr>
+          <td><span class="cocohighlight-2">Ctrl-回车</span>/<span class="cocohighlight-2">Meta-回车</span></td>
+          <td> 结束文字编辑</td>
+        </tr>
+        <tr>
+          <td><span class="cocohighlight-2">lk</span>或<span class="cocohighlight-2">lock</span></td>
+          <td>切换选中对象的<span class="cocohighlight-2">加解锁</span>状态。加锁后对象不可修改。也可通过选择左侧工具栏的锁工具，然后点要加解锁的对象来操作</td>
+        </tr>
+        <tr>
+          <td><span class="cocohighlight-2">Ctrl-C</span>/<span class="cocohighlight-2">Meta-C</span></td>
+          <td><span class="cocohighlight-2">拷贝</span>当前对象。当前对象是指鼠标悬浮对象，选中对象，或刚创建的对象。</td>
+        </tr>
+        <tr>
+          <td><span class="cocohighlight-2">Ctrl-V</span>/<span class="cocohighlight-2">Meta-V</span></td>
+          <td><span class="cocohighlight-2">粘贴</span>当前对象、粘贴文字、图片。
+            <li>如拷贝了对象，则在鼠标当前位置粘贴对象。</li>
+            <li>如在其他应用中复制了文字、图片，则将从其它应用中复制的文字或图片粘贴到白板上。如粘贴时鼠标悬浮在一个对象上，
+            则文字图片粘贴到对象上，否则，粘贴在白板上鼠标所在位置。</li>
+            <li>在浏览网页时，在需要复制的图片上点右键，复制图片，回到白板上，可粘贴所复制的图片到白板。</li>
+            <li>URL地址在粘贴时，会提示地址说明，并粘贴一个地址链接到白板上。</li>
+          </td>
+        </tr>
+        <tr>
+          <td><span class="cocohighlight-2">Ctrl-Z</span>/<span class="cocohighlight-2">Meta-Z</span></td>
+          <td>取消前一步操作</td>
+        </tr>
+        <tr>
+          <td><span class="cocohighlight-2">Ctrl-Shift-Z</span>/<span class="cocohighlight-2">Meta-Shift-Z</span></td>
+          <td>撤回取消</td>
+        </tr>
+        <tr>
+          <td><span class="cocohighlight-2">Ctrl-X</span>/<span class="cocohighlight-2">Meta-X</span></td>
+          <td>剪切当前对象</td>
+        </tr>
+        <tr>
+          <td>输入<span class="cocohighlight-2">数字g</span></td>
+          <td>输入1-36数字，然后按g，切换到相应区域。 <BR>白板一共36个区域，横向6列、纵向6行。编号从左到右，从上到下，第一行编号分别是1-6， 第二行为7-12，以此类推。</td>
+        </tr>
+        <tr>
+          <td><span class="cocohighlight-2">PageUp</span>/<span class="cocohighlight-2">PageDown</span></td>
+          <td> 依次切换到前一区域、后一区域, 按1-36顺序</td>
+        </tr>
+        <tr>
+          <td><span class="cocohighlight-2">Home</span>/<span class="cocohighlight-2">End</span></td>
+          <td> 切换到1号区域、第36号区域。</td>
+        </tr>
+        <tr>
+          <td><span class="cocohighlight-2">上下左右箭头</span></td>
+          <td> 切换到上下左右相邻的区域。</td>
+        </tr>
 
-        <tr class="title"><td colspan=2>概览模式下的操作</td></tr>
-        <tr><td>概览模式下鼠标双击</td><td> 切换会正常编辑模式，且居中在双击位置</td></tr>
+        <tr class="title">
+          <td colspan=2>概览模式下的操作</td>
+        </tr>
+        <tr>
+          <td>概览模式下<span class="cocohighlight-2">鼠标双击</span></td>
+          <td> 切换会正常编辑模式，返回后居中在双击位置</td>
+        </tr>
 
-        <tr class="title"><td colspan=2>幻灯片模式下的操作</td></tr>
-        <tr><td>b</td><td>黑色遮罩</td></tr>
-        <tr><td>w</td><td>白色遮罩</td></tr>
-        <tr><td>haola或hl或pr或stop</td><td> 退出幻灯片模式，进入正常模式</td></tr>
-        <tr><td>PageUp/PageDown</td><td> 依次切换到前一区域、后一区域。</td></tr>
-        <tr><td>上下左右箭头</td><td> 切换到上下左右相邻的区域</td></tr>
-        <tr><td>Home/End</td><td> 切换到1号区域、第36号区域。</td></tr>
-        <tr><td>last或end</td><td>到最后一页</td></tr>
-        <tr><td>prev</td><td>到前一页</td></tr>
-        <tr><td>next</td><td>到后一页</td></tr>
-        <tr><td>数字g</td><td>1-36数字，然后按g，切换到相应区域。 白板一共36个区域，横向6列、纵向6行。编号从左到右，从上到下，第一行编号分别是1-6， 第二行为7-12，以此类推。</td></tr>
+        <tr class="title">
+          <td colspan=2>幻灯片模式下的操作</td>
+        </tr>
+        <tr>
+          <td>输入<span class="cocohighlight-2">b</span></td>
+          <td>黑色遮罩</td>
+        </tr>
+        <tr>
+          <td>输入<span class="cocohighlight-2">w</span></td>
+          <td>白色遮罩</td>
+        </tr>
+        <tr>
+          <td>输入<span class="cocohighlight-2">haola</span>或<span class="cocohighlight-2">hl</span>或<span class="cocohighlight-2">pr</span>或<span class="cocohighlight-2">stop</span></td>
+          <td> 退出幻灯片模式，进入正常模式</td>
+        </tr>
+        <tr>
+          <td><span class="cocohighlight-2">PageUp</span>/<span class="cocohighlight-2">PageDown</span></td>
+          <td> 依次切换到前一区域、后一区域。</td>
+        </tr>
+        <tr>
+          <td><span class="cocohighlight-2">上下左右箭头</span></td>
+          <td> 切换到上下左右相邻的区域</td>
+        </tr>
+        <tr>
+          <td><span class="cocohighlight-2">Home</span>/<span class="cocohighlight-2">End</span></td>
+          <td> 切换到1号区域、第36号区域。</td>
+        </tr>
+        <tr>
+          <td>输入<span class="cocohighlight-2">last</span>或<span class="cocohighlight-2">end</span></td>
+          <td>到最后一页</td>
+        </tr>
+        <tr>
+          <td>输入<span class="cocohighlight-2">prev</span></td>
+          <td>到前一页</td>
+        </tr>
+        <tr>
+          <td>输入<span class="cocohighlight-2">next</span></td>
+          <td>到后一页</td>
+        </tr>
+        <tr>
+          <td>输入<span class="cocohighlight-2">数字g</span></td>
+          <td>输入1-36数字，然后按g，切换到相应区域。 白板一共36个区域，横向6列、纵向6行。编号从左到右，从上到下，第一行编号分别是1-6， 第二行为7-12，以此类推。</td>
+        </tr>
       </table>
     </b-modal>
   </div>

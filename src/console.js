@@ -14,7 +14,7 @@ import assetIcons from "../assets/*.svg";
 import avatarIcons from "../assets/avatar/*.svg";
 import "./fontpicker/jquery.fontpicker";
 import "./minimap/jquery-minimap";
-import config from "./config";
+import cocoConfig from "./cococonfig";
 import Validator from './validator';
 import Demo from "./demo";
 import RegHelper from './reghelper';
@@ -83,7 +83,7 @@ KFK.OSSClient = new OSS({
   region: "oss-cn-hangzhou",
   accessKeyId: "ACCESSKEY",
   accessKeySecret: "ACCESSECRET",
-  bucket: config.vault.bucket
+  bucket: cocoConfig.vault.bucket
 });
 KFK.idRowMap = {};
 KFK.idSwitchMap = {};
@@ -350,11 +350,11 @@ KFK.updatePropertyFormWithNode = function (jqNodeDIV) {
 
   KFK.APP.setData("show", "customline", false);
   KFK.APP.setData("show", "shape_property", jqNodeDIV != null);
-  KFK.APP.setData("show", "customfont", jqNodeDIV != null && getBoolean(config.node[nodeType].edittable));
-  KFK.APP.setData("show", "customshape", jqNodeDIV != null && getBoolean(config.node[nodeType].customshape));
+  KFK.APP.setData("show", "customfont", jqNodeDIV != null && getBoolean(cocoConfig.node[nodeType].edittable));
+  KFK.APP.setData("show", "customshape", jqNodeDIV != null && getBoolean(cocoConfig.node[nodeType].customshape));
   KFK.APP.setData("show", "custombacksvg", jqNodeDIV != null && (nodeType === "yellowtip" || nodeType === "textblock"));
   KFK.APP.setData("show", "layercontrol", jqNodeDIV != null && (nodeType === "text" || nodeType === "yellowtip" || nodeType === "textblock"));
-  if (jqNodeDIV != null && getBoolean(config.node[nodeType].customshape)) {
+  if (jqNodeDIV != null && getBoolean(cocoConfig.node[nodeType].customshape)) {
     let nodeBkgColor = jqNodeDIV.css("background-color");
     let nodeBorderColor = jqNodeDIV.css("border-color");
     let nodeBorderWidth = KFK.unpx(jqNodeDIV.css("border-width"));
@@ -369,7 +369,7 @@ KFK.updatePropertyFormWithNode = function (jqNodeDIV) {
     $("#tipBkgColor").spectrum("set", tipColor);
   }
 
-  if (jqNodeDIV != null && getBoolean(config.node[nodeType].edittable)) {
+  if (jqNodeDIV != null && getBoolean(cocoConfig.node[nodeType].edittable)) {
     let fontFamily = jqNodeDIV.css("font-family");
     let fontSize = KFK.unpx(jqNodeDIV.css("font-size"));
     let fontColor = jqNodeDIV.css("color");
@@ -978,10 +978,10 @@ KFK.initC3 = function () {
       if (KFK.selectedDIVs.length > 0) {
         if (KFK.duringKuangXuan === false) KFK.cancelAlreadySelected();
       }
-      if (config.node[KFK.mode]) {
+      if (cocoConfig.node[KFK.mode]) {
         let variant = "default";
         if (KFK.mode === "yellowtip") {
-          variant = config.node.yellowtip.defaultTip;
+          variant = cocoConfig.node.yellowtip.defaultTip;
         }
         let realX = KFK.scrXToJc3X(evt.clientX);
         let realY = KFK.scrYToJc3Y(evt.clientY);
@@ -1243,7 +1243,7 @@ KFK.showOtherUserMovingBadge = function (mouse) {
   KFK.badgeTimers[bgid] = setTimeout(() => {
     jqBadgeDIV.css("display", "none");
     delete KFK.badgeTimers[bgid];
-  }, config.badge.lastSeconds);
+  }, cocoConfig.badge.lastSeconds);
 };
 
 KFK.resetNodeZIndex = function (data) {
@@ -1273,15 +1273,15 @@ KFK.setSelectedNodesBoundingRect = function () {
   }
   if (KFK.selectedDIVs.length > 1) {
     let rect = KFK.getBoundingRectOfSelectedDIVs();
-    brect.css("left", rect.left - config.ui.boundingrect_padding);
-    brect.css("top", rect.top - config.ui.boundingrect_padding);
+    brect.css("left", rect.left - cocoConfig.ui.boundingrect_padding);
+    brect.css("top", rect.top - cocoConfig.ui.boundingrect_padding);
     brect.css(
       "width",
-      rect.width + config.ui.boundingrect_padding * 2
+      rect.width + cocoConfig.ui.boundingrect_padding * 2
     );
     brect.css(
       "height",
-      rect.height + config.ui.boundingrect_padding * 2
+      rect.height + cocoConfig.ui.boundingrect_padding * 2
     );
     brect.show();
   } else {
@@ -1342,7 +1342,7 @@ KFK.endKuangXuan = function (pt1, pt2) {
 KFK.deselectNode = function (theDIV, theLine) {
   if (theLine) {
     // this is a line div
-    theLine.stroke(config.line.strokeColor);
+    theLine.stroke(cocoConfig.line.strokeColor);
     theLine.getLayer().batchDraw();
   } else {
     // this is a node div
@@ -1596,25 +1596,25 @@ KFK._createNode = function (node) {
     nodeObj.style.height = KFK.px(node.height);
   } else if (node.type === "text") {
     nodeObj = document.createElement("div");
-    nodeObj.innerHTML = node.attach ? node.attach : config.node.text.content;
+    nodeObj.innerHTML = node.attach ? node.attach : cocoConfig.node.text.content;
     nodeObj.style.padding = KFK.px(0);
   } else if (node.type === "yellowtip") {
     nodeObj = document.createElement("span");
-    nodeObj.innerText = config.node.yellowtip.content;
+    nodeObj.innerText = cocoConfig.node.yellowtip.content;
     $(nodeObj).css("width", "100%");
     $(nodeObj).css("height", "100%");
     $(nodeObj).css("padding", 0);
     $(nodeObj).css("z-index", 1);
     $(nodeObj).css("display", "flex");
-    $(nodeObj).css("justify-content", config.node.yellowtip.textAlign);
-    $(nodeObj).css("align-items", config.node.yellowtip.vertAlign);
+    $(nodeObj).css("justify-content", cocoConfig.node.yellowtip.textAlign);
+    $(nodeObj).css("align-items", cocoConfig.node.yellowtip.vertAlign);
     $(nodeObj).css("position", "absolute");
     $(nodeObj).addClass("tip_content");
   } else if (node.type === "textblock") {
     nodeObj = document.createElement("div");
     nodeObj.innerHTML = node.attach
       ? node.attach
-      : config.node.textblock.content;
+      : cocoConfig.node.textblock.content;
     // nodeObj.style.width = KFK.px(node.width - textPadding * 2);
     // nodeObj.style.height = KFK.px(node.height - textPadding * 2);
     nodeObj.style.padding = KFK.px(0);
@@ -1647,8 +1647,8 @@ KFK._createNode = function (node) {
     nodeDIV.style.padding = `${textPadding}px`;
   nodeDIV.style.margin = "0px";
   nodeDIV.style.overflow = "show";
-  if (config.node[node.type].background) {
-    nodeDIV.style.background = config.node[node.type].background;
+  if (cocoConfig.node[node.type].background) {
+    nodeDIV.style.background = cocoConfig.node[node.type].background;
   } else {
     nodeDIV.style.background = "transparent";
   }
@@ -1661,35 +1661,35 @@ KFK._createNode = function (node) {
     //create tip
     let rect = KFK.getShapeDynamicDefaultSize(
       "yellowtip",
-      config.node.yellowtip.defaultTip
+      cocoConfig.node.yellowtip.defaultTip
     );
     KFK._setTipBkgImage(
       jqNodeDIV,
-      config.node.yellowtip.defaultTip,
-      config.node.yellowtip.defaultColor
+      cocoConfig.node.yellowtip.defaultTip,
+      cocoConfig.node.yellowtip.defaultColor
     );
-    jqNodeDIV.attr("variant", config.node.yellowtip.defaultTip);
+    jqNodeDIV.attr("variant", cocoConfig.node.yellowtip.defaultTip);
     jqNodeDIV.css("width", rect.w);
     jqNodeDIV.css("height", rect.h);
-    jqNodeDIV.css("color", config.node.yellowtip.color);
+    jqNodeDIV.css("color", cocoConfig.node.yellowtip.color);
     jqNodeDIV.addClass("yellowtip");
   } else if (node.type === "textblock") {
     let rect = KFK.getShapeDynamicDefaultSize("textblock", "default");
     jqNodeDIV.css("width", rect.w);
     jqNodeDIV.css("height", rect.h);
-    jqNodeDIV.css("border-radius", config.node.textblock.borderRadius);
-    jqNodeDIV.css("border-style", config.node.textblock.borderStyle);
-    jqNodeDIV.css("border-color", config.node.textblock.borderColor);
-    jqNodeDIV.css("border-width", config.node.textblock.borderWidth);
-    jqNodeDIV.css("color", config.node.textblock.color);
-    jqNodeDIV.css("justify-content", config.node.yellowtip.textAlign);
-    jqNodeDIV.css("align-items", config.node.yellowtip.vertAlign);
+    jqNodeDIV.css("border-radius", cocoConfig.node.textblock.borderRadius);
+    jqNodeDIV.css("border-style", cocoConfig.node.textblock.borderStyle);
+    jqNodeDIV.css("border-color", cocoConfig.node.textblock.borderColor);
+    jqNodeDIV.css("border-width", cocoConfig.node.textblock.borderWidth);
+    jqNodeDIV.css("color", cocoConfig.node.textblock.color);
+    jqNodeDIV.css("justify-content", cocoConfig.node.yellowtip.textAlign);
+    jqNodeDIV.css("align-items", cocoConfig.node.yellowtip.vertAlign);
     jqNodeDIV.css("background-color", KFK.APP.model.shapeBkgColor);
   }
-  if (config.node && config.node[node.type] && config.node[node.type].fontSize)
-    jqNodeDIV.css("font-size", KFK.px(KFK.unpx(config.node[node.type].fontSize)));
-  else if (config.node && config.node.fontSize)
-    jqNodeDIV.css("font-size", KFK.px(KFK.unpx(config.node.fontSize)));
+  if (cocoConfig.node && cocoConfig.node[node.type] && cocoConfig.node[node.type].fontSize)
+    jqNodeDIV.css("font-size", KFK.px(KFK.unpx(cocoConfig.node[node.type].fontSize)));
+  else if (cocoConfig.node && cocoConfig.node.fontSize)
+    jqNodeDIV.css("font-size", KFK.px(KFK.unpx(cocoConfig.node.fontSize)));
   else
     jqNodeDIV.css("font-size", KFK.px(18));
 
@@ -1716,7 +1716,7 @@ KFK._createNode = function (node) {
     $(lastEditorDIV).css("display", "none");
   }
   jqNodeDIV.attr("nodetype", node.type);
-  jqNodeDIV.attr("edittable", config.node[node.type].edittable ? true : false);
+  jqNodeDIV.attr("edittable", cocoConfig.node[node.type].edittable ? true : false);
   if (node.type === "yellowtip") {
     KFK._setTipBkgColor(jqNodeDIV, KFK.APP.model.tipBkgColor);
   }
@@ -1737,7 +1737,7 @@ KFK.cleanNodeEventFootprint = function (jqNodeDIV) {
   );
 };
 
-KFK.syncNodePut = async function (cmd, jqDIV, reason, jqFrom, isUndoRedo=false, ser=0, count=1) {
+KFK.syncNodePut = async function (cmd, jqDIV, reason, jqFrom, isUndoRedo = false, ser = 0, count = 1) {
   if (KFK.docIsReadOnly()) return;
   if (KFK.nodeLocked(jqDIV)) return;
   if (ser === undefined || count === undefined) {
@@ -2014,7 +2014,7 @@ KFK.setModeIndicatorForYellowTip = function (tipvariant) {
 };
 
 KFK.setTipVariant = function (tipvariant) {
-  config.node.yellowtip.defaultTip = tipvariant;
+  cocoConfig.node.yellowtip.defaultTip = tipvariant;
   if (KFK.mode === "yellowtip") {
     KFK.setModeIndicatorForYellowTip(tipvariant);
     $("#modeIndicatorImg").hide();
@@ -2070,13 +2070,13 @@ KFK._setTipBkgColor = function (theJqNode, bgColor) {
 KFK.getTipBkgColor = function (jqNode) {
   if (jqNode === null) {
     console.warn("getTipBkgColor to null nodeDIV, return default");
-    return config.node.yellowtip.defaultColor;
+    return cocoConfig.node.yellowtip.defaultColor;
   }
   let svgImg = jqNode.find(".tip_bkg .svg_main_path");
   if (svgImg.length > 0) {
     return svgImg.attr("fill");
   } else {
-    return config.node.yellowtip.defaultColor;
+    return cocoConfig.node.yellowtip.defaultColor;
   }
 };
 
@@ -2139,30 +2139,30 @@ KFK.redrawLinkLines = function (jqNode, reason = 'unknown', bothside = true) {
 
 //resize node时，记下当前shape variant的size，下次创建同样shape时，使用这个size
 KFK.setShapeDynamicDefaultSize = function (nodeType, variant, width, height) {
-  if (config.size[nodeType] === undefined) config.size[nodeType] = {};
-  if (config.size[nodeType][variant] === undefined)
-    config.size[nodeType][variant] = {};
-  config.size[nodeType][variant].width = width;
-  config.size[nodeType][variant].height = height;
+  if (cocoConfig.size[nodeType] === undefined) cocoConfig.size[nodeType] = {};
+  if (cocoConfig.size[nodeType][variant] === undefined)
+    cocoConfig.size[nodeType][variant] = {};
+  cocoConfig.size[nodeType][variant].width = width;
+  cocoConfig.size[nodeType][variant].height = height;
 };
 
 KFK.getShapeDynamicDefaultSize = function (nodeType, variant) {
   let ret = {};
-  if (config.size[nodeType] === undefined) {
+  if (cocoConfig.size[nodeType] === undefined) {
     ret = {
-      w: config.node[nodeType].width,
-      h: config.node[nodeType].height
+      w: cocoConfig.node[nodeType].width,
+      h: cocoConfig.node[nodeType].height
     };
-  } else if (config.size[nodeType][variant] === undefined) {
+  } else if (cocoConfig.size[nodeType][variant] === undefined) {
     ret = {
-      w: config.node[nodeType].width,
-      h: config.node[nodeType].height
+      w: cocoConfig.node[nodeType].width,
+      h: cocoConfig.node[nodeType].height
     };
   } else {
     let tmpw = 0;
     let tmph = 0;
-    tmpw = config.size[nodeType][variant].width;
-    tmph = config.size[nodeType][variant].height;
+    tmpw = cocoConfig.size[nodeType][variant].width;
+    tmph = cocoConfig.size[nodeType][variant].height;
     ret = {
       w: tmpw,
       h: tmph
@@ -2173,11 +2173,11 @@ KFK.getShapeDynamicDefaultSize = function (nodeType, variant) {
 
 KFK.setNodeEvent = function (jqNode, action, cmd) {
   if (action === "resizable") {
-    if (config.node[jqNode.attr("nodetype")].resizable) {
+    if (cocoConfig.node[jqNode.attr("nodetype")].resizable) {
       jqNode.resizable(cmd);
     }
   } else if (action === "droppable") {
-    if (config.node[jqNode.attr("nodetype")].droppable) {
+    if (cocoConfig.node[jqNode.attr("nodetype")].droppable) {
       jqNode.droppable(cmd);
     }
   } else if (action === "draggable") {
@@ -2188,7 +2188,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
   jqNodeDIV.addClass("kfknode");
   let jqNodeType = jqNodeDIV.attr("nodetype");
   //resize node
-  if (config.node[jqNodeType].resizable) {
+  if (cocoConfig.node[jqNodeType].resizable) {
     jqNodeDIV.resizable({
       autoHide: true,
       start: () => {
@@ -2251,14 +2251,14 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
       }
     });
   }
-  if (config.node[jqNodeType].minWidth) {
-    jqNodeDIV.resizable("option", "minWidth", config.node[jqNodeType].minWidth);
+  if (cocoConfig.node[jqNodeType].minWidth) {
+    jqNodeDIV.resizable("option", "minWidth", cocoConfig.node[jqNodeType].minWidth);
   }
-  if (config.node[jqNodeType].minHeight) {
+  if (cocoConfig.node[jqNodeType].minHeight) {
     jqNodeDIV.resizable(
       "option",
       "minHeight",
-      config.node[jqNodeType].minHeight
+      cocoConfig.node[jqNodeType].minHeight
     );
   }
   // jqNodeDIV.resizable('disable');
@@ -2358,7 +2358,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
       movedSer = movedSer + 1;
     }
   });
-  if (config.node[jqNodeType].droppable) {
+  if (cocoConfig.node[jqNodeType].droppable) {
     jqNodeDIV.droppable({
       activeClass: "ui-state-hover",
       hoverClass: "ui-state-active",
@@ -3153,12 +3153,47 @@ KFK.jc1YToScrY = function (y) {
 KFK.saveLocalCocoConfig = function () {
   localStorage.setItem('cococonfig', JSON.stringify(KFK.APP.model.cococonfig));
 };
+
+KFK.rgba2hex = function (orig) {
+  var a, isPercent,
+    rgb = orig.replace(/\s/g, '').match(/^rgba?\((\d+),(\d+),(\d+),?([^,\s)]+)?/i),
+    alpha = (rgb && rgb[4] || "").trim(),
+    hex = rgb ?
+      (rgb[1] | 1 << 8).toString(16).slice(1) +
+      (rgb[2] | 1 << 8).toString(16).slice(1) +
+      (rgb[3] | 1 << 8).toString(16).slice(1) : orig;
+  if (alpha !== "") {
+    a = alpha;
+  } else {
+    a = 01;
+  }
+
+  a = Math.round(a * 100) / 100;
+  var alpha = Math.round(a * 255);
+  var hexAlpha = (alpha + 0x10000).toString(16).substr(-2).toUpperCase();
+  hex = hex + hexAlpha;
+
+  return '#' + hex;
+};
+
+KFK.secureHexColor = function (color) {
+  if (color.startsWith("rgb")) {
+    return KFK.rgba2hex(color);
+  } else {
+    return color;
+  }
+}
+
 KFK.showGridChanged = function (checked) {
   KFK.APP.model.cococonfig.showgrid = checked;
-  if (checked)
-    $('#containerbkg').addClass("grid1");
-  else
+  if (checked) {
+    let bgcolor = $('#containerbkg').css('background-color');
+    bgcolor = KFK.secureHexColor(bgcolor);
+    KFK.setGridColor(bgcolor);
+  } else {
     $('#containerbkg').removeClass("grid1");
+    $('#containerbkg').removeClass("grid2");
+  }
   KFK.saveLocalCocoConfig();
 };
 KFK.showBoundingChanged = function (checked) {
@@ -3371,13 +3406,13 @@ KFK.onWsConnected = function () {
   if (KFK.WS.connectTimes === 1) {
     //The first time
     //这里是第一次启动cocopad，服务器连接成功时的处理方式
-    //refreshExplorer会用到很多需要Auth的操作，但shareDocInUrl不需要
+    //refreshProjectList会用到很多需要Auth的操作，但shareDocInUrl不需要
     //如果URL中没有ShareCodeInURL
     //正常情况下，会进入到浏览器界面
     if (KFK.cocouser && KFK.cocouser.sessionToken) {
       KFK.sendCmd('UPDMYORG', {});
       if (KFK.shareCode === null) {
-        KFK.refreshExplorer();
+        KFK.refreshProjectList();
       } else { //URL中有shareCode或者ivtCode
         if (KFK.cocouser.userid.indexOf("@cocopad_demo.org") < 0) {
           //已经正常注册的用户,不需要有shareCode记录在本地
@@ -3392,7 +3427,7 @@ KFK.onWsConnected = function () {
         if (KFK.urlMode === 'sharecode')
           KFK.openSharedDoc(KFK.shareCode);
         else
-          KFK.refreshExplorer();
+          KFK.refreshProjectList();
       }
     } else { //no local user
       if (KFK.shareCode === null) { //这个运行不到,因为,只要连接服务器,要么是有本地用户信息,要么有shareCode
@@ -3618,7 +3653,7 @@ KFK.loadDoc = function (doc_id, pwd) {
   }
 };
 
-KFK.refreshExplorer = async function () {
+KFK.refreshProjectList = async function () {
   await KFK.sendCmd("LISTPRJ", { skip: 0 });
 }
 
@@ -4197,7 +4232,7 @@ KFK.onWsMsg = async function (response) {
       KFK.updateCocouser(response.data);
       //切换组织时, 本地的用户, 已经拉取的vorgs, 以及myorgs不用清空
       KFK.resetAllLocalData({ user: true, vorgs: true, myorgs: true });
-      KFK.refreshExplorer();
+      KFK.refreshProjectList();
       break;
     case 'LISTMYORG':
       KFK.debug('got listmyorg', response);
@@ -4907,7 +4942,7 @@ KFK.initPropertyForm = function () {
           variants: "400,400i,600,600i,900,900i"
         },
         Verdana: { category: "sans-serif", variants: "400,400i,600,600i,900,900i" },
-        SimSun: { label:'宋体简', category: "sans-serif", variants: "400,400i,600,600i,900,900i" },
+        SimSun: { label: '宋体简', category: "sans-serif", variants: "400,400i,600,600i,900,900i" },
         SimHei: { label: '黑体简', category: "sans-serif", variants: "400,400i,600,600i,900,900i" },
         "Microsoft Yahei": {
           label: '微软雅黑',
@@ -4995,7 +5030,25 @@ KFK.setNodeShowEditor = function (jqNode) {
 KFK.setBGColorTo = function (color) {
   $('#containerbkg').css('background-color', color);
   $('#overallbackground').css('background-color', color);
+  KFK.setGridColor(color);
 };
+
+KFK.setGridColor = function (bgcolor) {
+  if (!bgcolor) {
+    bgcolor = $('#overallbackground').css('background-color');
+  }
+  let YIQColor = KFK.getContrastYIQ(bgcolor);
+  if (YIQColor === 'black') {
+    $('#containerbkg').removeClass("grid1");
+    $('#containerbkg').addClass("grid2");
+    console.log("Bgcolor is ", bgcolor, 'YIQColor is', YIQColor, 'grid is grid2');
+  } else {
+    $('#containerbkg').removeClass("grid2");
+    $('#containerbkg').addClass("grid1");
+    console.log("Bgcolor is ", bgcolor, 'YIQColor is', YIQColor, 'grid is grid1');
+  }
+
+}
 
 KFK.initColorPicker = function () {
   KFK.debug('...initColorPicker');
@@ -5032,7 +5085,7 @@ KFK.initColorPicker = function () {
   });
   $("#shapeBkgColor").spectrum({
     type: "color",
-    color: config.node.textblock.background,
+    color: cocoConfig.node.textblock.background,
     localStorageKey: "color.shapeBkgColor",
     showPaletteOnly: "true",
     togglePaletteOnly: "true",
@@ -5194,10 +5247,10 @@ KFK.vertAlignChanged = async function (evt, value) {
 };
 
 KFK.setTenant = tenant => {
-  config.tenant = tenant;
+  cocoConfig.tenant = tenant;
 };
 KFK.getOSSFileName = basename => {
-  return `${config.tenant.id} / ${KFK.APP.model.cocodoc.doc_id} / ${basename}`;
+  return `${cocoConfig.tenant.id} / ${KFK.APP.model.cocodoc.doc_id} / ${basename}`;
 };
 
 
@@ -5222,7 +5275,7 @@ KFK.setMode = function (mode) {
     $("#modeIndicator").hide();
   } else {
     if (KFK.mode === "yellowtip") {
-      KFK.setModeIndicatorForYellowTip(config.node.yellowtip.defaultTip);
+      KFK.setModeIndicatorForYellowTip(cocoConfig.node.yellowtip.defaultTip);
       $("#modeIndicatorImg").hide();
       $("#modeIndicatorDiv").show();
     } else {
@@ -5333,6 +5386,9 @@ KFK.holdEvent = function (evt) {
 KFK.addDocumentEventHandler = function () {
   $(document).keydown(function (evt) {
     if (KFK.inDesigner()) {
+      if (KFK.inPresentingMode && KFK.presentMaskMode && evt.keyCode !== 66 && evt.keyCode != 87) {
+        KFK.presentNoneMask();
+      }
       if ((evt.keyCode >= 48 && evt.keyCode <= 57) || (evt.keyCode >= 65 && evt.keyCode <= 90)) {
         KFK.keypool += evt.key;
         if (KFK.keypool.endsWith('haola') || KFK.keypool.endsWith('hl') || KFK.keypool.endsWith('pr')) {
@@ -5372,8 +5428,6 @@ KFK.addDocumentEventHandler = function () {
           }
           KFK.keypool = ""; return;
         } else if (KFK.keypool.endsWith('gt')) {
-          //TODO:  Add help icon and key shortcuts pages
-          //TODO:  combine fullscreen, top only and hide right
           KFK.ZiToTop();
         } else if (KFK.keypool.endsWith('gb')) {
           KFK.ZiToBottom();
@@ -5384,60 +5438,65 @@ KFK.addDocumentEventHandler = function () {
         } else if (KFK.keypool.endsWith('lk') || KFK.keypool.endsWith('lock')) {
           KFK.tryToLockUnlock();
         } else if (KFK.inPresentingMode && KFK.keypool.endsWith('b')) {
-          //TODO: presentBlackMask();
           KFK.presentBlackMask(); KFK.keypool = ""; return;
         } else if (KFK.inPresentingMode && KFK.keypool.endsWith('w')) {
-          //TODO: presentWhiteMask();
           KFK.presentWhiteMask(); KFK.keypool = ""; return;
         } else if (KFK.keypool.length > 5) {
           KFK.keypool = KFK.keypool.substr(-4);
         }
       }
       if (KFK.inPresentingMode === true) {
-        if (evt.keyCode === 34 || evt.keyCode === 39 || evt.keyCode === 40) {
-          //Page down, arrow right or arrow down
-          KFK.presentNextPage();
-          evt.preventDefault();
-        } else if (evt.keyCode === 33 || evt.keyCode === 37 || evt.keyCode === 38) {
-          //Page up, arrow left or arrow up
+        if (evt.keyCode === 33) { //Page Up
           KFK.presentPrevPage();
-          evt.preventDefault();
-        } else if (evt.keyCode === 36) {
-          KFK.presentFirstPage();
-          evt.preventDefault();
-        } else if (evt.keyCode === 35) {
+          evt.preventDefault(); evt.stopPropagation();
+        } else if (evt.keyCode === 34) { //Page Down
+          KFK.presentNextPage();
+          evt.preventDefault(); evt.stopPropagation();
+        } else if (evt.keyCode === 35) { //End
           KFK.presentLastPage();
-          evt.preventDefault();
+          evt.preventDefault(); evt.stopPropagation();
+        } else if (evt.keyCode === 36) { //Home
+          KFK.presentFirstPage();
+          evt.preventDefault(); evt.stopPropagation();
+        } else if (evt.keyCode === 37) { //Left
+          KFK.presentLeftPage();
+          evt.preventDefault(); evt.stopPropagation();
+        } else if (evt.keyCode === 38) { //Top
+          KFK.presentUpperPage();
+          evt.preventDefault(); evt.stopPropagation();
+        } else if (evt.keyCode === 39) { //Right
+          KFK.presentRightPage();
+          evt.preventDefault(); evt.stopPropagation();
+        } else if (evt.keyCode === 40) { //Down
+          KFK.presentLowerPage();
+          evt.preventDefault(); evt.stopPropagation();
         }
       } else {
-        if (evt.keyCode === 34) {
-          //Page down
+        if (evt.keyCode === 33) { //Page Up
+          KFK.gotoPrevPage();
+          evt.preventDefault(); evt.stopPropagation();
+        } else if (evt.keyCode === 34) { //Page Down
           KFK.gotoNextPage();
-          evt.preventDefault();
-        } else if (evt.keyCode === 38) { //UP
-          KFK.gotoUpperPage();
-          evt.preventDefault();
-        } else if (evt.keyCode === 40) { //Down
-          KFK.gotoLowerPage();
-          evt.preventDefault();
+          evt.preventDefault(); evt.stopPropagation();
+        } else if (evt.keyCode === 35) { //END
+          KFK.gotoLastPage();
+          evt.preventDefault(); evt.stopPropagation();
+        } else if (evt.keyCode === 36) { //HOME
+          KFK.gotoFirstPage();
+          evt.preventDefault(); evt.stopPropagation();
         } else if (evt.keyCode === 37) { //Left
           KFK.gotoLeftPage();
-          evt.preventDefault();
+          evt.preventDefault(); evt.stopPropagation();
+        } else if (evt.keyCode === 38) { //UP
+          KFK.gotoUpperPage();
+          evt.preventDefault(); evt.stopPropagation();
         } else if (evt.keyCode === 39) { //Right
           KFK.gotoRightPage();
-          evt.preventDefault();
-        } else if (evt.keyCode === 33) {
-          //Page up
-          KFK.gotoPrevPage();
-          evt.preventDefault();
-        } else if (evt.keyCode === 36) {
-          KFK.gotoFirstPage();
-          evt.preventDefault();
-        } else if (evt.keyCode === 35) {
-          KFK.gotoLastPage();
-          evt.preventDefault();
+          evt.preventDefault(); evt.stopPropagation();
+        } else if (evt.keyCode === 40) { //Down
+          KFK.gotoLowerPage();
+          evt.preventDefault(); evt.stopPropagation();
         }
-
       }
     } // inDesigner
 
@@ -5468,12 +5527,17 @@ KFK.addDocumentEventHandler = function () {
         KFK.editHoverObject(evt, true);
         break;
       case 27:
-        //ESC
-        //TODO: make real fullscreen? how can Miro do?
         if (KFK.inFullScreenMode === true) {
           evt.preventDefault();
+          evt.stopPropagation();
           KFK.toggleFullScreen();
+        } else if (KFK.inPresentingMode === true) {
+          evt.preventDefault();
+          evt.stopPropagation();
+          KFK.presentNoneMask();
+          KFK.endPresentation();
         }
+
         KFK.cancelAlreadySelected();
         if (!KFK.editting && KFK.mode !== "line") KFK.setMode("pointer");
         KFK.cancelTempLine();
@@ -5810,12 +5874,12 @@ KFK.gotoExplorer = function () {
   if (KFK.APP.model.cocoprj.name === '') {
     KFK.setAppData("model", "cocoprj", { "prjid": "all", "name": "我最近使用过的白板" });
   }
-  //不用每次gotoExplorer都refreshExplorer, 因为refreshExplorer要跟服务器刷新数据
+  //不用每次gotoExplorer都refreshProjectList, 因为refreshProjectList要跟服务器刷新数据
   //仅仅是切换explorer或者designer视图，没必要拉取数据
   //只在首次切换到explorer时，拉取数据。
-  //其他时候，在creaeproject等操作的地方，会调用refreshExplorer重新拉取数据，在那时，Projects发生了变化，重新拉取是有必要的。
+  //其他时候，在creaeproject等操作的地方，会调用refreshProjectList重新拉取数据，在那时，Projects发生了变化，重新拉取是有必要的。
   if (KFK.explorerRefreshed === false) {
-    KFK.refreshExplorer();
+    KFK.refreshProjectList();
   }
   KFK.currentView = "explorer";
   KFK.showSection({ explorer: true, designer: false });
@@ -5885,7 +5949,7 @@ KFK.saveBlobToOSS = function (blob) {
 };
 
 KFK.save = async function () {
-  let docPath = `/${config.tenant.id}/${KFK.APP.model.cocodoc.doc_id}/`;
+  let docPath = `/${cocoConfig.tenant.id}/${KFK.APP.model.cocodoc.doc_id}/`;
   // let result = await KFK.OSSClient.list({
   //     prefix: 'lucas/',
   // });
@@ -5996,7 +6060,7 @@ KFK.placePastedContent = async function () {
   if (KFK.hoverJqDiv()) {
     if (KFK.anyLocked(KFK.hoverJqDiv())) return;
 
-    if (config.node[KFK.hoverJqDiv().attr("nodetype")].edittable) {
+    if (cocoConfig.node[KFK.hoverJqDiv().attr("nodetype")].edittable) {
       KFK.fromJQ = KFK.hoverJqDiv().clone();
       let innerObj = KFK.hoverJqDiv().find(".innerobj");
       let oldText = innerObj.html();
@@ -6018,16 +6082,16 @@ KFK.placePastedContent = async function () {
       100, 100, toAdd);
     switch (box) {
       case 'none':
-        jBox.css("background", "rgba(255,255,255,0)");
-        jBox.css("border-color", "rgba(51,51,51,0)");
+        jBox.css("background", "#FFFFFF00");
+        jBox.css("border-color", "#33333300");
         break;
       case 'border':
-        jBox.css("background", "rgba(255,255,255,0)");
-        jBox.css("border-color", "rgba(51,51,51,255)");
+        jBox.css("background", "#FFFFFF00");
+        jBox.css("border-color", "#333333FF");
         break;
       case 'all':
-        jBox.css("background", "rgba(255,255,255,255)");
-        jBox.css("border-color", "rgba(51,51,51,255)");
+        jBox.css("background", "#FFFFFFFF");
+        jBox.css("border-color", "#333333FF");
         break;
     }
     await KFK.syncNodePut("C", jBox, "create text node", null, false, 0, 1);
@@ -6154,6 +6218,8 @@ KFK.gotoNextPage = function () {
   if (KFK.currentPage < KFK.pageBounding.Pages.length - 1) {
     KFK.currentPage++;
     KFK.___gotoPage(KFK.currentPage);
+  } else {
+    KFK.scrLog("这已经在最后一页了", 1000);
   }
 };
 KFK.gotoPrevPage = function () {
@@ -6161,7 +6227,7 @@ KFK.gotoPrevPage = function () {
     KFK.currentPage--;
     KFK.___gotoPage(KFK.currentPage);
   } else {
-    KFK.scrLog("这已经是第一页了");
+    KFK.scrLog("这已经在第一页了", 1000);
   }
 };
 KFK.gotoLastPage = function () {
@@ -6182,13 +6248,19 @@ KFK.gotoAnyPage = function (pageIndex) {
 };
 KFK.gotoUpperPage = function () {
   let pidx = KFK.currentPage - KFK.PageNumberHori;
-  if (pidx < 0) return;
+  if (pidx < 0) {
+    KFK.scrLog("已经在最顶部了", 1000);
+    return;
+  }
   KFK.currentPage = pidx;
   KFK.___gotoPage(KFK.currentPage);
 };
 KFK.gotoLowerPage = function () {
   let pidx = KFK.currentPage + KFK.PageNumberHori;
-  if (pidx > KFK.pageBounding.Pages.length - 1) return;
+  if (pidx > KFK.pageBounding.Pages.length - 1) {
+    KFK.scrLog("已经在最底部了", 1000);
+    return;
+  }
   KFK.currentPage = pidx;
   KFK.___gotoPage(KFK.currentPage);
 };
@@ -6196,7 +6268,10 @@ KFK.gotoLeftPage = function () {
   let rowIdx = Math.floor(KFK.currentPage / KFK.PageNumberHori);
   let columIdx = KFK.currentPage % KFK.PageNumberHori;
   let nextColumIdx = columIdx - 1;
-  if (nextColumIdx < 0) return;
+  if (nextColumIdx < 0) {
+    KFK.scrLog('已经在最左边了', 1000);
+    return;
+  }
   let pidx = rowIdx * KFK.PageNumberHori + nextColumIdx;
   KFK.currentPage = pidx;
   KFK.___gotoPage(KFK.currentPage);
@@ -6205,7 +6280,10 @@ KFK.gotoRightPage = function () {
   let rowIdx = Math.floor(KFK.currentPage / KFK.PageNumberHori);
   let columIdx = KFK.currentPage % KFK.PageNumberHori;
   let nextColumIdx = columIdx + 1;
-  if (nextColumIdx > KFK.PageNumberVert - 1) return;
+  if (nextColumIdx > KFK.PageNumberVert - 1) {
+    KFK.scrLog('已经在最右边了', 1000);
+    return;
+  }
   let pidx = rowIdx * KFK.PageNumberHori + nextColumIdx;
   KFK.currentPage = pidx;
   KFK.___gotoPage(KFK.currentPage);
@@ -6242,8 +6320,12 @@ KFK.startPresentation = async function () {
     left: 'none',
     right: 'none',
   });
-  KFK.rememberOverallBackgroundColor = $('#overallbackground').css('background-color');
-  $('#overallbackground').css('background-color', 'black');
+  let cbkg = $('#containerbkg');
+  KFK.rememberGrid = cbkg.hasClass("grid1") ? "grid1" : cbkg.hasClass("grid2") ? "grid2" : "";
+  if (KFK.rememberGrid !== "")
+    cbkg.removeClass(KFK.rememberGrid);
+  // KFK.rememberOverallBackgroundColor = $('#overallbackground').css('background-color');
+  // $('#overallbackground').css('background-color', 'black');
   KFK.scrLog('进入演示模式: 输入pr退出');
   KFK.inPresentingMode = true;
   KFK.___presentPage(KFK.currentPage);
@@ -6251,12 +6333,15 @@ KFK.startPresentation = async function () {
 KFK.endPresentation = function () {
   if (KFK.inOverviewMode) return;
   KFK.unmaskScreen();
-  // KFK.closeFullscreen();
+  KFK.closeFullscreen();
   KFK.restoreLayoutDisplay();
   KFK.scrLog('退出演示模式');
   KFK.inPresentingMode = false;
   KFK.___unsetSlideMask();
-  $('#overallbackground').css('background-color', KFK.rememberOverallBackgroundColor);
+  let cbkg = $('#containerbkg');
+  if (KFK.rememberGrid !== "")
+    cbkg.addClass(KFK.rememberGrid);
+  // $('#overallbackground').css('background-color', KFK.rememberOverallBackgroundColor);
   let main = $("#C1");
   let scroller = $("#S1");
   let scrCenter = KFK.scrCenter();
@@ -6269,6 +6354,39 @@ KFK.endPresentation = function () {
     KFK.JC3.css("transform", `scale(1, 1) translate(0px, 0px)`);
   }, 100);
 };
+
+KFK.presentNoneMask = function () {
+  KFK.presentMaskMode = false;
+  $('.present-mask').removeClass('white-mask');
+  $('.present-mask').removeClass('black-mask');
+  $('.present-mask').addClass('nodisplay');
+};
+KFK.presentBlackMask = function () {
+  if (KFK.presentMaskMode && KFK.presentMaskMode === true
+    && $('.present-mask').hasClass('black-mask')) {
+    KFK.presentMaskMode = false;
+    $('.present-mask').removeClass('black-mask');
+    $('.present-mask').addClass('nodisplay');
+  } else {
+    KFK.presentMaskMode = true;
+    $('.present-mask').removeClass('white-mask');
+    $('.present-mask').removeClass('nodisplay');
+    $('.present-mask').addClass('black-mask');
+  }
+};
+KFK.presentWhiteMask = function () {
+  if (KFK.presentMaskMode && KFK.presentMaskMode === true
+    && $('.present-mask').hasClass('white-mask')) {
+    KFK.presentMaskMode = false;
+    $('.present-mask').removeClass('white-mask');
+    $('.present-mask').addClass('nodisplay');
+  } else {
+    KFK.presentMaskMode = true;
+    $('.present-mask').removeClass('black-mask');
+    $('.present-mask').removeClass('nodisplay');
+    $('.present-mask').addClass('white-mask');
+  }
+};
 KFK.presentFirstPage = function () {
   KFK.currentPage = 0;
   KFK.___presentPage(KFK.currentPage);
@@ -6278,7 +6396,7 @@ KFK.presentNextPage = function () {
     KFK.currentPage++;
     KFK.___presentPage(KFK.currentPage);
   } else {
-    KFK.scrLog("这是最后一页了");
+    KFK.scrLog("这是在最后一页了", 1000);
   }
 };
 KFK.presentPrevPage = function () {
@@ -6286,7 +6404,7 @@ KFK.presentPrevPage = function () {
     KFK.currentPage--;
     KFK.___presentPage(KFK.currentPage);
   } else {
-    KFK.scrLog("这已经是第一页了");
+    KFK.scrLog("这已经在第一页了", 1000);
   }
 };
 KFK.presentLastPage = function () {
@@ -6301,6 +6419,49 @@ KFK.presentAnyPage = function (pageIndex) {
     KFK.currentPage = KFK.pageBounding.Pages.length - 1;
     KFK.___presentPage(KFK.currentPage);
   }
+};
+KFK.presentLeftPage = function () {
+  let rowIdx = Math.floor(KFK.currentPage / KFK.PageNumberHori);
+  let columIdx = KFK.currentPage % KFK.PageNumberHori;
+  let nextColumIdx = columIdx - 1;
+  if (nextColumIdx < 0) {
+    KFK.scrLog('已经在最左边了', 1000);
+    return;
+  }
+  let pidx = rowIdx * KFK.PageNumberHori + nextColumIdx;
+  KFK.currentPage = pidx;
+  KFK.___presentPage(KFK.currentPage);
+};
+KFK.presentRightPage = function () {
+  let rowIdx = Math.floor(KFK.currentPage / KFK.PageNumberHori);
+  let columIdx = KFK.currentPage % KFK.PageNumberHori;
+  let nextColumIdx = columIdx + 1;
+  if (nextColumIdx > KFK.PageNumberVert - 1) {
+    KFK.scrLog('已经在最右边了', 1000);
+    return;
+  }
+  let pidx = rowIdx * KFK.PageNumberHori + nextColumIdx;
+  KFK.currentPage = pidx;
+  KFK.___presentPage(KFK.currentPage);
+};
+
+KFK.presentUpperPage = function () {
+  let pidx = KFK.currentPage - KFK.PageNumberHori;
+  if (pidx < 0) {
+    KFK.scrLog("已经在最顶部了", 1000);
+    return;
+  }
+  KFK.currentPage = pidx;
+  KFK.___presentPage(KFK.currentPage);
+};
+KFK.presentLowerPage = function () {
+  let pidx = KFK.currentPage + KFK.PageNumberHori;
+  if (pidx > KFK.pageBounding.Pages.length - 1) {
+    KFK.scrLog("已经在最底部了", 1000);
+    return;
+  }
+  KFK.currentPage = pidx;
+  KFK.___presentPage(KFK.currentPage);
 };
 KFK.___presentPage = function (pageIndex) {
   KFK.inPresentingMode = true;
@@ -6322,6 +6483,7 @@ KFK.___presentPage = function (pageIndex) {
     y: pages[pageIndex].top + KFK.TopB
   });
 
+  console.log("___presentPage", pageIndex);
   KFK.___setSlideMask(pageIndex);
 
   let scaleX = window_width / KFK.PageWidth;
@@ -6382,28 +6544,34 @@ KFK.___setSlideMask = function (pageIndex) {
   }
 
   jLeft.css({
-    "left": "0px",
-    "top": "0px",
-    "width": KFK.px(pages[pageIndex].left),
-    "height": KFK.px(KFK._height),
+    "left": `-${KFK.LeftB}px`,
+    "top": `-${KFK.TopB}px`,
+    "width": KFK.px(pages[pageIndex].left + KFK.LeftB),
+    "height": KFK.px(KFK._height + 2 * KFK.TopB),
   });
   jTop.css({
-    "left": KFK.px(pages[pageIndex].left),
-    "top": "0px",
-    "width": KFK.px(KFK.PageWidth),
-    "height": KFK.px(Math.floor(pageIndex / KFK.PageNumberHori) * KFK.PageHeight)
+    "left": `-${KFK.LeftB}px`,
+    "top": `-${KFK.TopB}px`,
+    "width": KFK.px(KFK._width + 2 * KFK.LeftB),
+    "height": KFK.px(pages[pageIndex].top + KFK.TopB)
   });
   jRight.css({
     "left": KFK.px(pages[pageIndex].left + KFK.PageWidth),
-    "top": "0px",
-    "width": KFK.px((KFK.PageNumberHori - pageIndex % KFK.PageNumberHori - 1) * KFK.PageWidth),
-    "height": KFK.px(KFK._height),
+    "top": `-${KFK.TopB}px`,
+    "width": KFK.px((KFK.PageNumberHori - pageIndex % KFK.PageNumberHori - 1) * KFK.PageWidth + KFK.LeftB),
+    "height": KFK.px(KFK._height + 2 * KFK.TopB),
   });
+  console.log(JSON.stringify({
+    "left": KFK.px(pages[pageIndex].left + KFK.PageWidth),
+    "top": `-${KFK.TopB}px`,
+    "width": KFK.px((KFK.PageNumberHori - pageIndex % KFK.PageNumberHori - 1) * KFK.PageWidth + KFK.LeftB),
+    "height": KFK.px(KFK._height + 2 * KFK.TopB),
+  }));
   jBottom.css({
-    "left": KFK.px(pages[pageIndex].left),
+    "left": `-${KFK.LeftB}px`,
     "top": KFK.px(pages[pageIndex].top + KFK.PageHeight),
-    "width": KFK.px(KFK.PageWidth),
-    "height": KFK.px(KFK.PageNumberVert - Math.floor(pageIndex / KFK.PageNumberHori - 1) * KFK.PageHeight)
+    "width": KFK.px(KFK._width + 2 * KFK.LeftB),
+    "height": KFK.px((KFK.PageNumberVert - Math.floor(pageIndex / KFK.PageNumberHori) - 1) * KFK.PageHeight + KFK.TopB)
   });
 }
 
@@ -6417,6 +6585,11 @@ KFK.toggleOnePage = function (jc3MousePos) {
   KFK.APP.setData('show', 'actionlog', false);
   if (KFK.inOverviewMode === true) {
     KFK.scrLog("");
+
+    let cbkg = $('#containerbkg');
+    if (KFK.rememberGrid !== "")
+      cbkg.addClass(KFK.rememberGrid);
+
     KFK.JC3.css({
       'transform-origin': '0px 0px',
       '-webkit-transform-origin': '0px 0px',
@@ -6444,6 +6617,10 @@ KFK.toggleOnePage = function (jc3MousePos) {
         right: 'none',
       });
     }
+    let cbkg = $('#containerbkg');
+    KFK.rememberGrid = cbkg.hasClass("grid1") ? "grid1" : cbkg.hasClass("grid2") ? "grid2" : "";
+    if (KFK.rememberGrid !== "")
+      cbkg.removeClass(KFK.rememberGrid);
 
     KFK.scrollPosToRemember = { x: scroller.scrollLeft(), y: scroller.scrollTop() };
     let scaleX = window_width / KFK._width;
@@ -6558,7 +6735,6 @@ KFK.scrollToNode = function (nodeid) {
   let width = jqDIV.width();
   let height = jqDIV.height();
 
-  //TODO: Test scrollToNode
   KFK.scrollContainer = $("#S1");
   let scrollX = left - $(window).width() * 0.5 + width * 0.5 + KFK.LeftB;
   let scrollY = top - $(window).height() * 0.5 + height * 0.5 + KFK.TopB;
@@ -6700,7 +6876,7 @@ KFK.handleProfileSubmit = function () {
 
 // localStorage.removeItem('cocouser');
 // KFK.debug(config.defaultDocBgcolor);
-config.defaultDocBgcolor = "#ABABAB";
+cocoConfig.defaultDocBgcolor = "#ABABAB";
 // KFK.debug(config.defaultDocBgcolor);
 // KFK.debug("console.js begin loadimages");
 //Start the APP
@@ -6732,7 +6908,7 @@ KFK.initSvgLayer = function () {
   KFK.debug('svg layer initialized');
   KFK.pageBounding = { Pages: [] };
   let boundingLineOption = {
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: '#FFFFFFCC',
     width: 4,
     linecap: 'square'
   }
@@ -7213,12 +7389,8 @@ KFK.showIvtCodeDialog = function () {
 }
 export default KFK;
 
-//TODO: direct loginas demo user story
-//TODO: 流量计费
 //TODO: 多个演示文档ID，随机选择给Demo用户使用
-//TODO: do not send mouse in zoom mode
 //TODO: 演示文档中，放入广告，招投资，招团队
-//TODO: ToolTips 在demo状态下每次进来分别提示一次
 //TODO: 清理OSS图片
 // OSS路径名使用 tenant_id/doc_id/pic_name.png
 // 一开始生成文档的ID， 然后的OSS图片的目录使用这个ID， 最后保存时，检查真正剩余的图片，并与OSS中的对应，没有用到的从OSS中删除掉
