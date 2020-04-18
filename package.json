@@ -4,7 +4,7 @@
   "description": "Cocopad a online collaborated pad",
   "main": "pad.html",
   "scripts": {
-    "start": "parcel src/pad.html --open",
+    "start": "parcel src/pad.html --no-cache",
     "build": "parcel build src/pad.html"
   },
   "dependencies": {
