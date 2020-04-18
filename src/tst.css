@@ -1,0 +1,179 @@
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=arial]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=arial]::before {
+    content: 'Arial';
+    font-family: 'Arial', , sans-serif;
+}
+
+.ql-font-arial {
+    font-family: 'Arial', , sans-serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=courier]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=courier]::before {
+    content: 'Courier';
+    font-family: 'Courier', , sans-serif;
+}
+
+.ql-font-courier {
+    font-family: 'Courier', , sans-serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=impact]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=impact]::before {
+    content: 'Impact';
+    font-family: 'Impact', , sans-serif;
+}
+
+.ql-font-impact {
+    font-family: 'Impact', , sans-serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=garamond]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=garamond]::before {
+    content: 'Garamond';
+    font-family: 'Garamond', , sans-serif;
+}
+
+.ql-font-garamond {
+    font-family: 'Garamond', , sans-serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=tahoma]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=tahoma]::before {
+    content: 'Tahoma';
+    font-family: 'Tahoma', , sans-serif;
+}
+
+.ql-font-tahoma {
+    font-family: 'Tahoma', , sans-serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=times-new-roman]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=times-new-roman]::before {
+    content: 'TimesNewRoman';
+    font-family: 'Times New Roman', , sans-serif;
+}
+
+.ql-font-times-new-roman {
+    font-family: 'Times New Roman', , sans-serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=verdana]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=verdana]::before {
+    content: 'Verdana';
+    font-family: 'Verdana', , sans-serif;
+}
+
+.ql-font-verdana {
+    font-family: 'Verdana', , sans-serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=aref-ruqaa]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=aref-ruqaa]::before {
+    content: 'Aref Ruqaa';
+    font-family: 'Aref Ruqaa', , sans-serif;
+}
+
+.ql-font-aref-ruqaa {
+    font-family: 'Aref Ruqaa', , sans-serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=mirza]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=mirza]::before {
+    content: 'Mirza';
+    font-family: 'Mirza', , sans-serif;
+}
+
+.ql-font-mirza {
+    font-family: 'Mirza', , sans-serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=microsoft-yahei]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=microsoft-yahei]::before {
+    content: '微软雅黑';
+    font-family: 'Microsoft Yahei', , sans-serif;
+}
+
+.ql-font-microsoft-yahei {
+    font-family: 'Microsoft Yahei', , sans-serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=heiti]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=heiti]::before {
+    content: '黑体';
+    font-family: 'STHeiti', SimHei, sans-serif;
+}
+
+.ql-font-heiti {
+    font-family: 'STHeiti', SimHei, sans-serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=kaiti]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=kaiti]::before {
+    content: '楷体';
+    font-family: 'STKaiti', KaiTi, sans-serif;
+}
+
+.ql-font-kaiti {
+    font-family: 'STKaiti', KaiTi, sans-serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=songti]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=songti]::before {
+    content: '宋体';
+    font-family: 'STSong', SimSun, sans-serif;
+}
+
+.ql-font-songti {
+    font-family: 'STSong', SimSun, sans-serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=fangsong]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=fangsong]::before {
+    content: '仿宋';
+    font-family: 'STFangsong', FangSong, sans-serif;
+}
+
+.ql-font-fangsong {
+    font-family: 'STFangsong', FangSong, sans-serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=pmingliu]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=pmingliu]::before {
+    content: '新细明体';
+    font-family: 'PMingLiU', STXihei, sans-serif;
+}
+
+.ql-font-pmingliu {
+    font-family: 'PMingLiU', STXihei, sans-serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=lisu]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=lisu]::before {
+    content: '隶书';
+    font-family: 'LiSu', STKaiti, sans-serif;
+}
+
+.ql-font-lisu {
+    font-family: 'LiSu', STKaiti, sans-serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=youyuan]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=youyuan]::before {
+    content: '幼圆';
+    font-family: 'YouYuan', STKaiti, sans-serif;
+}
+
+.ql-font-youyuan {
+    font-family: 'YouYuan', STKaiti, sans-serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=fzyaoti]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=fzyaoti]::before {
+    content: '方正姚体';
+    font-family: 'FZYaoti', STKaiti, sans-serif;
+}
+
+.ql-font-fzyaoti {
+    font-family: 'FZYaoti', STKaiti, sans-serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=stxingkai]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=stxingkai]::before {
+    content: '华文行楷';
+    font-family: 'STXingkai', STKaiti, sans-serif;
+}
+
+.ql-font-stxingkai {
+    font-family: 'STXingkai', STKaiti, sans-serif;
+}
+
+.ql-snow .ql-picker.ql-font .ql-picker-label[data-value=stxinwei]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=stxinwei]::before {
+    content: '华文新魏';
+    font-family: 'STXinwei', STKaiti, sans-serif;
+}
+
+.ql-font-stxinwei {
+    font-family: 'STXinwei', STKaiti, sans-serif;
+}

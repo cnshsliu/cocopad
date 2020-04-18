@@ -38,24 +38,12 @@ const NodeController = {
     if(jqNode === undefined){
       console.log(new Error().stack);
     }
-    if(action === 'draggable'){
-      if(jqNode.hasClass('ui-draggable'))
+    if(action === 'draggable' && jqNode.hasClass('ui-draggable')){
         jqNode.draggable(flag);
-      else{
-        console.warn(jqNode.attr('nodetype'), jqNode.attr("id"), 'draggable has not been set');
-      }
-    }else if(action === 'resizable'){
-      if(jqNode.hasClass('ui-resizable'))
+    }else if(action === 'resizable' && jqNode.hasClass('ui-resizable')){
         jqNode.resizable(flag);
-      else{
-        console.warn(jqNode.attr('nodetype'), jqNode.attr("id"), 'resizable has not been set');
-      }
-    }else if(action === 'droppable'){
-      if(jqNode.hasClass('ui-droppable'))
+    }else if(action === 'droppable' && jqNode.hasClass('ui-droppable')){
         jqNode.droppable(flag);
-      else{
-        console.warn(jqNode.attr('nodetype'), jqNode.attr("id"), 'droppable has not been set');
-      }
     }
   },
   unlock: (jqNode) => {

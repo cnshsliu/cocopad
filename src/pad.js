@@ -62,7 +62,7 @@ const app = new Vue({
           ["biz001", "biz002", "biz003", "biz004", "biz005", "biz006", "biz007", "biz008", "biz009", "biz010", "biz011", "biz012", "biz013", "biz014", "biz015", "biz016", "biz017", "biz018", "biz019", "biz020", "biz021", "biz022", "biz023", "biz024", "biz025", "biz026", "biz027", "biz028", "biz029", "biz030", "biz031", "biz032", "biz033", "biz034", "biz035", "biz036", "biz037", "biz038", "biz039", "biz040", "biz041", "biz042", "biz043", "biz044", "biz045", "biz04", "biz047", "biz048", "biz049", "biz050", "biz051", "biz052", "biz053", "biz054", "biz055", "biz056", "biz057", "biz058", "biz059", "biz060"],
       }
     ],
-    toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'lock': false, 'minimap': false, 'connect': false, 'clean': false },
+    toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'richtext':false, 'lock': false, 'minimap': false, 'connect': false, 'clean': false },
     docNavTabIndex: 0,
     show: {
       'loading': false,
@@ -80,10 +80,12 @@ const app = new Vue({
       'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false, copyDocDialog: false, setAclDialog: false, pasteContentDialog: false, MsgBox: false, shareDialog: false },
     },
     model: {
+      firstTime: true,
+      isValidBrowser: true,
       readonlyDesc: '只读',
       currentDoc: { acl: 'O' },
       invitor: { usrid: '', name: '' },
-      showHelp: false,
+      showInModalMiniHelp: false,
       accordion: { myorg: true },
       org: {
         neworg: {

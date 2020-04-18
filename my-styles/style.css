@@ -212,11 +212,11 @@ body {
   background-image: url("../assets/grid1.svg");
   background-size: 20px 20px;
 }
+
 .grid2 {
   background-image: url("../assets/grid2.svg");
   background-size: 20px 20px;
 }
-
 
 .liukehong1 {
   background: red;
@@ -332,8 +332,8 @@ body {
   padding: 0px 30px 0px 0px !important;
 }
 
-.coco select{
-  margin:0px;
+.coco select {
+  margin: 0px;
   padding: 0px 0px 0px 5px;
 }
 
@@ -433,36 +433,45 @@ svg path {
   align-items: center;
   z-index: 999999999;
 }
-.present-mask{
+
+.present-mask {
   position: absolute;
-  top: 0px; left:0px;
+  top: 0px;
+  left: 0px;
   z-index: 999999998;
   width: 100%;
   height: 100%;
 }
-.black-mask{
+
+.black-mask {
   background-color: #000000;
 }
-.white-mask{
+
+.white-mask {
   background-color: #FFFFFF;
 }
-.reconnect-mask{
+
+.reconnect-mask {
   position: absolute;
-  top: 0px; left:0px;
+  top: 0px;
+  left: 0px;
   z-index: 999999998;
   width: 100%;
   height: 100%;
   background-color: #0000004D
 }
 
-.reconnect-msg{
+.reconnect-msg {
   display: flex;
   position: absolute;
-  width: 100%; height: 40px;
-  left: 0px; bottom: 20px;
+  width: 100%;
+  height: 40px;
+  left: 0px;
+  bottom: 20px;
   background-color: #4c00ff26;
 }
-.reconnect-mask p{
+
+.reconnect-mask p {
   margin: auto;
   text-align: center;
 }
@@ -480,10 +489,11 @@ svg path {
   z-index: 999;
 }
 
-.nodisplay{
+.nodisplay {
   display: none;
 }
-.displayblock{
+
+.displayblock {
   display: block;
 }
 
@@ -507,19 +517,18 @@ svg path {
   transform: translate(-50%, -50%);
 }
 
-.signinform input, .registerform input{
+.signinform input, .registerform input {
   font-family: monospace;
   font-size: 20px;
   border-radius: 20px;
   background-color: #c2eebfD9;
 }
 
-.profileform input{
+.profileform input {
   font-family: monospace;
   font-size: 20px;
   background-color: #c2eebfD9;
 }
-
 
 .show-password svg {
   width: 12px;
@@ -580,8 +589,7 @@ svg path {
   background-image: url("../assets/pwd.svg");
 }  */
 
-
-.signinform .right-eye, .registerform .right-eye{
+.signinform .right-eye, .registerform .right-eye {
   border-radius: 20px;
   border: 1px solid #ced4da;
   border-left: 0px;
@@ -594,7 +602,7 @@ svg path {
   border-right-width: 0px !important;
 }
 
-.profileform .right-eye{
+.profileform .right-eye {
   border: 1px solid #ced4da;
   border-left: 0px;
   border-top-left-radius: 0px;
@@ -602,7 +610,7 @@ svg path {
   background-color: #c2eebfD9;
 }
 
-.office-form .right-eye{
+.office-form .right-eye {
   border-left: 0px;
   border-top-left-radius: 0px;
   border-bottom-left-radius: 0px;
@@ -664,15 +672,17 @@ input#regUserCode {
 
 .explorer-user-avatar {
   position: relative;
-  width: 80px; height: 80px;
-  top: -20px; right: 0px;
+  width: 80px;
+  height: 80px;
+  top: -20px;
+  right: 0px;
 }
-.explorer-user-orgname{
+
+.explorer-user-orgname {
   position: absolute;
   right: 20px;
   top: 20px;
 }
-
 
 #app {
   width: 100%;
@@ -711,7 +721,7 @@ select:focus {
   outline: none !important;
 }
 
-.docHeaderInfo{
+.docHeaderInfo {
   position: absolute;
   top: 2px;
   left: 84px;
@@ -811,7 +821,7 @@ select:focus {
   position: absolute;
   white-space: nowrap;
   width: fit-content;
-  z-index: 998;
+  z-index: 99999998;
   background-color: #e5dbff;
   border-radius: 5px;
   padding: 0px;
@@ -890,10 +900,11 @@ select:focus {
 .locklabel {
   position: absolute;
   top: 0px;
-  left: calc(50%-5px);
+  left: calc(50% - 5px);
   width: 10px;
   height: 10px;
   border-radius: 10px;
+  border: 1px solid black;
   background-image: url("../assets/dot.svg");
 }
 
@@ -1072,9 +1083,11 @@ select:focus {
 input {
   outline: none !important;
 }
+
 *:focus {
   outline: none !important;
 }
+
 .invalid-feedback {
   color: black;
 }
@@ -1194,7 +1207,7 @@ input {
   background-color: #e5dbff;
 }
 
-.myhovered{
+.myhovered {
   white-space: nowrap;
 }
 
@@ -1207,23 +1220,98 @@ input {
   padding: 0px !important;
 }
 
-.share-it-url{
+.share-it-url {
   font-family: monospace;
   font-size: xx-small;
   background-color: whitesmoke;
 }
 
-table.quick-help-table{
+table.quick-help-table {
   border: 1px solid #3e3ecc;
 }
-table.quick-help-table .title{
+
+table.quick-help-table .title {
   background-color: #e5dbff;
   font-weight: bolder;
 }
-table.quick-help-table tr{
+
+table.quick-help-table tr {
   border: 1px solid #e5dbffCC;
 }
-table.quick-help-table td:first-of-type{
+
+table.quick-help-table td:first-of-type {
   border: 1px solid #e5dbff;
   background-color: #f5fbff22;
+}
+
+/* 
+.ql-container.ql-snow{
+  border: 0px !important;
+}*/
+
+.ql-container {
+  position: absolute !important;
+  top: 0px;
+}
+
+.ql-toolbar {
+  background-color: aqua;
+  position: relative;
+  transform: translate(0%, -100%);
+  z-index: 99999;
+}
+
+.browser-warning {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  font-size: 12px;
+}
+
+.quilling-by {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  font-family: "monospace";
+  font-size: 10px;
+  white-space: nowrap;
+  width: fit-content;
+  height: fit-content;
+  z-index: 99999998;
+  border-radius: 5px;
+  background-color: aqua;
+  animation: jello 1s;
+  animation-iteration-count: infinite;
+}
+.ql-editor-pointer  > * {
+  cursor: pointer !important;
+}
+
+@keyframes jello {
+  0% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+  50% {
+    -webkit-transform: scale(1.5);
+    transform: scale(1.5);
+  }
+  100% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+
+.tool-in-help{
+  width: 20px; height:20px;
+}
+.color-dynamic-black{
+  color: black;
+}
+.color-dynamic-white{
+  color: white;
+}
+.showFirstTimeHelp{
+  position: absolute;
+  right: 100px;
 }

@@ -6,6 +6,7 @@
   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="../my-styles/style.css">
+  <link rel="stylesheet" href="../my-styles/qlviewer.css">
   <link rel="shortcut icon" href="./favicon.ico" />
 </head>
 
@@ -168,6 +169,10 @@
           {{model.invitor.name}} 邀请您使用在线协同白板
         </div>
       </b-form>
+      <div v-show="!model.isValidBrowser" class="browser-warning">
+        我们尚没有对您当前使用的浏览兼容性测试，使用中可能会遇到不正常的情况，推荐使用<a href="https://pc.qq.com/detail/1/detail_2661.html"
+          target="_blank">Chrome</a>或微软的新版<a href="https://www.microsoft.com/zh-cn/edge" target="_blank">Edge</a>浏览器
+      </div>
     </div> <!-- register form-->
     <div id="signinform" class="signinform" v-show="show.section.signin" style="display:none;">
       <b-form v-if="model.signInButWaitVerify===false" autocomplete="off" class="w-100 px-2 text-center">
@@ -217,6 +222,10 @@
           </b-col>
         </b-row>
       </b-form>
+      <div v-show="!model.isValidBrowser" class="browser-warning">
+        我们尚没有对您当前使用的浏览兼容性测试，使用中可能会遇到不正常的情况，推荐使用<a href="https://pc.qq.com/detail/1/detail_2661.html"
+          target="_blank">Chrome</a>或微软的新版<a href="https://www.microsoft.com/zh-cn/edge" target="_blank">Edge</a>浏览器
+      </div>
     </div><!-- signin form-->
     <div v-show="show.section.designer" style="display:none;">
       <div id="S1">
@@ -252,7 +261,11 @@
           </b-list-group-item>
           <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('yellowtip');"
             :active="toolActiveState['yellowtip']">
-            <b-img :src="images['tip'].src" fluid alt="" scale="2" class="cocotool"></b-img>
+            <b-img :src="images['tipbtn'].src" fluid alt="" scale="2" class="cocotool"></b-img>
+          </b-list-group-item>
+          <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('richtext');"
+            :active="toolActiveState['richtext']">
+            <b-img :src="images['richtext'].src" fluid alt="" scale="2" class="cocotool"></b-img>
           </b-list-group-item>
           <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('line');"
             :active="toolActiveState['line']">
@@ -496,6 +509,7 @@
         </b-tabs>
       </div>
 
+      <!-- menu rtmenu -->
       <div id="rtcontrol" class="padlayout noshow">
         <div>
           <b-button id="goto_explorer" variant="success" @click="KFK.gotoExplorer">
@@ -504,17 +518,19 @@
           <b-button id='sharethisbutton' @click="SHARE.shareThisDoc" class="" variant="success">
             <b-icon icon="box-arrow-up"></b-icon>分享
           </b-button>
-          <b-dropdown right variant="success" class="m-2">
+          <b-dropdown right variant="success" class="m-2" id='dropdown_help'>
             <template v-slot:button-content>使用说明</template>
             <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle_all" variant="success"
               v-b-modal.modal-key-shortcut>
               <img src="../assets/keyboard.svg" class="toolbar" style="width:24px; height:24px;"></img>&nbsp;快捷键
             </b-dropdown-item>
             <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle_all" variant="success"
-              @click="KFK.toggleFullScreen">
+              @click="KFK.showFullHelp">
               <img src="../assets/manual.svg" class="toolbar" style="width:24px; height:24px;"></img>&nbsp;帮助文档
             </b-dropdown-item>
           </b-dropdown>
+
+
           <b-dropdown right text="显示设置" variant="success" class="m-2">
             <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle_all" variant="success"
               @click="KFK.toggleFullScreen">
@@ -538,7 +554,8 @@
             </b-dropdown-item>
           </b-dropdown>
         </div>
-      </div>
+        <div class="showFirstTimeHelp" v-show="model.firstTime">请在这里查看相关使用说明</div>
+      </div> <!-- rtcontrol -->
       <div id="actionloglist" v-show="show.actionlog" style="overflow-y:scroll" class="p-3">
         协作参与者
         <div id='actionlog-refresh'>
@@ -1116,11 +1133,11 @@
           <div class="px-5 pt-2">
             <a href="#" class="card-link" @click="KFK.toggleFromResetToRemovePwd">&lt; 如忘记原协作码，可输入用户密码予以清除</a>
             <BR>
-            <b-button variant="outline-none" v-b-popover.hover.top="model.showHelp?'':'点击查看帮助说明'"
+            <b-button variant="outline-none" v-b-popover.hover.top="model.showInModalMiniHelp?'':'点击查看帮助说明'"
               @click="KFK.toggleShowHelp">
               <b-icon icon="question-square"></b-icon>
             </b-button>
-            <div v-if="model.showHelp" class="inner-help">
+            <div v-if="model.showInModalMiniHelp" class="inner-help">
               <ul>设置协作密码后,只有知道协作密码才能打开白板
                 <li>如原先无密码,请保持原协作码为空即可</li>
                 <li>如要取消密码,请保持新协作码为空,即可清除密码</li>
@@ -1165,11 +1182,11 @@
               </b-form-checkbox>
             </b-input-group>
           </b-form>
-          <b-button variant="outline-none" v-b-popover.hover.top="model.showHelp?'':'点击查看帮助说明'"
+          <b-button variant="outline-none" v-b-popover.hover.top="model.showInModalMiniHelp?'':'点击查看帮助说明'"
             @click="KFK.toggleShowHelp">
             <b-icon icon="question-square"></b-icon>
           </b-button>
-          <div v-if="model.showHelp" class="inner-help">
+          <div v-if="model.showInModalMiniHelp" class="inner-help">
             <ul>操作说明
               <li>
                 <ol>复制白板
@@ -1198,11 +1215,11 @@
               <b-form-radio v-model="model.currentDoc.acl" name="aclRadios" value="P">公开使用: 不限制使用范围</b-form-radio>
             </b-form-group>
           </b-form>
-          <b-button variant="outline-none" v-b-popover.hover.top="model.showHelp?'':'点击查看帮助说明'"
+          <b-button variant="outline-none" v-b-popover.hover.top="model.showInModalMiniHelp?'':'点击查看帮助说明'"
             @click="KFK.toggleShowHelp">
             <b-icon icon="question-square"></b-icon>
           </b-button>
-          <div v-if="model.showHelp" class="inner-help">
+          <div v-if="model.showInModalMiniHelp" class="inner-help">
             <ul><B>访问范围说明</B>
               <li><B>仅发起人</B>: 只有白板发起人可以使用
               </li>
@@ -1282,7 +1299,10 @@
           请复制一下地址,分享给你的同事或朋友, 他们成功注册后,你将获得1000个操作积分!
           <b-form-input :value="getInvitationUrl()">hello</b-form-input>
         </b-modal>
-
+        <div v-show="!model.isValidBrowser" class="browser-warning">
+          我们尚没有对您当前使用的浏览兼容性测试，使用中可能会遇到不正常的情况，推荐使用<a href="https://pc.qq.com/detail/1/detail_2661.html"
+            target="_blank">Chrome</a>或微软的新版<a href="https://www.microsoft.com/zh-cn/edge" target="_blank">Edge</a>浏览器
+        </div>
       </div> <!-- explorer inner -->
       <div id="gotodesignercontrol" v-show="model.docLoaded" class="padlayout noshow">
         <b-button-group class="coco">
@@ -1401,7 +1421,7 @@
     </div>
     <div class="present-mask nodisplay">
     </div>
-    <b-modal id="modal-key-shortcut" scrollable title="操作快捷键" body-bg-variant="light" body-text-variant="dark" >
+    <b-modal id="modal-key-shortcut" scrollable title="操作快捷键" body-bg-variant="light" body-text-variant="dark">
       <table class="quick-help-table">
         <tr class="title">
           <td colspan=2>模式切换</td>
@@ -1415,7 +1435,8 @@
           <td> 进入全局概览模式，再次双击返回</td>
         </tr>
         <tr>
-          <td>输入<span class="cocohighlight-2">haola</span>或<span class="cocohighlight-2">hl</span>或<span class="cocohighlight-2">pr</span></td>
+          <td>输入<span class="cocohighlight-2">haola</span>或<span class="cocohighlight-2">hl</span>或<span
+              class="cocohighlight-2">pr</span></td>
           <td>进入幻灯片模式，再次输入返回</td>
         </tr>
 
@@ -1423,13 +1444,81 @@
           <td colspan=2>正常模式下的操作</td>
         </tr>
         <tr>
+          <td>在工具栏点选<img :src="images['pointer'].src" class="tool-in-help" />
+          </td>
+          <td>
+            鼠标操作状态。
+            <li>点击一个对象选中这个对象</li>
+            <li>拖动一个对象到新位置</li>
+            <li>双击对象，编辑其内容。 点彩板空白处退出编辑</li>
+            <li>按住CTRL键(Mac: META键)的同时，把一个尺寸较小的对象拖动到一个尺寸较大的对象上，将较小对象的内容合并到较大对象， 如同时按住了SHIFT键，则用较小对象的内容替换较大对象的内容
+          </td>
+        </tr>
+        <tr>
+          <td>在工具栏点选<img :src="images['text'].src" class="tool-in-help" />，然后在彩板上点鼠标
+          </td>
+          <td>
+            则在鼠标位置放置一个单行文本，双击文本可修改其内容
+          </td>
+        </tr>
+        <tr>
+          <td>在工具栏点选<img :src="images['textblock'].src" class="tool-in-help" />，然后在彩板上点鼠标
+          </td>
+          <td>
+            则在鼠标位置放置一个复合对象，双击可修改其文本, 在右侧属性窗，可设置其属性，或添加贴纸
+          </td>
+        </tr>
+        <tr>
+          <td>在工具栏点选<img :src="images['tipbtn'].src" class="tool-in-help" />，然后在彩板上点鼠标
+          </td>
+          <td>
+            则在鼠标位置放置一个贴纸对象，双击可修改其文本, 在右侧属性窗，可设置其属性，或修改贴纸
+          </td>
+        </tr>
+        <tr>
+          <td>在工具栏点选<img :src="images['richtext'].src" class="tool-in-help" />，然后在彩板上点鼠标
+          </td>
+          <td>
+            则在鼠标位置放置一个富文本，双击可修改其文本
+          </td>
+        </tr>
+        <tr>
+          <td>在工具栏点选<img :src="images['line'].src" class="tool-in-help" />，然后在彩板上点鼠标
+          </td>
+          <td>
+            在两点之间画线
+          </td>
+        </tr>
+        <tr>
+          <td>在工具栏点选<img :src="images['connect'].src" class="tool-in-help" />，然后在彩板上点鼠标
+          </td>
+          <td>
+            依次点击两个对象，则在两个对象之间建立连接线
+          </td>
+        </tr>
+        <tr>
+          <td>在工具栏点选<img :src="images['lock'].src" class="tool-in-help" />，然后在彩板上点一个对象
+          </td>
+          <td>
+            加解锁。 锁定后，对象不可修改、不可移动。 也可直接选择对象后，按CTRL-L 或 META-L 来加解锁
+          </td>
+        </tr>
+        <tr>
+          <td>在工具栏点选<img :src="images['eraser'].src" class="tool-in-help" />，然后在彩板上点鼠标
+          </td>
+          <td>
+            用板擦，擦除掉彩板上所有内容
+          </td>
+        </tr>
+        <tr>
           <td>输入
             <span class="cocohighlight-2">gt</span>
-            <span class="cocohighlight-2">gd</span> 
-            <span class="cocohighlight-2">gh</span> 
+            <span class="cocohighlight-2">gd</span>
+            <span class="cocohighlight-2">gh</span>
             <span class="cocohighlight-2">gl</span>
           </td>
-          <td> 选中对象到 <span class="cocohighlight-2">最顶层</span> <span class="cocohighlight-2">最下层</span> <span class="cocohighlight-2">上一层</span> <span class="cocohighlight-2">下一层</span></td>
+          <td> 选中对象到 <span class="cocohighlight-2">最顶层</span> <span class="cocohighlight-2">最下层</span> <span
+              class="cocohighlight-2">上一层</span> <span class="cocohighlight-2">下一层</span></td>
         </tr>
         <tr>
           <td><span class="cocohighlight-2">回车</span>或<span class="cocohighlight-2">双击</span>对象</td>
@@ -1452,7 +1541,7 @@
           <td><span class="cocohighlight-2">粘贴</span>当前对象、粘贴文字、图片。
             <li>如拷贝了对象，则在鼠标当前位置粘贴对象。</li>
             <li>如在其他应用中复制了文字、图片，则将从其它应用中复制的文字或图片粘贴到白板上。如粘贴时鼠标悬浮在一个对象上，
-            则文字图片粘贴到对象上，否则，粘贴在白板上鼠标所在位置。</li>
+              则文字图片粘贴到对象上，否则，粘贴在白板上鼠标所在位置。</li>
             <li>在浏览网页时，在需要复制的图片上点右键，复制图片，回到白板上，可粘贴所复制的图片到白板。</li>
             <li>URL地址在粘贴时，会提示地址说明，并粘贴一个地址链接到白板上。</li>
           </td>
@@ -1506,7 +1595,8 @@
           <td>白色遮罩</td>
         </tr>
         <tr>
-          <td>输入<span class="cocohighlight-2">haola</span>或<span class="cocohighlight-2">hl</span>或<span class="cocohighlight-2">pr</span>或<span class="cocohighlight-2">stop</span></td>
+          <td>输入<span class="cocohighlight-2">haola</span>或<span class="cocohighlight-2">hl</span>或<span
+              class="cocohighlight-2">pr</span>或<span class="cocohighlight-2">stop</span></td>
           <td> 退出幻灯片模式，进入正常模式</td>
         </tr>
         <tr>
