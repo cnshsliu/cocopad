@@ -1,7 +1,3 @@
-//TODO: droppable不起作用？
-//TODO: to Docx : https://github.com/quilljs/quill/issues/1996
-//TODO: quill onchange
-//TODO: Export to PDF
 //TODO: user upload avatar
 //TODO: 文档保护码加密
 //TODO: 备份加密secretkey到U盘

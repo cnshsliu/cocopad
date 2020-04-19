@@ -110,7 +110,7 @@ const config = {
         richtext: {
             edittable: false,
             resizable: true, droppable: true,
-            minWidth: 100, minHeight: 20,
+            minWidth: 200, minHeight: 50,
             customshape: true,
             style: {
                 'width': '160', 'height': '160',

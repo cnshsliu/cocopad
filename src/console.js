@@ -24,10 +24,14 @@ import ACM from "./accountmanage";
 import SHARE from "./sharemanage";
 import Bowser from "../lib/bowser/bowser";
 import Navigo from "navigo";
-import Quill from "../node_modules/quill/dist/quill";
+import Quill from 'quill';
 import { QuillDeltaToHtmlConverter } from '../lib/quill/quill2html/quill2html';
 import { gzip, ungzip } from "../lib/gzip";
-import { gunzip } from "zlib";
+import * as FilePond from 'filepond';
+// import jsPDF from 'jspdf';
+// import htmlDocx from "../html2docx/html2docx";
+// import saveAs from "../html2docx/FileSaver";
+// import "../html2docx/Blob";
 
 
 Quill.prototype.getHtml = function () {
@@ -2696,7 +2700,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
       KFK.dragging = false;
 
       //如果做了这个标记，则不再做U操作，否则，节点又会被同步回来
-      if(jqNodeDIV.shouldBeDeleted === true){
+      if (jqNodeDIV.shouldBeDeleted === true) {
         return;
       }
       if (KFK.APP.model.cococonfig.snap) {
@@ -2796,7 +2800,7 @@ KFK.setNodeEventHandler = function (jqNodeDIV) {
         let droppedHtml = droppedInner.html();
         let newHtml = oldHtml + droppedHtml;
         //如果shift也按着，则直接使用dropped对象的html替换
-        if(KFK.KEYDOWN.shift === true){
+        if (KFK.KEYDOWN.shift === true) {
           newHtml = droppedHtml;
         }
         let jqBig = jqNodeDIV;
@@ -5021,13 +5025,16 @@ KFK._onDocFullyLoaded = async function () {
   KFK.focusOnC3();
   //因此,这里再重新滚动一下.这样保证在文档新导入时,可以滚动到第一屏
   KFK.scrollToPos({ x: KFK.LeftB, y: KFK.TopB });
-  if(KFK.JC3.find('.kfknode').length===0){
+  if (KFK.JC3.find('.kfknode').length === 0) {
     console.log("There is no NODES");
     $('.showFirstTimeHelp').addClass(`color-dynamic-${KFK.YIQColor}`);
     KFK.setAppData('model', 'firstTime', true);
-    setTimeout(function(){
+    setTimeout(function () {
       KFK.setAppData('model', 'firstTime', false);
     }, 3000);
+  } else {
+    KFK.setAppData('model', 'firstTime', false);
+
   }
 };
 
@@ -5861,10 +5868,10 @@ KFK.holdEvent = function (evt) {
 }
 KFK.addDocumentEventHandler = function () {
   $(document).keydown(function (evt) {
-    if(evt.keyCode === 16) KFK.KEYDOWN.shift = true;
-    else if(evt.keyCode === 17) KFK.KEYDOWN.ctrl = true;
-    else if(evt.keyCode === 18) KFK.KEYDOWN.alt = true;
-    else if(evt.keyCode === 91) KFK.KEYDOWN.meta = true;
+    if (evt.keyCode === 16) KFK.KEYDOWN.shift = true;
+    else if (evt.keyCode === 17) KFK.KEYDOWN.ctrl = true;
+    else if (evt.keyCode === 18) KFK.KEYDOWN.alt = true;
+    else if (evt.keyCode === 91) KFK.KEYDOWN.meta = true;
     if (KFK.inDesigner() && KFK.isEditting) {
       return;
     }
@@ -6057,10 +6064,10 @@ KFK.addDocumentEventHandler = function () {
     }
   });
   $(document).keyup(function (evt) {
-    if(evt.keyCode === 16) KFK.KEYDOWN.shift = false;
-    else if(evt.keyCode === 17) KFK.KEYDOWN.ctrl = false;
-    else if(evt.keyCode === 18) KFK.KEYDOWN.alt = false;
-    else if(evt.keyCode === 91) KFK.KEYDOWN.meta = false;
+    if (evt.keyCode === 16) KFK.KEYDOWN.shift = false;
+    else if (evt.keyCode === 17) KFK.KEYDOWN.ctrl = false;
+    else if (evt.keyCode === 18) KFK.KEYDOWN.alt = false;
+    else if (evt.keyCode === 91) KFK.KEYDOWN.meta = false;
   });
 
   //标记框选开始，是在JC3的mousedown中做记录的
@@ -8028,7 +8035,45 @@ KFK.checkBrowser = function () {
   });
   KFK.setAppData('model', 'isValidBrowser', isValidBrowser);
   console.log('isValidBrowser', isValidBrowser);
+};
+
+
+KFK.exportPDF = function () {
+  try {
+    html2canvas(document.body, {
+      onrendered: function (canvas) {
+        document.body.appendChild(canvas)
+      }
+    });
+  } catch (error) {
+    console.error(error.message);
+  }
+};
+
+KFK.exportPDF2 = function () {
+  var html = KFK.JC3.html();
+  var printWindow = window.open('', '', 'height=400,width=800');
+  printWindow.document.write('<html><head><title>DIV Contents</title>');
+  printWindow.document.write('</head><body >');
+  printWindow.document.write(html);
+  printWindow.document.write('</body></html>');
+  printWindow.document.close();
+  printWindow.print();
+
 }
+
+
+KFK.exportPDF4 = function () {
+  var html = KFK.JC3.html();
+  var finalHtml = '<html><head><meta charset="UTF-8"></head><body>';
+  finalHtml += html;
+  finalHtml += '</body></html>';
+  var converted = htmlDocx.asBlob(finalHtml);
+  var docName = 'document.docx';
+  saveAs(converted, docName);
+}
+
+
 export default KFK;
 
 //TODO: 多个演示文档ID，随机选择给Demo用户使用
