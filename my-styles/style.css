@@ -528,6 +528,7 @@ svg path {
   font-family: monospace;
   font-size: 20px;
   background-color: #c2eebfD9;
+  overflow-y: auto;
 }
 
 .show-password svg {
