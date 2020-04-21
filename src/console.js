@@ -4185,7 +4185,7 @@ KFK.init = async function () {
     }
   })
 
-  KFK.scrLog("欢迎使用在线协作白板", 1000);
+  KFK.scrLog("彩板-多人协作网络白板", 1000);
   await KFK.checkSession();
 };
 
@@ -4659,7 +4659,7 @@ KFK.onClickOrgTab = async function () {
   }
 };
 KFK.onClickMatTab = async function () {
-  await KFK.refreshMatLib();
+  KFK.materialUpdated || await KFK.refreshMatLib();
 };
 KFK.refreshMatLib = async function(){
   await KFK.sendCmd('LISTMAT', {});
@@ -5903,7 +5903,7 @@ KFK.setMode = function (mode) {
     KFK.APP.setData("show", "customline", true);
     // KFK.setRightTabIndex(0);
   } else if (KFK.mode === "material") {
-    KFK.materialUpdated || KFK.onClickMatTab();
+    KFK.materialUpdated || KFK.refreshMatLib();
     KFK.showDialog({ materialDialog: true });
   }
 
