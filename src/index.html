@@ -1324,10 +1324,11 @@
           </div>
         </b-modal>
         <b-modal v-model="show.dialog.ivtCodeDialog" title="邀请使用可获得操作积分奖励" button-size="sm" centered size="md">
-          请复制一下地址,分享给你的同事或朋友, 他们成功注册后,你将获得1000个操作积分!
+          请复制一下地址,分享给你的同事或朋友, 他们成功注册后,你将获增100个操作积分!
           <b-form-input :value="getInvitationUrl()">hello</b-form-input>
         </b-modal>
-        <b-modal v-model="show.dialog.materialDialog" button-size="sm" centered size="md" @show="KFK.resetMaterial" @hidden=KFK.pickMaterialCheck>
+        <b-modal v-model="show.dialog.materialDialog" button-size="sm" centered size="md" @show="KFK.resetMaterial"
+          @hidden=KFK.pickMaterialCheck>
           <template v-slot:modal-header="{ close }">
             <!-- Emulate built in modal header close button action -->
             <b-button size="sm" variant="outline-danger" @click="KFK.refreshMatLib()">
@@ -1335,18 +1336,142 @@
             </b-button>
             <h5>我的素材库</h5>
           </template>
-            <b-container class="w-100" style="overflow-x:auto; overflow-y:scroll;">
-                <b-row>
-                  <b-col v-for="aMat in model.mats" v-bind:key="aMat.matid"
-                  class="mb-1 myhovered"
-                    v-on:click='KFK.pickMaterial(aMat.matid, aMat.url)'>
-                    <b-img-lazy :src="aMat.thumbnail" class="avatarimg" style="width:80px; height:80px" />
+          <b-container class="w-100" style="overflow-x:auto; overflow-y:scroll;">
+            <b-row>
+              <b-col v-for="aMat in model.mats" v-bind:key="aMat.matid" class="mb-1 myhovered"
+                v-on:click='KFK.pickMaterial(aMat.matid, aMat.url)'>
+                <b-img-lazy :src="aMat.thumbnail" class="avatarimg" style="width:80px; height:80px" />
+              </b-col>
+            </b-row>
+          </b-container>
+        </b-modal>
+        <b-modal v-model="show.dialog.rechargeDialog" button-size="sm" centered size="xl" :hide-footer="true" title="关于操作点的获取说明">
+          <b-container class="w-100 m-0 p-1">
+            <b-row class="m-0 p-0">
+              <b-col class="m-0 p-0">
+                <b-row class="m-0 p-1">
+                  <b-col class="m-0 p-1">
+                    <b-button variant='outline-primary' @click="KFK.showPriceListDialog">
+                      提升组织授权等级，获得更高操作分值。 点此查看不同组织等级的操作权限、升级方法及相关费用。
+                    </b-button>
+                  </b-col>
+                  <div class="w-100"></div>
+                  <b-col class="m-0 p-1">
+                    <b-button variant='outline-success' @click="KFK.showIvtCodeDialog">
+                      邀请他人使用彩板，对方成功注册后，邀请者所在组织可增加100个操作分。点此查看你的专属推荐码，马上开始邀请</b-button>
+                  </b-col>
+                  <b-col class="m-0 p-1">
+                    <b-button variant='outline-success' @click="SHARE.shareDoc(model.currentDoc);">
+                      每次通过彩板的分享功能分享文档给他人，分享者所在组织可增加100个操作分， 文档发起人所在组织可增加10个操作分</b-button>
+                  </b-col>
+                  <div class="w-100"></div>
+                  <b-col class="m-0 p-1">
+                    <b-button variant='outline-success'>通过微信公众号、微博、抖音、网络论坛等形式介绍彩板或转发介绍，将内容截图发给运营小哥，对效果进行确认后获得相应操作分</b-button>
+                  </b-col>
+                  <div class="w-100"></div>
+                  <b-col class="m-0 p-1">
+                    <b-button variant='outline-success'>成为业务运营推广合作伙伴，获得合作伙伴账号资格，同时获得运营收入分成，请联系运营微信</b-button>
+                  </b-col>
+                  <b-col class="m-0 p-1">
+                    <b-button variant='outline-success'>投资彩板，或介绍投资人，成功合作后， 投资人和介绍人均获得合作伙伴账号资格</b-button>
                   </b-col>
                 </b-row>
-              </b-container>
+              </b-col>
+              <b-col class="m-0 p-0">
+                <b-row class="m-0 p-1">
+                  <b-col class="m-0 p-1">
+                    <b-row>
+                      <b-col class="text-center m-0 p-1"><img
+                          src="https://636f-colobodo-5aff53-1255349658.tcb.qcloud.la/customerservice.png?sign=8e586ae06ad587576a5c9b491addb05c&t=1587487633"
+                          width="200px" /></b-col>
+                      <b-col class="text-center m-0 p-1"><img
+                          src="https://636f-colobodo-5aff53-1255349658.tcb.qcloud.la/wechatgathering.png?sign=482ed7b52ca103a90f413d3023f5d06b&t=1587487670"
+                          width="200px" /></b-col>
+                    </b-row>
+                  </b-col>
+                </b-row>
+              </b-col>
+            </b-row>
+            <b-row>
+              <b-col class="m-0 p-1">
+                <b-button class="w-100" variant='outline-success'>如需企业转账，请通过右侧运营微信了解转账及发票获取方式</b-button>
+              </b-col>
+              <b-col class="m-0 p-1">
+                <b-button class="w-100" variant='outline-success'>已有用户也可直接扫描支付码支付操作点费用</b-button>
+              </b-col>
+            </b-row>
+          </b-container>
+        </b-modal>
+        <b-modal v-model="show.dialog.priceListDialog" button-size="sm" centered size="xl" :hide-footer="true" title="关于组织等级及操作点的说明">
+          <b-container class="w-100 m-0 p-1">
+            <b-row>
+              <b-col cols="3" class="m-0 p-0">组织等级</b-col>
+              <b-col class="m-0 p-0"> 人数 </b-col>
+              <b-col class="m-0 p-0"> 操作流量 </b-col>
+              <b-col class="m-0 p-0"> 素材库 </b-col>
+              <b-col class="m-0 p-0"> 月费 </b-col>
+              <b-col class="m-0 p-0"> 年费 </b-col>
+            </b-row>
+            <b-row>
+              <b-col cols="3" class="m-0 p-0">C</b-col>
+              <b-col class="m-0 p-0">2</b-col>
+              <b-col class="m-0 p-0"> 20 </b-col>
+              <b-col class="m-0 p-0"> 20 </b-col>
+              <b-col class="m-0 p-0"> 免费 </b-col>
+              <b-col class="m-0 p-0"> 免费 </b-col>
+            </b-row>
+            <b-row>
+              <b-col cols="3" class="m-0 p-0">B</b-col>
+              <b-col class="m-0 p-0"> 2 </b-col>
+              <b-col class="m-0 p-0"> 20 </b-col>
+              <b-col class="m-0 p-0"> 20 </b-col>
+              <b-col class="m-0 p-0"> 100 </b-col>
+              <b-col class="m-0 p-0"> 1000 </b-col>
+            </b-row>
+            <b-row>
+              <b-col cols="3" class="m-0 p-0">BB</b-col>
+              <b-col class="m-0 p-0"> 5 </b-col>
+              <b-col class="m-0 p-0"> 50 </b-col>
+              <b-col class="m-0 p-0"> 50 </b-col>
+              <b-col class="m-0 p-0"> 2000 </b-col>
+              <b-col class="m-0 p-0"> 2000 </b-col>
+            </b-row>
+            <b-row>
+              <b-col cols="3" class="m-0 p-0">BBB</b-col>
+              <b-col class="m-0 p-0"> 10 </b-col>
+              <b-col class="m-0 p-0"> 100 </b-col>
+              <b-col class="m-0 p-0"> 100 </b-col>
+              <b-col class="m-0 p-0"> 500 </b-col>
+              <b-col class="m-0 p-0"> 5000 </b-col>
+            </b-row>
+            <b-row>
+              <b-col cols="3" class="m-0 p-0">A</b-col>
+              <b-col class="m-0 p-0"> 20 </b-col>
+              <b-col class="m-0 p-0"> 200 </b-col>
+              <b-col class="m-0 p-0"> 200 </b-col>
+              <b-col class="m-0 p-0"> 2000 </b-col>
+              <b-col class="m-0 p-0"> 20000 </b-col>
+            </b-row>
+            <b-row>
+              <b-col cols="3" class="m-0 p-0">AA</b-col>
+              <b-col class="m-0 p-0"> 50 </b-col>
+              <b-col class="m-0 p-0"> 500 </b-col>
+              <b-col class="m-0 p-0"> 500 </b-col>
+              <b-col class="m-0 p-0"> 3000 </b-col>
+              <b-col class="m-0 p-0"> 30000 </b-col>
+            </b-row>
+            <b-row>
+              <b-col cols="3" class="m-0 p-0">AAA</b-col>
+              <b-col class="m-0 p-0"> 100 </b-col>
+              <b-col class="m-0 p-0"> 1000 </b-col>
+              <b-col class="m-0 p-0"> 1000 </b-col>
+              <b-col class="m-0 p-0"> 5000 </b-col>
+              <b-col class="m-0 p-0"> 50000 </b-col>
+            </b-row> 
+          </b-container>
         </b-modal>
         <div v-show="!model.isValidBrowser" class="browser-warning">
-          我们尚没有对您当前使用的浏览兼容性测试，使用中可能会遇到不正常的情况，推荐使用<a href="https://pc.qq.com/detail/1/detail_2661.html"
+          我们尚没有对您当前使用的浏览器进行兼容性测试，使用中可能会遇到不正常的情况，推荐使用<a href="https://pc.qq.com/detail/1/detail_2661.html"
             target="_blank">Chrome</a>或微软的新版<a href="https://www.microsoft.com/zh-cn/edge" target="_blank">Edge</a>浏览器
         </div>
       </div> <!-- explorer inner -->
@@ -1379,7 +1504,8 @@
             </b-row>
             <b-row class="text-center mt-3" cols=8>
               <b-col class="mt-3">
-                <b-form-input id="shareItUrl" class="share-it-url" trim v-model="model.share.url"></b-form-input>
+                <b-form-input id="shareItUrl" class="share-it-url" disabled trim v-model="model.share.url">
+                </b-form-input>
               </b-col>
               <div class="w-100"></div>
               <b-col class="mt-2">
@@ -1388,6 +1514,7 @@
                 </b-button>
                 <b-button id="shareItBtn" variant="outline-primary" size="sm" class="mb-2">
                   <b-icon icon="box-arrow-up"></b-icon>复制地址
+                  <!-- share doc -->
                 </b-button>
               </b-col>
             </b-row>
@@ -1648,15 +1775,17 @@
         </tr>
         <tr>
           <td>放置屏幕截图到白板</td>
-          <td>先用截图工具进行屏幕截图（Windows有很多，Mac OSX按Ctrl-Shift-Command-4同时按住）, 截图后在白板上，<span class="cocohighlight-2">CTRL-V</span>/<span class="cocohighlight-2">META-V</span>
-          即可粘贴图片放到白板上</td>
+          <td>先用截图工具进行屏幕截图（Windows有很多，Mac OSX按Ctrl-Shift-Command-4同时按住）, 截图后在白板上，<span
+              class="cocohighlight-2">CTRL-V</span>/<span class="cocohighlight-2">META-V</span>
+            即可粘贴图片放到白板上</td>
         </tr>
         <tr>
           <td>从其它网站中复制图片到白板</td>
-          <td>在其他网站上的图片上点右键，在弹出菜单中点复制图片, 回到白板按<span class="cocohighlight-2">CTRL-V</span>/<span class="cocohighlight-2">META-V</span>, 
-         即可将图片放到白板上.<BR>
-          如发现放置的图片无法显示，一般是因为那个网站做了图片保护。 此时，你可以使用上面的屏幕截图方式放置图片，先做屏幕截图，再放置到白板上
-        </td>
+          <td>在其他网站上的图片上点右键，在弹出菜单中点复制图片, 回到白板按<span class="cocohighlight-2">CTRL-V</span>/<span
+              class="cocohighlight-2">META-V</span>,
+            即可将图片放到白板上.<BR>
+            如发现放置的图片无法显示，一般是因为那个网站做了图片保护。 此时，你可以使用上面的屏幕截图方式放置图片，先做屏幕截图，再放置到白板上
+          </td>
         </tr>
         <tr>
           <td>在工具栏点选<img :src="images['material'].src" class="tool-in-help" /></td>
@@ -1734,6 +1863,8 @@
           <b-link :target="'_blank'" class="m-0 p-0" href='http://weibo.com/cocopad'>@COLOBODO 2020</b-link>
         </b-col>
       </b-row>
+    </div>
+    <div id="recharge-warn" class="" @click="KFK.showRechargeDialog">
     </div>
   </div>
   <!--app-->

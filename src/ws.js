@@ -3,7 +3,7 @@ import suuid from "short-uuid";
 import cocoConfig from "./cococonfig";
 const WS = {};
 WS.ws = null;
-WS.url = cocoConfig.backend.endpoint;
+WS.remoteEndpoint = "unknow_remote_endpoint";
 WS.isReused = false;
 WS.connectTimes = 0;
 
@@ -48,7 +48,7 @@ WS.start = async (onOpenCallback, onMsgcallback, onClosedCallback, onReconnectCa
                 WS.reconnectTimeout = null;
             }
         }
-        WS.ws = new WebSocket(WS.url);
+        WS.ws = new WebSocket(WS.remoteEndpoint);
         WS.isReused = false;
         WS.resetReconnectCount();
     } else {
