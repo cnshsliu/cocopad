@@ -1,5 +1,6 @@
 import "./importjquery";
 import "regenerator-runtime/runtime";
+import imageCompression from 'browser-image-compression';
 import Joi from "@hapi/joi";
 import { SVG } from "@svgdotjs/svg.js";
 import "jquery-ui-dist/jquery-ui.js";
@@ -150,8 +151,6 @@ KFK.numberOfNodeToCreate = 0;
 KFK.numberOfNodeCreated = 0;
 KFK.badgeIdMap = {};
 
-// KFK._width = window.innerWidth; KFK._height = window.innerHeight;
-// KFK._width = window.innerWidth * 6; KFK._height = window.innerHeight * 6;
 // A4
 // KFK.PageWidth = 842;
 // KFK.PageHeight = 595;
@@ -823,18 +822,27 @@ KFK.scrLog = function (msg, staytime = 5000) {
   let msgDIV = $("#MSG");
   let cloneDIV = $("#fadeoutmsg");
   if (cloneDIV.length > 0) {
-    cloneDIV.remove();
+    if(KFK.msgTimer){
+      clearTimeout(KFK.msgTimer);
+    }
+    cloneDIV.css('top', '10px');
+    cloneDIV.html(msg);
+    KFK.msgTimer = setTimeout(()=>{
+      cloneDIV.animate({ top: "-24px" }, 50, async function () {
+        cloneDIV.remove();
+      });
+    }, staytime);
+  } else {
+    cloneDIV = msgDIV.clone().appendTo(parent);
+    cloneDIV.attr("id", "fadeoutmsg");
+    cloneDIV.html(msg);
+    cloneDIV.css('top', '10px');
+    KFK.msgTimer = setTimeout(()=>{
+      cloneDIV.animate({ top: "-24px" }, 50, async function () {
+        cloneDIV.remove();
+      })
+    }, staytime);
   }
-
-  cloneDIV = msgDIV.clone().appendTo(parent);
-  cloneDIV.attr("id", "fadeoutmsg");
-  cloneDIV.html(msg);
-  cloneDIV.animate({ top: "10px", }, 50, async function () {
-    await KFK.sleep(staytime);
-    cloneDIV.animate({ top: "-24px" }, 50, async function () {
-      cloneDIV.remove();
-    })
-  })
 };
 
 KFK.getConnectorPoints = function (from, to, rad) {
@@ -2056,7 +2064,7 @@ KFK._createNode = function (node) {
     return;
   }
   innerObj.innerHTML = node.attach ? node.attach : cocoConfig.node[node.type].inner.content;
-  if(node.attach2 === undefined){
+  if (node.attach2 === undefined) {
     KFK.printCallStack();
   }
   var jBkg = $('<div class="ossimage">' + node.attach2 + "</div>");
@@ -4651,6 +4659,9 @@ KFK.onClickOrgTab = async function () {
   }
 };
 KFK.onClickMatTab = async function () {
+  await KFK.refreshMatLib();
+};
+KFK.refreshMatLib = async function(){
   await KFK.sendCmd('LISTMAT', {});
   KFK.materialUpdated = true;
 };
@@ -5899,6 +5910,13 @@ KFK.setMode = function (mode) {
 
   KFK.focusOnC3();
 };
+
+KFK.resetMaterial = function (matid, url) {
+  KFK.materialPicked = undefined;
+};
+KFK.pickMaterialCheck = function(){
+  KFK.materialPicked || KFK.setMode('pointer');
+}
 
 KFK.pickMaterial = function (matid, url) {
   KFK.materialPicked = { matid: matid, url: url };
@@ -8201,14 +8219,32 @@ KFK.exportPDF2 = function () {
 // };
 
 KFK.procFilesDrop = async function (files) {
-  let file = files[0];
-  if (file.type === 'image/png' || file.type === 'image/jpeg') {
-    console.log(file);
-    KFK.fileToUploadToCOS = file;
+  let imageFile = files[0];
+  console.log(imageFile);
+  console.log('originalFile instanceof Blob', imageFile instanceof Blob); // true
+  console.log(`originalFile size ${imageFile.size / 1024 / 1024} MB`);
+  if (imageFile.type !== 'image/png' && imageFile.type !== 'image/jpeg') {
+    KFK.scrLog("请使用JPG或PNG格式图片");
+    return;
+  }
+  function onProgress(p) {
+    KFK.scrLog(`正在为您准备图片, 请稍候${p}%`, 2000);
+  }
+  const options = {
+    // maxSizeMB: 3,
+    maxWidthOrHeight: Math.round(Math.min(KFK.PageHeight*0.5, KFK.PageWidth*0.5 )),
+    useWebWorker: true,
+    onProgress: onProgress
+  }
+  try {
+    const compressedFile = await imageCompression(imageFile, options);
+    console.log('compressedFile instanceof Blob', compressedFile instanceof Blob); // true
+    console.log(`compressedFile size ${compressedFile.size / 1024 / 1024} MB`); // smaller than maxSizeMB
+
+    KFK.fileToUploadToCOS = compressedFile;
     await KFK.sendCmd('GETSTS', { stsFor: 'drop' });
-  } else {
-    console.log(file);
-    KFK.scrLog("所拖入的文件类型不被允许");
+  } catch (error) {
+    console.log(error);
   }
 };
 
@@ -8238,7 +8274,7 @@ KFK.uploadBlobToAliyunOSS = function () {
   console.log(JSON.stringify(ossConfig));
   KFK.OSSClient = new OSS(ossConfig);
   let fileId = KFK.myuid();
-  let fileName = fileId + ".png";
+  let fileName = fileId + ".jpg";
   let fileNameInOSS = KFK.APP.model.cocouser.orgid + "/" + fileName;
   console.log("fileNameInOSS", fileNameInOSS);
   var reader = new FileReader();

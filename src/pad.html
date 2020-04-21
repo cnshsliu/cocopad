@@ -267,6 +267,10 @@
             :active="toolActiveState['richtext']">
             <b-img :src="images['richtext'].src" fluid alt="" scale="2" class="cocotool"></b-img>
           </b-list-group-item>
+          <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('material');"
+            :active="toolActiveState['material']">
+            <b-img :src="images['material'].src" fluid alt="" scale="2" class="cocotool" id='tool_material'></b-img>
+          </b-list-group-item>
           <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('line');"
             :active="toolActiveState['line']">
             <b-img :src="images['line'].src" fluid alt="" scale="2" class="cocotool" id='tool_line'></b-img>
@@ -278,10 +282,6 @@
           <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('lock');"
             :active="toolActiveState['lock']">
             <b-img :src="images['lock'].src" fluid alt="" scale="2" class="cocotool" id='tool_lock'></b-img>
-          </b-list-group-item>
-          <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('material');"
-            :active="toolActiveState['material']">
-            <b-img :src="images['material'].src" fluid alt="" scale="2" class="cocotool" id='tool_material'></b-img>
           </b-list-group-item>
           <b-list-group-item class="m-0 p-0">
             <b-icon icon="blank" scale="0.3"></b-icon>
@@ -1059,7 +1059,7 @@
                 :current-page="model.currentMatPage" small :fields="model.matfields"
                 @row-clicked="KFK.matRowClickHandler">
                 <template v-slot:cell(thumbnail)="aMat">
-                  <img :src=" aMat.value"></img>
+                  <img :src="aMat.value" style="height:100px;"></img>
                 </template>
                 <template v-slot:cell(operations)="aMat">
                   <b-button size="sm" @click="KFK.deleteMatItem(aMat.item, aMat.index, $event.target)"
@@ -1340,9 +1340,15 @@
           请复制一下地址,分享给你的同事或朋友, 他们成功注册后,你将获得1000个操作积分!
           <b-form-input :value="getInvitationUrl()">hello</b-form-input>
         </b-modal>
-        <b-modal v-model="show.dialog.materialDialog" title="我的素材库" button-size="sm" centered size="md">
-            <b-button @click="KFK.onClickMatTab">刷新</b-button>
-            <b-container class="w-100" style="overflow-x:auto; overflow-y:scroll; height:100px;">
+        <b-modal v-model="show.dialog.materialDialog" button-size="sm" centered size="md" @show="KFK.resetMaterial" @hidden=KFK.pickMaterialCheck>
+          <template v-slot:modal-header="{ close }">
+            <!-- Emulate built in modal header close button action -->
+            <b-button size="sm" variant="outline-danger" @click="KFK.refreshMatLib()">
+              刷新
+            </b-button>
+            <h5>我的素材库</h5>
+          </template>
+            <b-container class="w-100" style="overflow-x:auto; overflow-y:scroll;">
                 <b-row>
                   <b-col v-for="aMat in model.mats" v-bind:key="aMat.matid"
                   class="mb-1 myhovered"
@@ -1475,9 +1481,14 @@
     <div class="present-mask nodisplay">
     </div>
     <b-modal id="modal-key-shortcut" scrollable title="操作快捷键" body-bg-variant="light" body-text-variant="dark">
+      <a href="#minihelp_presentation">幻灯片播放</a>
+      <a href="#minihelp_editting">编辑操作</a>
+      <a href="#minihelp_overview">全局概览</a>
+      <a href="#minihelp_material">使用图片</a>
+      <a href="#minihelp_presentation">幻灯片播放</a>
       <table class="quick-help-table">
         <tr class="title">
-          <td colspan=2>模式切换</td>
+          <td colspan=2 id="minihelp_mode">模式切换</td>
         </tr>
         <tr>
           <td>输入<span class="cocohighlight-2">fs</span></td>
@@ -1494,7 +1505,7 @@
         </tr>
 
         <tr class="title">
-          <td colspan=2>正常模式下的操作</td>
+          <td colspan=2 id="minihelp_editing">正常模式下的操作</td>
         </tr>
         <tr>
           <td>在工具栏点选<img :src="images['pointer'].src" class="tool-in-help" />
@@ -1533,6 +1544,12 @@
           </td>
           <td>
             则在鼠标位置放置一个富文本，双击可修改其文本
+          </td>
+        </tr>
+        <tr>
+          <td>在工具栏点选<img :src="images['material'].src" class="tool-in-help" /></td>
+          <td>
+            弹出素材库，点选一个素材后，再在彩板上点鼠标可放置素材
           </td>
         </tr>
         <tr>
@@ -1629,23 +1646,46 @@
         </tr>
 
         <tr class="title">
-          <td colspan=2>概览模式下的操作</td>
+          <td colspan=2 id="minihelp_overview">概览模式下的操作</td>
         </tr>
         <tr>
           <td>概览模式下<span class="cocohighlight-2">鼠标双击</span></td>
           <td> 切换会正常编辑模式，返回后居中在双击位置</td>
         </tr>
-
         <tr class="title">
-          <td colspan=2>幻灯片模式下的操作</td>
+          <td colspan=2 id="minihelp_material">使用图片</td>
         </tr>
         <tr>
-          <td>输入<span class="cocohighlight-2">b</span></td>
-          <td>黑色遮罩</td>
+          <td><span class="cocohighlight-2">拖动</span>拖动一个图片文件到彩板</td>
+          <td>可从Windows资源管理器或Mac OSX的访达中拖动图片文件，将图片放到彩板上，支持JPG和PNG格式文件</td>
         </tr>
         <tr>
-          <td>输入<span class="cocohighlight-2">w</span></td>
-          <td>白色遮罩</td>
+          <td>放置屏幕截图到彩板</td>
+          <td>先用截图工具进行屏幕截图（Windows有很多，Mac OSX按Ctrl-Shift-Command-4同时按住）, 截图后在彩板上，<span class="cocohighlight-2">CTRL-V</span>/<span class="cocohighlight-2">META-V</span>
+          即可粘贴图片放到彩板上</td>
+        </tr>
+        <tr>
+          <td>从其它网站中复制图片到彩板</td>
+          <td>在其他网站上的图片上点右键，在弹出菜单中点复制图片, 回到彩板按<span class="cocohighlight-2">CTRL-V</span>/<span class="cocohighlight-2">META-V</span>, 
+         即可将图片放到彩板上.<BR>
+          如发现放置的图片无法显示，一般是因为那个网站做了图片保护。 此时，你可以使用上面的屏幕截图方式放置图片，先做屏幕截图，再放置到彩板上
+        </td>
+        </tr>
+        <tr>
+          <td>在工具栏点选<img :src="images['material'].src" class="tool-in-help" /></td>
+          <td>弹出素材库，点选一个素材后，回到彩板，继续点一下鼠标在当前位置放置图片，如按住SHIFT键可连续放置</td>
+        </tr>
+        <tr>
+          <td>在<span class="cocohighlight-2">我的素材</span>中</td>
+          <td>可对素材库进行管理</td>
+        </tr>
+        <tr class="title">
+          <td colspan=2 id="minihelp_presentation">幻灯片模式下的操作</td>
+        </tr>
+        <tr>
+          <td>输入<span class="cocohighlight-2">haola</span>或<span class="cocohighlight-2">hl</span>或<span
+              class="cocohighlight-2">pr</span></td>
+          <td> 进入幻灯片模式</td>
         </tr>
         <tr>
           <td>输入<span class="cocohighlight-2">haola</span>或<span class="cocohighlight-2">hl</span>或<span
@@ -1679,6 +1719,15 @@
         <tr>
           <td>输入<span class="cocohighlight-2">数字g</span></td>
           <td>输入1-36数字，然后按g，切换到相应区域。 白板一共36个区域，横向6列、纵向6行。编号从左到右，从上到下，第一行编号分别是1-6， 第二行为7-12，以此类推。</td>
+        </tr>
+        <tr>
+          <td>输入<span class="cocohighlight-2">b</span></td>
+          <td>黑色遮罩。全屏变黑. 再按b或者其他不是w的键退出，按w则换成白色遮罩</td>
+        </tr>
+        <tr>
+          <td>输入<span class="cocohighlight-2">w</span></td>
+          <td>白色遮罩。全屏变白. 再按w或者其它不是b的键退出， 按b则换成黑色遮罩
+          </td>
         </tr>
       </table>
     </b-modal>
