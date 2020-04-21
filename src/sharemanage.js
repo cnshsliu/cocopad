@@ -1,4 +1,5 @@
 const SHARE = {};
+import cocoConfig from './cococonfig';
 import KFK from './console';
 import RegHelper from './reghelper';
 import ClipboardJs from "clipboard";
@@ -28,7 +29,7 @@ SHARE.shareDoc = async function (item) {
 };
 //上面两个函数一起调用过来
 SHARE.startShare = async function (share) {
-    let url = "http://localhost:1234/doc/";
+    let url = cocoConfig.frontend.baseurl + "/doc/";
     url = url + KFK.codeToBase64(JSON.stringify(share));
     KFK.APP.model.share.url = url;
     KFK.mergeAppData('model.share', {url: url});
