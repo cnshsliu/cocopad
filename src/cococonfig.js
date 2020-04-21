@@ -8,6 +8,12 @@ const config = {
     badge: {
         lastSeconds: 3000,
     },
+    backend:{
+        endpoint: 'ws://localhost:5008/grume/wsquux',
+    },
+    frontend:{
+        baseurl: 'http://localhost:1234'
+    },
     cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', readonly: false },
     oss:{
         cocopad_bucket_name: "cocopad",

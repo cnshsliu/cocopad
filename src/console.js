@@ -8163,61 +8163,6 @@ KFK.exportPDF2 = function () {
   printWindow.print();
 };
 
-// KFK.useCustomizeAvatar = function () {
-//   console.log("here1");
-//   FilePond.registerPlugin(
-//     FilePondPluginImageFilter,
-//     FilePondPluginImagePreview,
-//     FilePondPluginImageCrop,
-//     FilePondPluginImageResize,
-//     FilePondPluginImageValidateSize,
-//     FilePondPluginImageTransform,
-//   );
-//   console.log("here2");
-
-//   const pond = FilePond.create(el($('.avatar-pond')), {
-//     imageResizeTargetWidth: 80,
-//     imageCropAspectRatio: 1,
-//     imageFilterColorMatrix: [
-//       0.299, 0.587, 0.114, 0, 0,
-//       0.299, 0.587, 0.114, 0, 0,
-//       0.299, 0.587, 0.114, 0, 0,
-//       0.000, 0.000, 0.000, 1, 0
-//   ]
-//   });
-//   FilePond.setOptions({
-//     allowDrop: false,
-//     allowPaste: false,
-//     allowMultiple: false,
-//     dropOnPage: false,
-//     dropValidation: false,
-//     server: {
-//       url: 'http://localhost:5008',
-//       timeout: 7000,
-//       process: {
-//         url: './process',
-//         method: 'POST',
-//         headers: {
-//           'x-auth': 'hello world',
-//           onload: (response) => response.key,
-//           onerror: (response) => response.data,
-//           ondata: (formData) => {
-//             formData.append('Hello', 'World');
-//             return formData;
-//           }
-//         },
-//       },
-//       fetch: null,
-//       revert: null
-//     }
-//   })
-
-//   // Listen for addfile event
-//   $('.my-pond').on('FilePond:addfile', function (e) {
-//     console.log('file added event', e);
-//   });
-// };
-
 KFK.procFilesDrop = async function (files) {
   let imageFile = files[0];
   console.log(imageFile);

@@ -9,7 +9,7 @@
       "type": "chrome",
       "request": "launch",
       "name": "Chrome",
-      "url": "http://localhost:1234",
+      "url": "http://dev_server:1234",
       "runtimeArgs": ["--auto-open-devtools-for-tabs"],
       "sourceMaps": true,
       "webRoot": "${workspaceFolder}",

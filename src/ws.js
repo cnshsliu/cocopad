@@ -1,8 +1,9 @@
 'use strict'
 import suuid from "short-uuid";
+import cocoConfig from "./cococonfig";
 const WS = {};
 WS.ws = null;
-WS.url = "ws://localhost:5008/grume/wsquux";
+WS.url = cocoConfig.backend.endpoint;
 WS.isReused = false;
 WS.connectTimes = 0;
 

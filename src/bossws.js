@@ -1,7 +1,9 @@
 'use strict'
+import cocoConfig from "./cococonfig";
+const WS = {};
 const BOSSWS = {};
 BOSSWS.ws = null;
-BOSSWS.url = "ws://localhost:5008/grume/wsquux";
+BOSSWS.url = cocoConfig.backend.endpoint;
 BOSSWS.isReused = false;
 BOSSWS.connectTimes = 0;
 
