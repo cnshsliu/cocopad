@@ -29,7 +29,7 @@ SHARE.shareDoc = async function (item) {
 };
 //上面两个函数一起调用过来
 SHARE.startShare = async function (share) {
-    let url = cocoConfig.frontend.baseurl + "/doc/";
+    let url = KFK.urlBase + "/?doc=";
     url = url + KFK.codeToBase64(JSON.stringify(share));
     KFK.APP.model.share.url = url;
     KFK.mergeAppData('model.share', {url: url});

@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "Cocopad a online collaborated pad",
   "private": true,
-  "main": "pad.html",
+  "main": "index.html",
   "scripts": {
-    "start": "parcel src/pad.html --no-cache",
-    "build": "parcel build src/pad.html"
+    "start": "parcel src/index.html --no-cache",
+    "build": "parcel build src/index.html"
   },
   "dependencies": {
     "@alicloud/pop-core": "^1.7.9",

@@ -21,10 +21,10 @@ import Demo from "./demo";
 import RegHelper from './reghelper';
 import SVGs from "./svgs";
 import WS from "./ws";
+import BossWS from "./bossws";
 import ACM from "./accountmanage";
 import SHARE from "./sharemanage";
 import Bowser from "../lib/bowser/bowser";
-import Navigo from "navigo";
 import Quill from 'quill';
 import { QuillDeltaToHtmlConverter } from '../lib/quill/quill2html/quill2html';
 import { gzip, ungzip } from "../lib/gzip";
@@ -189,10 +189,31 @@ KFK.KEYDOWN = { ctrl: false, shift: false, alt: false, meta: false };
 KFK.originZIndex = 1;
 KFK.lastActionLogJqDIV = null;
 
+
 KFK.JC1 = $('#C1');
 KFK.C1 = el(KFK.JC1);
-// KFK.C1.style.width = KFK._width + "px";
-// KFK.C1.style.height = KFK._height + "px";
+KFK.scrollContainer = $("#S1");
+KFK.lockMode = false;
+KFK.selectedDIVs = [];
+KFK.kuangXuanMouseIsDown = false;
+KFK.kuangXuanStartPoint = { x: 0, y: 0 };
+KFK.kuangXuanEndPoint = { x: 0, y: 0 };
+KFK.duringKuangXuan = false;
+
+KFK.currentMousePos = { x: -1, y: -1 };
+KFK.JCBKG = $('#containerbkg');
+
+KFK.urlMode = "";
+KFK.shareCode = null;
+
+
+KFK.fsElem = document.documentElement;
+
+
+
+
+
+
 KFK.focusOnC3 = () => {
   if (KFK.JC3) {
     KFK.JC3.attr('tabIndex', '0');
@@ -206,16 +227,6 @@ KFK.focusOnC3 = () => {
 KFK.myuid = () => {
   return suuid.generate();
 }
-KFK.scrollContainer = $("#S1");
-KFK.lockMode = false;
-KFK.selectedDIVs = [];
-KFK.kuangXuanMouseIsDown = false;
-KFK.kuangXuanStartPoint = { x: 0, y: 0 };
-KFK.kuangXuanEndPoint = { x: 0, y: 0 };
-KFK.duringKuangXuan = false;
-
-KFK.currentMousePos = { x: -1, y: -1 };
-KFK.JCBKG = $('#containerbkg');
 KFK.hoverJqDiv = function (jqdiv) {
   if (jqdiv !== undefined) {
     KFK._jqhoverdiv = jqdiv;
@@ -365,6 +376,21 @@ KFK.onWsMsg = async function (response) {
     case "ENTER":
       KFK.pct = response.pct;
       KFK.scrLog(response.name + " 进入协作");
+      break;
+    case "QUOTA":
+      KFK.pct = response.pct;
+      if(response.tag === 'almost'){
+        console.log("Quota left", response.quota);
+        $('#recharge-warn').removeClass('noshow');
+        $('#recharge-warn').prop('innerHTML', '您组织的操作分已接近耗光， 建议尽早充值');
+      }else if(response.tag === 'useup'){
+        console.log("Quota left", response.quota);
+        $('#recharge-warn').removeClass('noshow');
+        $('#recharge-warn').prop('innerHTML', '您组织的操作分已耗尽，为不影响使用，请点这里尽快充值');
+      }else{ //ok
+        console.log("Quota left", response.quota);
+        $('#recharge-warn').addClass('noshow');
+      }
       break;
     case "PCT":
       KFK.pct = response.pct;
@@ -816,6 +842,21 @@ KFK.detail = function (...info) {
 KFK.logKey = function (...info) {
   // KFK.scrLog(...info);
 }
+
+KFK.keepLog = function (msg='', staytime = 30000) {
+  if(msg===''){
+    $('#keepLog').prop('innerHTML', '');
+    KFK.keepTimer && clearTimeout(KFK.keepTimer);
+    $('#keepLog').addClass('noshow');
+  }
+  $('#keepLog').prop('innerHTML', msg);
+  $('#keepLog').removeClass('noshow');
+  KFK.keepTimer && clearTimeout(KFK.keepTimer);
+  KFK.keepLogTimer = setTimeout(()=>{
+    $('#keepLog').addClass('noshow');
+    KFK.keepTimer = undefined;
+  }, staytime);
+};
 
 KFK.scrLog = function (msg, staytime = 5000) {
   let parent = $("#MSG").parent();
@@ -1401,7 +1442,9 @@ KFK.initC3 = function () {
       // return;
     }
 
-    if (KFK.mode === "material") {
+
+    //place image, place material
+    if (KFK.mode === "material" && KFK.docIsNotReadOnly()) {
       let fileId = KFK.myuid();
 
       await KFK.makeImageDiv(
@@ -2452,6 +2495,9 @@ KFK.notAnyLocked = function (jqNode) {
 
 KFK.docIsReadOnly = function () {
   return KFK.APP.model.cocodoc.readonly;
+};
+KFK.docIsNotReadOnly = function () {
+  return !KFK.APP.model.cocodoc.readonly;
 };
 
 KFK.nodeLocked = function (jqNode) {
@@ -4896,7 +4942,7 @@ KFK.getInvitationUrl = function () {
     return '';
   } else {
     let jloc = $(location);
-    return jloc.attr('protocol') + "//" + jloc.attr('host') + "/r/" + KFK.APP.model.cocouser.ivtcode;
+    return jloc.attr('protocol') + "//" + jloc.attr('host') + "/?r=" + KFK.APP.model.cocouser.ivtcode;
   }
 };
 
@@ -5056,6 +5102,12 @@ KFK.onDocPwdHidden = function (bvModalEvt) {
   if (KFK.APP.model.passwordinputok === "show") bvModalEvt.preventDefault();
 };
 
+KFK.showRechargeDialog = function(){
+  KFK.showDialog({rechargeDialog: true});
+};
+KFK.showPriceListDialog = function(){
+  KFK.showDialog({rechargeDialog: false, priceListDialog: true});
+};
 KFK.showResetPwdModal = function (item) {
   KFK.tryToResetPwdDoc = item;
   KFK.APP.setData("model", "docOldPwd", "");
@@ -6765,9 +6817,6 @@ KFK.onCut = async function (evt) {
   KFK.deleteHoverOrSelectedDiv(evt, true);
 };
 
-document.onpaste = KFK.onPaste;
-document.oncopy = KFK.onCopy;
-document.oncut = KFK.onCut;
 
 KFK.addEditorToNode = function (jqNode, editor) {
   let editors = jqNode.attr("editors");
@@ -7291,7 +7340,6 @@ KFK.closeActionLog = function () {
 KFK.showActionLog = function () {
   if (!KFK.APP.show.actionlog) {
     KFK.getActionLog();
-    // KFK.showTip("点击选择参与者，然后用上下键查看其参与的内容");
   }
   KFK.APP.setData("show", "actionlog", !KFK.APP.show.actionlog);
 };
@@ -7369,8 +7417,6 @@ KFK.scrollToNode = function (nodeid) {
   //     scrollTop: 300 // to the position of the target
   // }, 400);
 };
-
-KFK.showTip = KFK.scrLog;
 
 KFK.upgradeToStartAccount = function () {
   // KFK.toBeUpgradeDemoAccount = JSON.parse(
@@ -7491,29 +7537,6 @@ KFK.handleProfileSubmit = function () {
   }
 };
 
-
-let host = $(location).attr('host');
-let protocol = $(location).attr('protocol');
-let navigoRoot = protocol + "//" + host + "/";
-KFK.router = new Navigo(navigoRoot);
-KFK.urlMode = "";
-KFK.shareCode = null;
-KFK.router.on({
-  '/r/:ivtcode': function (params) {
-    KFK.urlMode = "ivtcode";
-    KFK.shareCode = params.ivtcode;
-    // console.log('this is a invitation', params.ivtcode);
-    window.history.replaceState({}, null, navigoRoot);
-  },
-  '/doc/:sharecode': function (params) {
-    KFK.urlMode = "sharecode";
-    KFK.shareCode = params.sharecode;
-    // console.log('this is a sharecode', params.sharecode);
-    window.history.replaceState({}, null, navigoRoot);
-  },
-}).resolve();
-KFK.loadImages();
-KFK.loadAvatars();
 
 KFK.initSvgLayer = function () {
   KFK.svgDraw = SVG().addTo("#C3").size(KFK._width, KFK._height);
@@ -7968,7 +7991,6 @@ KFK.myShow = function (jq) {
   jq.css({ "visibility": 'visible', opacity: 1.0 });
 };
 
-KFK.fsElem = document.documentElement;
 
 /* View in fullscreen */
 KFK.openFullscreen = function () {
@@ -8374,6 +8396,48 @@ KFK.uploadToQcloudCOS = function () {
   // }; // data url!
   // reader.readAsDataURL(blob);
 };
+
+
+document.onpaste = KFK.onPaste;
+document.oncopy = KFK.onCopy;
+document.oncut = KFK.onCut;
+
+
+let urlFull = window.location.href;
+let host = $(location).attr('host');
+let protocol = $(location).attr('protocol');
+KFK.urlBase = protocol + "//" + host;
+let urlSearch = window.location.search;
+console.log("Full url is ", urlFull);
+console.log("Full search is ", urlSearch);
+if(host.indexOf('localhost')>=0){
+  KFK.distEnv = 'localhost';
+  WS.remoteEndpoint = 'ws://localhost:5008/grume/wsquux';
+  BossWS.remoteEndpoint = 'ws://localhost:5008/grume/wsquux';
+}else{
+  KFK.distEnv = 'cloud';
+  WS.remoteEndpoint = 'wss://liuzijin.com:5008/grume/wsquux';
+  BossWS.remoteEndpoint = 'wss://liuzijin.com:5008/grume/wsquux';
+}
+
+if(urlSearch.startsWith('?doc=')){
+    KFK.urlMode = "sharecode";
+    KFK.shareCode = urlSearch.substr(5);
+    console.log('this is a sharecode', KFK.shareCode);
+    window.history.replaceState({}, null, KFK.urlBase);
+}else if(urlSearch.startsWith('?r=')){
+    console.log("Navigo got ivtcode");
+    KFK.urlMode = "ivtcode";
+    KFK.shareCode = urlSearch.substr(3);
+    console.log('this is a invitation', KFK.shareCode);
+    window.history.replaceState({}, null, KFK.urlBase);
+}else{
+    window.history.replaceState({}, null, KFK.urlBase);
+}
+console.log("URL MODE is", KFK.urlMode);
+KFK.loadImages();
+KFK.loadAvatars();
+
 
 export default KFK;
 

@@ -3,7 +3,7 @@ import cocoConfig from "./cococonfig";
 const WS = {};
 const BOSSWS = {};
 BOSSWS.ws = null;
-BOSSWS.url = cocoConfig.backend.endpoint;
+BOSSWS.remoteEndpoint = "unknow_remote_endpoint";
 BOSSWS.isReused = false;
 BOSSWS.connectTimes = 0;
 
@@ -33,7 +33,7 @@ BOSSWS.start = async (onOpenCallback, onMsgcallback, delay, name, keepFlag) => {
                 BOSSWS.reconnectTimeout = null;
             }
         }
-        BOSSWS.ws = new WebSocket(BOSSWS.url);
+        BOSSWS.ws = new WebSocket(BOSSWS.remoteEndpoint);
         BOSSWS.isReused = false;
         BOSSWS.resetReconnectCount();
     } else {
