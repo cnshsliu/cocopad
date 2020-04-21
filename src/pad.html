@@ -279,6 +279,10 @@
             :active="toolActiveState['lock']">
             <b-img :src="images['lock'].src" fluid alt="" scale="2" class="cocotool" id='tool_lock'></b-img>
           </b-list-group-item>
+          <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('material');"
+            :active="toolActiveState['material']">
+            <b-img :src="images['material'].src" fluid alt="" scale="2" class="cocotool" id='tool_material'></b-img>
+          </b-list-group-item>
           <b-list-group-item class="m-0 p-0">
             <b-icon icon="blank" scale="0.3"></b-icon>
           </b-list-group-item>
@@ -524,12 +528,10 @@
           </b-dropdown> -->
           <b-dropdown right variant="success" class="m-2" id='dropdown_help'>
             <template v-slot:button-content>使用说明</template>
-            <b-dropdown-item href="#"  id="toggle_all" variant="success"
-              v-b-modal.modal-key-shortcut>
+            <b-dropdown-item href="#" id="toggle_all" variant="success" v-b-modal.modal-key-shortcut>
               <img src="../assets/keyboard.svg" class="toolbar" style="width:24px; height:24px;"></img>&nbsp;快捷键
             </b-dropdown-item>
-            <b-dropdown-item href="#" id="toggle_all" variant="success"
-              @click="KFK.showFullHelp">
+            <b-dropdown-item href="#" id="toggle_all" variant="success" @click="KFK.showFullHelp">
               <img src="../assets/manual.svg" class="toolbar" style="width:24px; height:24px;"></img>&nbsp;帮助文档
             </b-dropdown-item>
           </b-dropdown>
@@ -1049,6 +1051,37 @@
                 </b-card>
               </div>
             </b-tab>
+
+
+            <b-tab title="我的素材" @click="KFK.onClickMatTab">
+              <!-- materail list -->
+              <b-table hover id="my-mat-table" :items="model.mats" :per-page="model.perPage"
+                :current-page="model.currentMatPage" small :fields="model.matfields"
+                @row-clicked="KFK.matRowClickHandler">
+                <template v-slot:cell(thumbnail)="aMat">
+                  <img :src=" aMat.value"></img>
+                </template>
+                <template v-slot:cell(operations)="aMat">
+                  <b-button size="sm" @click="KFK.deleteMatItem(aMat.item, aMat.index, $event.target)"
+                    class="m-0 p-0 myhovered" variant="outline-none">
+                    <b-iconstack>
+                      <b-icon stacked icon="x"></b-icon>
+                      <b-icon stacked icon="folder"></b-icon>
+                    </b-iconstack> 删除素材
+                  </b-button>
+                </template>
+                <template v-slot:cell()="aMat">
+                  {{ aMat.value }}
+                </template>
+              </b-table>
+              <div>
+                <b-pagination class="justify-content-center" v-model="model.currentMatPage" :total-rows="matcount"
+                  :per-page="model.perPage" aria-controls="my-mat-table" first-text="第一页" prev-text="上一页"
+                  next-text="下一页" last-text="最后页" pills></b-pagination>
+              </div>
+            </b-tab>
+
+
           </b-tabs>
           <b-row class="text-center" v-if="model.isDemoEnv">
             <b-col class="mt-5 pt-5">
@@ -1296,12 +1329,28 @@
                   </b-col>
                 </b-row>
               </b-container>
+              <!-- <b-row>
+                <b-col cols="8"><input type="file" class="avatar-pond" name="avatarpond"></input></b-col>
+                <b-col cols="4"><b-button @click="KFK.useCustomizeAvatar">使用自定义头像</b-button></b-col>
+              </b-row> -->
             </b-form>
           </div>
         </b-modal>
         <b-modal v-model="show.dialog.ivtCodeDialog" title="邀请使用可获得操作积分奖励" button-size="sm" centered size="md">
           请复制一下地址,分享给你的同事或朋友, 他们成功注册后,你将获得1000个操作积分!
           <b-form-input :value="getInvitationUrl()">hello</b-form-input>
+        </b-modal>
+        <b-modal v-model="show.dialog.materialDialog" title="我的素材库" button-size="sm" centered size="md">
+            <b-button @click="KFK.onClickMatTab">刷新</b-button>
+            <b-container class="w-100" style="overflow-x:auto; overflow-y:scroll; height:100px;">
+                <b-row>
+                  <b-col v-for="aMat in model.mats" v-bind:key="aMat.matid"
+                  class="mb-1 myhovered"
+                    v-on:click='KFK.pickMaterial(aMat.matid, aMat.url)'>
+                    <b-img-lazy :src="aMat.thumbnail" class="avatarimg" style="width:80px; height:80px" />
+                  </b-col>
+                </b-row>
+              </b-container>
         </b-modal>
         <div v-show="!model.isValidBrowser" class="browser-warning">
           我们尚没有对您当前使用的浏览兼容性测试，使用中可能会遇到不正常的情况，推荐使用<a href="https://pc.qq.com/detail/1/detail_2661.html"

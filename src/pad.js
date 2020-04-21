@@ -62,7 +62,7 @@ const app = new Vue({
           ["biz001", "biz002", "biz003", "biz004", "biz005", "biz006", "biz007", "biz008", "biz009", "biz010", "biz011", "biz012", "biz013", "biz014", "biz015", "biz016", "biz017", "biz018", "biz019", "biz020", "biz021", "biz022", "biz023", "biz024", "biz025", "biz026", "biz027", "biz028", "biz029", "biz030", "biz031", "biz032", "biz033", "biz034", "biz035", "biz036", "biz037", "biz038", "biz039", "biz040", "biz041", "biz042", "biz043", "biz044", "biz045", "biz04", "biz047", "biz048", "biz049", "biz050", "biz051", "biz052", "biz053", "biz054", "biz055", "biz056", "biz057", "biz058", "biz059", "biz060"],
       }
     ],
-    toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'richtext':false, 'lock': false, 'minimap': false, 'connect': false, 'clean': false },
+    toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'richtext':false, 'lock': false, 'minimap': false, 'connect': false, 'material':false, 'clean': false },
     docNavTabIndex: 0,
     show: {
       'loading': false,
@@ -77,7 +77,8 @@ const app = new Vue({
       'actionlog': false,
       'form': { newdoc: false, newprj: false, prjlist: true, doclist: false, share: false, bottomlinks: false, explorerTabIndex: 0 },
       'section': { signin: false, register: false, explorer: false, designer: false, minimap: true },
-      'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false, copyDocDialog: false, setAclDialog: false, pasteContentDialog: false, MsgBox: false, shareDialog: false },
+      'dialog': { inputDocPasswordDialog: false, resetDocPasswordDialog: false, userPasswordDialog: false, copyDocDialog: false, setAclDialog: false, 
+        pasteContentDialog: false, MsgBox: false, shareDialog: false, materialDialog: false },
     },
     model: {
       firstTime: true,
@@ -160,9 +161,11 @@ const app = new Vue({
       myorgfields: [{ key: 'name', label: '名称' }, { key: 'grade', label: '等级' }, { key: 'operations', label: '相关操作' }],
       useridfields: [{ key: 'userid', label: '用户ID' }, { key: 'operations', label: '操作', variant: 'danger' }],
       prjfields: [{ key: 'name', label: '项目名称' }, { key: 'operations', label: '相关操作' }],
+      matfields: [{ key: 'thumbnail', label: '缩略图' },{ key: 'operations', label: '相关操作' }],
       prjwarning: '',
       docs: [],
       prjs: [],
+      mats: [],
       perPage: 15,
       currentPrjPage: 1,
       currentDocPage: 1,
@@ -240,6 +243,9 @@ const app = new Vue({
     },
     prjcount() {
       return this.model.prjs.length;
+    },
+    matcount() {
+      return this.model.mats.length;
     },
     userIdState() {
       const schema = Joi.string().regex(
@@ -360,3 +366,49 @@ NodeController.KFK = KFK;
 KFK.DocController = DocController;
 KFK.NodeController = NodeController;
 KFK.APP = app;
+window.Buffer= window.Buffer || require('buffer').Buffer;
+
+  const dropZoneId = "C3";
+  window.addEventListener("dragenter", function(e) {
+    let jtarget = $(e.target);
+    if(jtarget.hasClass('svgcanvas') || jtarget.hasClass("pageBoundingLine")){
+      e.preventDefault();
+      e.dataTransfer.effectAllowed = "copy";
+      e.dataTransfer.dropEffect = "copy";
+    }else{
+      e.preventDefault();
+      e.dataTransfer.effectAllowed = "none";
+      e.dataTransfer.dropEffect = "none";
+    }
+  }, false);
+  
+  window.addEventListener("dragover", function(e) {
+    let jtarget = $(e.target);
+    if(jtarget.hasClass('svgcanvas') || jtarget.hasClass("pageBoundingLine")){
+      e.preventDefault();
+      e.dataTransfer.effectAllowed = "copy";
+      e.dataTransfer.dropEffect = "copy";
+    }else{
+      e.preventDefault();
+      e.dataTransfer.effectAllowed = "none";
+      e.dataTransfer.dropEffect = "none";
+    }
+  });
+  
+  window.addEventListener("drop", async function(e) {
+    let jtarget = $(e.target);
+    if(jtarget.hasClass('svgcanvas') || jtarget.hasClass("pageBoundingLine")){
+      KFK.dropAtPos = {
+        x: KFK.scrXToJc3X(e.clientX), 
+        y: KFK.scrYToJc3Y(e.clientY)
+      };
+      e.preventDefault();
+      e.dataTransfer.effectAllowed = "copy";
+      e.dataTransfer.dropEffect = "copy";
+      await KFK.procFilesDrop(e.dataTransfer.files);
+    }else{
+      e.preventDefault();
+      e.dataTransfer.effectAllowed = "none";
+      e.dataTransfer.dropEffect = "none";
+    }
+  });

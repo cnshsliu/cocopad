@@ -9,8 +9,15 @@ const config = {
         lastSeconds: 3000,
     },
     cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', readonly: false },
+    oss:{
+        cocopad_bucket_name: "cocopad",
+    },
     vault: {
         bucket: 'vts',
+    },
+    cos: {
+        region: 'ap-nanjing',
+        bucket: 'nanjing1-1255349658',
     },
     ui: {
         boundingrect_padding: 10,
