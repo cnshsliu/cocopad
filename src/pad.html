@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>COLOBODO协作平台</title>
+  <title>彩板-多人协作网络白板</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="../my-styles/style.css">
@@ -26,7 +26,7 @@
       <img v-show="!show.section.designer" src="../assets/cocopad.svg" class='left_top_logo_image' />
       <div class="cocoslogon" v-show="!show.section.designer" />
       <b-row class="text-center py-0">
-        <b-col style='font-size: 28px;'>协作白板</b-col>
+        <b-col class="logo-style">彩板</b-col>
       </b-row>
       <b-row class="text-center" v-show="!show.section.designer" class="m-0 p-0">
         <b-col style='font-size:18px;'>远程办公 异地协同</b-col>
@@ -166,7 +166,7 @@
           </b-row>
         </div>
         <div v-if="KFK.urlMode==='ivtcode'" class="mt-3">
-          {{model.invitor.name}} 邀请您使用在线协同白板
+          {{model.invitor.name}} 邀请您使用彩板-多人协作网络白板
         </div>
       </b-form>
       <div v-show="!model.isValidBrowser" class="browser-warning">
@@ -471,7 +471,7 @@
             </b-button-toolbar>
           </b-tab>
           <b-tab title="COCO" active class='cocoproperty'>
-            <p>欢迎使用</p>
+            <p>彩板</p>
             <b-checkbox id="cb-showgrid" v-model="model.cococonfig.showgrid" name="cb-showgrid" switch
               @change="KFK.showGridChanged">
               显示网格线
@@ -709,7 +709,7 @@
                 </b-card>
               </div>
               <div v-show="show.form.prjlist">
-                <div class='page_title'>{{model.prjwarning}}</div>
+                <div class='page_title cocohighlight-2'>{{model.prjwarning}}</div>
                 <!-- prj list -->
                 <b-table hover id="my-prj-table" :items="model.prjs" :per-page="model.perPage"
                   :current-page="model.currentPrjPage" small :fields="model.prjfields"
@@ -1055,6 +1055,9 @@
 
             <b-tab title="我的素材" @click="KFK.onClickMatTab">
               <!-- materail list -->
+              <b-button size="sm" variant="outline-danger" @click="KFK.refreshMatLib()">
+                刷新
+              </b-button>
               <b-table hover id="my-mat-table" :items="model.mats" :per-page="model.perPage"
                 :current-page="model.currentMatPage" small :fields="model.matfields"
                 @row-clicked="KFK.matRowClickHandler">
@@ -1093,23 +1096,7 @@
               <a href="#" class="card-link" @click="KFK.gotoSignin" style='font-size:18px'>已有账号？请登录</a>
             </b-col>
           </b-row>
-          <div class="footnote">
-            <b-row v-if="model.cocouser.ivtcode">
-              <b-col>
-                <b-button class="m-0 p-0" variant='link' @click="KFK.showIvtCodeDialog">邀请同事或好友使用</b-button>
-              </b-col>
-            </b-row>
-            <b-row v-if="model.cocouser.ivtcode">
-              <b-col>
-                <b-button class="m-0 p-0" variant='link' @click="KFK.showIvtCodeDialog">获奖操作积分</b-button>
-              </b-col>
-            </b-row>
-            <b-row role="link">
-              <b-col>
-                <b-link :target="'_blank'" class="m-0 p-0" href='http://weibo.com/cocopad'>@COLOBODO 2020</b-link>
-              </b-col>
-            </b-row>
-          </div>
+
         </div>
         <b-modal @shown="KFK.notImplemented" @ok="KFK.notImplemented" @hide="KFK.notImplemented"
           @close="KFK.notImplemented" @cancel="KFK.notImplemented" v-model="show.dialog.docOpDialog" title="白板设置"
@@ -1514,33 +1501,33 @@
             鼠标操作状态。
             <li>点击一个对象选中这个对象</li>
             <li>拖动一个对象到新位置</li>
-            <li>双击对象，编辑其内容。 点彩板空白处退出编辑</li>
+            <li>双击对象，编辑其内容。 点白板空白处退出编辑</li>
             <li>按住CTRL键(Mac: META键)的同时，把一个尺寸较小的对象拖动到一个尺寸较大的对象上，将较小对象的内容合并到较大对象， 如同时按住了SHIFT键，则用较小对象的内容替换较大对象的内容
           </td>
         </tr>
         <tr>
-          <td>在工具栏点选<img :src="images['text'].src" class="tool-in-help" />，然后在彩板上点鼠标
+          <td>在工具栏点选<img :src="images['text'].src" class="tool-in-help" />，然后在白板上点鼠标
           </td>
           <td>
             则在鼠标位置放置一个单行文本，双击文本可修改其内容
           </td>
         </tr>
         <tr>
-          <td>在工具栏点选<img :src="images['textblock'].src" class="tool-in-help" />，然后在彩板上点鼠标
+          <td>在工具栏点选<img :src="images['textblock'].src" class="tool-in-help" />，然后在白板上点鼠标
           </td>
           <td>
             则在鼠标位置放置一个复合对象，双击可修改其文本, 在右侧属性窗，可设置其属性，或添加贴纸
           </td>
         </tr>
         <tr>
-          <td>在工具栏点选<img :src="images['tipbtn'].src" class="tool-in-help" />，然后在彩板上点鼠标
+          <td>在工具栏点选<img :src="images['tipbtn'].src" class="tool-in-help" />，然后在白板上点鼠标
           </td>
           <td>
             则在鼠标位置放置一个贴纸对象，双击可修改其文本, 在右侧属性窗，可设置其属性，或修改贴纸
           </td>
         </tr>
         <tr>
-          <td>在工具栏点选<img :src="images['richtext'].src" class="tool-in-help" />，然后在彩板上点鼠标
+          <td>在工具栏点选<img :src="images['richtext'].src" class="tool-in-help" />，然后在白板上点鼠标
           </td>
           <td>
             则在鼠标位置放置一个富文本，双击可修改其文本
@@ -1549,35 +1536,35 @@
         <tr>
           <td>在工具栏点选<img :src="images['material'].src" class="tool-in-help" /></td>
           <td>
-            弹出素材库，点选一个素材后，再在彩板上点鼠标可放置素材
+            弹出素材库，点选一个素材后，再在白板上点鼠标可放置素材
           </td>
         </tr>
         <tr>
-          <td>在工具栏点选<img :src="images['line'].src" class="tool-in-help" />，然后在彩板上点鼠标
+          <td>在工具栏点选<img :src="images['line'].src" class="tool-in-help" />，然后在白板上点鼠标
           </td>
           <td>
             在两点之间画线
           </td>
         </tr>
         <tr>
-          <td>在工具栏点选<img :src="images['connect'].src" class="tool-in-help" />，然后在彩板上点鼠标
+          <td>在工具栏点选<img :src="images['connect'].src" class="tool-in-help" />，然后在白板上点鼠标
           </td>
           <td>
             依次点击两个对象，则在两个对象之间建立连接线
           </td>
         </tr>
         <tr>
-          <td>在工具栏点选<img :src="images['lock'].src" class="tool-in-help" />，然后在彩板上点一个对象
+          <td>在工具栏点选<img :src="images['lock'].src" class="tool-in-help" />，然后在白板上点一个对象
           </td>
           <td>
             加解锁。 锁定后，对象不可修改、不可移动。 也可直接选择对象后，按CTRL-L 或 META-L 来加解锁
           </td>
         </tr>
         <tr>
-          <td>在工具栏点选<img :src="images['eraser'].src" class="tool-in-help" />，然后在彩板上点鼠标
+          <td>在工具栏点选<img :src="images['eraser'].src" class="tool-in-help" />，然后在白板上点鼠标
           </td>
           <td>
-            用板擦，擦除掉彩板上所有内容
+            用板擦，擦除掉白板上所有内容
           </td>
         </tr>
         <tr>
@@ -1656,24 +1643,24 @@
           <td colspan=2 id="minihelp_material">使用图片</td>
         </tr>
         <tr>
-          <td><span class="cocohighlight-2">拖动</span>拖动一个图片文件到彩板</td>
-          <td>可从Windows资源管理器或Mac OSX的访达中拖动图片文件，将图片放到彩板上，支持JPG和PNG格式文件</td>
+          <td><span class="cocohighlight-2">拖动</span>拖动一个图片文件到白板</td>
+          <td>可从Windows资源管理器或Mac OSX的访达中拖动图片文件，将图片放到白板上，支持JPG和PNG格式文件</td>
         </tr>
         <tr>
-          <td>放置屏幕截图到彩板</td>
-          <td>先用截图工具进行屏幕截图（Windows有很多，Mac OSX按Ctrl-Shift-Command-4同时按住）, 截图后在彩板上，<span class="cocohighlight-2">CTRL-V</span>/<span class="cocohighlight-2">META-V</span>
-          即可粘贴图片放到彩板上</td>
+          <td>放置屏幕截图到白板</td>
+          <td>先用截图工具进行屏幕截图（Windows有很多，Mac OSX按Ctrl-Shift-Command-4同时按住）, 截图后在白板上，<span class="cocohighlight-2">CTRL-V</span>/<span class="cocohighlight-2">META-V</span>
+          即可粘贴图片放到白板上</td>
         </tr>
         <tr>
-          <td>从其它网站中复制图片到彩板</td>
-          <td>在其他网站上的图片上点右键，在弹出菜单中点复制图片, 回到彩板按<span class="cocohighlight-2">CTRL-V</span>/<span class="cocohighlight-2">META-V</span>, 
-         即可将图片放到彩板上.<BR>
-          如发现放置的图片无法显示，一般是因为那个网站做了图片保护。 此时，你可以使用上面的屏幕截图方式放置图片，先做屏幕截图，再放置到彩板上
+          <td>从其它网站中复制图片到白板</td>
+          <td>在其他网站上的图片上点右键，在弹出菜单中点复制图片, 回到白板按<span class="cocohighlight-2">CTRL-V</span>/<span class="cocohighlight-2">META-V</span>, 
+         即可将图片放到白板上.<BR>
+          如发现放置的图片无法显示，一般是因为那个网站做了图片保护。 此时，你可以使用上面的屏幕截图方式放置图片，先做屏幕截图，再放置到白板上
         </td>
         </tr>
         <tr>
           <td>在工具栏点选<img :src="images['material'].src" class="tool-in-help" /></td>
-          <td>弹出素材库，点选一个素材后，回到彩板，继续点一下鼠标在当前位置放置图片，如按住SHIFT键可连续放置</td>
+          <td>弹出素材库，点选一个素材后，回到白板，继续点一下鼠标在当前位置放置图片，如按住SHIFT键可连续放置</td>
         </tr>
         <tr>
           <td>在<span class="cocohighlight-2">我的素材</span>中</td>
@@ -1731,6 +1718,23 @@
         </tr>
       </table>
     </b-modal>
+    <div class="footnote">
+      <b-row v-if="model.cocouser.ivtcode">
+        <b-col>
+          <b-button class="m-0 p-0" variant='link' @click="KFK.showIvtCodeDialog">邀请同事或好友使用</b-button>
+        </b-col>
+      </b-row>
+      <b-row v-if="model.cocouser.ivtcode">
+        <b-col>
+          <b-button class="m-0 p-0" variant='link' @click="KFK.showIvtCodeDialog">获奖操作积分</b-button>
+        </b-col>
+      </b-row>
+      <b-row role="link">
+        <b-col>
+          <b-link :target="'_blank'" class="m-0 p-0" href='http://weibo.com/cocopad'>@COLOBODO 2020</b-link>
+        </b-col>
+      </b-row>
+    </div>
   </div>
   <!--app-->
 </body>
