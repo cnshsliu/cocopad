@@ -17,7 +17,7 @@ BOSSWS.reconnect = function reconnect() {
     }
 }
 BOSSWS.start = async (onOpenCallback, onMsgcallback, delay, name, keepFlag) => {
-    console.log("!!!! Entered BOSSWS.start...");
+    // console.log("!!!! Entered BOSSWS.start...");
     if (delay > 0)
         await new Promise(resolve => setTimeout(resolve, delay));
     BOSSWS.onOpenCallback = onOpenCallback;
@@ -26,7 +26,7 @@ BOSSWS.start = async (onOpenCallback, onMsgcallback, delay, name, keepFlag) => {
     BOSSWS.keepFlag = keepFlag;
     if (BOSSWS.ws === null || (BOSSWS.ws && (BOSSWS.ws.readyState !== 1))) {
         if (BOSSWS.ws) {
-            console.log("terminate existing BOSSWS.ws");
+            // console.log("terminate existing BOSSWS.ws");
             BOSSWS.ws.close();
             if (BOSSWS.reconnectTimeout != null) {
                 clearTimeout(BOSSWS.reconnectTimeout);
@@ -38,10 +38,10 @@ BOSSWS.start = async (onOpenCallback, onMsgcallback, delay, name, keepFlag) => {
         BOSSWS.resetReconnectCount();
     } else {
         BOSSWS.isReused = true;
-        console.info("BOSSWS>>> ws connection is reused");
+        // console.info("BOSSWS>>> ws connection is reused");
     }
     BOSSWS.ws.onopen = function () {
-        console.info("BOSSWS>>> ws opened. name:", BOSSWS.name, "flag:", BOSSWS.keepFlag);
+        // console.info("BOSSWS>>> ws opened. name:", BOSSWS.name, "flag:", BOSSWS.keepFlag);
         //成功连接后，把继续重连的interval清除掉
         BOSSWS.isReused = false;
         BOSSWS.connectTimes += 1;
@@ -52,25 +52,22 @@ BOSSWS.start = async (onOpenCallback, onMsgcallback, delay, name, keepFlag) => {
         onOpenCallback();
     };
     BOSSWS.ws.onclose = function () {
-        console.log("onclose");
+        // console.log("onclose");
         if (BOSSWS.reconnectTimeout === null && keepFlag === 'KEEP') {
-            console.info("set reconnect interval ame:", BOSSWS.name, "flag:", BOSSWS.keepFlag, 'Reconnect>', keepFlag === 'KEEP' ? 'YES' : 'NO');
+            // console.info("set reconnect interval ame:", BOSSWS.name, "flag:", BOSSWS.keepFlag, 'Reconnect>', keepFlag === 'KEEP' ? 'YES' : 'NO');
             BOSSWS.reconnectTimeout = setTimeout(BOSSWS.reconnect, 1000);
-        } else {
-            console.log("No reconnect, because no KEEP or reconnectTimeout is not null");
-
         }
     };
     BOSSWS.ws.onmessage = function (e) {
         onMsgcallback(e.data);
     };
     BOSSWS.ws.onerror = function (e) {
-        console.log("BOSSWS>>> error occured, close it");
+        // console.log("BOSSWS>>> error occured, close it");
         BOSSWS.ws.close();
     };
     if (BOSSWS.isReused) {
         //重用时,onopen不会被触发,因此这里直接调用onOpenCallback()
-        console.info("BOSSWS>>> resue connection, call onopencallback directly");
+        // console.info("BOSSWS>>> resue connection, call onopencallback directly");
         //同样,因为onopen不会发生,所以,重置连接技术为1,只能在这里手动完成
         BOSSWS.connectTimes = 1;
         onOpenCallback();

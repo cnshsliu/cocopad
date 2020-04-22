@@ -14,6 +14,25 @@ body {
   overscroll-behavior-x: none;
 }
 
+input::-webkit-input-placeholder {
+  color: #c8c3e379 !important;
+  font-size: 18px !important;
+}
+
+input::-ms-input-placeholder {
+  color: #c8c3e379 !important;
+  font-size: 18px !important;
+}
+
+input::placeholder {
+  color: #c8c3e379 !important;
+  font-size: 18px !important;
+}
+
+.tab-space {
+  margin-top: 50px;
+}
+
 .logo-style {
   font-size: 28px;
   color: #333333;
@@ -440,6 +459,14 @@ svg path {
   z-index: 999999999;
 }
 
+.waitinglogo .logo {
+  width: 64px;
+  height: 64px;
+  animation: jello 1s;
+  animation-iteration-count: infinite;
+  border-radius: 5px;
+}
+
 .present-mask {
   position: absolute;
   top: 0px;
@@ -480,11 +507,6 @@ svg path {
 .reconnect-mask p {
   margin: auto;
   text-align: center;
-}
-
-.waitinglogo .logo {
-  width: 64px;
-  height: 64px;
 }
 
 .padlayout {
@@ -666,6 +688,10 @@ input#regUserCode {
   height: 30px;
 }
 
+.explorer-navbar .bigger {
+  font-size: 24px;
+}
+
 .explorer-content {
   width: 100%;
   height: calc(100% - 30px);
@@ -738,6 +764,14 @@ select:focus {
   border-radius: 10px;
   background-color: #eeeeee69;
   border: 1px solid #aaa;
+}
+
+.docHeaderInfo.yiq-black .docname, .docHeaderInfo.yiq-black .docteam, .docHeaderInfo.yiq-black .userinfo button {
+  color: #333333 !important;
+}
+
+.docHeaderInfo.yiq-white .docname, .docHeaderInfo.yiq-white .docteam, .docHeaderInfo.yiq-white .userinfo button {
+  color: aquamarine !important;
 }
 
 .docname {
@@ -976,6 +1010,7 @@ select:focus {
   align-items: center;
   justify-content: center;
 }
+
 #keepLog {
   position: absolute;
   display: flex;
@@ -1459,4 +1494,34 @@ table.quick-help-table td:first-of-type {
 
 .libray {
   height: 100px;
+}
+
+.matlib-topick {
+  position: absolute;
+  z-index: 10000010;
+  /*higher than minimap */
+  left: 0px;
+  bottom: 0px;
+  margin: 5px;
+  border-radius: 10px;
+  display: flex;
+  width: 100%;
+  height: 80px;
+  background-color: aqua;
+  overflow-y: hidden;
+  overflow-x: scroll;
+  align-items: center;
+  justify-content: center;
+}
+
+.matlib-topick img {
+  height: 60px;
+  padding-left: 2px;
+}
+
+.matlib-topick img:hover {
+  border: 4px solid #74aef1;
+  border-radius: 5px;
+  transform-origin: center;
+  transform: scale(1.2);
 }
