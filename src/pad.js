@@ -112,7 +112,7 @@ const app = new Vue({
           }
         },
         line: {
-          color: '#306EF6', width: 6, linecap: false,
+          color: '#306EF6', width: 6, linecap: true,
         },
       },
       paste: {

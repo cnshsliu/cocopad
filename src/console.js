@@ -390,7 +390,7 @@ KFK.onWsMsg = async function (response) {
       } else if (response.tag === 'useup') {
         KFK.debug("Quota left", response.quota);
         $('#recharge-warn').removeClass('noshow');
-        $('#recharge-warn').prop('innerHTML', '您组织的操作分已耗尽，为不影响使用，请点这里尽快充值');
+        $('#recharge-warn').prop('innerHTML', '您组织的操作分已耗尽，为不影响您正常使用，请点这里尽快充值');
       } else { //ok
         KFK.debug("Quota left", response.quota);
         $('#recharge-warn').addClass('noshow');
@@ -1056,9 +1056,9 @@ KFK.yarkLinePoint = function (x, y, shiftKey) {
     center: { x: x, y: y },
     points: [{ x: x, y: y }]
   });
-  KFK.procLinkLine(shiftKey);
+  KFK.procDrawLine(shiftKey);
 };
-KFK.procLinkLine = function (shiftKey) {
+KFK.procDrawLine = function (shiftKey) {
   if (KFK.linkPosLine.length < 2) {
     return;
   } else {
@@ -1074,7 +1074,7 @@ KFK.procLinkLine = function (shiftKey) {
     KFK.linkPosLine[1].center.x,
     KFK.linkPosLine[1].center.y,
     {
-      color: KFK.APP.model.svg.line.color,
+      color: KFK.YIQColorAux || KFK.APP.model.svg.line.color,
       width: KFK.APP.model.svg.line.width,
       linecap: KFK.APP.model.svg.line.linecap ? 'round' : 'square'
     }
@@ -1608,7 +1608,7 @@ KFK.initC3 = function () {
           KFK.tmpPos.points[selectedFromIndex].y,
           tmpPoint.x,
           tmpPoint.y,
-          { color: "#888888", stroke: 10 }
+          { color: KFK.YIQColorAux || "#888888", stroke: 10 }
         );
       }
     }
@@ -1624,7 +1624,7 @@ KFK.initC3 = function () {
           KFK.linkPosLine[0].center.y,
           tmpPoint.x,
           tmpPoint.y,
-          { color: "#888888", stroke: 10 }
+          { color: KFK.YIQColorAux || "#888888", stroke: 10 }
         );
       }
     }
@@ -5654,13 +5654,14 @@ KFK.setBGColorTo = function (bgcolor) {
   $('#containerbkg').css('background-color', bgcolor);
   $('#overallbackground').css('background-color', bgcolor);
   KFK.YIQColor = KFK.getContrastYIQ(bgcolor);
-  KFK.YIQColorAux = KFK.YIQColor==='black'?'#666666':'#CCCCCC';
+  KFK.YIQColorAux = KFK.YIQColor==='black'?'#6666F6':'#CCCCCC';
 
   $('.docHeaderInfo').removeClass('yiq-black'); $('.docHeaderInfo').removeClass('yiq-white');
   $('.loading').removeClass('yiq-black'); $('.loading').removeClass('yiq-white');
   $('.docHeaderInfo').addClass(`yiq-${KFK.YIQColor}`);
   $('.loading').addClass(`yiq-${KFK.YIQColor}`);
-  $('.connect').attr('stroke', KFK.YIQColor);
+  $('.connect').attr('stroke', KFK.YIQColorAux);
+  $('.triangle').attr('fill', KFK.YIQColorAux);
 
   KFK.setGridColor(bgcolor);
 };
@@ -7581,7 +7582,7 @@ KFK._svgDrawNodesConnect = function (fid, tid, lineClass, lineClassReverse, pstr
     } else {
       theLine = KFK.svgDraw.path(pstr);
       theLine.addClass(lineClass).addClass('connect').fill("none").stroke({ width: KFK.APP.model.svg.connect.width, color: KFK.YIQColorAux || KFK.APP.model.svg.connect.color });
-      KFK.svgDraw.polygon(triangle).addClass(lineClass + "_triangle").addClass('connect').fill(KFK.APP.model.svg.connect.triangle.fill).stroke({ width: KFK.APP.model.svg.connect.triangle.width, color: KFK.APP.model.svg.connect.triangle.color });
+      KFK.svgDraw.polygon(triangle).addClass(lineClass + "_triangle").addClass('triangle').fill(KFK.YIQColorAux).stroke({ width: KFK.APP.model.svg.connect.triangle.width, color: KFK.APP.model.svg.connect.triangle.color });
       theLine.attr({
         "id": lineClass,
         "origin-width": KFK.APP.model.svg.connect.width
