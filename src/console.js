@@ -11,8 +11,8 @@ import suuid from "short-uuid";
 import "spectrum-colorpicker2/dist/spectrum.min";
 import url from "url";
 // import uuidv4 from "uuid/v4";
-import assetIcons from "../assets/*.svg";
-import avatarIcons from "../assets/avatar/*.svg";
+import assetIcons from  "../assets/*.svg";
+import avatarIcons from "../avatar/*.svg";
 import "./fontpicker/jquery.fontpicker";
 import "./minimap/jquery-minimap";
 import cocoConfig from "./cococonfig";
@@ -35,6 +35,11 @@ import { gzip, ungzip } from "../lib/gzip";
 // import FilePondPluginImageValidateSize from 'filepond-plugin-image-validate-size';
 // import FilePondPluginImageTransform from 'filepond-plugin-image-transform';
 // import jsPDF from 'jspdf';
+
+
+
+
+
 
 
 Quill.prototype.getHtml = function () {
