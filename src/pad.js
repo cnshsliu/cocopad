@@ -1,5 +1,4 @@
 import Vue from 'vue';
-import Joi from '@hapi/joi';
 import { BootstrapVue, IconsPlugin, ListGroupPlugin, VBHoverPlugin } from 'bootstrap-vue';
 import events from 'events';
 import "../scss/custom.scss";
@@ -103,16 +102,18 @@ const app = new Vue({
       regForShared: false, //是否是接受到分享链接的用户来注册？
       loading_value: 0,
       msgbox: { title: '', content: '' },
-      connect: {
-        color: 'red', width: 3,
-        triangle: {
-          width: 1,
-          color: 'blue',
-          fill: 'blue'
-        }
-      },
-      line: {
-        color: '#306EF6', width: 6, linecap: false,
+      svg: {
+        connect: {
+          color: 'red', width: 2,
+          triangle: {
+            width: 1,
+            color: 'blue',
+            fill: 'blue'
+          }
+        },
+        line: {
+          color: '#306EF6', width: 6, linecap: false,
+        },
       },
       paste: {
         content: '',
@@ -128,7 +129,6 @@ const app = new Vue({
           { item: 'all', name: '边框和底色' },
         ],
       },
-      avatarLoaded: false,
       copyToPrjId: null,
       actionlog: [],
       profileToSet: {
@@ -218,6 +218,7 @@ const app = new Vue({
     }
   },
   computed: {
+
     prjListOptions() {
       let ret = [];
       this.model.prjs.forEach((prj, index) => {
@@ -250,49 +251,16 @@ const app = new Vue({
     matcount() {
       return this.model.mats.length;
     },
-    userIdState() {
-      const schema = Joi.string().regex(
-        /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/
-        // 邮箱地址
-      ).required();
-      let str = this.model.signin.userid;
-      let { error, value } = schema.validate(str);
-      if (error === undefined)
-        return true;
-      else
-        return false;
-    },
 
-
-    docNameState() {
-      const schema = Joi.string().regex(/^[a-zA-Z0-9_\u4e00-\u9fa5]{3,20}$/).required();
-      let str = this.model.newdocname;
-      let { error, value } = schema.validate(str);
-      if (error === undefined)
-        return true;
-      else
-        return false;
-    },
-    copyToDocNameState() {
-      const schema = Joi.string().regex(/^[a-zA-Z0-9_\u4e00-\u9fa5]{3,20}$/).required();
-      let str = this.model.copyToDocName;
-      let { error, value } = schema.validate(str);
-      if (error === undefined)
-        return true;
-      else
-        return false;
-    },
-    prjNameState() {
-      const schema = Joi.string().regex(/^[a-zA-Z0-9_\u4e00-\u9fa5]{3,20}$/).required();
-      let str = this.model.newprjname;
-      let { error, value } = schema.validate(str);
-      if (error === undefined)
-        return true;
-      else
-        return false;
-    },
   },
   methods: {
+    getSrc(img) {
+      if (this.images && this.images[img]) {
+        return this.images[img].src;
+      } else {
+        return undefined;
+      }
+    },
     getInvitationUrl() {
       if (this.model.cocouser.ivtcode === null) {
         return '';
@@ -368,8 +336,8 @@ DocController.KFK = KFK;
 NodeController.KFK = KFK;
 KFK.DocController = DocController;
 KFK.NodeController = NodeController;
-KFK.APP = app;
 window.Buffer = window.Buffer || require('buffer').Buffer;
+KFK.APP = app;
 
 const dropZoneId = "C3";
 window.addEventListener("dragenter", function (e) {
@@ -415,3 +383,5 @@ window.addEventListener("drop", async function (e) {
     e.dataTransfer.dropEffect = "none";
   }
 });
+
+KFK.init();

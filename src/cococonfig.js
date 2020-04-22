@@ -9,7 +9,7 @@ const config = {
         lastSeconds: 3000,
     },
     cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', readonly: false },
-    oss:{
+    oss: {
         cocopad_bucket_name: "cocopad",
     },
     vault: {
@@ -18,13 +18,10 @@ const config = {
     cos: {
         region: 'ap-nanjing',
         bucket: 'nanjing1-1255349658',
+        domain: 'cos.ap-nanjing.myqcloud.com',
     },
     ui: {
         boundingrect_padding: 10,
-    },
-    line: {
-        strokeColor: 'blue',
-        selectedColor: 'red',
     },
     node: {
         image: {
@@ -161,8 +158,8 @@ const config = {
             'tip_smile': { width: 50, height: 50 },
             'tip_circle3': { width: 50, height: 50 },
         },
-        'textblock':{
-            'default': {width: 160, height: 100},
+        'textblock': {
+            'default': { width: 160, height: 100 },
         },
         'text': {
             'default': { width: 30, height: 30 },

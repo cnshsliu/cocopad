@@ -82,22 +82,7 @@
     </div> <!-- leftbkg-->
     <div id="waiting" v-show="show.waiting" class="waitinglogo">
       <!-- connect to cloud waiting-->
-      <b-container>
-        <b-row cols="3" align-v='center'>
-          <b-col>
-            <b-iconstack font-scale="6">
-              <b-icon stacked icon="cloud" variant="info" scale="1.5"></b-icon>
-              <b-icon stacked icon="three-dots" variant="danger" scale="0.8" shift-v="-2.5" animation="cylon"></b-icon>
-            </b-iconstack>
-          </b-col>
-          <b-col>
-            <b-icon icon="three-dots" animation="cylon" font-scale="3" color="#7952b3"></b-icon>
-          </b-col>
-          <b-col>
             <img src="../assets/cocopad.svg" class="logo d-inline-block align-top" alt="COLOBODO">
-          </b-col>
-        </b-row>
-      </b-container>
     </div><!-- waiting-->
     <div id="registerform" class="registerform" v-show="show.section.register" style="display:none;">
       <b-form autocomplete="off" class="w-100 text-center px-2">
@@ -227,7 +212,7 @@
           target="_blank">Chrome</a>或微软的新版<a href="https://www.microsoft.com/zh-cn/edge" target="_blank">Edge</a>浏览器
       </div>
     </div><!-- signin form-->
-    <div v-show="show.section.designer" style="display:none;">
+    <div v-show="show.section.designer" id="designer" style="display:none;">
       <div id="S1">
         <div id="C1">
           <div id="containerbkg" class="grid1"></div>
@@ -235,10 +220,10 @@
           </div>
           <div id="selectingrect" class="selectingrect"></div>
           <div id="modeIndicator" style="position:absolute; top: 0px; left: 0px; display: none; ">
-            <img id="modeIndicatorImg" src="../assets/pointer.svg" style='width: 18px; height: 18px;' />
+            <img id="modeIndicatorImg" :src="getSrc('pointer')" style='width: 18px; height: 18px;' />
             <div id="modeIndicatorDiv" style='width: 18px; height: 18px;'></div>
           </div>
-          <img id="linetransformer" src="../assets/linetransformer.svg">
+          <img id="linetransformer" :src="getSrc('linetransformer')">
         </div>
       </div>
       <div id="toplogo" class="padlayout">
@@ -249,39 +234,39 @@
         <b-list-group>
           <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('pointer');"
             :active="toolActiveState['pointer']">
-            <b-img :src="images['pointer'].src" fluid alt="" scale="2" class="cocotool"></b-img>
+            <b-img :src="getSrc('pointer')" fluid alt="" scale="2" class="cocotool"></b-img>
           </b-list-group-item>
           <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('text');"
             :active="toolActiveState['text']">
-            <b-img :src="images['text'].src" fluid alt="" scale="2" class="cocotool"></b-img>
+            <b-img :src="getSrc('text')" fluid alt="" scale="2" class="cocotool"></b-img>
           </b-list-group-item>
           <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('textblock');"
             :active="toolActiveState['textblock']">
-            <b-img :src="images['textblock'].src" fluid alt="" scale="2" class="cocotool"></b-img>
+            <b-img :src="getSrc('textblock')" fluid alt="" scale="2" class="cocotool"></b-img>
           </b-list-group-item>
           <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('yellowtip');"
             :active="toolActiveState['yellowtip']">
-            <b-img :src="images['tipbtn'].src" fluid alt="" scale="2" class="cocotool"></b-img>
+            <b-img :src="getSrc('tipbtn')" fluid alt="" scale="2" class="cocotool"></b-img>
           </b-list-group-item>
           <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('richtext');"
             :active="toolActiveState['richtext']">
-            <b-img :src="images['richtext'].src" fluid alt="" scale="2" class="cocotool"></b-img>
+            <b-img :src="getSrc('richtext')" fluid alt="" scale="2" class="cocotool"></b-img>
           </b-list-group-item>
           <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('material');"
             :active="toolActiveState['material']">
-            <b-img :src="images['material'].src" fluid alt="" scale="2" class="cocotool" id='tool_material'></b-img>
+            <b-img :src="getSrc('material')" fluid alt="" scale="2" class="cocotool" id='tool_material'></b-img>
           </b-list-group-item>
           <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('line');"
             :active="toolActiveState['line']">
-            <b-img :src="images['line'].src" fluid alt="" scale="2" class="cocotool" id='tool_line'></b-img>
+            <b-img :src="getSrc('line')" fluid alt="" scale="2" class="cocotool" id='tool_line'></b-img>
           </b-list-group-item>
           <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('connect');"
             :active="toolActiveState['connect']">
-            <b-img :src="images['connect'].src" fluid alt="" scale="2" class="cocotool" id='tool_connect'></b-img>
+            <b-img :src="getSrc('connect')" fluid alt="" scale="2" class="cocotool" id='tool_connect'></b-img>
           </b-list-group-item>
           <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('lock');"
             :active="toolActiveState['lock']">
-            <b-img :src="images['lock'].src" fluid alt="" scale="2" class="cocotool" id='tool_lock'></b-img>
+            <b-img :src="getSrc('lock')" fluid alt="" scale="2" class="cocotool" id='tool_lock'></b-img>
           </b-list-group-item>
           <b-list-group-item class="m-0 p-0">
             <b-icon icon="blank" scale="0.3"></b-icon>
@@ -289,7 +274,7 @@
           <b-list-group-item href="#"
             v-if="model.docLoaded && (KFK.APP.model.cocodoc.owner === KFK.APP.model.cocouser.userid)"
             class="d-flex align-items-center" @click="KFK.cleanAllNodes();" :active="toolActiveState['clean']">
-            <b-img :src="images['eraser'].src" fluid alt="" class="eraser" id='tool_clean'></b-img>
+            <b-img :src="getSrc('eraser')" fluid alt="" class="eraser" id='tool_clean'></b-img>
           </b-list-group-item>
 
         </b-list-group>
@@ -336,13 +321,13 @@
                   <div class="col">书写方向</div>
                   <b-button-group class="d-flex w-100">
                     <b-button variant="light" title="一般" class="flex-fill p-0"
-                      @click="KFK.setWritingMode('horizontal-tb')"><img src="../assets/wm_tb.svg" class="toolbar">
+                      @click="KFK.setWritingMode('horizontal-tb')"><img :src="getSrc('wm_tb')" class="toolbar">
                     </b-button>
                     <b-button variant="light" title="纵向右到左" class="flex-fill p-0"
-                      @click="KFK.setWritingMode('vertical-rl')"><img src="../assets/wm_rl.svg" class="toolbar">
+                      @click="KFK.setWritingMode('vertical-rl')"><img :src="getSrc('wm_rl')" class="toolbar">
                     </b-button>
                     <b-button variant="light" title="纵向左到右" class="flex-fill p-0"
-                      @click="KFK.setWritingMode('vertical-lr')"><img src="../assets/wm_lr.svg" class="toolbar">
+                      @click="KFK.setWritingMode('vertical-lr')"><img :src="getSrc('wm_lr')" class="toolbar">
                     </b-button>
                   </b-button-group>
                 </div>
@@ -401,7 +386,7 @@
                 </b-row>
                 <b-row class="mx-auto my-1">
 
-                  <b-checkbox id="cb-linecap" v-model="model.line.linecap" name="cb-linecap" switch
+                  <b-checkbox id="cb-linecap" v-model="model.svg.line.linecap" name="cb-linecap" switch
                     @change="KFK.lineCapChanged">
                     圆头线条
                   </b-checkbox>
@@ -448,25 +433,25 @@
               <p>对齐设置</p>
               <b-button-group class="d-flex w-100">
                 <b-button variant="light" title="对齐左侧" class="flex-fill p-0" @click="KFK.alignNodes('left')"><img
-                    src="../assets/align_left.svg" class="toolbar"></b-button>
+                    :src="getSrc('align_left')" class="toolbar"></b-button>
                 <b-button variant="light" title="对齐垂直中线" class="flex-fill p-0" @click="KFK.alignNodes('center')"><img
-                    src="../assets/align_center.svg" class="toolbar"></b-button>
+                    :src="getSrc('align_center')" class="toolbar"></b-button>
                 <b-button variant="light" title="对齐右侧" class="flex-fill p-0" @click="KFK.alignNodes('right')"><img
-                    src="../assets/align_right.svg" class="toolbar"></b-button>
+                    :src="getSrc('align_right')" class="toolbar"></b-button>
                 <b-button variant="light" title="对齐顶部" class="flex-fill p-0" @click="KFK.alignNodes('top')"><img
-                    src="../assets/align_top.svg" class="toolbar"></b-button>
+                    :src="getSrc('align_top')" class="toolbar"></b-button>
                 <b-button variant="light" title="对齐水平中线" class="flex-fill p-0" @click="KFK.alignNodes('middle')"><img
-                    src="../assets/align_middle.svg" class="toolbar"></b-button>
+                    :src="getSrc('align_middle')" class="toolbar"></b-button>
                 <b-button variant="light" title="对齐底部" class="flex-fill p-0" @click="KFK.alignNodes('bottom')"><img
-                    src="../assets/align_bottom.svg" class="toolbar"></b-button>
+                    :src="getSrc('align_bottom')" class="toolbar"></b-button>
               </b-button-group>
             </b-button-toolbar>
             <b-button-toolbar v-show="show.arrange_multi_nodes" key-nav class="w-100 justify-content-md-center">
               <b-button-group class="d-flex w-100">
                 <b-button variant="light" class="flex-fill" title="横向均匀分布" @click="KFK.alignNodes('hori')"><img
-                    src="../assets/align_hori.svg" class="toolbar"></b-button>
+                    :src="getSrc('align_hori')" class="toolbar"></b-button>
                 <b-button variant="light" class="flex-fill" title="纵向均匀分布" @click="KFK.alignNodes('vert')"><img
-                    src="../assets/align_vert.svg" class="toolbar"></b-button>
+                    :src="getSrc('align_vert')" class="toolbar"></b-button>
               </b-button-group>
             </b-button-toolbar>
           </b-tab>
@@ -529,10 +514,10 @@
           <b-dropdown right variant="success" class="m-2" id='dropdown_help'>
             <template v-slot:button-content>使用说明</template>
             <b-dropdown-item href="#" id="toggle_all" variant="success" v-b-modal.modal-key-shortcut>
-              <img src="../assets/keyboard.svg" class="toolbar" style="width:24px; height:24px;"></img>&nbsp;快捷键
+              <img :src="getSrc('keyboard')" class="toolbar" style="width:24px; height:24px;"></img>&nbsp;快捷键
             </b-dropdown-item>
             <b-dropdown-item href="#" id="toggle_all" variant="success" @click="KFK.showFullHelp">
-              <img src="../assets/manual.svg" class="toolbar" style="width:24px; height:24px;"></img>&nbsp;帮助文档
+              <img :src="getSrc('manual')" class="toolbar" style="width:24px; height:24px;"></img>&nbsp;帮助文档
             </b-dropdown-item>
           </b-dropdown>
 
@@ -604,8 +589,8 @@
       </div>
       <div class="padlayout docHeaderInfo">
         <div class="docname" v-if="show.section.designer">
-          <b-icon v-if="model.cocodoc.readonly" icon="lock" variant="secondary"></b-icon>
-          <b-icon v-else icon="book" variant="secondary"></b-icon>
+          <b-icon v-if="model.cocodoc.readonly" icon="lock"></b-icon>
+          <b-icon v-else icon="book"></b-icon>
           {{model.cocodoc.name}}
         </div>
         <div class="docpeople padlayout" v-if="show.section.designer">
@@ -631,9 +616,9 @@
               <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.gotoSignin">登录已有账号
               </b-dropdown-item-button>
             </b-dropdown>
-            <b-button title='hello' class="m-0 p-0" variant='link' @click="KFK.showActionLog">
-              <b-icon icon="people"></b-icon>
-            </b-button>{{model.actionlog.length}}
+            <b-button title='hello' class="m-0 p-0 docteam" variant='link' @click="KFK.showActionLog">
+              <b-icon icon="people"></b-icon>{{model.actionlog.length}}
+            </b-button>
           </div>
         </div>
       </div>
@@ -650,12 +635,12 @@
             <b-navbar-brand href="#">
             </b-navbar-brand>
           </b-navbar-nav>
-          <b-navbar-nav class="mr-auto myhovered">
+          <b-navbar-nav class="mr-auto myhovered bigger">
             <b-nav-item v-if="model.prjs.length<1" @click="KFK.showCreateNewPrj">你还没有项目，现在新建一个 </b-nav-item>
             <b-nav-item v-else @click="KFK.showCreateNewPrj"> 新建项目 </b-nav-item>
           </b-navbar-nav>
-          <b-navbar-nav class="mr-auto myhovered">
-            <b-nav-item @click="KFK.showCreateNewDoc">发起新协作</b-nav-item>
+          <b-navbar-nav class="mr-auto myhovered bigger">
+            <b-nav-item @click="KFK.showCreateNewDoc">新建白板</b-nav-item>
           </b-navbar-nav>
           <b-navbar-nav class="mr-auto">
             <b-navbar-brand href="#">
@@ -718,7 +703,7 @@
                     <b-button size="sm" @click="KFK.deletePrjItem(aPrj.item, aPrj.index, $event.target)"
                       class="m-0 p-0 myhovered" variant="outline-none">
                       <b-iconstack>
-                        <b-icon stacked icon="x"></b-icon>
+                        <b-icon stacked icon="x" scale="0.8" shift-v="-0.5"></b-icon>
                         <b-icon stacked icon="folder"></b-icon>
                       </b-iconstack> 删除项目
                     </b-button>
@@ -755,7 +740,7 @@
                     </b-input-group>
                     <b-input-group prepend="访问密码" class="pt-2 px-5">
                       <b-form-input id="docPwd" :type="model.hidepassword?'password':'text'" trim
-                        v-model="model.newdocpwd" placeholder=""></b-form-input>
+                        v-model="model.newdocpwd" placeholder="保持为空，则为不需要密码即可打开"></b-form-input>
                       <span class="right-eye">
                         <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword"
                           variant="outline-none">
@@ -912,8 +897,8 @@
 
               </div>
             </b-tab>
-
-
+            <b-tab title-link-class="tab-space" disabled>
+            </b-tab>
 
             <b-tab title="我的组织" @click="KFK.onClickOrgTab">
               <!-- org list -->
@@ -1327,25 +1312,8 @@
           请复制一下地址,分享给你的同事或朋友, 他们成功注册后,你将获增100个操作积分!
           <b-form-input :value="getInvitationUrl()">hello</b-form-input>
         </b-modal>
-        <b-modal v-model="show.dialog.materialDialog" button-size="sm" centered size="md" @show="KFK.resetMaterial"
-          @hidden=KFK.pickMaterialCheck>
-          <template v-slot:modal-header="{ close }">
-            <!-- Emulate built in modal header close button action -->
-            <b-button size="sm" variant="outline-danger" @click="KFK.refreshMatLib()">
-              刷新
-            </b-button>
-            <h5>我的素材库</h5>
-          </template>
-          <b-container class="w-100" style="overflow-x:auto; overflow-y:scroll;">
-            <b-row>
-              <b-col v-for="aMat in model.mats" v-bind:key="aMat.matid" class="mb-1 myhovered"
-                v-on:click='KFK.pickMaterial(aMat.matid, aMat.url)'>
-                <b-img-lazy :src="aMat.thumbnail" class="avatarimg" style="width:80px; height:80px" />
-              </b-col>
-            </b-row>
-          </b-container>
-        </b-modal>
-        <b-modal v-model="show.dialog.rechargeDialog" button-size="sm" centered size="xl" :hide-footer="true" title="关于操作点的获取说明">
+        <b-modal v-model="show.dialog.rechargeDialog" button-size="sm" centered size="xl" :hide-footer="true"
+          title="关于操作点的获取说明">
           <b-container class="w-100 m-0 p-1">
             <b-row class="m-0 p-0">
               <b-col class="m-0 p-0">
@@ -1366,7 +1334,8 @@
                   </b-col>
                   <div class="w-100"></div>
                   <b-col class="m-0 p-1">
-                    <b-button variant='outline-success'>通过微信公众号、微博、抖音、网络论坛等形式介绍彩板或转发介绍，将内容截图发给运营小哥，对效果进行确认后获得相应操作分</b-button>
+                    <b-button variant='outline-success'>通过微信公众号、微博、抖音、网络论坛等形式介绍彩板或转发介绍，将内容截图发给运营小哥，对效果进行确认后获得相应操作分
+                    </b-button>
                   </b-col>
                   <div class="w-100"></div>
                   <b-col class="m-0 p-1">
@@ -1402,7 +1371,8 @@
             </b-row>
           </b-container>
         </b-modal>
-        <b-modal v-model="show.dialog.priceListDialog" button-size="sm" centered size="xl" :hide-footer="true" title="关于组织等级及操作点的说明">
+        <b-modal v-model="show.dialog.priceListDialog" button-size="sm" centered size="xl" :hide-footer="true"
+          title="关于组织等级及操作点的说明">
           <b-container class="w-100 m-0 p-1">
             <b-row>
               <b-col cols="3" class="m-0 p-0">组织等级</b-col>
@@ -1467,7 +1437,7 @@
               <b-col class="m-0 p-0"> 1000 </b-col>
               <b-col class="m-0 p-0"> 5000 </b-col>
               <b-col class="m-0 p-0"> 50000 </b-col>
-            </b-row> 
+            </b-row>
           </b-container>
         </b-modal>
         <div v-show="!model.isValidBrowser" class="browser-warning">
@@ -1494,9 +1464,6 @@
         <b-container>
           <b-form>
             <b-row>
-              <b-col cols=4>
-                <b-img :src="KFK.images['share'].src"></b-img>
-              </b-col>
               <b-col class="shareItTips">
                 请复制分享地址, 你可以通过任意沟通工具, 把邀请连接粘贴给需要分享的人。
                 接受分享者,在成功注册后,您和白板协作发起人都将获得操作积分奖励
@@ -1594,7 +1561,8 @@
     </div>
     <div class="present-mask nodisplay">
     </div>
-    <b-modal id="modal-key-shortcut" scrollable title="操作快捷键" body-bg-variant="light" body-text-variant="dark">
+    <b-modal id="modal-key-shortcut" v-if="KFK.imagesLoaded" scrollable title="操作快捷键" body-bg-variant="light"
+      body-text-variant="dark">
       <a href="#minihelp_presentation">幻灯片播放</a>
       <a href="#minihelp_editting">编辑操作</a>
       <a href="#minihelp_overview">全局概览</a>
@@ -1622,7 +1590,7 @@
           <td colspan=2 id="minihelp_editing">正常模式下的操作</td>
         </tr>
         <tr>
-          <td>在工具栏点选<img :src="images['pointer'].src" class="tool-in-help" />
+          <td>在工具栏点选<img :src="getSrc('pointer')" class="tool-in-help" />
           </td>
           <td>
             鼠标操作状态。
@@ -1633,62 +1601,62 @@
           </td>
         </tr>
         <tr>
-          <td>在工具栏点选<img :src="images['text'].src" class="tool-in-help" />，然后在白板上点鼠标
+          <td>在工具栏点选<img :src="getSrc('text')" class="tool-in-help" />，然后在白板上点鼠标
           </td>
           <td>
             则在鼠标位置放置一个单行文本，双击文本可修改其内容
           </td>
         </tr>
         <tr>
-          <td>在工具栏点选<img :src="images['textblock'].src" class="tool-in-help" />，然后在白板上点鼠标
+          <td>在工具栏点选<img :src="getSrc('textblock')" class="tool-in-help" />，然后在白板上点鼠标
           </td>
           <td>
             则在鼠标位置放置一个复合对象，双击可修改其文本, 在右侧属性窗，可设置其属性，或添加贴纸
           </td>
         </tr>
         <tr>
-          <td>在工具栏点选<img :src="images['tipbtn'].src" class="tool-in-help" />，然后在白板上点鼠标
+          <td>在工具栏点选<img :src="getSrc('tipbtn')" class="tool-in-help" />，然后在白板上点鼠标
           </td>
           <td>
             则在鼠标位置放置一个贴纸对象，双击可修改其文本, 在右侧属性窗，可设置其属性，或修改贴纸
           </td>
         </tr>
         <tr>
-          <td>在工具栏点选<img :src="images['richtext'].src" class="tool-in-help" />，然后在白板上点鼠标
+          <td>在工具栏点选<img :src="getSrc('richtext')" class="tool-in-help" />，然后在白板上点鼠标
           </td>
           <td>
             则在鼠标位置放置一个富文本，双击可修改其文本
           </td>
         </tr>
         <tr>
-          <td>在工具栏点选<img :src="images['material'].src" class="tool-in-help" /></td>
+          <td>在工具栏点选<img :src="getSrc('material')" class="tool-in-help" /></td>
           <td>
             弹出素材库，点选一个素材后，再在白板上点鼠标可放置素材
           </td>
         </tr>
         <tr>
-          <td>在工具栏点选<img :src="images['line'].src" class="tool-in-help" />，然后在白板上点鼠标
+          <td>在工具栏点选<img :src="getSrc('line')" class="tool-in-help" />，然后在白板上点鼠标
           </td>
           <td>
             在两点之间画线
           </td>
         </tr>
         <tr>
-          <td>在工具栏点选<img :src="images['connect'].src" class="tool-in-help" />，然后在白板上点鼠标
+          <td>在工具栏点选<img :src="getSrc('connect')" class="tool-in-help" />，然后在白板上点鼠标
           </td>
           <td>
             依次点击两个对象，则在两个对象之间建立连接线
           </td>
         </tr>
         <tr>
-          <td>在工具栏点选<img :src="images['lock'].src" class="tool-in-help" />，然后在白板上点一个对象
+          <td>在工具栏点选<img :src="getSrc('lock')" class="tool-in-help" />，然后在白板上点一个对象
           </td>
           <td>
             加解锁。 锁定后，对象不可修改、不可移动。 也可直接选择对象后，按CTRL-L 或 META-L 来加解锁
           </td>
         </tr>
         <tr>
-          <td>在工具栏点选<img :src="images['eraser'].src" class="tool-in-help" />，然后在白板上点鼠标
+          <td>在工具栏点选<img :src="getSrc('eraser')" class="tool-in-help" />，然后在白板上点鼠标
           </td>
           <td>
             用板擦，擦除掉白板上所有内容
@@ -1788,7 +1756,7 @@
           </td>
         </tr>
         <tr>
-          <td>在工具栏点选<img :src="images['material'].src" class="tool-in-help" /></td>
+          <td>在工具栏点选<img :src="getSrc('material')" class="tool-in-help" /></td>
           <td>弹出素材库，点选一个素材后，回到白板，继续点一下鼠标在当前位置放置图片，如按住SHIFT键可连续放置</td>
         </tr>
         <tr>
@@ -1865,6 +1833,15 @@
       </b-row>
     </div>
     <div id="recharge-warn" class="" @click="KFK.showRechargeDialog">
+    </div>
+    <div class="matlib-topick noshow">
+      <div v-for="aMat in model.mats" v-bind:key="aMat.matid" class="mb-1 myhovered"
+        v-on:click='KFK.pickMaterial(aMat.matid, aMat.url)'>
+        <b-img-lazy :src="aMat.thumbnail" class="matlib-img"/>
+      </div>
+      <div v-if="model.mats.length===0">
+        您的素材库还是空的，您可以拖拽图形文件到白板，或者截屏后在白板上按粘贴键试试
+      </div>
     </div>
   </div>
   <!--app-->
