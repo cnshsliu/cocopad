@@ -19,12 +19,13 @@ const config = {
         url: 'https://colobod.com',
     },
     ws_server: {
-        endpoint: 'ws://liuzijin.com:5008/grume/wsquux',
+        endpoint: 'wss://liuzijin.com/clbdapi/grume/wsquux',
     },
     cos: {
         region: 'ap-nanjing',
         bucket: 'nanjing1-1255349658',
         domain: 'cos.ap-nanjing.myqcloud.com',
+        reverseproxy: 'mlib.liuzijin.com',
     },
     ui: {
         boundingrect_padding: 10,
