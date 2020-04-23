@@ -1,3 +1,7 @@
+//TODO: close JC3 got focus debug message
+//TODO: matlib left side add ESC to quite
+//TODO: 粘贴还可能出现在Explorer, 当返回 Explorer时， matlbi也没有关闭
+//TODO: uploadfile catch处理中， err没有定义
 //TODO: add hopper
 //TODO: 文档保护码加密
 //TODO: 备份加密secretkey到U盘

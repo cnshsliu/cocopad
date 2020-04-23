@@ -11,7 +11,7 @@ import suuid from "short-uuid";
 import "spectrum-colorpicker2/dist/spectrum.min";
 import url from "url";
 // import uuidv4 from "uuid/v4";
-import assetIcons from  "../assets/*.svg";
+import assetIcons from "../assets/*.svg";
 import avatarIcons from "../avatar/*.svg";
 import "./fontpicker/jquery.fontpicker";
 import "./minimap/jquery-minimap";
@@ -5659,7 +5659,7 @@ KFK.setBGColorTo = function (bgcolor) {
   $('#containerbkg').css('background-color', bgcolor);
   $('#overallbackground').css('background-color', bgcolor);
   KFK.YIQColor = KFK.getContrastYIQ(bgcolor);
-  KFK.YIQColorAux = KFK.YIQColor==='black'?'#6666F6':'#CCCCCC';
+  KFK.YIQColorAux = KFK.YIQColor === 'black' ? '#6666F6' : '#CCCCCC';
 
   $('.docHeaderInfo').removeClass('yiq-black'); $('.docHeaderInfo').removeClass('yiq-white');
   $('.loading').removeClass('yiq-black'); $('.loading').removeClass('yiq-white');
@@ -6554,6 +6554,11 @@ KFK.gotoExplorer = function () {
   if (KFK.APP.model.cocoprj.name === '') {
     KFK.setAppData("model", "cocoprj", { "prjid": "all", "name": "我最近使用过的白板" });
   }
+  KFK.cancelAlreadySelected();
+  if (!KFK.isEditting && KFK.mode !== "line") KFK.setMode("pointer");
+  KFK.cancelTempLine();
+  KFK.setMode("pointer");
+  KFK.hidePickerMatlib();
   //不用每次gotoExplorer都refreshProjectList, 因为refreshProjectList要跟服务器刷新数据
   //仅仅是切换explorer或者designer视图，没必要拉取数据
   //只在首次切换到explorer时，拉取数据。
@@ -8335,8 +8340,10 @@ KFK.urlBase = protocol + "//" + host;
 let urlSearch = window.location.search;
 if (host.indexOf('localhost') >= 0) {
   KFK.distEnv = 'localhost';
-  WS.remoteEndpoint = 'ws://localhost:5008/grume/wsquux';
-  BossWS.remoteEndpoint = 'ws://localhost:5008/grume/wsquux';
+  // WS.remoteEndpoint = 'ws://localhost:5008/grume/wsquux';
+  // BossWS.remoteEndpoint = 'ws://localhost:5008/grume/wsquux';
+  WS.remoteEndpoint = 'ws://123.206.116.181:5008/grume/wsquux';
+  BossWS.remoteEndpoint = 'ws://123.206.116.181:5008/grume/wsquux';
 } else {
   KFK.distEnv = 'cloud';
   WS.remoteEndpoint = 'wss://liuzijin.com:5008/grume/wsquux';
