@@ -15,6 +15,12 @@ const config = {
     vault: {
         bucket: 'vts',
     },
+    product: {
+        url: 'https://colobod.com',
+    },
+    ws_server: {
+        endpoint: 'ws://liuzijin.com:5008/grume/wsquux',
+    },
     cos: {
         region: 'ap-nanjing',
         bucket: 'nanjing1-1255349658',

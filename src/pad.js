@@ -261,14 +261,6 @@ const app = new Vue({
         return undefined;
       }
     },
-    getInvitationUrl() {
-      if (this.model.cocouser.ivtcode === null) {
-        return '';
-      } else {
-        let jloc = $(location);
-        return jloc.attr('protocol') + "//" + jloc.attr('host') + "/?r=" + this.model.cocouser.ivtcode;
-      }
-    },
     getAvatarSrc(name) {
       // console.log(">>GOt avatar: ", name);
       if (this.model.avatars && this.model.avatars[name])
