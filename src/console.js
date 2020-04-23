@@ -4931,13 +4931,11 @@ KFK.signout = async function () {
   await KFK.sendCmd("SIGNOUT", { userid: KFK.APP.model.cocouser.userid });
 };
 
+KFK.getProductUrl= function(){
+    return cocoConfig.product.url;
+};
 KFK.getInvitationUrl = function () {
-  if (KFK.APP.model.cocouser.ivtcode === null) {
-    return '';
-  } else {
-    let jloc = $(location);
-    return jloc.attr('protocol') + "//" + jloc.attr('host') + "/?r=" + KFK.APP.model.cocouser.ivtcode;
-  }
+    return KFK.getProductUrl() + "/?r=" + KFK.APP.model.cocouser.ivtcode;
 };
 
 KFK.updateCocouser = function (data) {
@@ -8340,16 +8338,11 @@ KFK.urlBase = protocol + "//" + host;
 let urlSearch = window.location.search;
 if (host.indexOf('localhost') >= 0) {
   KFK.distEnv = 'localhost';
-  // WS.remoteEndpoint = 'ws://localhost:5008/grume/wsquux';
-  // BossWS.remoteEndpoint = 'ws://localhost:5008/grume/wsquux';
-  WS.remoteEndpoint = 'ws://123.206.116.181:5008/grume/wsquux';
-  BossWS.remoteEndpoint = 'ws://123.206.116.181:5008/grume/wsquux';
 } else {
   KFK.distEnv = 'cloud';
-  WS.remoteEndpoint = 'wss://liuzijin.com:5008/grume/wsquux';
-  BossWS.remoteEndpoint = 'wss://liuzijin.com:5008/grume/wsquux';
 }
-
+WS.remoteEndpoint = cocoConfig.ws_server.endpoint;
+BossWS.remoteEndpoint = cocoConfig.ws_server.endpoint;
 if (urlSearch.startsWith('?doc=')) {
   KFK.urlMode = "sharecode";
   KFK.shareCode = urlSearch.substr(5);

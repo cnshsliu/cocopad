@@ -1310,7 +1310,7 @@
         </b-modal>
         <b-modal v-model="show.dialog.ivtCodeDialog" title="邀请使用可获得操作积分奖励" button-size="sm" centered size="md">
           请复制一下地址,分享给你的同事或朋友, 他们成功注册后,你将获增100个操作积分!
-          <b-form-input :value="getInvitationUrl()">hello</b-form-input>
+          <b-form-input :value="KFK.APP&&KFK.APP.model&&KFK.APP.model.cocouser&& KFK.getInvitationUrl()"></b-form-input>
         </b-modal>
         <b-modal v-model="show.dialog.rechargeDialog" button-size="sm" centered size="xl" :hide-footer="true"
           title="关于操作点的获取说明">
