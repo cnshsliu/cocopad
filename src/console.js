@@ -115,7 +115,7 @@ KFK.LOGLEVEL_INFO = 3;
 KFK.LOGLEVEL_DEBUG = 4;
 KFK.LOGLEVEL_DETAIL = 5;
 KFK.LOGLEVEL_NOTHING = 0;
-KFK.loglevel = KFK.LOGLEVEL_DEBUG; //控制log的等级, 级数越小，显示信息越少
+KFK.loglevel = KFK.LOGLEVEL_INFO; //控制log的等级, 级数越小，显示信息越少
 KFK.zoomLevel = 1; //记录当前的zoom等级
 KFK.designerConf = { scale: 1, left: 0, top: 0 }; //用于在zoom控制计算中
 KFK.opstack = []; //Operation Stack, 数组中记录操作记录，用于undo/redo
@@ -735,21 +735,13 @@ KFK.onWsMsg = async function (response) {
     case 'LISTMAT':
       console.log(response.mats);
       let mats = response.mats.map((mat) => {
-        let matUrl = `https://${cocoConfig.cos.bucket}.${cocoConfig.cos.domain}/${mat.Key}`;
+        let matUrl = `https://${cocoConfig.cos.reverseproxy}/${mat.Key}`;
         return {
           matid: mat.Key,
           url: matUrl,
           thumbnail: `${matUrl}??imageMogr2/thumbnail/x100/interlace/0`,
         }
       });
-      // let mats = response.mats.map((mat) => {
-      //   return {
-      //     matid: mat.name,
-      //     url: mat.url,
-      //     thumbnail: `${mat.url}?x-oss-process=image/auto-orient,1/resize,p_20/quality,q_30`,
-      //   }
-      // });
-
       KFK.APP.setData("model", "mats", mats);
       break;
     default:
@@ -1381,7 +1373,7 @@ KFK.initC3 = function () {
     'left': KFK.px(KFK.LeftB),
     'top': KFK.px(KFK.TopB),
   });
-  KFK.JC3.focus((evt) => { KFK.debug("JC3 got focus"); })
+  // KFK.JC3.focus((evt) => { KFK.debug("JC3 got focus"); })
   KFK.JCBKG = $('#containerbkg');
   KFK.JCBKG.css({
     'width': KFK.px(KFK.PageWidth * KFK.PageNumberHori),
@@ -8309,7 +8301,9 @@ KFK.uploadFileToQcloudCOS = function (file) {
       } else {
         console.log("putObject success:", data);
         try {
-          let imgUrl = "http://" + data.Location;
+          let imgUrl = "https://" +cocoConfig.cos.reverseproxy + data.Location.substr(data.Location.indexOf('/'));
+          console.log(data);
+          console.log(imgUrl);
           await KFK.makeImageDiv(
             fileId,
             KFK.dropAtPos.x,
