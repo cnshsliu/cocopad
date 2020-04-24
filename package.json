@@ -6,7 +6,7 @@
   "main": "index.html",
   "scripts": {
     "start": "parcel src/index.html --port 80 --no-cache",
-    "build": "rm dist/*; parcel build src/index.html --no-source-maps"
+    "build": "rm dist/*; parcel build src/index.html --no-source-maps --detailed-report"
   },
   "dependencies": {
     "@alicloud/pop-core": "^1.7.9",

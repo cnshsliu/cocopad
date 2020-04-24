@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import { BootstrapVue, IconsPlugin, ListGroupPlugin, VBHoverPlugin } from 'bootstrap-vue';
+import { BootstrapVue, ListGroupPlugin, VBHoverPlugin } from 'bootstrap-vue';
 import events from 'events';
 import "../scss/custom.scss";
 import KFK from './console';
@@ -10,7 +10,6 @@ import { NodeController } from './nodeController';
 import { DocController } from './docController';
 
 Vue.use(BootstrapVue);
-Vue.use(IconsPlugin);
 Vue.use(ListGroupPlugin);
 Vue.use(VBHoverPlugin);
 const app = new Vue({

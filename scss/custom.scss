@@ -13,9 +13,9 @@ $grid-breakpoints: (
 $bv-enable-table-stacked: false;
 
 // Include Bootstrap and BootstrapVue SCSS files
-@import '~bootstrap/scss/bootstrap';
-@import '../node_modules/bootstrap-vue/dist/bootstrap-vue.min.css';
-@import '../node_modules/bootstrap-vue/dist/bootstrap-vue-icons.min.css';
+// @import '~bootstrap/scss/bootstrap';
+// @import '../node_modules/bootstrap-vue/dist/bootstrap-vue.min.css';
+// @import '../node_modules/bootstrap-vue/dist/bootstrap-vue-icons.min.css';
 @import "../node_modules/jquery-ui-dist/jquery-ui.css";
 @import "../node_modules/spectrum-colorpicker2/dist/spectrum.min.css";
 @import "../src/fontpicker/jquery.fontpicker.css";
