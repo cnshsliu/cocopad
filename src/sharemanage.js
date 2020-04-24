@@ -3,7 +3,6 @@ import cocoConfig from './cococonfig';
 import KFK from './console';
 import RegHelper from './reghelper';
 import ClipboardJs from "clipboard";
-import { BIconFileEarmarkBreak, BIconFileEarmarkSpreadsheet } from 'bootstrap-vue';
 
 SHARE.cancelShare = async function () {
     KFK.showDialog({ shareDialog: false });
