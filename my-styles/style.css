@@ -36,7 +36,6 @@ input::placeholder {
 .logo-style {
   font-size: 28px;
   color: #333333;
-  text-shadow: 1px 1px 10px #2a9df4;
 }
 
 .leftbkg {
@@ -1524,4 +1523,10 @@ table.quick-help-table td:first-of-type {
   border-radius: 5px;
   transform-origin: center;
   transform: scale(1.2);
+}
+.matlib-title {
+  z-index: -1; 
+  position: absolute;
+  left: 5px;
+  bottom: 5px;
 }

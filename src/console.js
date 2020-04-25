@@ -1,20 +1,18 @@
-import "./importjquery";
+// import "./importjquery";
 import "regenerator-runtime/runtime";
-import imageCompression from 'browser-image-compression';
-import Joi from "@hapi/joi";
+// import imageCompression from 'browser-image-compression';
 // import { SVG } from "@svgdotjs/svg.js";
-import "jquery-ui-dist/jquery-ui.js";
+// import "jquery-ui-dist/jquery-ui.js";
 // import OSS from "ossnolookup";
-import COS from "cos-js-sdk-v5";
-import path from "path";
+// import COS from "cos-js-sdk-v5";
 import suuid from "short-uuid";
 import "spectrum-colorpicker2/dist/spectrum.min";
 import url from "url";
 // import uuidv4 from "uuid/v4";
 import assetIcons from "../assets/*.svg";
 import avatarIcons from "../avatar/*.svg";
-import "./fontpicker/jquery.fontpicker";
-import "./minimap/jquery-minimap";
+// import "./fontpicker/jquery.fontpicker";
+// import "./minimap/jquery-minimap";
 import cocoConfig from "./cococonfig";
 import Validator from './validator';
 import RegHelper from './reghelper';
@@ -25,21 +23,8 @@ import ACM from "./accountmanage";
 import SHARE from "./sharemanage";
 import Bowser from "../lib/bowser/bowser";
 // import Quill from 'quill';
-import { QuillDeltaToHtmlConverter } from '../lib/quill/quill2html/quill2html';
+// import { QuillDeltaToHtmlConverter } from '../lib/quill/quill2html/quill2html';
 import { gzip, ungzip } from "../lib/gzip";
-// import * as FilePond from 'filepond';
-// import FilePondPluginImageFilter from 'filepond-plugin-image-filter';
-// import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
-// import FilePondPluginImageCrop from 'filepond-plugin-image-crop';
-// import FilePondPluginImageResize from 'filepond-plugin-image-resize';
-// import FilePondPluginImageValidateSize from 'filepond-plugin-image-validate-size';
-// import FilePondPluginImageTransform from 'filepond-plugin-image-transform';
-// import jsPDF from 'jspdf';
-
-
-
-
-
 
 
 Quill.prototype.getHtml = function () {
@@ -115,7 +100,7 @@ KFK.LOGLEVEL_INFO = 3;
 KFK.LOGLEVEL_DEBUG = 4;
 KFK.LOGLEVEL_DETAIL = 5;
 KFK.LOGLEVEL_NOTHING = 0;
-KFK.loglevel = KFK.LOGLEVEL_INFO; //控制log的等级, 级数越小，显示信息越少
+KFK.loglevel = KFK.LOGLEVEL_DEBUG; //控制log的等级, 级数越小，显示信息越少
 KFK.zoomLevel = 1; //记录当前的zoom等级
 KFK.designerConf = { scale: 1, left: 0, top: 0 }; //用于在zoom控制计算中
 KFK.opstack = []; //Operation Stack, 数组中记录操作记录，用于undo/redo
@@ -3108,7 +3093,10 @@ KFK.cleanTextInput = function (jInner, allowBR) {
     range.select();
   }
 };
+
+//启动单行文字编辑
 KFK.startInlineEditing = function (jqNodeDIV) {
+  console.log("startInlineEditing....");
   KFK.isEditting = true;
   jqNodeDIV.find('.innerobj').focus();
   KFK.inlineEditor = jqNodeDIV;
@@ -3119,28 +3107,38 @@ KFK.startInlineEditing = function (jqNodeDIV) {
       KFK.cleanTextInput(jInner, allowBR);
       evt.stopPropagation();
       evt.preventDefault();
-    } else if (evt.keyCode === 13) {
+    } else if (evt.keyCode === 13) {  //ENTER || PageUp
       let jInner = jqNodeDIV.find('.innerobj');
       KFK.cleanTextInput(jInner, allowBR);
       evt.stopPropagation();
-      evt.preventDefault();
-    } else if (evt.keyCode == 35) {
+      evt.preventDefault()
+    } else if (evt.keyCode == 35 || evt.keyCode === 34) {  //END  || PageDown
       evt.stopPropagation();
       evt.preventDefault();
       let jInner = jqNodeDIV.find('.innerobj');
-      if (window.getSelection) { //ie11 10 9 ff safari
-        jInner.focus();
-        var range = window.getSelection(); //创建range
-        range.selectAllChildren(jInner[0]); //range 选择obj下所有子内容
-        range.collapseToEnd(); //光标移至最后
-      } else if (document.selection) { //ie10 9 8 7 6 5
-        var range = document.selection.createRange(); //创建选择对象
-        //var range = document.body.createTextRange();
-        range.moveToElementText(jInner[0]); //range定位到obj
-        range.collapse(false); //光标移至最后
-        range.select();
+      if (evt.shiftKey) {
+        if(document.getSelection){
+          let range = el(jInner).getCurrentRange();
+          console.log(range);
+          // range.setEndAfter(jInner[0]);
+          // jInner[0].getSelection().removeAllRanges();
+          // jInner[0].getSelection().addRange(range);
+        }
+      } else {
+        if (window.getSelection) { //ie11 10 9 ff safari
+          jInner.focus();
+          var range = window.getSelection(); //创建range
+          range.selectAllChildren(jInner[0]); //range 选择obj下所有子内容
+          range.collapseToEnd(); //光标移至最后
+        } else if (document.selection) { //ie10 9 8 7 6 5
+          var range = document.selection.createRange(); //创建选择对象
+          //var range = document.body.createTextRange();
+          range.moveToElementText(jInner[0]); //range定位到obj
+          range.collapse(false); //光标移至最后
+          range.select();
+        }
       }
-    } else if (evt.keyCode === 36) {
+    } else if (evt.keyCode === 36 || evt.keyCode === 33) { //HOME
       evt.stopPropagation();
       evt.preventDefault();
       let jInner = jqNodeDIV.find('.innerobj');
@@ -3174,9 +3172,9 @@ KFK.startNodeEditing = async function (jqNodeDIV, enterSelect) {
   if (KFK.isEditting && KFK.quillEdittingNode) {
     return;
   }
-  if (jqNodeDIV.attr('nodetype') === 'text')
+  if (jqNodeDIV.attr('nodetype') === 'text') {
     KFK.startInlineEditing(jqNodeDIV);
-  else if (jqNodeDIV.attr('nodetype') === 'richtext') {
+  } else if (jqNodeDIV.attr('nodetype') === 'richtext') {
     KFK.askQuill = jqNodeDIV;
     await KFK.sendCmd('ASKQUILL', { nodeid: jqNodeDIV.attr("id") });
   } else
@@ -3280,7 +3278,7 @@ KFK.startNodeEditing_withQuill = function (jqNodeDIV) {
     modules: {
       toolbar: toolbarOptions,
     },
-    placeholder: '在这里输入...',
+    placeholder: '点这里开始编辑...',
     theme: 'snow'  // or 'bubble'
   });
   //这个地方直观重要，这样就把这些按键限制在Quill Editor中
@@ -3680,21 +3678,6 @@ KFK.deleteNode_exec = function (jqDIV) {
     //   KFK.debug(fromId, ' has no link to me');
     // }
   });
-  let divid = jqDIV.attr("id");
-  let nodetype = jqDIV.attr("nodetype");
-  //TODO: 现在没有用image类型了，图片粘贴到textblock里，怎么处理删除远端文件呢？
-  if (nodetype === "image") {
-    let innerObj = jqDIV.find(".innerobj");
-    let imageSrc = innerObj.attr("src");
-    let parsed = url.parse(imageSrc);
-    let oss_filename = path.basename(parsed.pathname);
-    try {
-      // KFK.OSSClient.delete(parsed.pathname);
-    } catch (err) {
-      console.error(err);
-    }
-  }
-  //这里是需要再仔细看看的处理的，
   let nodeIndex = KFK.selectedDIVs.indexOf(jqDIV);
   if (nodeIndex >= 0) {
     KFK.selectedDIVs.splice(nodeIndex, 1);
@@ -4923,11 +4906,11 @@ KFK.signout = async function () {
   await KFK.sendCmd("SIGNOUT", { userid: KFK.APP.model.cocouser.userid });
 };
 
-KFK.getProductUrl= function(){
-    return cocoConfig.product.url;
+KFK.getProductUrl = function () {
+  return cocoConfig.product.url;
 };
 KFK.getInvitationUrl = function () {
-    return KFK.getProductUrl() + "/?r=" + KFK.APP.model.cocouser.ivtcode;
+  return KFK.getProductUrl() + "/?r=" + KFK.APP.model.cocouser.ivtcode;
 };
 
 KFK.updateCocouser = function (data) {
@@ -5225,8 +5208,7 @@ KFK.recreateObject = async function (obj, callback) {
   } else if (obj.etype === 'SLINE') {
     await KFK.recreateSLine(obj, callback);
   } else {
-    KFK.error('Unknow etype, guess it');
-    // let tmpHtml = KFK.base64ToCode(obj.html);
+    KFK.error('Unknown etype, guess it');
     let tmpHtml = await KFK.gzippedContentToString(obj.content);
     KFK.detail(tmpHtml);
     if (
@@ -5680,14 +5662,8 @@ KFK.setGridColor = function (bgcolor) {
 KFK.initColorPicker = function () {
   KFK.debug('...initColorPicker');
   $("#cocoBkgColor").spectrum({
-    type: "color",
-    color: KFK.APP.model.cococonfig.bgcolor,
-    localStorageKey: "color.cocoBkgColor",
-    showPaletteOnly: "true",
-    togglePaletteOnly: "true",
-    hideAfterPaletteSelect: "true",
-    showInitial: "true",
-    showButtons: "false",
+    color: '#f00', togglePaletteOnly: 'true', hideAfterPaletteSelect: "false",
+    showButtons: "true", showAlpha: "true", chooseText: "选定", cancelText: "放弃",
     change: function (color) {
       //发起人可以设置所有人的bgcolor
       try {
@@ -5704,14 +5680,8 @@ KFK.initColorPicker = function () {
     }
   });
   $("#shapeBkgColor").spectrum({
-    type: "color",
-    color: cocoConfig.node.textblock.background,
-    localStorageKey: "color.shapeBkgColor",
-    showPaletteOnly: "true",
-    togglePaletteOnly: "true",
-    hideAfterPaletteSelect: "true",
-    showInitial: "true",
-    showButtons: "false",
+    color: '#f00', togglePaletteOnly: 'true', hideAfterPaletteSelect: "false",
+    showButtons: "true", showAlpha: "true", chooseText: "选定", cancelText: "放弃",
     change: async function (color) {
       var hex = color.toHexString();
       KFK.APP.setData("model", "shapeBkgColor", hex);
@@ -5724,13 +5694,8 @@ KFK.initColorPicker = function () {
     }
   });
   $("#shapeBorderColor").spectrum({
-    type: "color",
-    localStorageKey: "color.shapeBorderColor",
-    showPaletteOnly: "true",
-    togglePaletteOnly: "true",
-    hideAfterPaletteSelect: "true",
-    showInitial: "true",
-    showButtons: "false",
+    color: '#f00', togglePaletteOnly: 'true', hideAfterPaletteSelect: "false",
+    showButtons: "true", showAlpha: "true", chooseText: "选定", cancelText: "放弃",
     change: async function (color) {
       var hex = color.toHexString();
       let jqNode = KFK.getPropertyApplyToJqNode();
@@ -5742,13 +5707,8 @@ KFK.initColorPicker = function () {
     }
   });
   $("#lineColor").spectrum({
-    type: "color",
-    localStorageKey: "color.lineColor",
-    showPaletteOnly: "true",
-    togglePaletteOnly: "true",
-    hideAfterPaletteSelect: "true",
-    showInitial: "true",
-    showButtons: "false",
+    color: '#f00', togglePaletteOnly: 'true', hideAfterPaletteSelect: "false",
+    showButtons: "true", showAlpha: "true", chooseText: "选定", cancelText: "放弃",
     change: async function (color) {
       var hex = color.toHexString();
       let theLine = KFK.getPropertyApplyToSvgLine();
@@ -5766,13 +5726,8 @@ KFK.initColorPicker = function () {
     }
   });
   $("#fontColor").spectrum({
-    type: "color",
-    localStorageKey: "color.fontColor",
-    showPaletteOnly: "true",
-    togglePaletteOnly: "true",
-    hideAfterPaletteSelect: "true",
-    showInitial: "true",
-    showButtons: "false",
+    color: '#f00', togglePaletteOnly: 'true', hideAfterPaletteSelect: "false",
+    showButtons: "true", showAlpha: "true", chooseText: "选定", cancelText: "放弃",
     change: async function (color) {
       var hex = color.toHexString();
       let jqNode = KFK.getPropertyApplyToJqNode();
@@ -5784,14 +5739,8 @@ KFK.initColorPicker = function () {
     }
   });
   $("#tipBkgColor").spectrum({
-    type: "color",
-    color: "#FEF2D0",
-    localStorageKey: "color.tipBkgColor",
-    showPaletteOnly: "true",
-    togglePaletteOnly: "true",
-    hideAfterPaletteSelect: "true",
-    showInitial: "true",
-    showButtons: "false",
+    color: '#f00', togglePaletteOnly: 'true', hideAfterPaletteSelect: "false",
+    showButtons: "true", showAlpha: "true", chooseText: "选定", cancelText: "放弃",
     change: async function (color) {
       var hex = color.toHexString();
       KFK.APP.setData("model", "tipBkgColor", hex);
@@ -6630,13 +6579,9 @@ KFK.save = async function () {
 };
 
 KFK.checkUrl = function (str_url) {
-  const schema = Joi.string()
-    .regex(
-      /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/
-    )
-    .required();
-  let { error, value } = schema.validate(str_url);
-  return error === undefined;
+  let regex =
+    /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/;
+  return str.match(regex) !== null;
 };
 
 KFK.replaceHTMLTarget = function (html) {
@@ -8275,8 +8220,26 @@ KFK.uploadFileToQcloudCOS = function (file) {
       onProgress: function (progressData) {
         console.log('onProgress', JSON.stringify(progressData));
       },
-    }, function (err, data) {
-      console.log(err || data);
+    }, async function (err, data) {
+      if (err) {
+        console.log("putObject got error:", err);
+      } else {
+        console.log("putObject success:", data);
+        try {
+          let imgUrl = "https://" + cocoConfig.cos.reverseproxy + data.Location.substr(data.Location.indexOf('/'));
+          console.log(data);
+          console.log(imgUrl);
+          await KFK.makeImageDiv(
+            fileId,
+            KFK.dropAtPos.x,
+            KFK.dropAtPos.y,
+            imgUrl
+          );
+          await KFK.refreshMatLib();
+        } catch (error) {
+          console.error(error);
+        }
+      }
     });
   } else {
     console.log("Bebegin putObject, Bucket", cocoConfig.cos.bucket, "region", cocoConfig.cos.region,
@@ -8301,7 +8264,7 @@ KFK.uploadFileToQcloudCOS = function (file) {
       } else {
         console.log("putObject success:", data);
         try {
-          let imgUrl = "https://" +cocoConfig.cos.reverseproxy + data.Location.substr(data.Location.indexOf('/'));
+          let imgUrl = "https://" + cocoConfig.cos.reverseproxy + data.Location.substr(data.Location.indexOf('/'));
           console.log(data);
           console.log(imgUrl);
           await KFK.makeImageDiv(
@@ -8328,7 +8291,7 @@ document.oncut = KFK.onCut;
 let urlFull = window.location.href;
 let host = $(location).attr('host');
 let protocol = $(location).attr('protocol');
-KFK.urlBase = protocol + "//" + host;
+KFK.urlBase = protocol + "//" + host + cocoConfig.product.basedir;
 let urlSearch = window.location.search;
 if (host.indexOf('localhost') >= 0) {
   KFK.distEnv = 'localhost';

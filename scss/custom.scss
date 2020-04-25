@@ -19,7 +19,6 @@ $bv-enable-table-stacked: false;
 @import "../node_modules/jquery-ui-dist/jquery-ui.css";
 @import "../node_modules/spectrum-colorpicker2/dist/spectrum.min.css";
 @import "../src/fontpicker/jquery.fontpicker.css";
-@import '../node_modules/quill/dist/quill.snow.css';
 // @import 'filepond/dist/filepond.min.css';
 // @import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
 
@@ -34,7 +33,7 @@ body {
 }
 
 .favicon {
-  background: url('../src/favicon.ico');
+  background: url('../src/favicon.png');
 }
 .invalid-feedback{
   color: black !important;

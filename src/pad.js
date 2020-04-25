@@ -1,5 +1,3 @@
-import Vue from 'vue';
-import { BootstrapVue, ListGroupPlugin, VBHoverPlugin } from 'bootstrap-vue';
 import events from 'events';
 import "../scss/custom.scss";
 import KFK from './console';
@@ -9,9 +7,6 @@ import SHARE from './sharemanage';
 import { NodeController } from './nodeController';
 import { DocController } from './docController';
 
-Vue.use(BootstrapVue);
-Vue.use(ListGroupPlugin);
-Vue.use(VBHoverPlugin);
 const app = new Vue({
 
   data: {
