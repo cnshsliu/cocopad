@@ -2,15 +2,34 @@
 <html>
 
 <head>
-  <title>彩板-多人协作网络白板</title>
+  <title>彩板</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="stylesheet" href="../my-styles/style.css">
+  <link rel="shortcut icon" href="./favicon.png" />
+  <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bowser/1.9.4/bowser.min.js"></script> -->
+  <link type="text/css" rel="stylesheet"
+    href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+  <link type="text/css" rel="stylesheet" href="https://cdn.staticfile.org/bootstrap-vue/2.12.0/bootstrap-vue.min.css" />
+  <!-- Load Vue followed by BootstrapVue, and BootstrapVueIcons -->
+  <script src="https://cdn.staticfile.org/vue/2.6.11/vue.min.js"></script>
+  <script src="https://cdn.staticfile.org/bootstrap-vue/2.12.0/bootstrap-vue.min.js"></script>
+  <script src="https://cdn.staticfile.org/bootstrap-vue/2.12.0/bootstrap-vue-icons.min.js"></script>
+  <script src="https://cdn.staticfile.org/jquery/3.5.0/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+  <script src="https://liuzijin.com/jslib/jquery-minimap.js"></script>
+  <script src="https://liuzijin.com/jslib/jquery.fontpicker.js"></script>
+  <link type="text/css" rel="stylesheet" href="https://cdn.staticfile.org/spectrum/1.8.0/spectrum.min.css" />
+  <script src="https://cdn.staticfile.org/spectrum/1.8.0/spectrum.min.js"></script>
+  <script src="https://liuzijin.com/jslib/cos-js-sdk-v5.min.js"></script>
+  <!-- <script type="text/javascript" src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.js"></script> -->
   <link rel="stylesheet" href="../my-styles/qlviewer.css">
-  <link rel="shortcut icon" href="./favicon.ico" />
+  <link rel="stylesheet" href="https://cdn.staticfile.org/quill/2.0.0-dev.3/quill.snow.min.css">
   <script type="text/javascript" src="https://cdn.staticfile.org/svg.js/3.0.16/svg.min.js"></script>
   <script type="text/javascript" src="https://cdn.staticfile.org/quill/2.0.0-dev.3/quill.min.js"></script>
-  <!-- <script type="text/javascript" src="https://cdn.staticfile.org/vue/2.6.11/vue.common.prod.js"></script> -->
+  <script type="text/javascript" src="https://liuzijin.com/jslib/quill2html.js"></script>
+  <script type="text/javascript"
+    src="https://cdn.jsdelivr.net/npm/browser-image-compression@1.0.9/dist/browser-image-compression.js"></script>
 </head>
 
 <body>
@@ -18,7 +37,7 @@
   <div id="overallbackground" class="grid1"></div>
   <div id='app' class='fontFancyColor'>
     <div id="firstpage">
-      <div v-show="show.section.signin || show.section.register">
+      <div v-show="!show.section.designer && (show.section.signin || show.section.register)">
         <b-button pill variant='success' class='signin-button-tr' :size="show.section.register?'sm':'md'"
           @click="KFK.gotoRegister">注 册</b-button>
         <b-button pill variant='success' class='register-button-tr' :size="show.section.signin?'sm':'md'"
@@ -30,9 +49,8 @@
       <div class="cocoslogon" v-show="!show.section.designer" />
       <b-row class="text-center py-0">
         <b-col class="logo-style">彩板</b-col>
-      </b-row>
-      <b-row class="text-center" v-show="!show.section.designer" class="m-0 p-0">
-        <b-col style='font-size:18px;'>远程办公 异地协同</b-col>
+        <div class="w-100"></div>
+        <b-col class="text-center m-0 p-0" v-show="!show.section.designer" style='font-size:18px;'> </b-col>
       </b-row>
     </div> <!-- first page-->
     <div class="leftbkg" v-show="!show.section.designer">
@@ -85,7 +103,7 @@
     </div> <!-- leftbkg-->
     <div id="waiting" v-show="show.waiting" class="waitinglogo">
       <!-- connect to cloud waiting-->
-            <img src="../assets/cocopad.svg" class="logo d-inline-block align-top" alt="COLOBODO">
+      <img src="../assets/cocopad.svg" class="logo d-inline-block align-top" alt="COLOBOD">
     </div><!-- waiting-->
     <div id="registerform" class="registerform" v-show="show.section.register" style="display:none;">
       <b-form autocomplete="off" class="w-100 text-center px-2">
@@ -157,7 +175,7 @@
           {{model.invitor.name}} 邀请您使用彩板-多人协作网络白板
         </div>
       </b-form>
-      <div v-show="!model.isValidBrowser" class="browser-warning">
+      <div v-show="!model.isValidBro4er" class="browser-warning">
         我们尚没有对您当前使用的浏览兼容性测试，使用中可能会遇到不正常的情况，推荐使用<a href="https://pc.qq.com/detail/1/detail_2661.html"
           target="_blank">Chrome</a>或微软的新版<a href="https://www.microsoft.com/zh-cn/edge" target="_blank">Edge</a>浏览器
       </div>
@@ -230,7 +248,7 @@
         </div>
       </div>
       <div id="toplogo" class="padlayout">
-        <img src="../assets/cocopad.svg" class="logo d-inline-block align-top" alt="COLOBODO">
+        <img src="../assets/cocopad.svg" class="logo d-inline-block align-top" alt="COLOBOD">
       </div>
 
       <div id="left" class="bg-white padlayout">
@@ -479,7 +497,7 @@
               <b-row class="mx-auto my-1">
                 <b-col>背景颜色</b-col>
                 <b-col class="coco">
-                  <b-form-input v-model="model.cococonfig.bgcolor" name="cocoBkgColor" id="cocoBkgColor" />
+                  <b-form-input v-model="model.cococonfig.bgcolor" name="cocoBkgColor" id="cocoBkgColor"  type="color"/>
                 </b-col>
               </b-row>
             </b-container>
@@ -1354,10 +1372,10 @@
                   <b-col class="m-0 p-1">
                     <b-row>
                       <b-col class="text-center m-0 p-1"><img
-                          src="https://636f-colobodo-5aff53-1255349658.tcb.qcloud.la/customerservice.png?sign=8e586ae06ad587576a5c9b491addb05c&t=1587487633"
+                          src="https://nanjing1-1255349658.cos.ap-nanjing.myqcloud.com/boss/customerservice.png"
                           width="200px" /></b-col>
                       <b-col class="text-center m-0 p-1"><img
-                          src="https://636f-colobodo-5aff53-1255349658.tcb.qcloud.la/wechatgathering.png?sign=482ed7b52ca103a90f413d3023f5d06b&t=1587487670"
+                          src="https://nanjing1-1255349658.cos.ap-nanjing.myqcloud.com/boss/wechatgathering.png"
                           width="200px" /></b-col>
                     </b-row>
                   </b-col>
@@ -1831,7 +1849,7 @@
       </b-row>
       <b-row role="link">
         <b-col>
-          <b-link :target="'_blank'" class="m-0 p-0" href='http://weibo.com/cocopad'>@COLOBODO 2020</b-link>
+          <b-link :target="'_blank'" class="m-0 p-0" href='http://weibo.com/cocopad'>@COLOBOD 2020</b-link>
         </b-col>
       </b-row>
     </div>
@@ -1840,11 +1858,12 @@
     <div class="matlib-topick noshow">
       <div v-for="aMat in model.mats" v-bind:key="aMat.matid" class="mb-1 myhovered"
         v-on:click='KFK.pickMaterial(aMat.matid, aMat.url)'>
-        <b-img-lazy :src="aMat.thumbnail" class="matlib-img"/>
+        <b-img-lazy :src="aMat.thumbnail" class="matlib-img" />
       </div>
       <div v-if="model.mats.length===0">
         您的素材库还是空的，您可以拖拽图形文件到白板，或者截屏后在白板上按粘贴键试试
       </div>
+      <div class="matlib-title">素材库 ESC退出</div>
     </div>
   </div>
   <!--app-->

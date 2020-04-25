@@ -17,6 +17,7 @@ const config = {
     },
     product: {
         url: 'https://colobod.com',
+        basedir: '',
     },
     ws_server: {
         endpoint: 'wss://liuzijin.com/clbdapi/grume/wsquux',
