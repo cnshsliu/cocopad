@@ -2020,11 +2020,19 @@ KFK.editTextNodeWithTextArea = function (innerNode, theDIV, enterSelect = false)
       KFK.focusOnC3();
     }
     // on esc do not set value back to node
-    if (evt.keyCode === 27) {
+    else if (evt.keyCode === 27) {
       removeTextarea(false);
       evt.stopImmediatePropagation();
       evt.stopPropagation();
       KFK.focusOnC3();
+    } else {
+      if (evt.keyCode == 35 || evt.keyCode === 34) {  //END  || PageDown
+        evt.preventDefault();
+        evt.stopPropagation();
+      } else if (evt.keyCode === 36 || evt.keyCode === 33) { //HOME
+        evt.preventDefault();
+        evt.stopPropagation();
+      }
     }
     evt.stopImmediatePropagation();
     evt.stopPropagation();
@@ -3115,46 +3123,24 @@ KFK.startInlineEditing = function (jqNodeDIV) {
     } else if (evt.keyCode == 35 || evt.keyCode === 34) {  //END  || PageDown
       evt.stopPropagation();
       evt.preventDefault();
-      let jInner = jqNodeDIV.find('.innerobj');
-      if (evt.shiftKey) {
-        if(document.getSelection){
-          let range = el(jInner).getCurrentRange();
-          console.log(range);
-          // range.setEndAfter(jInner[0]);
-          // jInner[0].getSelection().removeAllRanges();
-          // jInner[0].getSelection().addRange(range);
-        }
-      } else {
-        if (window.getSelection) { //ie11 10 9 ff safari
-          jInner.focus();
-          var range = window.getSelection(); //创建range
-          range.selectAllChildren(jInner[0]); //range 选择obj下所有子内容
-          range.collapseToEnd(); //光标移至最后
-        } else if (document.selection) { //ie10 9 8 7 6 5
-          var range = document.selection.createRange(); //创建选择对象
-          //var range = document.body.createTextRange();
-          range.moveToElementText(jInner[0]); //range定位到obj
-          range.collapse(false); //光标移至最后
-          range.select();
-        }
-      }
+
     } else if (evt.keyCode === 36 || evt.keyCode === 33) { //HOME
       evt.stopPropagation();
       evt.preventDefault();
-      let jInner = jqNodeDIV.find('.innerobj');
-      if (window.getSelection) { //ie11 10 9 ff safari
-        jInner.focus();
-        var range = window.getSelection(); //创建range
-        range.selectAllChildren(jInner[0]); //range 选择obj下所有子内容
-        range.collapseToStart(); //光标移至最后
-      } else if (document.selection) { //ie10 9 8 7 6 5
-        var range = document.selection.createRange(); //创建选择对象
-        //var range = document.body.createTextRange();
-        range.moveToElementText(jInner[0]); //range定位到obj
-        range.moveEnd(jInner[0], 0);
-        range.moveStart(jInner[0], 0);
-        range.collapse(); //光标移至最后
-      }
+      // let jInner = jqNodeDIV.find('.innerobj');
+      // if (window.getSelection) { //ie11 10 9 ff safari
+      //   jInner.focus();
+      //   var range = window.getSelection(); //创建range
+      //   range.selectAllChildren(jInner[0]); //range 选择obj下所有子内容
+      //   range.collapseToStart(); //光标移至最后
+      // } else if (document.selection) { //ie10 9 8 7 6 5
+      //   var range = document.selection.createRange(); //创建选择对象
+      //   //var range = document.body.createTextRange();
+      //   range.moveToElementText(jInner[0]); //range定位到obj
+      //   range.moveEnd(jInner[0], 0);
+      //   range.moveStart(jInner[0], 0);
+      //   range.collapse(); //光标移至最后
+      // }
     }
     // on esc do not set value back to node
     // if (evt.keyCode === 27) {
@@ -3286,6 +3272,13 @@ KFK.startNodeEditing_withQuill = function (jqNodeDIV) {
   jInner.keydown(function (evt) {
     // console.log('quill editor key ' + evt.keyCode);
     evt.stopPropagation();
+    if (!evt.shiftKey) {
+      if (evt.keyCode == 35 || evt.keyCode === 34) {  //END  || PageDown
+        evt.preventDefault();
+      } else if (evt.keyCode === 36 || evt.keyCode === 33) { //HOME
+        evt.preventDefault();
+      }
+    }
   });
   jInner.addClass('ql-editor-pointer');
   KFK.quill.on('text-change', function (delta1, delta2, source) {
