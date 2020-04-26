@@ -1,3 +1,4 @@
+//TOD:  CTR-B   CTR-I CTRL-E  CTRL-L CTRL-R
 //TODO: add hopper
 //TODO: 文档保护码加密
 //TODO: 备份加密secretkey到U盘
