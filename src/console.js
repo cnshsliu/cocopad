@@ -6,7 +6,7 @@ import "regenerator-runtime/runtime";
 // import OSS from "ossnolookup";
 // import COS from "cos-js-sdk-v5";
 import suuid from "short-uuid";
-import "spectrum-colorpicker2/dist/spectrum.min";
+// import "spectrum-colorpicker2/dist/spectrum.min";
 import url from "url";
 // import uuidv4 from "uuid/v4";
 import assetIcons from "../assets/*.svg";
@@ -14,8 +14,8 @@ import avatarIcons from "../avatar/*.svg";
 // import "./fontpicker/jquery.fontpicker";
 // import "./minimap/jquery-minimap";
 import cocoConfig from "./cococonfig";
-import Validator from './validator';
-import RegHelper from './reghelper';
+import Validator from "./validator";
+import RegHelper from "./reghelper";
 import SVGs from "./svgs";
 import WS from "./ws";
 import BossWS from "./bossws";
@@ -26,57 +26,50 @@ import Bowser from "../lib/bowser/bowser";
 // import { QuillDeltaToHtmlConverter } from '../lib/quill/quill2html/quill2html';
 import { gzip, ungzip } from "../lib/gzip";
 
-
-Quill.prototype.getHtml = function () {
-  return this.container.querySelector('.ql-editor').innerHTML;
+Quill.prototype.getHtml = function() {
+    return this.container.querySelector(".ql-editor").innerHTML;
 };
-Array.prototype.clear = function () {
-  this.splice(0, this.length);
+Array.prototype.clear = function() {
+    this.splice(0, this.length);
 };
-Array.prototype.remove = function () {
-  var what,
-    a = arguments,
-    L = a.length,
-    ax;
-  while (L && this.length) {
-    what = a[--L];
-    while ((ax = this.indexOf(what)) !== -1) {
-      this.splice(ax, 1);
+Array.prototype.remove = function() {
+    var what,
+        a = arguments,
+        L = a.length,
+        ax;
+    while (L && this.length) {
+        what = a[--L];
+        while ((ax = this.indexOf(what)) !== -1) {
+            this.splice(ax, 1);
+        }
     }
-  }
-  return this;
+    return this;
 };
-jlog = function (obj) {
-  console.log(JSON.stringify(obj));
-}
-jstr = function (obj) {
-  return (JSON.stringify(obj));
-}
+jlog = function(obj) {
+    console.log(JSON.stringify(obj));
+};
+jstr = function(obj) {
+    return JSON.stringify(obj);
+};
 
-const NotSet = function (val) {
-  if (val === undefined || val === null)
-    return true;
-  else
-    return false;
-}
-const IsSet = function (val) {
-  return !NotSet(val);
-}
-const IsBlank = function (val) {
-  if (val === undefined || val === null || val === '')
-    return true;
-  else
-    return false;
-}
-const NotBlank = function (val) {
-  return !IsBlank(val);
-}
-const IsFalse = function (val) {
-  if (val === undefined || val === null || val === false)
-    return true;
-  else
-    return false;
-}
+const NotSet = function(val) {
+    if (val === undefined || val === null) return true;
+    else return false;
+};
+const IsSet = function(val) {
+    return !NotSet(val);
+};
+const IsBlank = function(val) {
+    if (val === undefined || val === null || val === "") return true;
+    else return false;
+};
+const NotBlank = function(val) {
+    return !IsBlank(val);
+};
+const IsFalse = function(val) {
+    if (val === undefined || val === null || val === false) return true;
+    else return false;
+};
 
 const KFK = {};
 KFK.pct = 1; //Peers count;
@@ -84,14 +77,14 @@ KFK.accordion = {};
 KFK.currentPage = 0;
 KFK.loadedProjectId = null;
 KFK.keypool = "";
-KFK.svgDraw = null;   //画svg的画布
+KFK.svgDraw = null; //画svg的画布
 KFK.wsTryTimesBeforeGiveup = 60;
 KFK.idRowMap = {};
 KFK.idSwitchMap = {};
 KFK.FROM_SERVER = true; //三个常量
 KFK.FROM_CLIENT = false;
 KFK.NO_SHIFT = false;
-KFK.badgeTimers = {};  //用于存放用户badge显示间隔控制的timer，这样，不是每一个mousemove都要上传，在Timer内，只上传最后一次mouse位置
+KFK.badgeTimers = {}; //用于存放用户badge显示间隔控制的timer，这样，不是每一个mousemove都要上传，在Timer内，只上传最后一次mouse位置
 KFK.updateReceived = 0; //记录接收到的其他用户的改动次数，在startActiveLogWatcher中，使用这个数字来控制是否到服务器端去拉取更新列表
 KFK.tempSvgLine = null; //这条线是在划线或者链接node时，那条随着鼠标移动的线
 KFK.LOGLEVEL_ERROR = 1;
@@ -106,7 +99,7 @@ KFK.designerConf = { scale: 1, left: 0, top: 0 }; //用于在zoom控制计算中
 KFK.opstack = []; //Operation Stack, 数组中记录操作记录，用于undo/redo
 KFK.opstacklen = 1000; //undo，redo记录次数
 KFK.opz = -1; // opstack 当前记录指针
-KFK.mouseTimer = null;  //定时器用于控制鼠标移动上传的频次
+KFK.mouseTimer = null; //定时器用于控制鼠标移动上传的频次
 KFK.WSReconnectTime = 0; //WebSocket重连的次数
 KFK.currentView = "unknown";
 KFK.WS = null;
@@ -178,8 +171,10 @@ KFK.KEYDOWN = { ctrl: false, shift: false, alt: false, meta: false };
 KFK.originZIndex = 1;
 KFK.lastActionLogJqDIV = null;
 
+KFK.brainstormMode = true;
+KFK.brainstormFocusNode = undefined;
 
-KFK.JC1 = $('#C1');
+KFK.JC1 = $("#C1");
 KFK.C1 = el(KFK.JC1);
 KFK.scrollContainer = $("#S1");
 KFK.lockMode = false;
@@ -190,4855 +185,5366 @@ KFK.kuangXuanEndPoint = { x: 0, y: 0 };
 KFK.duringKuangXuan = false;
 
 KFK.currentMousePos = { x: -1, y: -1 };
-KFK.JCBKG = $('#containerbkg');
+KFK.JCBKG = $("#containerbkg");
 
 KFK.urlMode = "";
 KFK.shareCode = null;
 
-
 KFK.fsElem = document.documentElement;
 
-
-
-
-
-
 KFK.focusOnC3 = () => {
-  if (KFK.JC3) {
-    KFK.JC3.attr('tabIndex', '0');
-    KFK.JC3.focus();
-  } else {
-    KFK.warn("focusOnC3 failed. not exist");
-  }
-}
-
+    if (KFK.JC3) {
+        KFK.JC3.attr("tabIndex", "0");
+        KFK.JC3.focus();
+    } else {
+        KFK.warn("focusOnC3 failed. not exist");
+    }
+};
 
 KFK.myuid = () => {
-  return suuid.generate();
-}
-KFK.hoverJqDiv = function (jqdiv) {
-  if (jqdiv !== undefined) {
-    KFK._jqhoverdiv = jqdiv;
-    if (jqdiv !== null)
-      KFK.hoverSvgLine(null);
-  } else {
-    return KFK._jqhoverdiv;
-  }
-}
-KFK.hoverSvgLine = function (svgline) {
-  if (svgline !== undefined) {
-    KFK._svghoverline = svgline;
-    if (svgline !== null)
-      KFK.hoverJqDiv(null);
-  } else {
-    return KFK._svghoverline;
-  }
-}
+    return suuid.generate();
+};
+KFK.hoverJqDiv = function(jqdiv) {
+    if (jqdiv !== undefined) {
+        KFK._jqhoverdiv = jqdiv;
+        if (jqdiv !== null) KFK.hoverSvgLine(null);
+    } else {
+        return KFK._jqhoverdiv;
+    }
+};
+KFK.hoverSvgLine = function(svgline) {
+    if (svgline !== undefined) {
+        KFK._svghoverline = svgline;
+        if (svgline !== null) KFK.hoverJqDiv(null);
+    } else {
+        return KFK._svghoverline;
+    }
+};
+
 function el(jq) {
-  return jq[0];
+    return jq[0];
 }
 
 KFK.loadImages = function loadimg() {
-  if (KFK.imagesLoaded) return;
-  let loadedImages = 0;
-  let numImages = 0;
-  for (var file in assetIcons) {
-    numImages++;
-  }
-  for (var file in assetIcons) {
-    KFK.images[file] = new Image();
-    KFK.images[file].onload = function () {
-      if (++loadedImages >= numImages) {
-        // if (KFK.inited === false) KFK.init();
-        KFK.imagesLoaded = true;
-        KFK.debug("[Loaded] images");
-      }
-    };
-    KFK.images[file].src = assetIcons[file];
-  }
+    if (KFK.imagesLoaded) return;
+    let loadedImages = 0;
+    let numImages = 0;
+    for (var file in assetIcons) {
+        numImages++;
+    }
+    for (var file in assetIcons) {
+        KFK.images[file] = new Image();
+        KFK.images[file].onload = function() {
+            if (++loadedImages >= numImages) {
+                // if (KFK.inited === false) KFK.init();
+                KFK.imagesLoaded = true;
+                KFK.debug("[Loaded] images");
+            }
+        };
+        KFK.images[file].src = assetIcons[file];
+    }
 
-  KFK.images["toggle_line"].src = KFK.images["line"].src;
+    KFK.images["toggle_line"].src = KFK.images["line"].src;
 };
 
 KFK.loadAvatars = function loadavatar() {
-  if (KFK.avatarsLoaded) return;
-  let loadedAvatars = 0;
-  let numAvatars = 0;
-  for (var file in avatarIcons) {
-    numAvatars++;
-  }
-  for (var file in avatarIcons) {
-    KFK.avatars[file] = new Image();
-    KFK.avatars[file].onload = function () {
-      if (++loadedAvatars >= numAvatars) {
-        KFK.setAppData("model", "avatars", KFK.avatars);
-        KFK.avatarsLoaded = true;
-        KFK.debug("[Loaded] avatars");
-      }
-    };
-    KFK.avatars[file].src = avatarIcons[file];
-    KFK.avatars[file].id = file;
-  }
+    if (KFK.avatarsLoaded) return;
+    let loadedAvatars = 0;
+    let numAvatars = 0;
+    for (var file in avatarIcons) {
+        numAvatars++;
+    }
+    for (var file in avatarIcons) {
+        KFK.avatars[file] = new Image();
+        KFK.avatars[file].onload = function() {
+            if (++loadedAvatars >= numAvatars) {
+                KFK.setAppData("model", "avatars", KFK.avatars);
+                KFK.avatarsLoaded = true;
+                KFK.debug("[Loaded] avatars");
+            }
+        };
+        KFK.avatars[file].src = avatarIcons[file];
+        KFK.avatars[file].id = file;
+    }
 };
 
 class Node {
-  constructor(id, type, variant, x, y, w, h, attach, attach2) {
-    this.id = id;
-    this.type = type;
-    this.variant = variant;
-    let dds = KFK.getShapeDynamicDefaultSize(type, variant);
-    this.width = w ? w : dds.w;
-    this.height = h ? h : dds.h;
-    this.iconscale = 0.8;
-    this.x = x;
-    this.y = y;
-    this.attach = attach;
-    this.attach2 = attach2
-    if (isNaN(this.x) || isNaN(this.y) || isNaN(this.width) || isNaN(this.height)) {
-      console.error("in Node contructor, x, y, w, h should be number");
-      console.error("this.x:", this.x, "this.y:", this.y, "this.width:", this.width, "this.height:", this.height);
-    }
-    if (KFK.APP.model.cococonfig.snap) {
-      let tmpLeft = this.x - this.width * 0.5;
-      let tmpTop = this.y - this.height * 0.5;
-      let newLeft = tmpLeft;
-      let newTop = tmpTop;
-      if (tmpLeft % KFK.APP.model.gridWidth < KFK.APP.model.gridWidth * 0.5) {
-        newLeft =
-          Math.floor(tmpLeft / KFK.APP.model.gridWidth) *
-          KFK.APP.model.gridWidth;
-      } else {
-        newLeft =
-          (Math.floor(tmpLeft / KFK.APP.model.gridWidth) + 1) *
-          KFK.APP.model.gridWidth;
-      }
-      if (tmpTop % KFK.APP.model.gridWidth < KFK.APP.model.gridWidth * 0.5) {
-        newTop =
-          Math.floor(tmpTop / KFK.APP.model.gridWidth) *
-          KFK.APP.model.gridWidth;
-      } else {
-        newTop =
-          (Math.floor(tmpTop / KFK.APP.model.gridWidth) + 1) *
-          KFK.APP.model.gridWidth;
-      }
+    constructor(id, type, variant, x, y, w, h, attach, attach2) {
+        this.id = id;
+        this.type = type;
+        this.variant = variant;
+        let dds = KFK.getShapeDynamicDefaultSize(type, variant);
+        this.width = w ? w : dds.w;
+        this.height = h ? h : dds.h;
+        this.iconscale = 0.8;
+        this.x = x;
+        this.y = y;
+        this.attach = attach;
+        this.attach2 = attach2;
+        if (
+            isNaN(this.x) ||
+            isNaN(this.y) ||
+            isNaN(this.width) ||
+            isNaN(this.height)
+        ) {
+            console.error("in Node contructor, x, y, w, h should be number");
+            console.error(
+                "this.x:",
+                this.x,
+                "this.y:",
+                this.y,
+                "this.width:",
+                this.width,
+                "this.height:",
+                this.height
+            );
+        }
+        if (KFK.APP.model.cococonfig.snap) {
+            let tmpLeft = this.x - this.width * 0.5;
+            let tmpTop = this.y - this.height * 0.5;
+            let newLeft = tmpLeft;
+            let newTop = tmpTop;
+            if (tmpLeft % KFK.APP.model.gridWidth < KFK.APP.model.gridWidth * 0.5) {
+                newLeft =
+                    Math.floor(tmpLeft / KFK.APP.model.gridWidth) *
+                    KFK.APP.model.gridWidth;
+            } else {
+                newLeft =
+                    (Math.floor(tmpLeft / KFK.APP.model.gridWidth) + 1) *
+                    KFK.APP.model.gridWidth;
+            }
+            if (tmpTop % KFK.APP.model.gridWidth < KFK.APP.model.gridWidth * 0.5) {
+                newTop =
+                    Math.floor(tmpTop / KFK.APP.model.gridWidth) *
+                    KFK.APP.model.gridWidth;
+            } else {
+                newTop =
+                    (Math.floor(tmpTop / KFK.APP.model.gridWidth) + 1) *
+                    KFK.APP.model.gridWidth;
+            }
 
-      this.x += newLeft - tmpLeft;
-      this.y += newTop - tmpTop;
+            this.x += newLeft - tmpLeft;
+            this.y += newTop - tmpTop;
+        }
     }
-  }
 }
 
 class Link {
-  constructor(id, fromId, toId, route) {
-    this.id = id;
-    this.from = fromId;
-    this.to = toId;
-    this.route = route === undefined ? "" : route === null ? "" : route;
-  }
+    constructor(id, fromId, toId, route) {
+        this.id = id;
+        this.from = fromId;
+        this.to = toId;
+        this.route = route === undefined ? "" : route === null ? "" : route;
+    }
 }
 
-
-
-KFK.onWsMsg = async function (response) {
-  response = JSON.parse(response);
-  if (!response.cmd) { return; }
-  if (response.payload) { KFK.error("Still has payload response", response.cmd) };
-  if (response.cmd === "PING") { KFK.WS.put("PONG", {}); }
-  response.cmd !== 'PCT' && KFK.debug("recieved", response.cmd, response);
-  switch (response.cmd) {
-    case "ONLY":
-      KFK.scrLog(response.msg);
-      KFK.WS.keepFlag = "ONCE";
-      KFK.WS.close();
-      KFK.gotoSignin();
-      break;
-    case "NEEDAUTH":
-      KFK.scrLog(response.msg);
-      KFK.removeCocouser("cocouser");
-      KFK.WS.keepFlag = "ONCE";
-      KFK.WS.close();
-      KFK.gotoSignin();
-      break;
-    case "SIGNOUT":
-      KFK.scrLog('你已成功退出共创协同平台');
-      KFK.removeCocouser("cocouser");
-      KFK.resetAllLocalData();
-      KFK.WS.keepFlag = "ONCE";
-      KFK.WS.close();
-      KFK.gotoSignin();
-      break;
-    case "ENTER":
-      KFK.pct = response.pct;
-      KFK.scrLog(response.name + " 进入协作");
-      break;
-    case "QUOTA":
-      KFK.pct = response.pct;
-      if (response.tag === 'almost') {
-        KFK.debug("Quota left", response.quota);
-        $('#recharge-warn').removeClass('noshow');
-        $('#recharge-warn').prop('innerHTML', '您组织的操作分已接近耗光， 建议尽早充值');
-      } else if (response.tag === 'useup') {
-        KFK.debug("Quota left", response.quota);
-        $('#recharge-warn').removeClass('noshow');
-        $('#recharge-warn').prop('innerHTML', '您组织的操作分已耗尽，为不影响您正常使用，请点这里尽快充值');
-      } else { //ok
-        KFK.debug("Quota left", response.quota);
-        $('#recharge-warn').addClass('noshow');
-      }
-      break;
-    case "PCT":
-      KFK.pct = response.pct;
-      break;
-    case 'RESTRICT':
-      KFK.scrLog(response.msg);
-      break;
-    case "OPENDOC":
-      if (response.demo) {
-        KFK.debug("set isDemoEnv to TRUE. after received OPENDOC");
-        KFK.APP.setData('model', 'isDemoEnv', true);
-      }
-      else {
-        KFK.debug("set isDemoEnv to FALSE. after received OPENDOC");
-        KFK.APP.setData('model', 'isDemoEnv', false);
-      }
-      KFK.recreateFullDoc(response.doc, KFK.checkLoading);
-      break;
-    case "OPENANN":
-      let annUser = response.user;
-      KFK.updateCocouser(annUser);
-      KFK.APP.setData('model', 'isDemoEnv', true);
-      KFK.resetAllLocalData();
-      setTimeout(() => { KFK.checkSession(); }, 500);
-      break;
-    case "C":
-      KFK.updateReceived++;
-      KFK.recreateObject(response.block);
-      break;
-    case "U":
-      KFK.updateReceived++;
-      KFK.recreateObject(response.block);
-      break;
-    case "D":
-      KFK.updateReceived++;
-      KFK.deleteObject_for_Response(response.block);
-      break;
-    case 'CONTENT':
-      KFK.updateQuillingContent(response);
-      break;
-    case 'STOPQUILL':
-      KFK.onStopQuill(response.nodeid, response.by);
-      break;
-    case 'OKTOQUILL':
-      KFK.onOkToQuill(response.nodeid);
-      break;
-    case "ASKPWD":
-      KFK.scrLog("请输入正确的白板密码", 2000);
-      KFK.tryToOpenDocId = response.doc_id;
-      KFK.showDialog({ inputDocPasswordDialog: true });
-      break;
-    case "RESETPWD":
-      KFK.APP.model.docs.forEach(doc => {
-        if (doc._id === response.doc_id) {
-          if (response.pwd === "") {
-            doc.protect_icon = "toggle-off";
-            doc.pwd = "";
-            KFK.scrLog("协作密码已清除");
-          } else {
-            doc.protect_icon = "toggle-on";
-            doc.pwd = "*********";
-            KFK.scrLog("已添加密码保护");
-          }
-        }
-      });
-      break;
-    case "REMOVEPWD":
-      KFK.APP.model.docs.forEach(doc => {
-        if (doc._id === response.doc_id) {
-          if (response.pwd === "") {
-            doc.protect_icon = "toggle-off";
-            doc.pwd = "";
-            KFK.scrLog("协作密码已清除");
-          } else {
-            doc.protect_icon = "toggle-on";
-            doc.pwd = "*********";
-            KFK.scrLog("已保护");
-          }
-        }
-      });
-      break;
-    case "ASKUSERPWD":
-      KFK.APP.setData("model", "inputUserPwd", "");
-      KFK.showDialog({ userPasswordDialog: true });
-      break;
-    case "NONEXIST":
-      KFK.info('Server says document does not exist');
-      KFK.setAppData("model", "msgbox", { title: "文档不存在", content: "你要查看的白板文档不存在" });
-      KFK.showDialog({ MsgBox: true });
-      break;
-    case "TGLREAD":
-      KFK.APP.model.docs.forEach(doc => {
-        if (doc._id === response.doc_id) {
-          doc.readonly = response.readonly;
-          if (doc.readonly === true) {
-            doc.readonly_icon = "eye";
-            doc.readonly_variant = "primary";
-            KFK.scrLog("已设为只读");
-          } else {
-            doc.readonly_icon = "pencil";
-            doc.readonly_variant = "outline-primary";
-            KFK.scrLog("已设为可编辑");
-          }
-        }
-      });
-      if (response.doc_id === KFK.APP.model.cocodoc.doc_id) {
-        KFK.APP.model.cocodoc.readonly = response.readonly;
-        KFK.APP.setData("model", "cocodoc", KFK.APP.model.cocodoc);
-        localStorage.setItem("cocodoc", JSON.stringify(KFK.APP.model.cocodoc));
-      }
-      break;
-    case "NEWPRJ":
-      let cocoprj = {
-        prjid: response.prj.prjid,
-        name: response.prj.name
-      };
-      KFK.setCurrentPrj(cocoprj);
-      KFK.showProjects();
-      KFK.gotoPrjList();
-      break;
-    case 'DELPRJ':
-      for (let i = 0; i < KFK.APP.model.prjs.length; i++) {
-        if (KFK.APP.model.prjs[i].prjid === response.prjid) {
-          KFK.APP.model.prjs.splice(i, 1);
-          break;
-        }
-      }
-      if (KFK.APP.model.prjs.length > 0) {
-        KFK.setCurrentPrj(KFK.APP.model.prjs[0]);
-        // KFK.sendCmd("LISTDOC", { prjid: KFK.APP.model.prjs[0].prjid });
-        KFK.gotoPrjList();
-      } else {
-        KFK.showCreateNewPrj();
-        KFK.APP.setData("model", "lastrealproject", { prjid: "", name: "" });
-      }
-      break;
-    case "NEWDOC":
-      KFK.APP.docNavTabIndex = 0;
-      await KFK.gotoPrj(response.prjid, response.prjname);
-      break;
-    case "DELDOC":
-      for (let i = 0; i < KFK.APP.model.docs.length; i++) {
-        if (KFK.APP.model.docs[i]._id === response.doc_id) {
-          KFK.APP.model.docs.splice(i, 1);
-          break;
-        }
-      }
-      if (KFK.APP.model.docs.length > 0) {
-        let nextdoc = KFK.APP.model.docs[0];
-        KFK.APP.setData("model", "cocodoc", nextdoc);
-      } else {
-        KFK.APP.setData("model", "cocodoc", KFK.DocController.getDummyDoc());
-      }
-      break;
-    case "LISTDOC":
-      KFK.APP.setData("model", "listdocoption", response.option);
-      let docs = response.docs;
-      docs.forEach(doc => {
-        if (doc.pwd === "") {
-          doc.protect_icon = "toggle-off";
-          doc.security_variant = "outline-success";
-        } else {
-          doc.protect_icon = "toggle-on";
-          doc.security_variant = "success";
-        }
-        if (doc.readonly === true) {
-          doc.readonly_icon = "eye";
-          doc.readonly_variant = "primary";
-        } else {
-          doc.readonly_icon = "pencil";
-          doc.readonly_variant = "outline-primary";
-        }
-        if (doc.acl === 'S') {
-          doc.acl_desc = "仅发起人";
-        } else if (doc.acl === 'O') {
-          doc.acl_desc = "所在组织";
-        } else if (doc.acl === 'P') {
-          doc.acl_desc = "公开使用";
-        }
-        if (doc.ownerAvatar !== "") {
-          try {
-            doc.ownerAvatarSrc = KFK.avatars[doc.ownerAvatar].src;
-          } catch (error) {
-            KFK.debug("set doc avatar src failed", error.message);
-            KFK.debug("doc.ownerAvatar is", doc.ownerAvatar);
-          }
-        }
-      });
-      KFK.APP.setData("model", "docs", docs);
-      break;
-    case "GETBLKOPS":
-      let blkops = response.blkops;
-      blkops.forEach(blkop => {
-        if (blkop.avatar === undefined || blkop.avatar === null || blkop.avatar === "") {
-          blkop.avatarSrc = KFK.avatars['avatar-0'].src;
-        } else {
-          blkop.avatarSrc = KFK.avatars[blkop.avatar].src;
-        }
-        blkop.pos = -1;
-      });
-      KFK.setAppData("model", "actionlog", blkops);
-      break;
-    case "LISTPRJ":
-      KFK.APP.setData("model", "listprjoption", response.option);
-      let option = response.option;
-      // let skip = option.skip;
-      // let count = option.count;
-      KFK.APP.setData("model", "prjs", response.prjs);
-      KFK.showSection({ signin: false, register: false, explorer: true, designer: false });
-      KFK.showProjects();
-      KFK.gotoPrjList();
-      KFK.explorerRefreshed = true;
-      break;
-
-    case "MOUSE":
-      KFK.showOtherUserMovingBadge(response.mouse);
-      break;
-    case "ZI":
-      KFK.resetNodeZIndex(response.ZI);
-      break;
-    case "LOCKNODE":
-      KFK.NodeController.lock($(`#${response.nodeid}`));
-      break;
-    case "UNLOCKNODE":
-      KFK.NodeController.unlock($(`#${response.nodeid}`));
-      break;
-    case "LOCKLINE":
-      KFK.debug("------------GOT LOCKLINE, LOCK IT-----");
-      KFK.NodeController.lockline(KFK, KFK.svgDraw.findOne(`.${response.nodeid}`));
-      break;
-    case "UNLOCKLINE":
-      KFK.debug("------------GOT UNLOCKLINE, LOCK IT-----");
-      KFK.NodeController.unlockline(KFK, KFK.svgDraw.findOne(`.${response.nodeid}`));
-      break;
-    case "GOTOPRJ":
-      let gotoPrjId = response.prjid;
-      let found = -1;
-      for (let i = 0; i < KFK.APP.model.prjs.length; i++) {
-        if (gotoPrjId === KFK.APP.model.prjs[i].prjid) {
-          found = i;
-          break;
-        }
-      }
-      if (found >= 0) {
-        KFK.setCurrentPrj(KFK.APP.model.prjs[found]);
-      }
-      KFK.sendCmd("LISTDOC", { prjid: gotoPrjId });
-      KFK.gotoDocs();
-      break;
-    case "SETPROFILE-TRUE":
-      KFK.scrLog("基本资料已设置成功");
-      KFK.updateCocouser(response.info);
-      break;
-    case "SETPROFILE-FAIL":
-      KFK.scrLog("基本资料未成功设置，请重试" + response.error);
-      break;
-    case "CLEANUP":
-      KFK.doCleanUp();
-      break;
-    case "SETBGCOLOR":
-      KFK.scrLog("发起人改变了白板背景颜色", response.bgcolor)
-      KFK.setBGColorTo(response.bgcolor);
-      break;
-    case 'EMAILSHARE':
-    case 'SHARECODE':
-      SHARE.onWsMsg(response);
-      break;
-    case 'UPDUSRORG':
-      KFK.updateCocouser(response.data);
-      break;
-    case 'ENTERORG':
-      KFK.updateCocouser(response.data);
-      //切换组织时, 本地的用户, 已经拉取的vorgs, 以及myorgs不用清空
-      KFK.resetAllLocalData({ user: true, vorgs: true, myorgs: true });
-      KFK.refreshProjectList();
-      break;
-    case 'LISTMYORG':
-      KFK.debug('got listmyorg', response);
-      KFK.APP.model.myorgs = [];
-      for (let i = 0; i < response.orgs.length; i++) {
-        KFK.APP.model.myorgs.push(Object.assign({}, response.orgs[i]));
-      }
-      KFK.setAppData('model', 'myorgs', KFK.APP.model.myorgs);
-      break;
-    case 'LISTVORG':
-      KFK.debug('got listvorg', response);
-      KFK.APP.model.vorgs = [];
-      for (let i = 0; i < response.orgs.length; i++) {
-        KFK.APP.model.vorgs.push(Object.assign({}, response.orgs[i]));
-      }
-      KFK.setAppData('model', 'vorgs', KFK.APP.model.vorgs);
-      break;
-    case 'ORGUSERLIST':
-      KFK.debug('got orguserlist', response);
-      let tmp = KFK.APP.model.orgusers;
-      tmp[response._id] = response.userids;
-      KFK.setAppData("model", "orgusers", tmp);
-      if (response.toggle === 'TOGGLE')
-        KFK.idRowMap[response._id].toggleDetails();
-      else {
-        KFK.idRowMap[response._id].toggleDetails();
-        KFK.idRowMap[response._id].toggleDetails();
-      }
-      break;
-    case 'GETINVITOR':
-      KFK.mergeAppData("model.invitor", { userid: response.userid, name: response.name });
-      break;
-    case 'BOSSLIMIT':
-      KFK.setAppData('model', 'readonlyDesc', '只读: 协作者人数超过组织设定的' + response.limit + '人');
-      let cocodoc = KFK.APP.model.cocodoc;
-      cocodoc.readonly = true;
-      KFK.setAppData("model", "cocodoc", cocodoc);
-      $("#linetransformer").draggable("disable");
-      $('.kfknode').draggable("disabled");
-      $('.kfknode').resizable("disabled");
-      $('.kfknode').droppable("disabled");
-      $("#right").css("display", 'none');
-      $("#left").css("display", "none");
-      $("#top").toggle("display", "none");
-      break;
-    case 'SCRLOG':
-      KFK.scrLog(response.msg);
-      break;
-    case 'ERROR':
-      KFK.error(response.msg);
-      break;
-    case 'STS':
-      KFK.onGotSTS(response);
-      break;
-    case 'UPLDLIMIT':
-      KFK.scrLog("您文件上传次数已超过当前组织设置，请升级组织", 10000);
-      break;
-    case 'LISTMAT':
-      console.log(response.mats);
-      let mats = response.mats.map((mat) => {
-        let matUrl = `https://${cocoConfig.cos.reverseproxy}/${mat.Key}`;
-        return {
-          matid: mat.Key,
-          url: matUrl,
-          thumbnail: `${matUrl}??imageMogr2/thumbnail/x100/interlace/0`,
-        }
-      });
-      KFK.APP.setData("model", "mats", mats);
-      break;
-    default:
-      break;
-  }
-};
-
-
-
-KFK.focusOnNode = function (jqNodeDIV) {
-  KFK.lastFocusOnJqNode = jqNodeDIV;
-  KFK.justCreatedJqNode = null;
-  KFK.justCreatedSvgLine = null;
-
-  if (jqNodeDIV !== null)
-    KFK.updatePropertyFormWithNode(jqNodeDIV);
-};
-
-KFK.setRightTabIndex = function (tabIndex) {
-  if (tabIndex !== undefined) {
-    KFK.APP.setData("model", "rightTabIndex", tabIndex);
-  } else {
-    if (KFK.selectedDIVs.length === 1
-      || KFK.pickedSvgLine !== null
-      || KFK.justCreatedJqNode !== null
-      || KFK.justCreatedSvgLine !== null) {
-      KFK.APP.setData("model", "rightTabIndex", 0);
-    } else if (KFK.selectedDIVs.length >= 2) {
-      KFK.APP.setData("model", "rightTabIndex", 1);
-    } else if (KFK.selectedDIVs.length === 0) {
-      KFK.APP.setData("model", "rightTabIndex", 2);
+KFK.onWsMsg = async function(response) {
+    response = JSON.parse(response);
+    if (!response.cmd) {
+        return;
     }
-  }
-};
-
-KFK.updatePropertyFormWithNode = function (jqNodeDIV) {
-  let nodeType = "unknown";
-  if (jqNodeDIV != null) { nodeType = jqNodeDIV.attr("nodetype"); }
-
-  KFK.APP.setData("show", "customline", false);
-  KFK.APP.setData("show", "shape_property", jqNodeDIV != null);
-  KFK.APP.setData("show", "customfont", jqNodeDIV != null && getBoolean(cocoConfig.node[nodeType].edittable));
-  KFK.APP.setData("show", "customshape", jqNodeDIV != null && getBoolean(cocoConfig.node[nodeType].customshape));
-  KFK.APP.setData("show", "custombacksvg", jqNodeDIV != null && (nodeType === "yellowtip" || nodeType === "textblock"));
-  KFK.APP.setData("show", "layercontrol", jqNodeDIV != null && (nodeType === "text" || nodeType === "yellowtip" || nodeType === "textblock" || nodeType === 'richtext'));
-  if (jqNodeDIV != null && getBoolean(cocoConfig.node[nodeType].customshape)) {
-    let nodeBkgColor = jqNodeDIV.css("background-color");
-    let nodeBorderColor = jqNodeDIV.css("border-color");
-    let nodeBorderWidth = KFK.unpx(jqNodeDIV.css("border-width"));
-    let nodeBorderRadius = KFK.unpx(jqNodeDIV.css("border-radius"));
-    $("#shapeBkgColor").spectrum("set", nodeBkgColor);
-    $("#shapeBorderColor").spectrum("set", nodeBorderColor);
-    $("#spinner_border_width").spinner("value", nodeBorderWidth);
-    $("#spinner_border_radius").spinner("value", nodeBorderRadius);
-  }
-  if (jqNodeDIV != null && nodeType === "yellowtip") {
-    let tipColor = KFK.getTipBkgColor(jqNodeDIV);
-    $("#tipBkgColor").spectrum("set", tipColor);
-  }
-
-  if (jqNodeDIV != null && getBoolean(cocoConfig.node[nodeType].edittable)) {
-    let jqInner = jqNodeDIV.find('.innerobj');
-    let fontFamily = jqInner.css("font-family");
-    let fontSize = KFK.unpx(jqInner.css("font-size"));
-    let fontColor = jqInner.css("color");
-    let textAlign = jqInner.css("justify-content");
-    let vertAlign = jqInner.css("align-items");
-    textAlign = textAlign === "normal" ? "flex-start" : textAlign;
-    vertAlign = vertAlign === "normal" ? "flex-start" : vertAlign;
-    $("#fontColor").spectrum("set", fontColor);
-    $("#spinner_font_size").spinner("value", fontSize);
-    KFK.APP.setData("model", "textAlign", textAlign);
-    KFK.APP.setData("model", "vertAlign", vertAlign);
-  }
-};
-
-KFK.log = function (...info) {
-  console.log('LOG>', ...info);
-};
-KFK.error = function (...info) {
-  if (KFK.loglevel >= KFK.LOGLEVEL_ERROR)
-    console.log('ERROR>', ...info);
-}
-KFK.warn = function (...info) {
-  if (KFK.loglevel >= KFK.LOGLEVEL_WARN)
-    console.log('WARN >', ...info);
-}
-KFK.info = function (...info) {
-  if (KFK.loglevel >= KFK.LOGLEVEL_INFO)
-    console.log('INFO >', ...info);
-}
-KFK.debug = function (...info) {
-  if (KFK.loglevel >= KFK.LOGLEVEL_DEBUG)
-    console.log("DEBUG>", ...info);
-}
-KFK.detail = function (...info) {
-  if (KFK.loglevel >= KFK.LOGLEVEL_DETAIL)
-    console.log("DETAL>", ...info);
-}
-
-KFK.logKey = function (...info) {
-  // KFK.scrLog(...info);
-}
-
-KFK.keepLog = function (msg = '', staytime = 30000) {
-  if (msg === '') {
-    $('#keepLog').prop('innerHTML', '');
-    KFK.keepTimer && clearTimeout(KFK.keepTimer);
-    $('#keepLog').addClass('noshow');
-  }
-  $('#keepLog').prop('innerHTML', msg);
-  $('#keepLog').removeClass('noshow');
-  KFK.keepTimer && clearTimeout(KFK.keepTimer);
-  KFK.keepLogTimer = setTimeout(() => {
-    $('#keepLog').addClass('noshow');
-    KFK.keepTimer = undefined;
-  }, staytime);
-};
-
-KFK.scrLog = function (msg, staytime = 5000) {
-  let parent = $("#MSG").parent();
-  let msgDIV = $("#MSG");
-  let cloneDIV = $("#fadeoutmsg");
-  if (cloneDIV.length > 0) {
-    if (KFK.msgTimer) {
-      clearTimeout(KFK.msgTimer);
+    if (response.payload) {
+        KFK.error("Still has payload response", response.cmd);
     }
-    cloneDIV.css('top', '10px');
-    cloneDIV.html(msg);
-    KFK.msgTimer = setTimeout(() => {
-      cloneDIV.animate({ top: "-24px" }, 50, async function () {
-        cloneDIV.remove();
-      });
-    }, staytime);
-  } else {
-    cloneDIV = msgDIV.clone().appendTo(parent);
-    cloneDIV.attr("id", "fadeoutmsg");
-    cloneDIV.html(msg);
-    cloneDIV.css('top', '10px');
-    KFK.msgTimer = setTimeout(() => {
-      cloneDIV.animate({ top: "-24px" }, 50, async function () {
-        cloneDIV.remove();
-      })
-    }, staytime);
-  }
-};
-
-KFK.getConnectorPoints = function (from, to, rad) {
-  const dx = to.x - from.x;
-  const dy = to.y - from.y;
-  let angle = Math.atan2(-dy, dx);
-
-  let radius = rad;
-
-  return [
-    from.x + -radius * Math.cos(angle + Math.PI),
-    from.y + radius * Math.sin(angle + Math.PI),
-    to.x + -radius * Math.cos(angle),
-    to.y + radius * Math.sin(angle)
-  ];
-};
-
-
-KFK.replaceNodeInSelectedDIVs = function (jqDIV) {
-  for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-    if (KFK.selectedDIVs[i].attr("id") === jqDIV.attr("id")) {
-      KFK.selectedDIVs[i] = jqDIV;
+    if (response.cmd === "PING") {
+        KFK.WS.put("PONG", {});
     }
-  }
-}
+    response.cmd !== "PCT" && KFK.debug("recieved", response.cmd, response);
+    switch (response.cmd) {
+        case "ONLY":
+            KFK.scrLog(response.msg);
+            KFK.WS.keepFlag = "ONCE";
+            KFK.WS.close();
+            KFK.gotoSignin();
+            break;
+        case "NEEDAUTH":
+            KFK.scrLog(response.msg);
+            KFK.removeCocouser("cocouser");
+            KFK.WS.keepFlag = "ONCE";
+            KFK.WS.close();
+            KFK.gotoSignin();
+            break;
+        case "SIGNOUT":
+            KFK.scrLog("你已成功退出共创协同平台");
+            KFK.removeCocouser("cocouser");
+            KFK.resetAllLocalData();
+            KFK.WS.keepFlag = "ONCE";
+            KFK.WS.close();
+            KFK.gotoSignin();
+            break;
+        case "ENTER":
+            KFK.pct = response.pct;
+            KFK.scrLog(response.name + " 进入协作", 1000);
+            break;
+        case "QUOTA":
+            KFK.pct = response.pct;
+            if (response.tag === "almost") {
+                KFK.debug("Quota left", response.quota);
+                $("#recharge-warn").removeClass("noshow");
+                $("#recharge-warn").prop(
+                    "innerHTML",
+                    "您组织的操作分已接近耗光， 建议尽早充值"
+                );
+            } else if (response.tag === "useup") {
+                KFK.debug("Quota left", response.quota);
+                $("#recharge-warn").removeClass("noshow");
+                $("#recharge-warn").prop(
+                    "innerHTML",
+                    "您组织的操作分已耗尽，为不影响您正常使用，请点这里尽快充值"
+                );
+            } else {
+                //ok
+                KFK.debug("Quota left", response.quota);
+                $("#recharge-warn").addClass("noshow");
+            }
+            break;
+        case "PCT":
+            KFK.pct = response.pct;
+            break;
+        case "RESTRICT":
+            KFK.scrLog(response.msg);
+            break;
+        case "OPENDOC":
+            if (response.demo) {
+                KFK.debug("set isDemoEnv to TRUE. after received OPENDOC");
+                KFK.APP.setData("model", "isDemoEnv", true);
+            } else {
+                KFK.debug("set isDemoEnv to FALSE. after received OPENDOC");
+                KFK.APP.setData("model", "isDemoEnv", false);
+            }
+            KFK.recreateFullDoc(response.doc, KFK.checkLoading);
+            break;
+        case "OPENANN":
+            let annUser = response.user;
+            KFK.updateCocouser(annUser);
+            KFK.APP.setData("model", "isDemoEnv", true);
+            KFK.resetAllLocalData();
+            setTimeout(() => {
+                KFK.checkSession();
+            }, 500);
+            break;
+        case "C":
+            KFK.updateReceived++;
+            KFK.recreateObject(response.block);
+            break;
+        case "U":
+            KFK.updateReceived++;
+            KFK.recreateObject(response.block);
+            break;
+        case "D":
+            KFK.updateReceived++;
+            KFK.deleteObject_for_Response(response.block);
+            break;
+        case "CONTENT":
+            KFK.updateQuillingContent(response);
+            break;
+        case "STOPQUILL":
+            KFK.onStopQuill(response.nodeid, response.by);
+            break;
+        case "OKTOQUILL":
+            KFK.onOkToQuill(response.nodeid);
+            break;
+        case "ASKPWD":
+            KFK.scrLog("请输入正确的白板密码", 2000);
+            KFK.tryToOpenDocId = response.doc_id;
+            KFK.showDialog({ inputDocPasswordDialog: true });
+            break;
+        case "RESETPWD":
+            KFK.APP.model.docs.forEach((doc) => {
+                if (doc._id === response.doc_id) {
+                    if (response.pwd === "") {
+                        doc.protect_icon = "toggle-off";
+                        doc.pwd = "";
+                        KFK.scrLog("协作密码已清除");
+                    } else {
+                        doc.protect_icon = "toggle-on";
+                        doc.pwd = "*********";
+                        KFK.scrLog("已添加密码保护");
+                    }
+                }
+            });
+            break;
+        case "REMOVEPWD":
+            KFK.APP.model.docs.forEach((doc) => {
+                if (doc._id === response.doc_id) {
+                    if (response.pwd === "") {
+                        doc.protect_icon = "toggle-off";
+                        doc.pwd = "";
+                        KFK.scrLog("协作密码已清除");
+                    } else {
+                        doc.protect_icon = "toggle-on";
+                        doc.pwd = "*********";
+                        KFK.scrLog("已保护");
+                    }
+                }
+            });
+            break;
+        case "ASKUSERPWD":
+            KFK.APP.setData("model", "inputUserPwd", "");
+            KFK.showDialog({ userPasswordDialog: true });
+            break;
+        case "NONEXIST":
+            KFK.info("Server says document does not exist");
+            KFK.setAppData("model", "msgbox", {
+                title: "文档不存在",
+                content: "你要查看的白板文档不存在",
+            });
+            KFK.showDialog({ MsgBox: true });
+            break;
+        case "TGLREAD":
+            KFK.APP.model.docs.forEach((doc) => {
+                if (doc._id === response.doc_id) {
+                    doc.readonly = response.readonly;
+                    if (doc.readonly === true) {
+                        doc.readonly_icon = "eye";
+                        doc.readonly_variant = "primary";
+                        KFK.scrLog("已设为只读");
+                    } else {
+                        doc.readonly_icon = "pencil";
+                        doc.readonly_variant = "outline-primary";
+                        KFK.scrLog("已设为可编辑");
+                    }
+                }
+            });
+            if (response.doc_id === KFK.APP.model.cocodoc.doc_id) {
+                KFK.APP.model.cocodoc.readonly = response.readonly;
+                KFK.APP.setData("model", "cocodoc", KFK.APP.model.cocodoc);
+                localStorage.setItem("cocodoc", JSON.stringify(KFK.APP.model.cocodoc));
+            }
+            break;
+        case "NEWPRJ":
+            let cocoprj = {
+                prjid: response.prj.prjid,
+                name: response.prj.name,
+            };
+            KFK.setCurrentPrj(cocoprj);
+            KFK.showProjects();
+            KFK.gotoPrjList();
+            break;
+        case "DELPRJ":
+            for (let i = 0; i < KFK.APP.model.prjs.length; i++) {
+                if (KFK.APP.model.prjs[i].prjid === response.prjid) {
+                    KFK.APP.model.prjs.splice(i, 1);
+                    break;
+                }
+            }
+            if (KFK.APP.model.prjs.length > 0) {
+                KFK.setCurrentPrj(KFK.APP.model.prjs[0]);
+                // KFK.sendCmd("LISTDOC", { prjid: KFK.APP.model.prjs[0].prjid });
+                KFK.gotoPrjList();
+            } else {
+                KFK.showCreateNewPrj();
+                KFK.APP.setData("model", "lastrealproject", { prjid: "", name: "" });
+            }
+            break;
+        case "NEWDOC":
+            KFK.APP.docNavTabIndex = 0;
+            await KFK.gotoPrj(response.prjid, response.prjname);
+            break;
+        case "DELDOC":
+            for (let i = 0; i < KFK.APP.model.docs.length; i++) {
+                if (KFK.APP.model.docs[i]._id === response.doc_id) {
+                    KFK.APP.model.docs.splice(i, 1);
+                    break;
+                }
+            }
+            if (KFK.APP.model.docs.length > 0) {
+                let nextdoc = KFK.APP.model.docs[0];
+                KFK.APP.setData("model", "cocodoc", nextdoc);
+            } else {
+                KFK.APP.setData("model", "cocodoc", KFK.DocController.getDummyDoc());
+            }
+            break;
+        case "LISTDOC":
+            KFK.APP.setData("model", "listdocoption", response.option);
+            let docs = response.docs;
+            docs.forEach((doc) => {
+                if (doc.pwd === "") {
+                    doc.protect_icon = "toggle-off";
+                    doc.security_variant = "outline-success";
+                } else {
+                    doc.protect_icon = "toggle-on";
+                    doc.security_variant = "success";
+                }
+                if (doc.readonly === true) {
+                    doc.readonly_icon = "eye";
+                    doc.readonly_variant = "primary";
+                } else {
+                    doc.readonly_icon = "pencil";
+                    doc.readonly_variant = "outline-primary";
+                }
+                if (doc.acl === "S") {
+                    doc.acl_desc = "仅发起人";
+                } else if (doc.acl === "O") {
+                    doc.acl_desc = "所在组织";
+                } else if (doc.acl === "P") {
+                    doc.acl_desc = "公开使用";
+                }
+                if (doc.ownerAvatar !== "") {
+                    try {
+                        doc.ownerAvatarSrc = KFK.avatars[doc.ownerAvatar].src;
+                    } catch (error) {
+                        KFK.debug("set doc avatar src failed", error.message);
+                        KFK.debug("doc.ownerAvatar is", doc.ownerAvatar);
+                    }
+                }
+            });
+            KFK.APP.setData("model", "docs", docs);
+            break;
+        case "GETBLKOPS":
+            let blkops = response.blkops;
+            blkops.forEach((blkop) => {
+                if (
+                    blkop.avatar === undefined ||
+                    blkop.avatar === null ||
+                    blkop.avatar === ""
+                ) {
+                    blkop.avatarSrc = KFK.avatars["avatar-0"].src;
+                } else {
+                    blkop.avatarSrc = KFK.avatars[blkop.avatar].src;
+                }
+                blkop.pos = -1;
+            });
+            KFK.setAppData("model", "actionlog", blkops);
+            break;
+        case "LISTPRJ":
+            KFK.APP.setData("model", "listprjoption", response.option);
+            let option = response.option;
+            // let skip = option.skip;
+            // let count = option.count;
+            KFK.APP.setData("model", "prjs", response.prjs);
+            await KFK.showSection({
+                signin: false,
+                register: false,
+                explorer: true,
+                designer: false,
+            });
+            KFK.showProjects();
+            KFK.gotoPrjList();
+            KFK.explorerRefreshed = true;
+            break;
 
-KFK.calculateNodeConnectPoints = function (jqDIV) {
-  let divLeft = KFK.unpx(jqDIV.css("left"));
-  let divTop = KFK.unpx(jqDIV.css("top"));
-  let divWidth = KFK.unpx(jqDIV.css("width"));
-  let divHeight = KFK.unpx(jqDIV.css("height"));
-  let pos = {
-    center: {
-      x: divLeft + divWidth * 0.5,
-      y: divTop + divHeight * 0.5
-    },
-    points: [
-      {
-        x: KFK.unpx(jqDIV.css("left")),
-        y: KFK.unpx(jqDIV.css("top")) + KFK.unpx(jqDIV.css("height")) * 0.5
-      },
-      {
-        x: KFK.unpx(jqDIV.css("left")) + KFK.unpx(jqDIV.css("width")) * 0.5,
-        y: KFK.unpx(jqDIV.css("top"))
-      },
-      {
-        x: KFK.unpx(jqDIV.css("left")) + KFK.unpx(jqDIV.css("width")),
-        y: KFK.unpx(jqDIV.css("top")) + KFK.unpx(jqDIV.css("height")) * 0.5
-      },
-      {
-        x: KFK.unpx(jqDIV.css("left")) + KFK.unpx(jqDIV.css("width")) * 0.5,
-        y: KFK.unpx(jqDIV.css("top")) + KFK.unpx(jqDIV.css("height"))
-      }
-    ]
-  };
-  return pos;
-};
-
-KFK.drawPathBetween = function (A, B) {
-  let APos = KFK.calculateNodeConnectPoints(A);
-  let BPos = KFK.calculateNodeConnectPoints(B);
-  let fromPoint = null;
-  let toPoint = null;
-  let AIndex = 0;
-  let BIndex = 0;
-  let shortestDistance = KFK.distance(
-    APos.points[0],
-    BPos.points[0]
-  );
-  for (let i = 0; i < APos.points.length; i++) {
-    fromPoint = APos.points[i];
-    for (let j = 0; j < BPos.points.length; j++) {
-      toPoint = BPos.points[j];
-      let tmp_drawPathBetween_distance = KFK.distance(fromPoint, toPoint);
-      if (tmp_drawPathBetween_distance < shortestDistance) {
-        shortestDistance = tmp_drawPathBetween_distance;
-        AIndex = i;
-        BIndex = j;
-      }
+        case "MOUSE":
+            KFK.showOtherUserMovingBadge(response.mouse);
+            break;
+        case "ZI":
+            KFK.resetNodeZIndex(response.ZI);
+            break;
+        case "LOCKNODE":
+            KFK.NodeController.lock($(`#${response.nodeid}`));
+            break;
+        case "UNLOCKNODE":
+            KFK.NodeController.unlock($(`#${response.nodeid}`));
+            break;
+        case "LOCKLINE":
+            KFK.debug("------------GOT LOCKLINE, LOCK IT-----");
+            KFK.NodeController.lockline(
+                KFK,
+                KFK.svgDraw.findOne(`.${response.nodeid}`)
+            );
+            break;
+        case "UNLOCKLINE":
+            KFK.debug("------------GOT UNLOCKLINE, LOCK IT-----");
+            KFK.NodeController.unlockline(
+                KFK,
+                KFK.svgDraw.findOne(`.${response.nodeid}`)
+            );
+            break;
+        case "GOTOPRJ":
+            let gotoPrjId = response.prjid;
+            let found = -1;
+            for (let i = 0; i < KFK.APP.model.prjs.length; i++) {
+                if (gotoPrjId === KFK.APP.model.prjs[i].prjid) {
+                    found = i;
+                    break;
+                }
+            }
+            if (found >= 0) {
+                KFK.setCurrentPrj(KFK.APP.model.prjs[found]);
+            }
+            KFK.sendCmd("LISTDOC", { prjid: gotoPrjId });
+            KFK.gotoDocs();
+            break;
+        case "SETPROFILE-TRUE":
+            KFK.scrLog("基本资料已设置成功");
+            KFK.updateCocouser(response.info);
+            break;
+        case "SETPROFILE-FAIL":
+            KFK.scrLog("基本资料未成功设置，请重试" + response.error);
+            break;
+        case "CLEANUP":
+            KFK.doCleanUp();
+            break;
+        case "SETBGCOLOR":
+            KFK.scrLog("发起人改变了白板背景颜色", response.bgcolor);
+            KFK.setBGColorTo(response.bgcolor);
+            break;
+        case "EMAILSHARE":
+        case "SHARECODE":
+            SHARE.onWsMsg(response);
+            break;
+        case "UPDUSRORG":
+            KFK.updateCocouser(response.data);
+            break;
+        case "ENTERORG":
+            KFK.updateCocouser(response.data);
+            //切换组织时, 本地的用户, 已经拉取的vorgs, 以及myorgs不用清空
+            KFK.resetAllLocalData({ user: true, vorgs: true, myorgs: true });
+            KFK.refreshProjectList();
+            break;
+        case "LISTMYORG":
+            KFK.debug("got listmyorg", response);
+            KFK.APP.model.myorgs = [];
+            for (let i = 0; i < response.orgs.length; i++) {
+                KFK.APP.model.myorgs.push(Object.assign({}, response.orgs[i]));
+            }
+            KFK.setAppData("model", "myorgs", KFK.APP.model.myorgs);
+            break;
+        case "LISTVORG":
+            KFK.debug("got listvorg", response);
+            KFK.APP.model.vorgs = [];
+            for (let i = 0; i < response.orgs.length; i++) {
+                KFK.APP.model.vorgs.push(Object.assign({}, response.orgs[i]));
+            }
+            KFK.setAppData("model", "vorgs", KFK.APP.model.vorgs);
+            break;
+        case "ORGUSERLIST":
+            KFK.debug("got orguserlist", response);
+            let tmp = KFK.APP.model.orgusers;
+            tmp[response._id] = response.userids;
+            KFK.setAppData("model", "orgusers", tmp);
+            if (response.toggle === "TOGGLE")
+                KFK.idRowMap[response._id].toggleDetails();
+            else {
+                KFK.idRowMap[response._id].toggleDetails();
+                KFK.idRowMap[response._id].toggleDetails();
+            }
+            break;
+        case "GETINVITOR":
+            KFK.mergeAppData("model.invitor", {
+                userid: response.userid,
+                name: response.name,
+            });
+            break;
+        case "BOSSLIMIT":
+            KFK.setAppData(
+                "model",
+                "readonlyDesc",
+                "只读: 协作者人数超过组织设定的" + response.limit + "人"
+            );
+            let cocodoc = KFK.APP.model.cocodoc;
+            cocodoc.readonly = true;
+            KFK.setAppData("model", "cocodoc", cocodoc);
+            $("#linetransformer").draggable("disable");
+            $(".kfknode").draggable("disabled");
+            $(".kfknode").resizable("disabled");
+            $(".kfknode").droppable("disabled");
+            $("#right").css("display", "none");
+            $("#left").css("display", "none");
+            $("#top").toggle("display", "none");
+            break;
+        case "SCRLOG":
+            KFK.scrLog(response.msg);
+            break;
+        case "ERROR":
+            KFK.error(response.msg);
+            break;
+        case "STS":
+            KFK.onGotSTS(response);
+            break;
+        case "UPLDLIMIT":
+            KFK.scrLog("您文件上传次数已超过当前组织设置，请升级组织", 10000);
+            break;
+        case "LISTMAT":
+            console.log(response.mats);
+            let mats = response.mats.map((mat) => {
+                let matUrl = `https://${cocoConfig.cos.reverseproxy}/${mat.Key}`;
+                return {
+                    matid: mat.Key,
+                    url: matUrl,
+                    thumbnail: `${matUrl}?imageMogr2/thumbnail/x100/interlace/0`,
+                };
+            });
+            KFK.APP.setData("model", "mats", mats);
+            KFK.materialUpdated = true;
+            break;
+        case "REFRESHMAT":
+            console.log("received REFRESHMAT");
+            console.log(response.mats);
+            mats = response.mats.map((mat) => {
+                let matUrl = `https://${cocoConfig.cos.reverseproxy}/${mat.Key}`;
+                return {
+                    matid: mat.Key,
+                    url: matUrl,
+                    thumbnail: `${matUrl}?imageMogr2/thumbnail/x100/interlace/0`,
+                };
+            });
+            KFK.APP.setData("model", "mats", mats);
+            KFK.materialUpdated = true;
+            break;
+        default:
+            break;
     }
-  }
-  let svgLine = KFK.svgConnectNode(
-    A.attr("id"),
-    B.attr("id"),
-    AIndex,
-    BIndex,
-    APos.points[AIndex].x,
-    APos.points[AIndex].y,
-    BPos.points[BIndex].x,
-    BPos.points[BIndex].y,
-    {}
-  );
 };
 
-KFK.yarkLinkNode = function (jqDIV, shiftKey, text) {
-  if (KFK.lineDragging) return;
-  if (KFK.nodeLocked(jqDIV)) return;
-  KFK.tmpPos = KFK.calculateNodeConnectPoints(jqDIV);
-  KFK.linkPosNode.push(jqDIV);
-  KFK.procLinkNode(shiftKey, text);
-};
-
-KFK.procLinkNode = function (shiftKey, text) {
-  if (KFK.linkPosNode.length < 2) {
-    return;
-  } else if (KFK.linkPosNode[0].attr("id") === KFK.linkPosNode[1].attr("id")) {
-    KFK.linkPosNode.splice(1, 1);
-    return;
-  }
-  if (KFK.tempSvgLine) KFK.tempSvgLine.hide();
-  KFK.lineTemping = false;
-  KFK.cancelAlreadySelected();
-  KFK.drawPathBetween(KFK.linkPosNode[0], KFK.linkPosNode[1]);
-  //记录在本地
-  let tmp1 = KFK.linkPosNode[0].attr('linkto');
-  let tmp2 = KFK.linkPosNode[0].attr('linkto');
-  KFK.updateLocalNodeLinkIds(KFK.linkPosNode[0], KFK.linkPosNode[1]);
-  let tmp3 = KFK.linkPosNode[0].attr('linkto');
-  let tmp4 = KFK.linkPosNode[0].attr('linkto');
-  if (tmp1 !== tmp3) {
-    KFK.debug('The first node linkto has been changed');
-    KFK.syncNodePut("U", KFK.linkPosNode[0], 'connect nodes', null, false, 0, 1);
-  }
-  if (tmp2 !== tmp4) {
-    KFK.debug('The second node linkto has been changed');
-    KFK.syncNodePut("U", KFK.linkPosNode[1], 'connect nodes', null, false, 0, 1);
-  }
-
-  if (!shiftKey) {
-    KFK.linkPosNode.splice(0, 2); KFK.setMode("pointer");
-  } else { KFK.linkPosNode[0] = KFK.linkPosNode[1]; KFK.linkPosNode.splice(1, 1); }
-};
-
-KFK.setLineToRemember = function (theLine) {
-  KFK.lineToRemember = theLine.clone();
-  KFK.lineToRemember.attr("id", theLine.attr("id"));
-  KFK.lineToRemember.attr("stroke-width", theLine.attr("origin-width"));
-};
-
-
-
-KFK.yarkLinePoint = function (x, y, shiftKey) {
-  if (KFK.lineDragging) return;
-
-  //如果这是划线时，所点的第二个点(此时，开始画线)
-  if (KFK.linkPosLine.length === 1) {
-    //如果按着alt键，则应该画直线
-    if (KFK.KEYDOWN.alt) {
-      //如果更起始点的x距离比y距离更小，则画垂直线，否则画水平线
-      if (
-        Math.abs(x - KFK.linkPosLine[0].center.x) <
-        Math.abs(y - KFK.linkPosLine[0].center.y)
-      ) {
-        //画垂直线(x相等)
-        x = KFK.linkPosLine[0].center.x;
-      } else {
-        //画水平线(y相等)
-        y = KFK.linkPosLine[0].center.y;
-      }
-    }
-  }
-  KFK.linkPosLine.push({
-    type: "point",
-    center: { x: x, y: y },
-    points: [{ x: x, y: y }]
-  });
-  KFK.procDrawLine(shiftKey);
-};
-KFK.procDrawLine = function (shiftKey) {
-  if (KFK.linkPosLine.length < 2) {
-    return;
-  } else {
-    if (KFK.tempSvgLine) KFK.tempSvgLine.hide();
-    KFK.lineTemping = false;
-  }
-  let fromPoint = null;
-  let toPoint = null;
-  KFK.justCreatedSvgLine = KFK.svgDrawLine(
-    KFK.myuid(),
-    KFK.linkPosLine[0].center.x,
-    KFK.linkPosLine[0].center.y,
-    KFK.linkPosLine[1].center.x,
-    KFK.linkPosLine[1].center.y,
-    {
-      color: KFK.YIQColorAux || KFK.APP.model.svg.line.color,
-      width: KFK.APP.model.svg.line.width,
-      linecap: KFK.APP.model.svg.line.linecap ? 'round' : 'square'
-    }
-  );
-
-  let theLine = KFK.justCreatedSvgLine;
-  KFK.setLineToRemember(theLine);
-
-  KFK.APP.setData("show", "shape_property", true);
-  KFK.APP.setData("show", "customshape", false);
-  KFK.APP.setData("show", "customline", true);
-  KFK.APP.setData("show", "custombacksvg", false);
-  KFK.APP.setData("show", "customfont", false);
-  KFK.APP.setData("show", "layercontrol", false);
-
-  KFK.pickedSvgLine = theLine;
-  let color = theLine.attr("stroke");
-  let width = theLine.attr("origin-width");
-  let linecap = theLine.attr("stroke-linecap");
-  $("#lineColor").spectrum("set", color);
-  $("#spinner_line_width").spinner("value", width);
-
-  KFK.syncLinePut("C", theLine, "create new", null, false);
-  if (!shiftKey) {
-    KFK.linkPosLine.splice(0, 2);
-    KFK.setMode("pointer");
-  } else {
-    KFK.linkPosLine[0] = KFK.linkPosLine[1];
-    KFK.linkPosLine.splice(1, 1);
-  }
-};
-
-
-KFK.addLinkTo = function (jq1, idToAdd) {
-  let linksArr = KFK.stringToArray(jq1.attr("linkto"));
-  //过滤掉不存在的节点
-  // linksArr = linksArr.filter((aId) => {
-  //   return ($(`#${aId}`).length > 0) && aId !== jq1.attr("id");
-  // })
-  //把新的对手节点放进去
-  if (linksArr.indexOf(idToAdd) < 0) {
-    linksArr.push(idToAdd);
-  }
-  jq1.attr("linkto", linksArr.join(','));
-}
-KFK.updateLocalNodeLinkIds = function (jq1, jq2) {
-  KFK.addLinkTo(jq1, jq2.attr("id"));
-  KFK.removeLinkTo(jq2, jq1.attr("id"));
-}
-KFK.removeLinkTo = function (jq, idToRemove) {
-  let str = jq.attr('linkto');
-  let arr = KFK.stringToArray(str);
-  //如对手节点在反方向存在，就把反方向的对手节点去掉
-  let index = arr.indexOf(idToRemove);
-  if (index >= 0) {
-    arr.splice(index, 1);
-    if (arr.length > 0)
-      jq.attr('linkto', arr.join(','));
-    else
-      jq.removeAttr("linkto");
-  }
-};
-
-KFK.distance = function (p1, p2) {
-  return Math.sqrt(
-    (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y)
-  );
-};
-
-KFK.getZIndex = function (jqDiv) {
-  let zz = parseInt(jqDiv.css("z-index"));
-  zz = isNaN(zz) ? 0 : zz;
-  return zz;
-};
-KFK.setZIndex = function (jqDiv, zz) {
-  jqDiv.css("z-index", zz);
-};
-KFK.cancelAlreadySelected = function () {
-  while (KFK.selectedDIVs.length > 0) {
-    KFK.deselectNode(KFK.selectedDIVs[0]);
-  }
-  KFK.selectedDIVs.clear();
-  KFK.resetPropertyOnMultipleNodesSelected();
-  KFK.focusOnNode(null);
-};
-KFK.resetPropertyOnMultipleNodesSelected = function () {
-  KFK.APP.setData("show", "arrange_multi_nodes", KFK.selectedDIVs.length > 1);
-  KFK.APP.setData("show", "shape_property", KFK.selectedDIVs.length > 0);
-  if (KFK.selectedDIVs.length > 1)
-    KFK.setRightTabIndex(1);
-};
-
-KFK.undo = async () => {
-  if (KFK.opz < 0) {
-    KFK.debug("undo 到底了");
-    return;
-  }
-  let ope = KFK.opstack[KFK.opz];
-  if (ope.cmd === "LOCK") {
-    KFK.sendCmd("UNLOCKNODE", {
-      doc_id: KFK.APP.model.cocodoc.doc_id,
-      nodeid: ope.from
-    });
-  } else if (ope.cmd === "UNLOCK") {
-    KFK.sendCmd("LOCKNODE", {
-      doc_id: KFK.APP.model.cocodoc.doc_id,
-      nodeid: ope.from
-    });
-  } else if (ope.cmd === "LOCKLINE") {
-    KFK.sendCmd("UNLOCKLINE", {
-      doc_id: KFK.APP.model.cocodoc.doc_id,
-      nodeid: ope.from
-    });
-  } else if (ope.cmd === "UNLOCKLINE") {
-    KFK.sendCmd("LOCKLINE", {
-      doc_id: KFK.APP.model.cocodoc.doc_id,
-      nodeid: ope.from
-    });
-  } else {
-    if (ope.etype === 'DIV') {
-      for (let i = 0; i < ope.from.length; i++) {
-        if (ope.from[i] === '' && ope.to[i] !== "") { //ope is C
-          jqTo = $(`#${ope.toId[i]}`);
-          await KFK.syncNodePut("D", jqTo, "undo", null, true, 0, 1);
-        } else if (ope.from[i] !== "" && ope.to[i] === '') { //ope is D
-          let jqFrom = $($.parseHTML(ope.from[i]));
-          let nodeid = jqFrom.attr("id");
-          KFK.JC3.append(jqFrom);
-          jqFrom = $(`#${nodeid}`);
-          KFK.setNodeEventHandler(jqFrom);
-          KFK.redrawLinkLines(jqFrom, 'undo');
-          if (jqFrom.hasClass("lock")) {
-            KFK.updateNodeEvent(jqFrom, "draggable", "destroy");
-            KFK.updateNodeEvent(jqFrom, "resizable", "destroy");
-            KFK.updateNodeEvent(jqFrom, "droppable", "destroy");
-          } else {
-            KFK.debug(nodeid, "NOT hasclass lock");
-          }
-          await KFK.syncNodePut("C", jqFrom, "undo", null, true, 0, 1);
-        } else if (ope.from[i] !== '' && ope.to[i] !== '') { //ope is U
-          let jqTo = $(`#${ope.toId[i]}`);
-          jqTo.prop('outerHTML', ope.from[i]);
-          jqTo = $(`#${ope.toId[i]}`); //yes, re-select
-          KFK.setNodeEventHandler(jqTo);
-          KFK.redrawLinkLines(jqTo, 'undo');
-          if (jqTo.hasClass("lock")) {
-            KFK.updateNodeEvent(jqTo, "draggable", "destroy");
-            KFK.updateNodeEvent(jqTo, "resizable", "destroy");
-            KFK.updateNodeEvent(jqTo, "droppable", "destroy");
-          }
-          KFK.replaceNodeInSelectedDIVs(jqTo);
-          await KFK.syncNodePut("U", jqTo, 'undo', null, true, 0, 1);
-        }
-      }
-      if (ope.from.length > 1) {
-        KFK.debug('selected count after undo', KFK.selectedDIVs.length);
-        KFK.setSelectedNodesBoundingRect();
-      }
-    } else if (ope.etype === 'SLINE') {
-      KFK.hideLineTransformer();
-      if (ope.from === '' && ope.to !== "") { //ope is C
-        let toId = ope.toId;
-        let toLine = KFK.svgDraw.findOne(`.${toId}`);
-        await KFK.syncLinePut("D", toLine, "undo", null, true);
-      } else if (ope.from !== "" && ope.to === "") { //ope is D
-        let fromId = ope.fromId;
-        let fromLine = KFK.restoreSvgLine(fromId, ope.from);
-        await KFK.syncLinePut("C", fromLine, "undo", null, true);
-      } else if (ope.from !== "" && ope.to !== "") { //ope is U
-        let toLine = KFK.svgDraw.findOne(`.${ope.toId}`);
-        let fromLine = KFK.restoreSvgLine(ope.fromId, ope.from);
-        //fromLine与toLine的ID相同，因此在restoreSvgLine时，就自动把toLine换成了fromLine
-        //不用删除toLine
-        await KFK.syncLinePut("U", fromLine, 'undo', toLine, true);
-      }
-    }
-  }
-
-  KFK.opz = KFK.opz - 1;
-};
-
-KFK.getLineIdFromString = function (str) {
-  let m = str.match(/id\s*=\s*('|")([^"]+)('|")/);
-  if (m) { return m[2]; }
-  else return null;
-};
-
-KFK.redo = async () => {
-  if (KFK.opz >= KFK.opstack.length - 1) {
-    KFK.debug("redo 到头了");
-    return;
-  }
-  KFK.opz = KFK.opz + 1;
-  let ope = KFK.opstack[KFK.opz];
-  if (ope.cmd === "LOCK") {
-    KFK.sendCmd("LOCKNODE", {
-      doc_id: KFK.APP.model.cocodoc.doc_id,
-      nodeid: ope.from
-    });
-  } else if (ope.cmd === "UNLOCK") {
-    KFK.sendCmd("UNLOCKNODE", {
-      doc_id: KFK.APP.model.cocodoc.doc_id,
-      nodeid: ope.from
-    });
-  } else if (ope.cmd === "LOCKLINE") {
-    KFK.sendCmd("LOCKLINE", {
-      doc_id: KFK.APP.model.cocodoc.doc_id,
-      nodeid: ope.from
-    });
-  } else if (ope.cmd === "UNLOCKLINE") {
-    KFK.sendCmd("UNLOCKLINE", {
-      doc_id: KFK.APP.model.cocodoc.doc_id,
-      nodeid: ope.from
-    });
-  } else {
-    if (ope.etype === 'DIV') {
-      for (let i = 0; i < ope.from.length; i++) {
-        if (ope.from[i] === "" && ope.to[i] !== "") { // ope is C
-          let jqTo = $($.parseHTML(ope.to[i]));
-          let nodeid = jqTo.attr("id");
-          KFK.C3.appendChild(el(jqTo));
-          jqTo = $(`#${nodeid}`);
-          KFK.setNodeEventHandler(jqTo);
-          if (jqTo.hasClass("lock")) {
-            KFK.updateNodeEvent(jqTo, "draggable", "destroy");
-            KFK.updateNodeEvent(jqTo, "resizable", "destroy");
-            KFK.updateNodeEvent(jqTo, "droppable", "destroy");
-          } else {
-            KFK.debug(nodeid, "NOT hasclass lock");
-          }
-          await KFK.syncNodePut("C", jqTo, "redo", null, true, 0, 1);
-        } else if (ope.from[i] !== '' && ope.to[i] === '') { //ope is D
-          let jqFrom = $(`#${ope.fromId[i]}`);
-          await KFK.syncNodePut("D", jqFrom, "redo", null, true, 0, 1);
-        } else if (ope.from[i] != "" && ope.to[i] !== "") { //ope is U
-          let jqFrom = $(`#${ope.fromId[i]}`);
-          jqFrom.prop('outerHTML', ope.to[i]);
-          jqFrom = $(`#${ope.fromId[i]}`);
-          KFK.setNodeEventHandler(jqFrom);
-          KFK.redrawLinkLines(jqFrom, 'redo');
-          if (jqFrom.hasClass("lock")) {
-            KFK.updateNodeEvent(jqFrom, "draggable", "destroy");
-            KFK.updateNodeEvent(jqFrom, "resizable", "destroy");
-            KFK.updateNodeEvent(jqFrom, "droppable", "destroy");
-          }
-          KFK.replaceNodeInSelectedDIVs(jqFrom);
-          await KFK.syncNodePut("U", jqFrom, 'redo', null, true, 0, 1);
-        }
-      }
-      if (ope.from.length > 1) {
-        KFK.setSelectedNodesBoundingRect();
-
-      }
-    } else if (ope.etype === 'SLINE') {
-      if (ope.from === '' && ope.to !== "") { //ope is C
-        let toId = ope.toId;
-        let toLine = KFK.restoreSvgLine(toId, ope.to);
-        await KFK.syncLinePut("C", toLine, "redo", null, true);
-      } else if (ope.from !== "" && ope.to === "") { //ope is D
-        let fromId = ope.fromId;
-        let fromLine = KFK.svgDraw.findOne(`.${fromId}`);
-        await KFK.syncLinePut("D", fromLine, "redo", null, true);
-      } else if (ope.from !== "" && ope.to !== "") { //ope is U
-        let fromLine = KFK.svgDraw.findOne(`.${ope.fromId}`);
-        let toLine = KFK.restoreSvgLine(ope.toId, ope.to);
-        //fromLine与toLine的ID相同，因此在restoreSvgLine时，就自动把fromLine换成了toLine
-        //不用删除fromLine
-        await KFK.syncLinePut("U", toLine, 'redo', fromLine, true);
-      }
-    }
-  }
-};
-
-KFK.initLayout = function () {
-  KFK.debug('...initLayout')
-  KFK.JC1 = $('#C1');
-  KFK.C1 = el(KFK.JC1);
-  KFK.JS1 = $('#S1');
-  KFK.S1 = el(KFK.JS1);
-  KFK.JC1.css({
-    'width': KFK.px(KFK.PageWidth * (KFK.PageNumberHori + 2)),
-    'height': KFK.px(KFK.PageHeight * (KFK.PageNumberVert + 2)),
-  })
-};
-
-KFK.scrollToPos = function (pos) {
-  KFK.JS1.scrollLeft(pos.x);
-  KFK.JS1.scrollTop(pos.y);
-};
-
-//create C3 create c3
-KFK.initC3 = function () {
-  KFK.debug('...initC3');
-  KFK.JC3 = $('#C3');
-  KFK.C3 = el(KFK.JC3);
-  KFK.JC3.css({
-    'width': KFK.px(KFK.PageWidth * KFK.PageNumberHori),
-    'height': KFK.px(KFK.PageHeight * KFK.PageNumberVert),
-    'left': KFK.px(KFK.LeftB),
-    'top': KFK.px(KFK.TopB),
-  });
-  // KFK.JC3.focus((evt) => { KFK.debug("JC3 got focus"); })
-  KFK.JCBKG = $('#containerbkg');
-  KFK.JCBKG.css({
-    'width': KFK.px(KFK.PageWidth * KFK.PageNumberHori),
-    'height': KFK.px(KFK.PageHeight * KFK.PageNumberVert),
-    'left': KFK.px(KFK.LeftB),
-    'top': KFK.px(KFK.TopB),
-  });
-
-
-  KFK.JC3.dblclick(async function (evt) {
-    if (KFK.inDesigner() === false) return;
-    if (KFK.isEditting && KFK.quillEdittingNode) {
-      await KFK.finishQuillEditting();
-      return;
-    } else if (KFK.isEditting && KFK.inlineEditor) {
-      KFK.endInlineEditing();
-    }
-    if (KFK.isEditting || KFK.resizing || KFK.dragging) {
-      return;
-    }
-    if (KFK.inOverviewMode === true) {
-      KFK.toggleOnePage({ x: evt.offsetX, y: evt.offsetY });
-    } else {
-      KFK.toggleOnePage();
-    }
-    KFK.cancelTempLine();
-    evt.preventDefault();
-    evt.stopImmediatePropagation();
-    evt.stopPropagation();
-  });
-  //click c3
-  KFK.JC3.on("click", async function (evt) {
-    if (KFK.inDesigner() === false) return;
-    if (KFK.isEditting && KFK.quillEdittingNode) {
-      await KFK.finishQuillEditting();
-      return;
-    } else if (KFK.isEditting && KFK.inlineEditor) {
-      KFK.endInlineEditing();
-    }
-    if (KFK.isEditting || KFK.resizing || KFK.dragging) {
-      return;
-    }
-    evt.preventDefault();
-    KFK.closeActionLog();
-    if (KFK.ignoreClick) return;
-
-    // KFK.focusOnNode(null);
+KFK.focusOnNode = function(jqNodeDIV) {
+    KFK.lastFocusOnJqNode = jqNodeDIV;
     KFK.justCreatedJqNode = null;
     KFK.justCreatedSvgLine = null;
 
-    KFK.pickedSvgLine = null;
+    if (jqNodeDIV !== null) KFK.updatePropertyFormWithNode(jqNodeDIV);
+};
 
-    // if (KFK.mode === 'lock' || KFK.mode === 'connect') {
-    //   KFK.setMode('pointer');
-    // }
-    if (KFK.docIsReadOnly()) return;
-
-    if (KFK.tobeTransformJqLine) KFK.tobeTransformJqLine.removeClass("shadow2");
-    $("#linetransformer").css("visibility", "hidden");
-    KFK.tobeTransformJqLine = null;
-
-
-    if (KFK.afterDragging === true) {
-      KFK.afterDragging = false;
-      // return;
-    }
-    if (KFK.afterResizing === true) {
-      KFK.afterResizing = false;
-      // return;
-    }
-
-    //place image, place material
-    if (KFK.mode === "material" && KFK.materialPicked) {
-      let fileId = KFK.myuid();
-
-      await KFK.makeImageDiv(
-        fileId,
-        KFK.scrXToJc3X(evt.clientX),
-        KFK.scrYToJc3Y(evt.clientY),
-        KFK.materialPicked.url
-      );
-      return;
-    } else if (KFK.mode === "line") {
-      KFK.yarkLinePoint(
-        KFK.scrXToJc3X(evt.clientX),
-        KFK.scrYToJc3Y(evt.clientY),
-        evt.shiftKey
-      );
-      return;
+KFK.setRightTabIndex = function(tabIndex) {
+    if (tabIndex !== undefined) {
+        KFK.APP.setData("model", "rightTabIndex", tabIndex);
     } else {
-      if (KFK.selectedDIVs.length > 0) {
-        if (KFK.duringKuangXuan === false) KFK.cancelAlreadySelected();
-      }
-      if (cocoConfig.node[KFK.mode]) {
-        let variant = "default";
-        if (KFK.mode === "yellowtip") {
-          variant = cocoConfig.node.yellowtip.defaultTip;
+        if (
+            KFK.selectedDIVs.length === 1 ||
+            KFK.pickedSvgLine !== null ||
+            KFK.justCreatedJqNode !== null ||
+            KFK.justCreatedSvgLine !== null
+        ) {
+            KFK.APP.setData("model", "rightTabIndex", 0);
+        } else if (KFK.selectedDIVs.length >= 2) {
+            KFK.APP.setData("model", "rightTabIndex", 1);
+        } else if (KFK.selectedDIVs.length === 0) {
+            KFK.APP.setData("model", "rightTabIndex", 2);
         }
-        let realX = KFK.scrXToJc3X(evt.clientX);
-        let realY = KFK.scrYToJc3Y(evt.clientY);
-        let jqDIV = KFK.placeNode(
-          evt.shiftKey,
-          KFK.myuid(),
-          KFK.mode,
-          variant,
-          realX,
-          realY,
-          undefined,
-          undefined,
-          '',
-          '',
-        );
-        if (!evt.shiftKey) KFK.setMode("pointer");
-        await KFK.syncNodePut("C", jqDIV, "new node", null, false, 0, 1);
-      }
+    }
+};
+
+KFK.updatePropertyFormWithNode = function(jqNodeDIV) {
+    let nodeType = "unknown";
+    if (jqNodeDIV != null) {
+        nodeType = jqNodeDIV.attr("nodetype");
     }
 
-    // KFK.setRightTabIndex();
-    evt.stopImmediatePropagation();
-    evt.stopPropagation();
-    evt.preventDefault();
-  });
-
-  KFK.JC3.mousedown(evt => {
-    if (KFK.inDesigner() === false) return;
-    if (KFK.mode === "pointer" && KFK.docIsReadOnly() === false) {
-      KFK.kuangXuanMouseIsDown = true;
-      KFK.kuangXuanStartPoint = {
-        x: KFK.scrXToJc3X(evt.clientX),
-        y: KFK.scrYToJc3Y(evt.clientY)
-      };
-    }
-  });
-  KFK.JC3.mouseup(async (evt) => {
-    if (KFK.inDesigner() === false) return;
-    KFK.ignoreClick = false;
-    if (KFK.lineDragging && KFK.docIsReadOnly() === false) {
-      let parr = KFK.lineToDrag.array();
-      if (KFK.APP.model.cococonfig.snap) {
-        let p1 = { x: parr[0][0], y: parr[0][1] };
-        let p2 = { x: parr[1][0], y: parr[1][1] };
-        p1 = KFK.getNearGridPoint(p1.x, p1.y);
-        p2 = KFK.getNearGridPoint(p2.x, p2.y);
-        KFK.lineToDrag.dmove(p1.x - parr[0][0], p1.y - parr[0][1]);
-        KFK.lineToDrag.attr({ 'stroke-width': KFK.lineToDrag.attr('origin-width') });
-        KFK.lineToRemember.attr({ 'stroke-width': KFK.lineToRemember.attr('origin-width') });
-        await KFK.syncLinePut("U", KFK.lineToDrag, 'move', KFK.lineToRemember, false);
-        KFK.setLineToRemember(KFK.lineToDrag);
-      }
-      KFK.lineDragging = false;
-      KFK.lineToDrag = null;
-      $(document.body).css("cursor", "default");
-    }
-    if (KFK.mode === "pointer" && KFK.docIsReadOnly() === false) {
-      KFK.kuangXuanMouseIsDown = false;
-      KFK.kuangXuanEndPoint = {
-        x: KFK.scrXToJc3X(evt.clientX),
-        y: KFK.scrYToJc3Y(evt.clientY)
-      };
-      if (KFK.duringKuangXuan) {
-        KFK.ignoreClick = true;
-        KFK.endKuangXuan(KFK.kuangXuanStartPoint, KFK.kuangXuanEndPoint);
-        KFK.duringKuangXuan = false;
-      }
-    }
-  });
-
-  KFK.JC3.on("mousemove", function (evt) {
-    if (KFK.inDesigner() === false) return;
-    if (KFK.inPresentingMode || KFK.inOverviewMode) return;
-    KFK.upateUserMousePos(
-      KFK.APP.model.cocouser,
-      evt.clientX,
-      evt.clientY
+    KFK.APP.setData("show", "customline", false);
+    KFK.APP.setData("show", "shape_property", jqNodeDIV != null);
+    KFK.APP.setData(
+        "show",
+        "customfont",
+        jqNodeDIV != null && getBoolean(cocoConfig.node[nodeType].edittable)
     );
+    KFK.APP.setData(
+        "show",
+        "customshape",
+        jqNodeDIV != null && getBoolean(cocoConfig.node[nodeType].customshape)
+    );
+    KFK.APP.setData(
+        "show",
+        "custombacksvg",
+        jqNodeDIV != null && (nodeType === "yellowtip" || nodeType === "textblock")
+    );
+    KFK.APP.setData(
+        "show",
+        "layercontrol",
+        jqNodeDIV != null &&
+        (nodeType === "text" ||
+            nodeType === "yellowtip" ||
+            nodeType === "textblock" ||
+            nodeType === "richtext")
+    );
+    if (jqNodeDIV != null && getBoolean(cocoConfig.node[nodeType].customshape)) {
+        let nodeBkgColor = jqNodeDIV.css("background-color");
+        let nodeBorderColor = jqNodeDIV.css("border-color");
+        let nodeBorderWidth = KFK.unpx(jqNodeDIV.css("border-width"));
+        let nodeBorderRadius = KFK.unpx(jqNodeDIV.css("border-radius"));
+        $("#shapeBkgColor").spectrum("set", nodeBkgColor);
+        $("#shapeBorderColor").spectrum("set", nodeBorderColor);
+        $("#spinner_border_width").spinner("value", nodeBorderWidth);
+        $("#spinner_border_radius").spinner("value", nodeBorderRadius);
+    }
+    if (jqNodeDIV != null && nodeType === "yellowtip") {
+        let tipColor = KFK.getTipBkgColor(jqNodeDIV);
+        $("#tipBkgColor").spectrum("set", tipColor);
+    }
 
-    KFK.currentMousePos.x = evt.clientX;
-    KFK.currentMousePos.y = evt.clientY;
+    if (jqNodeDIV != null && getBoolean(cocoConfig.node[nodeType].edittable)) {
+        let jqInner = jqNodeDIV.find(".innerobj");
+        let fontFamily = jqInner.css("font-family");
+        let fontSize = KFK.unpx(jqInner.css("font-size"));
+        let fontColor = jqInner.css("color");
+        let textAlign = jqInner.css("justify-content");
+        let vertAlign = jqInner.css("align-items");
+        textAlign = textAlign === "normal" ? "flex-start" : textAlign;
+        vertAlign = vertAlign === "normal" ? "flex-start" : vertAlign;
+        $("#fontColor").spectrum("set", fontColor);
+        $("#spinner_font_size").spinner("value", fontSize);
+        KFK.APP.setData("model", "textAlign", textAlign);
+        KFK.APP.setData("model", "vertAlign", vertAlign);
+    }
+};
 
-    let indicatorX = KFK.scrXToJc1X(KFK.currentMousePos.x);
-    let indicatorY = KFK.scrYToJc1Y(KFK.currentMousePos.y);
+KFK.log = function(...info) {
+    console.log("LOG>", ...info);
+};
+KFK.error = function(...info) {
+    if (KFK.loglevel >= KFK.LOGLEVEL_ERROR) console.log("ERROR>", ...info);
+};
+KFK.warn = function(...info) {
+    if (KFK.loglevel >= KFK.LOGLEVEL_WARN) console.log("WARN >", ...info);
+};
+KFK.info = function(...info) {
+    if (KFK.loglevel >= KFK.LOGLEVEL_INFO) console.log("INFO >", ...info);
+};
+KFK.debug = function(...info) {
+    if (KFK.loglevel >= KFK.LOGLEVEL_DEBUG) console.log("DEBUG>", ...info);
+};
+KFK.detail = function(...info) {
+    if (KFK.loglevel >= KFK.LOGLEVEL_DETAIL) console.log("DETAL>", ...info);
+};
 
-    $("#modeIndicator").css("left", indicatorX + 10);
-    $("#modeIndicator").css("top", indicatorY + 10);
-    // KFK.kuangXuanEndPoint = {
-    //   x: KFK.scrXToJc3X(evt.clientX),
-    //   y: KFK.scrYToJc3Y(evt.clientY)
-    // };
+KFK.logKey = function(...info) {
+    // KFK.scrLog(...info);
+};
 
-    if (KFK.docIsReadOnly()) return;
+KFK.keepLog = function(msg = "", staytime = 30000) {
+    if (msg === "") {
+        $("#keepLog").prop("innerHTML", "");
+        KFK.keepTimer && clearTimeout(KFK.keepTimer);
+        $("#keepLog").addClass("noshow");
+    }
+    $("#keepLog").prop("innerHTML", msg);
+    $("#keepLog").removeClass("noshow");
+    KFK.keepTimer && clearTimeout(KFK.keepTimer);
+    KFK.keepLogTimer = setTimeout(() => {
+        $("#keepLog").addClass("noshow");
+        KFK.keepTimer = undefined;
+    }, staytime);
+};
 
-    if (KFK.lineToDrag && KFK.docIsReadOnly() === false && KFK.lineLocked(KFK.lineToDrag) === false) {
-      if (KFK.distance(KFK.mousePosToRemember, KFK.currentMousePos) > 5) {
-        KFK.lineDragging = true;
-      }
+KFK.scrLog = function(msg, staytime = 5000) {
+    let parent = $("#MSG").parent();
+    let msgDIV = $("#MSG");
+    let cloneDIV = $("#fadeoutmsg");
+    if (cloneDIV.length > 0) {
+        if (KFK.msgTimer) {
+            clearTimeout(KFK.msgTimer);
+        }
+        cloneDIV.css("top", "10px");
+        cloneDIV.html(msg);
+        KFK.msgTimer = setTimeout(() => {
+            cloneDIV.animate({ top: "-24px" }, 50, async function() {
+                cloneDIV.remove();
+            });
+        }, staytime);
     } else {
-      KFK.lineToDrag = null;
+        cloneDIV = msgDIV.clone().appendTo(parent);
+        cloneDIV.attr("id", "fadeoutmsg");
+        cloneDIV.html(msg);
+        cloneDIV.css("top", "10px");
+        KFK.msgTimer = setTimeout(() => {
+            cloneDIV.animate({ top: "-24px" }, 50, async function() {
+                cloneDIV.remove();
+            });
+        }, staytime);
     }
-    //支持按下鼠标， 框选多个node
-    // if (KFK.isDuringKuangXuan()){
-    //   KFK.kuangXuan(KFK.kuangXuanStartPoint, KFK.kuangXuanEndPoint);
-    // }
-    if (KFK.lineDragging || KFK.lineMoverDragging || KFK.minimapMouseDown) {
-      KFK.duringKuangXuan = false;
-    }
+};
 
-    if (KFK.mode === "connect") {
-      if (KFK.linkPosNode.length === 1) {
-        KFK.lineTemping = true;
-        let tmpPoint = {
-          x: KFK.scrXToJc3X(KFK.currentMousePos.x),
-          y: KFK.scrYToJc3Y(KFK.currentMousePos.y)
-        };
-        let fromPoint = null;
-        let toPoint = null;
-        let selectedFromIndex = 0;
-        let shortestDistance = KFK.distance(KFK.tmpPos.points[0], tmpPoint);
-        for (let i = 0; i < KFK.tmpPos.points.length; i++) {
-          fromPoint = KFK.tmpPos.points[i];
-          toPoint = tmpPoint;
-          let tmp_dis = KFK.distance(fromPoint, toPoint);
-          if (tmp_dis < shortestDistance) {
-            shortestDistance = tmp_dis;
-            selectedFromIndex = i;
-          }
+KFK.getConnectorPoints = function(from, to, rad) {
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    let angle = Math.atan2(-dy, dx);
+
+    let radius = rad;
+
+    return [
+        from.x + -radius * Math.cos(angle + Math.PI),
+        from.y + radius * Math.sin(angle + Math.PI),
+        to.x + -radius * Math.cos(angle),
+        to.y + radius * Math.sin(angle),
+    ];
+};
+
+KFK.replaceNodeInSelectedDIVs = function(jqDIV) {
+    for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+        if (KFK.selectedDIVs[i].attr("id") === jqDIV.attr("id")) {
+            KFK.selectedDIVs[i] = jqDIV;
         }
-        KFK.svgDrawTmpLine(
-          KFK.tmpPos.points[selectedFromIndex].x,
-          KFK.tmpPos.points[selectedFromIndex].y,
-          tmpPoint.x,
-          tmpPoint.y,
-          { color: KFK.YIQColorAux || "#888888", stroke: 10 }
-        );
-      }
     }
-    if (KFK.mode === "line") {
-      if (KFK.linkPosLine.length === 1) {
-        KFK.lineTemping = true;
-        let tmpPoint = {
-          x: KFK.scrXToJc3X(KFK.currentMousePos.x),
-          y: KFK.scrYToJc3Y(KFK.currentMousePos.y)
-        };
-        KFK.svgDrawTmpLine(
-          KFK.linkPosLine[0].center.x,
-          KFK.linkPosLine[0].center.y,
-          tmpPoint.x,
-          tmpPoint.y,
-          { color: KFK.YIQColorAux || "#888888", stroke: 10 }
-        );
-      }
+};
+
+KFK.calculateNodeConnectPoints = function(jqDIV) {
+    let divLeft = KFK.unpx(jqDIV.css("left"));
+    let divTop = KFK.unpx(jqDIV.css("top"));
+    let divWidth = KFK.unpx(jqDIV.css("width"));
+    let divHeight = KFK.unpx(jqDIV.css("height"));
+    let pos = {
+        center: {
+            x: divLeft + divWidth * 0.5,
+            y: divTop + divHeight * 0.5,
+        },
+        points: [{
+                x: KFK.unpx(jqDIV.css("left")),
+                y: KFK.unpx(jqDIV.css("top")) + KFK.unpx(jqDIV.css("height")) * 0.5,
+            },
+            {
+                x: KFK.unpx(jqDIV.css("left")) + KFK.unpx(jqDIV.css("width")) * 0.5,
+                y: KFK.unpx(jqDIV.css("top")),
+            },
+            {
+                x: KFK.unpx(jqDIV.css("left")) + KFK.unpx(jqDIV.css("width")),
+                y: KFK.unpx(jqDIV.css("top")) + KFK.unpx(jqDIV.css("height")) * 0.5,
+            },
+            {
+                x: KFK.unpx(jqDIV.css("left")) + KFK.unpx(jqDIV.css("width")) * 0.5,
+                y: KFK.unpx(jqDIV.css("top")) + KFK.unpx(jqDIV.css("height")),
+            },
+        ],
+    };
+    return pos;
+};
+
+KFK.drawPathBetween = function(A, B) {
+    let APos = KFK.calculateNodeConnectPoints(A);
+    let BPos = KFK.calculateNodeConnectPoints(B);
+    let fromPoint = null;
+    let toPoint = null;
+    let AIndex = 0;
+    let BIndex = 0;
+    let shortestDistance = KFK.distance(APos.points[0], BPos.points[0]);
+    for (let i = 0; i < APos.points.length; i++) {
+        fromPoint = APos.points[i];
+        for (let j = 0; j < BPos.points.length; j++) {
+            toPoint = BPos.points[j];
+            let tmp_drawPathBetween_distance = KFK.distance(fromPoint, toPoint);
+            if (tmp_drawPathBetween_distance < shortestDistance) {
+                shortestDistance = tmp_drawPathBetween_distance;
+                AIndex = i;
+                BIndex = j;
+            }
+        }
     }
-    if (KFK.lineDragging && KFK.docIsReadOnly() === false && KFK.lineLocked(KFK.lineToDrag) === false) {
-      let realX = KFK.scrXToJc3X(evt.clientX);
-      let realY = KFK.scrYToJc3Y(evt.clientY);
-      let deltaX = realX - KFK.lineDraggingStartPoint.x;
-      let deltaY = realY - KFK.lineDraggingStartPoint.y;
-      KFK.lineToDrag.dmove(deltaX, deltaY);
-      KFK.lineDraggingStartPoint.x += deltaX;
-      KFK.lineDraggingStartPoint.y += deltaY;
-    }
-  });
-
-  KFK.zoomLevel = 1;
-  KFK.addMinimap();
-};
-
-KFK.isDuringKuangXuan = function () {
-  if (
-    KFK.mode === "pointer" &&
-    KFK.kuangXuanMouseIsDown &&
-    KFK.lineDragging === false &&
-    KFK.lineMoverDragging === false &&
-    KFK.minimapMouseDown === false
-  ) return true;
-  else return false;
-}
-
-KFK.addMinimap = function () {
-  KFK.refreshC3event = new CustomEvent("refreshC3");
-  KFK.zoomEvent = new CustomEvent("zoomC3");
-  $("#minimap").minimap(KFK, KFK.JS1, KFK.JC3, KFK.JC1);
-};
-
-KFK.get13Number = function (str) {
-  let arr = str.split("");
-  let num = 0;
-  arr.forEach(ch => {
-    num += ch.codePointAt(0);
-  });
-  num = num % 13;
-  return num;
-};
-
-KFK.upateUserMousePos = function (user, x, y) {
-  let pos = { x: KFK.scrXToJc1X(x), y: KFK.scrYToJc1Y(y) };
-  let bglabel = user.name;
-
-
-  if (KFK.mouseTimer !== null) {
-    clearTimeout(KFK.mouseTimer);
-  }
-  let consisedUser = { userid: user.userid, name: user.name };
-  KFK.mouseTimer = setTimeout(function () {
-    KFK.WS.put("MOUSE", { user: consisedUser, pos: pos });
-    KFK.mouseTimer = null;
-  }, 5);
-  //  KFK.WS.put("MOUSE", { user: consisedUser, pos: pos });
-
-};
-
-KFK.showOtherUserMovingBadge = function (mouse) {
-  let pos = mouse.pos;
-  let userid = mouse.user.userid;
-  let bgid = KFK.badgeIdMap[userid];
-  if (!bgid) {
-    bgid = KFK.myuid();
-    KFK.badgeIdMap[userid] = bgid;
-  }
-  let bglabel = mouse.user.name;
-  let jqBadgeDIV = $(document).find("#badge_" + bgid);
-  let class_ser = KFK.get13Number(bgid);
-  if (jqBadgeDIV.length === 0) {
-    let tmpdiv = document.createElement("div");
-    KFK.C3.appendChild(tmpdiv);
-    jqBadgeDIV = $(tmpdiv);
-    jqBadgeDIV.attr("id", "badge_" + bgid);
-    jqBadgeDIV.addClass(`userbadge userbadge_${class_ser}`);
-  }
-  jqBadgeDIV.css("display", "block");
-  jqBadgeDIV.html(bglabel);
-
-  let width = jqBadgeDIV.width();
-  let height = jqBadgeDIV.height();
-
-  let wwidth = window.innerWidth;
-  let wheight = window.innerHeight;
-  let x = KFK.jc1XToJc3X(pos.x);
-  let y = KFK.jc1YToJc3Y(pos.y);
-  let sc = $('#S1');
-  let deltaX = sc.scrollLeft() - KFK.LeftB;
-  let deltaY = sc.scrollTop() - KFK.TopB;
-  if (x - deltaX > wwidth) {
-    x = deltaX + wwidth - width;
-  } else if (x < deltaX) {
-    x = deltaX;
-  }
-  if (y - deltaY > wheight) {
-    y = deltaY + wheight - height;
-  } else if (y < deltaY) {
-    y = deltaY;
-  }
-
-  jqBadgeDIV.css("top", y);
-  jqBadgeDIV.css("left", x);
-
-  if (KFK.badgeTimers[bgid] !== undefined) {
-    clearTimeout(KFK.badgeTimers[bgid]);
-  }
-  //过一段时后消失, 如果其他用户再动, 再显示
-  KFK.badgeTimers[bgid] = setTimeout(() => {
-    jqBadgeDIV.css("display", "none");
-    delete KFK.badgeTimers[bgid];
-  }, cocoConfig.badge.lastSeconds);
-};
-
-KFK.resetNodeZIndex = function (data) {
-  $.each(data, (i, val) => {
-    $(`#${i}`).css("z-index", val);
-  });
-};
-
-KFK.moveLineMoverTo = function (position) {
-  $("#linetransformer").css("left", position.x - 10);
-  $("#linetransformer").css("top", position.y - 10);
-};
-KFK.selectNode = function (jqDIV) {
-  jqDIV.addClass("selected");
-  KFK.selectedDIVs.push(jqDIV);
-  KFK.setSelectedNodesBoundingRect();
-};
-
-KFK.setSelectedNodesBoundingRect = function () {
-  let brect = $('.boundingrect');
-  if (brect.length <= 0) {
-    let rect = document.createElement('div');
-    brect = $(rect);
-    brect.addClass('boundingrect');
-    brect.appendTo(KFK.JC3);
-    brect.css('z-index', -1);
-  }
-  if (KFK.selectedDIVs.length > 1) {
-    let rect = KFK.getBoundingRectOfSelectedDIVs();
-    brect.css("left", rect.left - cocoConfig.ui.boundingrect_padding);
-    brect.css("top", rect.top - cocoConfig.ui.boundingrect_padding);
-    brect.css(
-      "width",
-      rect.width + cocoConfig.ui.boundingrect_padding * 2
+    let svgLine = KFK.svgConnectNode(
+        A.attr("id"),
+        B.attr("id"),
+        AIndex,
+        BIndex,
+        APos.points[AIndex].x,
+        APos.points[AIndex].y,
+        BPos.points[BIndex].x,
+        BPos.points[BIndex].y, {}
     );
-    brect.css(
-      "height",
-      rect.height + cocoConfig.ui.boundingrect_padding * 2
-    );
-    brect.show();
-  } else {
-    brect.hide();
-  }
-};
-KFK.kuangXuan = function (pt1, pt2) {
-  KFK.debug('pt1', jstr(pt1), 'pt2', jstr(pt2));
-  let x1 = pt1.x + KFK.LeftB;
-  let y1 = pt1.y + KFK.TopB;
-  let x2 = pt2.x + KFK.LeftB;
-  let y2 = pt2.y + KFK.TopB;
-  KFK.debug(x1, y1, x2, y2);
-  let jqRect = $("#selectingrect");
-  jqRect.css("left", Math.min(x1, x2));
-  jqRect.css("top", Math.min(y1, y2));
-  jqRect.css("width", Math.abs(x1 - x2));
-  jqRect.css("height", Math.abs(y1 - y2));
-  if (Math.abs(x1 - x2) < 10 && Math.abs(y1 - y2) < 10) {
-    //这里，如果滑动大小横向和纵向都小于10， 则不作为框选
-    return;
-  }
-  KFK.duringKuangXuan = true;
-  jqRect.show();
 };
 
-KFK.endKuangXuan = function (pt1, pt2) {
-  let jqRect = $("#selectingrect");
-  jqRect.hide();
-  let rect = {
-    left: Math.min(pt1.x, pt2.x),
-    top: Math.min(pt1.y, pt2.y),
-    width: Math.abs(pt1.x - pt2.x),
-    height: Math.abs(pt1.y - pt2.y)
-  };
-  if (rect.width < 10 && rect.height < 10) {
-    //这里，如果滑动大小横向和纵向都小于10， 则不作为框选
-    return;
-  }
-  rect.right = rect.left + rect.width;
-  rect.bottom = rect.top + rect.height;
+KFK.yarkLinkNode = function(jqDIV, shiftKey, text) {
+    if (KFK.lineDragging) return;
+    if (KFK.nodeLocked(jqDIV)) return;
+    KFK.tmpPos = KFK.calculateNodeConnectPoints(jqDIV);
+    KFK.linkPosNode.push(jqDIV);
+    KFK.procLinkNode(shiftKey, text);
+};
 
-  while (KFK.selectedDIVs.length > 0) {
-    KFK.deselectNode(KFK.selectedDIVs[0]);
-  }
-  //为防止混乱，框选只对node div有效果
-  KFK.JC3
-    .find(".kfknode")
-    .each((index, div) => {
-      let jqDiv = $(div)
-      let divRect = KFK.divRect(jqDiv);
-      if (
-        rect.left < divRect.right &&
-        rect.right > divRect.left &&
-        rect.top < divRect.bottom &&
-        rect.bottom > divRect.top
-      ) {
-        KFK.selectNode(jqDiv);
-      }
+KFK.procLinkNode = function(shiftKey, text) {
+    if (KFK.linkPosNode.length < 2) {
+        return;
+    } else if (KFK.linkPosNode[0].attr("id") === KFK.linkPosNode[1].attr("id")) {
+        KFK.linkPosNode.splice(1, 1);
+        return;
+    }
+    if (KFK.tempSvgLine) KFK.tempSvgLine.hide();
+    KFK.lineTemping = false;
+    KFK.cancelAlreadySelected();
+    KFK.drawPathBetween(KFK.linkPosNode[0], KFK.linkPosNode[1]);
+    //看两个节点的Linkto属性，在添加一个连接线后有没有什么变化，
+    //如果有变化，就上传U， 如果没变化，就不用U
+    //没有变化的情况：之前就有从linkPosNode[0]到 linkPosNode[1]的链接存在
+    //有变化的情况：1. 之前不存在； 2. 之前存在方向相反的链接，从linkPosNode[1]到linkPosNode[0]的
+    //以上两种情况中，1会只导致只U第一个； 2会导致U；两端两个节点
+    let tmp1 = KFK.linkPosNode[0].attr("linkto");
+    let tmp2 = KFK.linkPosNode[1].attr("linkto");
+    KFK.buildConnectionBetween(KFK.linkPosNode[0], KFK.linkPosNode[1]);
+    let tmp3 = KFK.linkPosNode[0].attr("linkto");
+    let tmp4 = KFK.linkPosNode[1].attr("linkto");
+    if (tmp1 !== tmp3) {
+        KFK.debug("The first node linkto has been changed");
+        KFK.syncNodePut(
+            "U",
+            KFK.linkPosNode[0],
+            "connect nodes",
+            null,
+            false,
+            0,
+            1
+        );
+    }
+    if (tmp2 !== tmp4) {
+        KFK.debug("The second node linkto has been changed");
+        KFK.syncNodePut(
+            "U",
+            KFK.linkPosNode[1],
+            "connect nodes",
+            null,
+            false,
+            0,
+            1
+        );
+    }
+
+    if (!shiftKey) {
+        KFK.linkPosNode.splice(0, 2);
+        KFK.setMode("pointer");
+    } else {
+        KFK.linkPosNode[0] = KFK.linkPosNode[1];
+        KFK.linkPosNode.splice(1, 1);
+    }
+};
+
+KFK.setLineToRemember = function(theLine) {
+    KFK.lineToRemember = theLine.clone();
+    KFK.lineToRemember.attr("id", theLine.attr("id"));
+    KFK.lineToRemember.attr("stroke-width", theLine.attr("origin-width"));
+};
+
+KFK.yarkLinePoint = function(x, y, shiftKey) {
+    if (KFK.lineDragging) return;
+
+    //如果这是划线时，所点的第二个点(此时，开始画线)
+    if (KFK.linkPosLine.length === 1) {
+        //如果按着alt键，则应该画直线
+        if (KFK.KEYDOWN.alt) {
+            //如果更起始点的x距离比y距离更小，则画垂直线，否则画水平线
+            if (
+                Math.abs(x - KFK.linkPosLine[0].center.x) <
+                Math.abs(y - KFK.linkPosLine[0].center.y)
+            ) {
+                //画垂直线(x相等)
+                x = KFK.linkPosLine[0].center.x;
+            } else {
+                //画水平线(y相等)
+                y = KFK.linkPosLine[0].center.y;
+            }
+        }
+    }
+    KFK.linkPosLine.push({
+        type: "point",
+        center: { x: x, y: y },
+        points: [{ x: x, y: y }],
     });
-  if (KFK.selectedDIVs.length > 1) {
-    KFK.resetPropertyOnMultipleNodesSelected();
-  }
+    KFK.procDrawLine(shiftKey);
 };
-
-KFK.deselectNode = function (theDIV) {
-  $(theDIV).removeClass("selected");
-  let index = KFK.selectedDIVs.indexOf(theDIV);
-  KFK.selectedDIVs.splice(index, 1);
-  KFK.setSelectedNodesBoundingRect();
-};
-
-KFK.selectNodesOnClick = function (jqDIV, shiftKey) {
-  let exist = KFK.selectedDIVs.indexOf(jqDIV);
-  if (shiftKey) {
-    if (exist >= 0) {
-      KFK.deselectNode(KFK.selectedDIVs[exist]);
+KFK.procDrawLine = function(shiftKey) {
+    if (KFK.linkPosLine.length < 2) {
+        return;
     } else {
-      KFK.selectNode(jqDIV);
+        if (KFK.tempSvgLine) KFK.tempSvgLine.hide();
+        KFK.lineTemping = false;
     }
-  } else {
-    while (KFK.selectedDIVs.length > 0) {
-      KFK.deselectNode(KFK.selectedDIVs[0]);
+    let fromPoint = null;
+    let toPoint = null;
+    KFK.justCreatedSvgLine = KFK.svgDrawLine(
+        KFK.myuid(),
+        KFK.linkPosLine[0].center.x,
+        KFK.linkPosLine[0].center.y,
+        KFK.linkPosLine[1].center.x,
+        KFK.linkPosLine[1].center.y, {
+            color: KFK.YIQColorAux || KFK.APP.model.svg.line.color,
+            width: KFK.APP.model.svg.line.width,
+            linecap: KFK.APP.model.svg.line.linecap ? "round" : "square",
+        }
+    );
+
+    let theLine = KFK.justCreatedSvgLine;
+    KFK.setLineToRemember(theLine);
+
+    KFK.APP.setData("show", "shape_property", true);
+    KFK.APP.setData("show", "customshape", false);
+    KFK.APP.setData("show", "customline", true);
+    KFK.APP.setData("show", "custombacksvg", false);
+    KFK.APP.setData("show", "customfont", false);
+    KFK.APP.setData("show", "layercontrol", false);
+
+    KFK.pickedSvgLine = theLine;
+    let color = theLine.attr("stroke");
+    let width = theLine.attr("origin-width");
+    let linecap = theLine.attr("stroke-linecap");
+    $("#lineColor").spectrum("set", color);
+    $("#spinner_line_width").spinner("value", width);
+
+    KFK.syncLinePut("C", theLine, "create new", null, false);
+    if (!shiftKey) {
+        KFK.linkPosLine.splice(0, 2);
+        KFK.setMode("pointer");
+    } else {
+        KFK.linkPosLine[0] = KFK.linkPosLine[1];
+        KFK.linkPosLine.splice(1, 1);
     }
-    KFK.selectNode(jqDIV);
-  }
 };
 
-KFK.getNearGridPoint = function (x, y) {
-  if (y === undefined && x.x) {
-    return KFK._getNearGridPoint(x.x, x.y);
-  } else {
-    return KFK._getNearGridPoint(x, y);
-  }
+KFK.addLinkTo = function(jq1, idToAdd) {
+    let linksArr = KFK.stringToArray(jq1.attr("linkto"));
+    //过滤掉不存在的节点
+    // linksArr = linksArr.filter((aId) => {
+    //   return ($(`#${aId}`).length > 0) && aId !== jq1.attr("id");
+    // })
+    //把新的对手节点放进去
+    if (linksArr.indexOf(idToAdd) < 0) {
+        linksArr.push(idToAdd);
+    }
+    jq1.attr("linkto", linksArr.join(","));
 };
-KFK._getNearGridPoint = function (x, y) {
-  let newX = x;
-  let newY = y;
-  if (x % KFK.APP.model.gridWidth < KFK.APP.model.gridWidth * 0.5) {
-    newX = Math.floor(x / KFK.APP.model.gridWidth) * KFK.APP.model.gridWidth;
-  } else {
-    newX =
-      (Math.floor(x / KFK.APP.model.gridWidth) + 1) * KFK.APP.model.gridWidth;
-  }
-  if (y % KFK.APP.model.gridWidth < KFK.APP.model.gridWidth * 0.5) {
-    newY = Math.floor(y / KFK.APP.model.gridWidth) * KFK.APP.model.gridWidth;
-  } else {
-    newY =
-      (Math.floor(y / KFK.APP.model.gridWidth) + 1) * KFK.APP.model.gridWidth;
-  }
-  return { x: newX, y: newY };
+KFK.buildConnectionBetween = function(jq1, jq2) {
+    KFK.addLinkTo(jq1, jq2.attr("id"));
+    KFK.removeLinkTo(jq2, jq1.attr("id"));
+};
+KFK.removeLinkTo = function(jq, idToRemove) {
+    let str = jq.attr("linkto");
+    let arr = KFK.stringToArray(str);
+    //如对手节点在反方向存在，就把反方向的对手节点去掉
+    let index = arr.indexOf(idToRemove);
+    if (index >= 0) {
+        arr.splice(index, 1);
+        if (arr.length > 0) jq.attr("linkto", arr.join(","));
+        else jq.removeAttr("linkto");
+    }
+};
+
+KFK.distance = function(p1, p2) {
+    return Math.sqrt(
+        (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y)
+    );
+};
+
+KFK.getZIndex = function(jqDiv) {
+    let zz = parseInt(jqDiv.css("z-index"));
+    zz = isNaN(zz) ? 0 : zz;
+    return zz;
+};
+KFK.setZIndex = function(jqDiv, zz) {
+    jqDiv.css("z-index", zz);
+};
+KFK.cancelAlreadySelected = function() {
+    while (KFK.selectedDIVs.length > 0) {
+        KFK.deselectNode(KFK.selectedDIVs[0]);
+    }
+    KFK.selectedDIVs.clear();
+    KFK.resetPropertyOnMultipleNodesSelected();
+    KFK.focusOnNode(null);
+};
+KFK.resetPropertyOnMultipleNodesSelected = function() {
+    KFK.APP.setData("show", "arrange_multi_nodes", KFK.selectedDIVs.length > 1);
+    KFK.APP.setData("show", "shape_property", KFK.selectedDIVs.length > 0);
+    if (KFK.selectedDIVs.length > 1) KFK.setRightTabIndex(1);
+};
+
+KFK.undo = async() => {
+    if (KFK.opz < 0) {
+        KFK.debug("undo 到底了");
+        return;
+    }
+    let ope = KFK.opstack[KFK.opz];
+    if (ope.cmd === "LOCK") {
+        KFK.sendCmd("UNLOCKNODE", {
+            doc_id: KFK.APP.model.cocodoc.doc_id,
+            nodeid: ope.from,
+        });
+    } else if (ope.cmd === "UNLOCK") {
+        KFK.sendCmd("LOCKNODE", {
+            doc_id: KFK.APP.model.cocodoc.doc_id,
+            nodeid: ope.from,
+        });
+    } else if (ope.cmd === "LOCKLINE") {
+        KFK.sendCmd("UNLOCKLINE", {
+            doc_id: KFK.APP.model.cocodoc.doc_id,
+            nodeid: ope.from,
+        });
+    } else if (ope.cmd === "UNLOCKLINE") {
+        KFK.sendCmd("LOCKLINE", {
+            doc_id: KFK.APP.model.cocodoc.doc_id,
+            nodeid: ope.from,
+        });
+    } else {
+        if (ope.etype === "DIV") {
+            for (let i = 0; i < ope.from.length; i++) {
+                if (ope.from[i] === "" && ope.to[i] !== "") {
+                    //ope is C
+                    jqTo = $(`#${ope.toId[i]}`);
+                    await KFK.syncNodePut("D", jqTo, "undo", null, true, 0, 1);
+                } else if (ope.from[i] !== "" && ope.to[i] === "") {
+                    //ope is D
+                    let jqFrom = $($.parseHTML(ope.from[i]));
+                    let nodeid = jqFrom.attr("id");
+                    KFK.JC3.append(jqFrom);
+                    console.log("Undo a deelte");
+                    jqFrom = $(`#${nodeid}`);
+                    await KFK.setNodeEventHandler(jqFrom, async function() {
+                        console.log("Undo add EventListener");
+                        KFK.redrawLinkLines(jqFrom, "undo");
+                        if (jqFrom.hasClass("lock")) {
+                            console.log("has lock");
+                            KFK.updateNodeEvent(jqFrom, "draggable", "destroy");
+                            KFK.updateNodeEvent(jqFrom, "resizable", "destroy");
+                            KFK.updateNodeEvent(jqFrom, "droppable", "destroy");
+                        } else {
+                            KFK.debug(nodeid, "NOT hasclass lock");
+                        }
+                        await KFK.syncNodePut("C", jqFrom, "undo", null, true, 0, 1);
+                    });
+                } else if (ope.from[i] !== "" && ope.to[i] !== "") {
+                    //ope is U
+                    let jqTo = $(`#${ope.toId[i]}`);
+                    jqTo.prop("outerHTML", ope.from[i]);
+                    jqTo = $(`#${ope.toId[i]}`); //yes, re-select
+                    await KFK.setNodeEventHandler(jqTo, async function() {
+                        KFK.redrawLinkLines(jqTo, "undo", true);
+                        if (jqTo.hasClass("lock")) {
+                            KFK.updateNodeEvent(jqTo, "draggable", "destroy");
+                            KFK.updateNodeEvent(jqTo, "resizable", "destroy");
+                            KFK.updateNodeEvent(jqTo, "droppable", "destroy");
+                        }
+                        KFK.replaceNodeInSelectedDIVs(jqTo);
+                        await KFK.syncNodePut("U", jqTo, "undo", null, true, 0, 1);
+                    });
+                }
+            }
+            if (ope.from.length > 1) {
+                KFK.debug("selected count after undo", KFK.selectedDIVs.length);
+                KFK.setSelectedNodesBoundingRect();
+            }
+        } else if (ope.etype === "SLINE") {
+            KFK.hideLineTransformer();
+            if (ope.from === "" && ope.to !== "") {
+                //ope is C
+                let toId = ope.toId;
+                let toLine = KFK.svgDraw.findOne(`.${toId}`);
+                await KFK.syncLinePut("D", toLine, "undo", null, true);
+            } else if (ope.from !== "" && ope.to === "") {
+                //ope is D
+                let fromId = ope.fromId;
+                let fromLine = KFK.restoreSvgLine(fromId, ope.from);
+                await KFK.syncLinePut("C", fromLine, "undo", null, true);
+            } else if (ope.from !== "" && ope.to !== "") {
+                //ope is U
+                let toLine = KFK.svgDraw.findOne(`.${ope.toId}`);
+                let fromLine = KFK.restoreSvgLine(ope.fromId, ope.from);
+                //fromLine与toLine的ID相同，因此在restoreSvgLine时，就自动把toLine换成了fromLine
+                //不用删除toLine
+                await KFK.syncLinePut("U", fromLine, "undo", toLine, true);
+            }
+        }
+    }
+
+    KFK.opz = KFK.opz - 1;
+};
+
+KFK.getLineIdFromString = function(str) {
+    let m = str.match(/id\s*=\s*('|")([^"]+)('|")/);
+    if (m) {
+        return m[2];
+    } else return null;
+};
+
+KFK.redo = async() => {
+    if (KFK.opz >= KFK.opstack.length - 1) {
+        KFK.debug("redo 到头了");
+        return;
+    }
+    KFK.opz = KFK.opz + 1;
+    let ope = KFK.opstack[KFK.opz];
+    if (ope.cmd === "LOCK") {
+        KFK.sendCmd("LOCKNODE", {
+            doc_id: KFK.APP.model.cocodoc.doc_id,
+            nodeid: ope.from,
+        });
+    } else if (ope.cmd === "UNLOCK") {
+        KFK.sendCmd("UNLOCKNODE", {
+            doc_id: KFK.APP.model.cocodoc.doc_id,
+            nodeid: ope.from,
+        });
+    } else if (ope.cmd === "LOCKLINE") {
+        KFK.sendCmd("LOCKLINE", {
+            doc_id: KFK.APP.model.cocodoc.doc_id,
+            nodeid: ope.from,
+        });
+    } else if (ope.cmd === "UNLOCKLINE") {
+        KFK.sendCmd("UNLOCKLINE", {
+            doc_id: KFK.APP.model.cocodoc.doc_id,
+            nodeid: ope.from,
+        });
+    } else {
+        if (ope.etype === "DIV") {
+            for (let i = 0; i < ope.from.length; i++) {
+                if (ope.from[i] === "" && ope.to[i] !== "") {
+                    // ope is C
+                    let jqTo = $($.parseHTML(ope.to[i]));
+                    let nodeid = jqTo.attr("id");
+                    KFK.C3.appendChild(el(jqTo));
+                    jqTo = $(`#${nodeid}`);
+                    await KFK.setNodeEventHandler(jqTo, async function() {
+                        KFK.redrawLinkLines(jqTo, "redo", true);
+                        if (jqTo.hasClass("lock")) {
+                            KFK.updateNodeEvent(jqTo, "draggable", "destroy");
+                            KFK.updateNodeEvent(jqTo, "resizable", "destroy");
+                            KFK.updateNodeEvent(jqTo, "droppable", "destroy");
+                        } else {
+                            KFK.debug(nodeid, "NOT hasclass lock");
+                        }
+                        await KFK.syncNodePut("C", jqTo, "redo", null, true, 0, 1);
+                    });
+                } else if (ope.from[i] !== "" && ope.to[i] === "") {
+                    //ope is D
+                    let jqFrom = $(`#${ope.fromId[i]}`);
+                    await KFK.syncNodePut("D", jqFrom, "redo", null, true, 0, 1);
+                } else if (ope.from[i] != "" && ope.to[i] !== "") {
+                    //ope is U
+                    let jqFrom = $(`#${ope.fromId[i]}`);
+                    jqFrom.prop("outerHTML", ope.to[i]);
+                    jqFrom = $(`#${ope.fromId[i]}`);
+                    await KFK.setNodeEventHandler(jqFrom, async function() {
+                        KFK.redrawLinkLines(jqFrom, "redo", true);
+                        if (jqFrom.hasClass("lock")) {
+                            KFK.updateNodeEvent(jqFrom, "draggable", "destroy");
+                            KFK.updateNodeEvent(jqFrom, "resizable", "destroy");
+                            KFK.updateNodeEvent(jqFrom, "droppable", "destroy");
+                        }
+                        KFK.replaceNodeInSelectedDIVs(jqFrom);
+                        await KFK.syncNodePut("U", jqFrom, "redo", null, true, 0, 1);
+                    });
+                }
+            }
+            if (ope.from.length > 1) {
+                KFK.setSelectedNodesBoundingRect();
+            }
+        } else if (ope.etype === "SLINE") {
+            if (ope.from === "" && ope.to !== "") {
+                //ope is C
+                let toId = ope.toId;
+                let toLine = KFK.restoreSvgLine(toId, ope.to);
+                await KFK.syncLinePut("C", toLine, "redo", null, true);
+            } else if (ope.from !== "" && ope.to === "") {
+                //ope is D
+                let fromId = ope.fromId;
+                let fromLine = KFK.svgDraw.findOne(`.${fromId}`);
+                await KFK.syncLinePut("D", fromLine, "redo", null, true);
+            } else if (ope.from !== "" && ope.to !== "") {
+                //ope is U
+                let fromLine = KFK.svgDraw.findOne(`.${ope.fromId}`);
+                let toLine = KFK.restoreSvgLine(ope.toId, ope.to);
+                //fromLine与toLine的ID相同，因此在restoreSvgLine时，就自动把fromLine换成了toLine
+                //不用删除fromLine
+                await KFK.syncLinePut("U", toLine, "redo", fromLine, true);
+            }
+        }
+    }
+};
+
+KFK.initLayout = function() {
+    KFK.debug("...initLayout");
+    KFK.JC1 = $("#C1");
+    KFK.C1 = el(KFK.JC1);
+    KFK.JS1 = $("#S1");
+    KFK.S1 = el(KFK.JS1);
+    KFK.JC1.css({
+        width: KFK.px(KFK.PageWidth * (KFK.PageNumberHori + 2)),
+        height: KFK.px(KFK.PageHeight * (KFK.PageNumberVert + 2)),
+    });
+};
+
+KFK.scrollToPos = function(pos) {
+    KFK.JS1.scrollLeft(pos.x);
+    KFK.JS1.scrollTop(pos.y);
+};
+
+//create C3 create c3
+KFK.initC3 = function() {
+    KFK.debug("...initC3");
+    KFK.JC3 = $("#C3");
+    KFK.C3 = el(KFK.JC3);
+    KFK.JC3.css({
+        width: KFK.px(KFK.PageWidth * KFK.PageNumberHori),
+        height: KFK.px(KFK.PageHeight * KFK.PageNumberVert),
+        left: KFK.px(KFK.LeftB),
+        top: KFK.px(KFK.TopB),
+    });
+    // KFK.JC3.focus((evt) => { KFK.debug("JC3 got focus"); })
+    KFK.JCBKG = $("#containerbkg");
+    KFK.JCBKG.css({
+        width: KFK.px(KFK.PageWidth * KFK.PageNumberHori),
+        height: KFK.px(KFK.PageHeight * KFK.PageNumberVert),
+        left: KFK.px(KFK.LeftB),
+        top: KFK.px(KFK.TopB),
+    });
+
+    KFK.JC3.dblclick(async function(evt) {
+        if (KFK.inDesigner() === false) return;
+        if (KFK.isEditting && KFK.quillEdittingNode) {
+            await KFK.finishQuillEditting();
+            return;
+        } else if (KFK.isEditting && KFK.inlineEditor) {
+            KFK.endInlineEditing();
+        }
+        if (KFK.isEditting || KFK.resizing || KFK.dragging) {
+            return;
+        }
+        if (KFK.inOverviewMode === true) {
+            KFK.toggleOnePage({ x: evt.offsetX, y: evt.offsetY });
+        } else {
+            KFK.toggleOnePage();
+        }
+        KFK.cancelTempLine();
+        evt.preventDefault();
+        evt.stopImmediatePropagation();
+        evt.stopPropagation();
+    });
+    //click c3
+    KFK.JC3.on("click", async function(evt) {
+        if (KFK.inDesigner() === false) return;
+        if (KFK.isEditting && KFK.quillEdittingNode) {
+            await KFK.finishQuillEditting();
+            return;
+        } else if (KFK.isEditting && KFK.inlineEditor) {
+            KFK.endInlineEditing();
+        }
+        if (KFK.isEditting || KFK.resizing || KFK.dragging) {
+            return;
+        }
+        evt.preventDefault();
+        KFK.closeActionLog();
+        if (KFK.ignoreClick) return;
+
+        // KFK.focusOnNode(null);
+        KFK.justCreatedJqNode = null;
+        KFK.justCreatedSvgLine = null;
+
+        KFK.pickedSvgLine = null;
+
+        // if (KFK.mode === 'lock' || KFK.mode === 'connect') {
+        //   KFK.setMode('pointer');
+        // }
+        if (KFK.docIsReadOnly()) return;
+
+        if (KFK.tobeTransformJqLine) KFK.tobeTransformJqLine.removeClass("shadow2");
+        $("#linetransformer").css("visibility", "hidden");
+        KFK.tobeTransformJqLine = null;
+
+        if (KFK.afterDragging === true) {
+            KFK.afterDragging = false;
+            // return;
+        }
+        if (KFK.afterResizing === true) {
+            KFK.afterResizing = false;
+            // return;
+        }
+
+        //place image, place material
+        if (KFK.mode === "material" && KFK.materialPicked) {
+            let fileId = KFK.myuid();
+
+            await KFK.makeImageDiv(
+                fileId,
+                KFK.scrXToJc3X(evt.clientX),
+                KFK.scrYToJc3Y(evt.clientY),
+                KFK.materialPicked.url
+            );
+            return;
+        } else if (KFK.mode === "line") {
+            KFK.yarkLinePoint(
+                KFK.scrXToJc3X(evt.clientX),
+                KFK.scrYToJc3Y(evt.clientY),
+                evt.shiftKey
+            );
+            return;
+        } else {
+            if (KFK.selectedDIVs.length > 0) {
+                if (KFK.duringKuangXuan === false) KFK.cancelAlreadySelected();
+            }
+            if (cocoConfig.node[KFK.mode]) {
+                let variant = "default";
+                if (KFK.mode === "yellowtip") {
+                    variant = cocoConfig.node.yellowtip.defaultTip;
+                }
+                let realX = KFK.scrXToJc3X(evt.clientX);
+                let realY = KFK.scrYToJc3Y(evt.clientY);
+                let jqDIV = await KFK.placeNode(
+                    evt.shiftKey,
+                    KFK.myuid(),
+                    KFK.mode,
+                    variant,
+                    realX,
+                    realY,
+                    undefined,
+                    undefined,
+                    "",
+                    ""
+                );
+                if (!evt.shiftKey) KFK.setMode("pointer");
+                await KFK.syncNodePut("C", jqDIV, "new node", null, false, 0, 1);
+            }
+        }
+
+        // KFK.setRightTabIndex();
+        evt.stopImmediatePropagation();
+        evt.stopPropagation();
+        evt.preventDefault();
+    });
+
+    KFK.JC3.mousedown((evt) => {
+        if (KFK.inDesigner() === false) return;
+        if (KFK.mode === "pointer" && KFK.docIsReadOnly() === false) {
+            KFK.kuangXuanMouseIsDown = true;
+            KFK.kuangXuanStartPoint = {
+                x: KFK.scrXToJc3X(evt.clientX),
+                y: KFK.scrYToJc3Y(evt.clientY),
+            };
+        }
+    });
+    KFK.JC3.mouseup(async(evt) => {
+        if (KFK.inDesigner() === false) return;
+        KFK.ignoreClick = false;
+        if (KFK.lineDragging && KFK.docIsReadOnly() === false) {
+            let parr = KFK.lineToDrag.array();
+            if (KFK.APP.model.cococonfig.snap) {
+                let p1 = { x: parr[0][0], y: parr[0][1] };
+                let p2 = { x: parr[1][0], y: parr[1][1] };
+                p1 = KFK.getNearGridPoint(p1.x, p1.y);
+                p2 = KFK.getNearGridPoint(p2.x, p2.y);
+                KFK.lineToDrag.dmove(p1.x - parr[0][0], p1.y - parr[0][1]);
+                KFK.lineToDrag.attr({
+                    "stroke-width": KFK.lineToDrag.attr("origin-width"),
+                });
+                KFK.lineToRemember.attr({
+                    "stroke-width": KFK.lineToRemember.attr("origin-width"),
+                });
+                await KFK.syncLinePut(
+                    "U",
+                    KFK.lineToDrag,
+                    "move",
+                    KFK.lineToRemember,
+                    false
+                );
+                KFK.setLineToRemember(KFK.lineToDrag);
+            }
+            KFK.lineDragging = false;
+            KFK.lineToDrag = null;
+            $(document.body).css("cursor", "default");
+        }
+        if (KFK.mode === "pointer" && KFK.docIsReadOnly() === false) {
+            KFK.kuangXuanMouseIsDown = false;
+            KFK.kuangXuanEndPoint = {
+                x: KFK.scrXToJc3X(evt.clientX),
+                y: KFK.scrYToJc3Y(evt.clientY),
+            };
+            if (KFK.duringKuangXuan) {
+                KFK.ignoreClick = true;
+                KFK.endKuangXuan(KFK.kuangXuanStartPoint, KFK.kuangXuanEndPoint);
+                KFK.duringKuangXuan = false;
+            }
+        }
+    });
+
+    KFK.JC3.on("mousemove", function(evt) {
+        if (KFK.inDesigner() === false) return;
+        if (KFK.inPresentingMode || KFK.inOverviewMode) return;
+        KFK.upateUserMousePos(KFK.APP.model.cocouser, evt.clientX, evt.clientY);
+
+        KFK.currentMousePos.x = evt.clientX;
+        KFK.currentMousePos.y = evt.clientY;
+
+        let indicatorX = KFK.scrXToJc1X(KFK.currentMousePos.x);
+        let indicatorY = KFK.scrYToJc1Y(KFK.currentMousePos.y);
+
+        $("#modeIndicator").css("left", indicatorX + 10);
+        $("#modeIndicator").css("top", indicatorY + 10);
+        // KFK.kuangXuanEndPoint = {
+        //   x: KFK.scrXToJc3X(evt.clientX),
+        //   y: KFK.scrYToJc3Y(evt.clientY)
+        // };
+
+        if (KFK.docIsReadOnly()) return;
+
+        if (
+            KFK.lineToDrag &&
+            KFK.docIsReadOnly() === false &&
+            KFK.lineLocked(KFK.lineToDrag) === false
+        ) {
+            if (KFK.distance(KFK.mousePosToRemember, KFK.currentMousePos) > 5) {
+                KFK.lineDragging = true;
+            }
+        } else {
+            KFK.lineToDrag = null;
+        }
+        //支持按下鼠标， 框选多个node
+        // if (KFK.isDuringKuangXuan()){
+        //   KFK.kuangXuan(KFK.kuangXuanStartPoint, KFK.kuangXuanEndPoint);
+        // }
+        if (KFK.lineDragging || KFK.lineMoverDragging || KFK.minimapMouseDown) {
+            KFK.duringKuangXuan = false;
+        }
+
+        if (KFK.mode === "connect") {
+            if (KFK.linkPosNode.length === 1) {
+                KFK.lineTemping = true;
+                let tmpPoint = {
+                    x: KFK.scrXToJc3X(KFK.currentMousePos.x),
+                    y: KFK.scrYToJc3Y(KFK.currentMousePos.y),
+                };
+                let fromPoint = null;
+                let toPoint = null;
+                let selectedFromIndex = 0;
+                let shortestDistance = KFK.distance(KFK.tmpPos.points[0], tmpPoint);
+                for (let i = 0; i < KFK.tmpPos.points.length; i++) {
+                    fromPoint = KFK.tmpPos.points[i];
+                    toPoint = tmpPoint;
+                    let tmp_dis = KFK.distance(fromPoint, toPoint);
+                    if (tmp_dis < shortestDistance) {
+                        shortestDistance = tmp_dis;
+                        selectedFromIndex = i;
+                    }
+                }
+                KFK.svgDrawTmpLine(
+                    KFK.tmpPos.points[selectedFromIndex].x,
+                    KFK.tmpPos.points[selectedFromIndex].y,
+                    tmpPoint.x,
+                    tmpPoint.y, { color: KFK.YIQColorAux || "#888888", stroke: 10 }
+                );
+            }
+        }
+        if (KFK.mode === "line") {
+            if (KFK.linkPosLine.length === 1) {
+                KFK.lineTemping = true;
+                let tmpPoint = {
+                    x: KFK.scrXToJc3X(KFK.currentMousePos.x),
+                    y: KFK.scrYToJc3Y(KFK.currentMousePos.y),
+                };
+                KFK.svgDrawTmpLine(
+                    KFK.linkPosLine[0].center.x,
+                    KFK.linkPosLine[0].center.y,
+                    tmpPoint.x,
+                    tmpPoint.y, { color: KFK.YIQColorAux || "#888888", stroke: 10 }
+                );
+            }
+        }
+        if (
+            KFK.lineDragging &&
+            KFK.docIsReadOnly() === false &&
+            KFK.lineLocked(KFK.lineToDrag) === false
+        ) {
+            let realX = KFK.scrXToJc3X(evt.clientX);
+            let realY = KFK.scrYToJc3Y(evt.clientY);
+            let deltaX = realX - KFK.lineDraggingStartPoint.x;
+            let deltaY = realY - KFK.lineDraggingStartPoint.y;
+            KFK.lineToDrag.dmove(deltaX, deltaY);
+            KFK.lineDraggingStartPoint.x += deltaX;
+            KFK.lineDraggingStartPoint.y += deltaY;
+        }
+    });
+
+    KFK.zoomLevel = 1;
+    KFK.addMinimap();
+};
+
+KFK.isDuringKuangXuan = function() {
+    if (
+        KFK.mode === "pointer" &&
+        KFK.kuangXuanMouseIsDown &&
+        KFK.lineDragging === false &&
+        KFK.lineMoverDragging === false &&
+        KFK.minimapMouseDown === false
+    )
+        return true;
+    else return false;
+};
+
+KFK.addMinimap = function() {
+    KFK.refreshC3event = new CustomEvent("refreshC3");
+    KFK.zoomEvent = new CustomEvent("zoomC3");
+    $("#minimap").minimap(KFK, KFK.JS1, KFK.JC3, KFK.JC1);
+};
+
+KFK.get13Number = function(str) {
+    let arr = str.split("");
+    let num = 0;
+    arr.forEach((ch) => {
+        num += ch.codePointAt(0);
+    });
+    num = num % 13;
+    return num;
+};
+
+KFK.upateUserMousePos = function(user, x, y) {
+    let pos = { x: KFK.scrXToJc1X(x), y: KFK.scrYToJc1Y(y) };
+    let bglabel = user.name;
+
+    if (KFK.mouseTimer !== null) {
+        clearTimeout(KFK.mouseTimer);
+    }
+    let consisedUser = { userid: user.userid, name: user.name };
+    KFK.mouseTimer = setTimeout(function() {
+        KFK.WS.put("MOUSE", { user: consisedUser, pos: pos });
+        KFK.mouseTimer = null;
+    }, 5);
+    //  KFK.WS.put("MOUSE", { user: consisedUser, pos: pos });
+};
+
+KFK.showOtherUserMovingBadge = function(mouse) {
+    let pos = mouse.pos;
+    let userid = mouse.user.userid;
+    let bgid = KFK.badgeIdMap[userid];
+    if (!bgid) {
+        bgid = KFK.myuid();
+        KFK.badgeIdMap[userid] = bgid;
+    }
+    let bglabel = mouse.user.name;
+    let jqBadgeDIV = $(document).find("#badge_" + bgid);
+    let class_ser = KFK.get13Number(bgid);
+    if (jqBadgeDIV.length === 0) {
+        let tmpdiv = document.createElement("div");
+        KFK.C3.appendChild(tmpdiv);
+        jqBadgeDIV = $(tmpdiv);
+        jqBadgeDIV.attr("id", "badge_" + bgid);
+        jqBadgeDIV.addClass(`userbadge userbadge_${class_ser}`);
+    }
+    jqBadgeDIV.css("display", "block");
+    jqBadgeDIV.html(bglabel);
+
+    let width = jqBadgeDIV.width();
+    let height = jqBadgeDIV.height();
+
+    let wwidth = window.innerWidth;
+    let wheight = window.innerHeight;
+    let x = KFK.jc1XToJc3X(pos.x);
+    let y = KFK.jc1YToJc3Y(pos.y);
+    let sc = $("#S1");
+    let deltaX = sc.scrollLeft() - KFK.LeftB;
+    let deltaY = sc.scrollTop() - KFK.TopB;
+    if (x - deltaX > wwidth) {
+        x = deltaX + wwidth - width;
+    } else if (x < deltaX) {
+        x = deltaX;
+    }
+    if (y - deltaY > wheight) {
+        y = deltaY + wheight - height;
+    } else if (y < deltaY) {
+        y = deltaY;
+    }
+
+    jqBadgeDIV.css("top", y);
+    jqBadgeDIV.css("left", x);
+
+    if (KFK.badgeTimers[bgid] !== undefined) {
+        clearTimeout(KFK.badgeTimers[bgid]);
+    }
+    //过一段时后消失, 如果其他用户再动, 再显示
+    KFK.badgeTimers[bgid] = setTimeout(() => {
+        jqBadgeDIV.css("display", "none");
+        delete KFK.badgeTimers[bgid];
+    }, cocoConfig.badge.lastSeconds);
+};
+
+KFK.resetNodeZIndex = function(data) {
+    $.each(data, (i, val) => {
+        $(`#${i}`).css("z-index", val);
+    });
+};
+
+KFK.moveLineMoverTo = function(position) {
+    $("#linetransformer").css("left", position.x - 10);
+    $("#linetransformer").css("top", position.y - 10);
+};
+KFK.selectNode = function(jqDIV) {
+    jqDIV.addClass("selected");
+    KFK.selectedDIVs.push(jqDIV);
+    KFK.setSelectedNodesBoundingRect();
+};
+
+KFK.setSelectedNodesBoundingRect = function() {
+    let brect = $(".boundingrect");
+    if (brect.length <= 0) {
+        let rect = document.createElement("div");
+        brect = $(rect);
+        brect.addClass("boundingrect");
+        brect.appendTo(KFK.JC3);
+        brect.css("z-index", -1);
+    }
+    if (KFK.selectedDIVs.length > 1) {
+        let rect = KFK.getBoundingRectOfSelectedDIVs();
+        brect.css("left", rect.left - cocoConfig.ui.boundingrect_padding);
+        brect.css("top", rect.top - cocoConfig.ui.boundingrect_padding);
+        brect.css("width", rect.width + cocoConfig.ui.boundingrect_padding * 2);
+        brect.css("height", rect.height + cocoConfig.ui.boundingrect_padding * 2);
+        brect.show();
+    } else {
+        brect.hide();
+    }
+};
+KFK.kuangXuan = function(pt1, pt2) {
+    KFK.debug("pt1", jstr(pt1), "pt2", jstr(pt2));
+    let x1 = pt1.x + KFK.LeftB;
+    let y1 = pt1.y + KFK.TopB;
+    let x2 = pt2.x + KFK.LeftB;
+    let y2 = pt2.y + KFK.TopB;
+    KFK.debug(x1, y1, x2, y2);
+    let jqRect = $("#selectingrect");
+    jqRect.css("left", Math.min(x1, x2));
+    jqRect.css("top", Math.min(y1, y2));
+    jqRect.css("width", Math.abs(x1 - x2));
+    jqRect.css("height", Math.abs(y1 - y2));
+    if (Math.abs(x1 - x2) < 10 && Math.abs(y1 - y2) < 10) {
+        //这里，如果滑动大小横向和纵向都小于10， 则不作为框选
+        return;
+    }
+    KFK.duringKuangXuan = true;
+    jqRect.show();
+};
+
+KFK.endKuangXuan = function(pt1, pt2) {
+    let jqRect = $("#selectingrect");
+    jqRect.hide();
+    let rect = {
+        left: Math.min(pt1.x, pt2.x),
+        top: Math.min(pt1.y, pt2.y),
+        width: Math.abs(pt1.x - pt2.x),
+        height: Math.abs(pt1.y - pt2.y),
+    };
+    if (rect.width < 10 && rect.height < 10) {
+        //这里，如果滑动大小横向和纵向都小于10， 则不作为框选
+        return;
+    }
+    rect.right = rect.left + rect.width;
+    rect.bottom = rect.top + rect.height;
+
+    while (KFK.selectedDIVs.length > 0) {
+        KFK.deselectNode(KFK.selectedDIVs[0]);
+    }
+    //为防止混乱，框选只对node div有效果
+    KFK.JC3.find(".kfknode").each((index, div) => {
+        let jqDiv = $(div);
+        let divRect = KFK.divRect(jqDiv);
+        if (
+            rect.left < divRect.right &&
+            rect.right > divRect.left &&
+            rect.top < divRect.bottom &&
+            rect.bottom > divRect.top
+        ) {
+            KFK.selectNode(jqDiv);
+        }
+    });
+    if (KFK.selectedDIVs.length > 1) {
+        KFK.resetPropertyOnMultipleNodesSelected();
+    }
+};
+
+KFK.deselectNode = function(theDIV) {
+    $(theDIV).removeClass("selected");
+    let index = KFK.selectedDIVs.indexOf(theDIV);
+    KFK.selectedDIVs.splice(index, 1);
+    KFK.setSelectedNodesBoundingRect();
+};
+
+KFK.selectNodesOnClick = function(jqDIV, shiftKey) {
+    let exist = KFK.selectedDIVs.indexOf(jqDIV);
+    if (shiftKey) {
+        if (exist >= 0) {
+            KFK.deselectNode(KFK.selectedDIVs[exist]);
+        } else {
+            KFK.selectNode(jqDIV);
+        }
+    } else {
+        while (KFK.selectedDIVs.length > 0) {
+            KFK.deselectNode(KFK.selectedDIVs[0]);
+        }
+        KFK.selectNode(jqDIV);
+    }
+};
+
+KFK.getNearGridPoint = function(x, y) {
+    if (y === undefined && x.x) {
+        return KFK._getNearGridPoint(x.x, x.y);
+    } else {
+        return KFK._getNearGridPoint(x, y);
+    }
+};
+KFK._getNearGridPoint = function(x, y) {
+    let newX = x;
+    let newY = y;
+    if (x % KFK.APP.model.gridWidth < KFK.APP.model.gridWidth * 0.5) {
+        newX = Math.floor(x / KFK.APP.model.gridWidth) * KFK.APP.model.gridWidth;
+    } else {
+        newX =
+            (Math.floor(x / KFK.APP.model.gridWidth) + 1) * KFK.APP.model.gridWidth;
+    }
+    if (y % KFK.APP.model.gridWidth < KFK.APP.model.gridWidth * 0.5) {
+        newY = Math.floor(y / KFK.APP.model.gridWidth) * KFK.APP.model.gridWidth;
+    } else {
+        newY =
+            (Math.floor(y / KFK.APP.model.gridWidth) + 1) * KFK.APP.model.gridWidth;
+    }
+    return { x: newX, y: newY };
 };
 
 KFK.px = (v) => {
-  if (typeof v === "string") {
-    if (v.endsWith("px")) {
-      return v;
+    if (typeof v === "string") {
+        if (v.endsWith("px")) {
+            return v;
+        } else {
+            return v + "px";
+        }
     } else {
-      return v + "px";
+        return v + "px";
     }
-  } else {
-    return v + "px";
-  }
-}
+};
 
 KFK.unpx = (v) => {
-  if (typeof v === "string" && v.endsWith("px")) {
-    return parseInt(v.substr(0, v.length - 2));
-  }
-}
-
-KFK.ltPos = function (node) {
-  return {
-    x: node.x - node.width * 0.5,
-    y: node.y - node.height * 0.5
-  };
-}
-
-KFK.getNodeTextAlignment = function (jqDiv) {
-  let ret = "left";
-  let jcTmp = jqDiv.css("justify-content");
-  if (jcTmp === 'flex-start')
-    ret = "left";
-  else if (jcTmp === "center")
-    ret = "center";
-  else if (jcTmp === "flex-end")
-    ret = "right";
-
-  return ret;
+    if (typeof v === "string" && v.endsWith("px")) {
+        return parseInt(v.substr(0, v.length - 2));
+    }
 };
 
-KFK.setNodeTextAlignment = function (jqElem, theType, align) {
-  if (theType === "textarea") {
-    if (align === 'left') {
-      jqElem.css("text-align", "left");
-      jqElem.css("text-align-last", "left");
-    } else if (align === 'center') {
-      jqElem.css("text-align", "center");
-      jqElem.css("text-align-last", "center");
-    } else if (align === "right") {
-      jqElem.css("text-align", "right");
-      jqElem.css("text-align-last", "right");
-    }
-  }
+KFK.ltPos = function(node) {
+    return {
+        x: node.x - node.width * 0.5,
+        y: node.y - node.height * 0.5,
+    };
 };
 
-KFK.editTextNodeWithTextArea = function (innerNode, theDIV, enterSelect = false) {
-  KFK.isEditting = true;
-  theDIV.editting = true;
-  innerNode.editting = true;
-  let oldText = innerNode.innerText;
-  let oldHTML = innerNode.innerHTML;
-  innerNode.style.visibility = "hidden";
-  // theDIV.style.background = "transparent";
-  var textarea = null;
-  if (theDIV.type === "text") textarea = document.createElement("input");
-  else {
-    textarea = document.createElement("textarea");
-    $(textarea).css("word-wrap", "break-word");
-    $(textarea).css("word-break", "break-all");
-    $(textarea).css("text-wrap", "unrestricted");
-  }
-  textarea.style.zIndex = parseInt(theDIV.style.zIndex) + 1;
-  KFK.C3.appendChild(textarea);
-  textarea.style.position = "absolute";
-  textarea.style.top = theDIV.style.top;
-  textarea.style.left = theDIV.style.left;
-  textarea.style.width = theDIV.style.width;
-  textarea.style.height = theDIV.style.height;
-  textarea.style.borderRadius = theDIV.style.borderRadius;
-  textarea.style.color = theDIV.style.color;
-  textarea.style.background = theDIV.style.background;
-  // textarea.style.backgroundColor = theDIV.style.backgroundColor;
-  textarea.style.backgroundColor = "transparent";
-  textarea.style.justifyContent = theDIV.style.justifyContent;
-  textarea.style.fontSize = innerNode.style.fontSize;
-  textarea.style.fontFamily = innerNode.style.fontFamily;
-  textarea.style.borderColor = "#000";
-  textarea.style.borderWidth = innerNode.style.borderWidth;
+KFK.getNodeTextAlignment = function(jqDiv) {
+    let ret = "left";
+    let jcTmp = jqDiv.css("justify-content");
+    if (jcTmp === "flex-start") ret = "left";
+    else if (jcTmp === "center") ret = "center";
+    else if (jcTmp === "flex-end") ret = "right";
 
-  textarea.style.padding = innerNode.style.padding;
-  textarea.style.margin = innerNode.style.margin;
-  textarea.style.overflow = "hidden";
-  textarea.style.outline = innerNode.style.outline;
-  textarea.style.resize = "none";
-  textarea.style.transformOrigin = "left top";
+    return ret;
+};
 
-  KFK.setNodeTextAlignment($(textarea), "textarea", KFK.getNodeTextAlignment($(theDIV)));
-  textarea.style.verticalAlign = "middle";
-
-  textarea.focus();
-  textarea.value = oldText;
-  textarea.select();
-
-  async function removeTextarea(txtChanged) {
-    $(textarea).remove();
-    window.removeEventListener("click", handleOutsideClick);
-    innerNode.style.visibility = "visible";
-    KFK.isEditting = false;
-    innerNode.editting = false;
-    theDIV.editting = false;
-    KFK.focusOnC3();
-    if (txtChanged) {
-      await KFK.syncNodePut("U", $(theDIV), "change text", KFK.fromJQ, false, 0, 1);
+KFK.setNodeTextAlignment = function(jqElem, theType, align) {
+    if (theType === "textarea") {
+        if (align === "left") {
+            jqElem.css("text-align", "left");
+            jqElem.css("text-align-last", "left");
+        } else if (align === "center") {
+            jqElem.css("text-align", "center");
+            jqElem.css("text-align-last", "center");
+        } else if (align === "right") {
+            jqElem.css("text-align", "right");
+            jqElem.css("text-align-last", "right");
+        }
     }
-  }
+};
 
-  function setTextareaWidth(newWidth) {
-    if (!newWidth) {
-      // set width for placeholder
-      newWidth = KFK.unpx(innerNode.style.width);
+KFK.editTextNodeWithTextArea = function(
+    innerNode,
+    theDIV,
+    enterSelect = false
+) {
+    KFK.isEditting = true;
+    theDIV.editting = true;
+    innerNode.editting = true;
+    let oldText = innerNode.innerText;
+    let oldHTML = innerNode.innerHTML;
+    innerNode.style.visibility = "hidden";
+    // theDIV.style.background = "transparent";
+    var textarea = null;
+    if (theDIV.type === "text") textarea = document.createElement("input");
+    else {
+        textarea = document.createElement("textarea");
+        $(textarea).css("word-wrap", "break-word");
+        $(textarea).css("word-break", "break-all");
+        $(textarea).css("text-wrap", "unrestricted");
     }
-    // some extra fixes on different browsers
-    var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    var isFirefox = navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
-    if (isSafari || isFirefox) {
-      newWidth = Math.ceil(newWidth);
+    textarea.style.zIndex = parseInt(theDIV.style.zIndex) + 1;
+    KFK.C3.appendChild(textarea);
+    textarea.style.position = "absolute";
+    textarea.style.top = theDIV.style.top;
+    textarea.style.left = theDIV.style.left;
+    textarea.style.width = theDIV.style.width;
+    textarea.style.height = theDIV.style.height;
+    textarea.style.borderRadius = theDIV.style.borderRadius;
+    textarea.style.color = theDIV.style.color;
+    textarea.style.background = theDIV.style.background;
+    // textarea.style.backgroundColor = theDIV.style.backgroundColor;
+    textarea.style.backgroundColor = "transparent";
+    textarea.style.justifyContent = theDIV.style.justifyContent;
+    textarea.style.fontSize = innerNode.style.fontSize;
+    textarea.style.fontFamily = innerNode.style.fontFamily;
+    textarea.style.borderColor = "#000";
+    textarea.style.borderWidth = innerNode.style.borderWidth;
+
+    textarea.style.padding = innerNode.style.padding;
+    textarea.style.margin = innerNode.style.margin;
+    textarea.style.overflow = "hidden";
+    textarea.style.outline = innerNode.style.outline;
+    textarea.style.resize = "none";
+    textarea.style.transformOrigin = "left top";
+
+    KFK.setNodeTextAlignment(
+        $(textarea),
+        "textarea",
+        KFK.getNodeTextAlignment($(theDIV))
+    );
+    textarea.style.verticalAlign = "middle";
+
+    textarea.focus();
+    textarea.value = oldText;
+    textarea.select();
+
+    async function removeTextarea(txtChanged) {
+        $(textarea).remove();
+        window.removeEventListener("click", handleOutsideClick);
+        innerNode.style.visibility = "visible";
+        KFK.isEditting = false;
+        innerNode.editting = false;
+        theDIV.editting = false;
+        KFK.focusOnC3();
+        if (txtChanged) {
+            await KFK.syncNodePut(
+                "U",
+                $(theDIV),
+                "change text",
+                KFK.fromJQ,
+                false,
+                0,
+                1
+            );
+        }
     }
 
-    var isEdge = document.documentMode || /Edge/.test(navigator.userAgent);
-    if (isEdge) {
-      newWidth += 1;
-    }
-    textarea.style.width = newWidth + "px";
-  }
+    function setTextareaWidth(newWidth) {
+        if (!newWidth) {
+            // set width for placeholder
+            newWidth = KFK.unpx(innerNode.style.width);
+        }
+        // some extra fixes on different browsers
+        var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        var isFirefox = navigator.userAgent.toLowerCase().indexOf("firefox") > -1;
+        if (isSafari || isFirefox) {
+            newWidth = Math.ceil(newWidth);
+        }
 
-  textarea.oncopy = function (evt) {
-    evt.stopPropagation();
-  };
-  textarea.onpaste = function (evt) {
-    evt.stopPropagation();
-  };
-
-  textarea.addEventListener("keydown", function (evt) {
-    if (evt.keyCode === 13 && (evt.shiftKey || evt.ctrlKey || evt.metaKey)) {
-      innerNode.innerText = textarea.value;
-      removeTextarea(textarea.value !== oldText);
-      KFK.focusOnC3();
+        var isEdge = document.documentMode || /Edge/.test(navigator.userAgent);
+        if (isEdge) {
+            newWidth += 1;
+        }
+        textarea.style.width = newWidth + "px";
     }
-    // on esc do not set value back to node
-    else if (evt.keyCode === 27) {
-      removeTextarea(false);
-      evt.stopImmediatePropagation();
-      evt.stopPropagation();
-      KFK.focusOnC3();
+
+    textarea.oncopy = function(evt) {
+        evt.stopPropagation();
+    };
+    textarea.onpaste = function(evt) {
+        evt.stopPropagation();
+    };
+
+    textarea.addEventListener("keydown", function(evt) {
+        if (evt.keyCode === 13 && (evt.shiftKey || evt.ctrlKey || evt.metaKey)) {
+            innerNode.innerText = textarea.value;
+            removeTextarea(textarea.value !== oldText);
+            KFK.focusOnC3();
+        }
+        // on esc do not set value back to node
+        else if (evt.keyCode === 27) {
+            removeTextarea(false);
+            evt.stopImmediatePropagation();
+            evt.stopPropagation();
+            KFK.focusOnC3();
+        } else {
+            if (evt.keyCode == 35 || evt.keyCode === 34) {
+                //END  || PageDown
+                evt.preventDefault();
+                evt.stopPropagation();
+            } else if (evt.keyCode === 36 || evt.keyCode === 33) {
+                //HOME
+                evt.preventDefault();
+                evt.stopPropagation();
+            }
+        }
+        evt.stopImmediatePropagation();
+        evt.stopPropagation();
+    });
+
+    function handleOutsideClick(evt) {
+        if (evt.target !== textarea) {
+            innerNode.innerText = textarea.value;
+            removeTextarea(textarea.value !== oldText);
+            KFK.focusOnC3();
+        }
+    }
+    setTimeout(() => {
+        window.addEventListener("click", handleOutsideClick);
+    });
+};
+
+KFK.getKFKNodeNumber = function() {
+    let nodes = KFK.JC3.find(".kfknode");
+    return nodes.length;
+};
+
+KFK.placeNode = async function(
+    shiftKey,
+    id,
+    type,
+    variant,
+    x,
+    y,
+    w,
+    h,
+    attach,
+    attach2
+) {
+    let aNode = new Node(id, type, variant, x, y, w, h, attach, attach2);
+    KFK.nodes.push(aNode);
+    let nodeDIV = await KFK._createNode(aNode);
+    let jqDIV = $(nodeDIV);
+    KFK.justCreatedJqNode = jqDIV;
+
+    //如果在脑图模式下，则自动建立脑图链接
+    if (KFK.brainstormMode && KFK.brainstormFocusNode) {
+        let divBefore = KFK.brainstormFocusNode.clone();
+        divBefore.find(".brsnode").remove();
+        KFK.drawPathBetween(KFK.brainstormFocusNode, KFK.justCreatedJqNode);
+        KFK.buildConnectionBetween(KFK.brainstormFocusNode, KFK.justCreatedJqNode);
+
+        KFK.syncNodePut(
+            "U",
+            KFK.brainstormFocusNode.clone(),
+            "brainstorm",
+            divBefore,
+            false,
+            0,
+            1
+        );
+    }
+
+    return jqDIV;
+};
+
+KFK._createNode = async function(node) {
+    let nodeCount = KFK.getKFKNodeNumber();
+    KFK.debug("createNode ", JSON.stringify(node));
+    var innerObj = null;
+    if (node.type === "image") {
+        innerObj = document.createElement("img");
+        innerObj.src = node.attach;
+        innerObj.style.width = KFK.px(node.width);
+        innerObj.style.height = KFK.px(node.height);
+    } else if (node.type === "text") {
+        innerObj = document.createElement("div");
+    } else if (node.type === "yellowtip") {
+        innerObj = document.createElement("span");
+    } else if (node.type === "textblock") {
+        innerObj = document.createElement("div");
+    } else if (node.type === "richtext") {
+        innerObj = document.createElement("div");
     } else {
-      if (evt.keyCode == 35 || evt.keyCode === 34) {  //END  || PageDown
-        evt.preventDefault();
-        evt.stopPropagation();
-      } else if (evt.keyCode === 36 || evt.keyCode === 33) { //HOME
-        evt.preventDefault();
-        evt.stopPropagation();
-      }
+        KFK.debug(`${node.type} is not supported`);
+        return;
     }
-    evt.stopImmediatePropagation();
-    evt.stopPropagation();
-  });
-
-  function handleOutsideClick(evt) {
-    if (evt.target !== textarea) {
-      innerNode.innerText = textarea.value;
-      removeTextarea(textarea.value !== oldText);
-      KFK.focusOnC3();
+    innerObj.innerHTML = node.attach ?
+        node.attach :
+        cocoConfig.node[node.type].inner.content;
+    if (node.attach2 === undefined) {
+        KFK.printCallStack();
     }
-  }
-  setTimeout(() => {
-    window.addEventListener("click", handleOutsideClick);
-  });
-};
+    var jBkg = $('<div class="ossimage">' + node.attach2 + "</div>");
+    let jInner = $(innerObj);
+    jInner.css(cocoConfig.node[node.type].inner.style);
+    jInner.addClass("innerobj");
+    jInner.addClass("inner_" + node.type);
+    if (node.type === "text") {
+        jInner.attr("contenteditable", "true");
+        jInner.attr("spellcheck", "false");
+    } else if (node.type === "richtext") {
+        jInner.addClass("ql-viewer");
+        jInner.addClass("ql-editor");
+        //保证 ql-editor-pointer存在, 这个class用于覆盖ql-editor的text光标
+        jInner.addClass("ql-editor-pointer");
+    }
 
-KFK.getKFKNodeNumber = function () {
-  let nodes = KFK.JC3.find(".kfknode");
-  return nodes.length;
-};
+    let nodeDIV = document.createElement("div");
+    let jqNodeDIV = $(nodeDIV);
+    jqNodeDIV.attr("id", node.id);
+    jqNodeDIV.css(cocoConfig.node[node.type].style);
+    jqNodeDIV.css("position", "absolute");
+    jqNodeDIV.css("top", KFK.px(KFK.ltPos(node).y));
+    jqNodeDIV.css("left", KFK.px(KFK.ltPos(node).x));
+    jqNodeDIV.css("width", KFK.px(node.width));
+    jqNodeDIV.css("height", KFK.px(node.height));
+    jqNodeDIV.css("z-index", `${nodeCount + 1}`);
+    //default padding for all
+    $(nodeDIV).attr("variant", "default");
+    //click时，切换selected状态
+    if (node.type === "yellowtip") {
+        //create tip
+        let rect = KFK.getShapeDynamicDefaultSize(
+            "yellowtip",
+            cocoConfig.node.yellowtip.defaultTip
+        );
+        KFK._setTipBkgImage(
+            jqNodeDIV,
+            cocoConfig.node.yellowtip.defaultTip,
+            cocoConfig.node.yellowtip.defaultColor
+        );
+        jqNodeDIV.attr("variant", cocoConfig.node.yellowtip.defaultTip);
+        jqNodeDIV.css("width", rect.w);
+        jqNodeDIV.css("height", rect.h);
+        jqNodeDIV.addClass("yellowtip");
+    } else if (node.type === "textblock") {
+        let rect = KFK.getShapeDynamicDefaultSize("textblock", "default");
+        jqNodeDIV.css("width", rect.w);
+        jqNodeDIV.css("height", rect.h);
+    }
 
-KFK.placeNode = function (shiftKey, id, type, variant, x, y, w, h, attach, attach2) {
-  let aNode = new Node(id, type, variant, x, y, w, h, attach, attach2);
-  KFK.nodes.push(aNode);
-  let nodeDIV = KFK._createNode(aNode);
-  let jqDIV = $(nodeDIV);
-  KFK.justCreatedJqNode = jqDIV;
+    jqNodeDIV.addClass("kfknode");
+    jqNodeDIV.addClass("kfk_" + node.type);
+    nodeDIV.appendChild(innerObj);
+    jBkg.appendTo(jqNodeDIV);
 
-  return jqDIV;
-};
-
-KFK._createNode = function (node) {
-  let nodeCount = KFK.getKFKNodeNumber();
-  KFK.debug("createNode ", JSON.stringify(node));
-  var innerObj = null;
-  if (node.type === "image") {
-    innerObj = document.createElement("img");
-    innerObj.src = node.attach;
-    innerObj.style.width = KFK.px(node.width);
-    innerObj.style.height = KFK.px(node.height);
-  } else if (node.type === "text") {
-    innerObj = document.createElement("div");
-  } else if (node.type === "yellowtip") {
-    innerObj = document.createElement("span");
-  } else if (node.type === "textblock") {
-    innerObj = document.createElement("div");
-  } else if (node.type === "richtext") {
-    innerObj = document.createElement("div");
-  } else {
-    KFK.debug(`${node.type} is not supported`);
-    return;
-  }
-  innerObj.innerHTML = node.attach ? node.attach : cocoConfig.node[node.type].inner.content;
-  if (node.attach2 === undefined) {
-    KFK.printCallStack();
-  }
-  var jBkg = $('<div class="ossimage">' + node.attach2 + "</div>");
-  let jInner = $(innerObj);
-  jInner.css(cocoConfig.node[node.type].inner.style);
-  jInner.addClass("innerobj");
-  jInner.addClass("inner_" + node.type);
-  if (node.type === 'text') {
-    jInner.attr('contenteditable', 'true');
-    jInner.attr('spellcheck', 'false');
-  } else if (node.type === 'richtext') {
-    jInner.addClass('ql-viewer');
-    jInner.addClass('ql-editor');
-    //保证 ql-editor-pointer存在, 这个class用于覆盖ql-editor的text光标
-    jInner.addClass('ql-editor-pointer');
-  }
-
-  let nodeDIV = document.createElement("div");
-  let jqNodeDIV = $(nodeDIV);
-  jqNodeDIV.attr("id", node.id);
-  jqNodeDIV.css(cocoConfig.node[node.type].style);
-  jqNodeDIV.css('position', 'absolute');
-  jqNodeDIV.css('top', KFK.px(KFK.ltPos(node).y));
-  jqNodeDIV.css('left', KFK.px(KFK.ltPos(node).x));
-  jqNodeDIV.css('width', KFK.px(node.width));
-  jqNodeDIV.css('height', KFK.px(node.height));
-  jqNodeDIV.css('z-index', `${nodeCount + 1}`);
-  //default padding for all
-  $(nodeDIV).attr("variant", "default");
-  //click时，切换selected状态
-  if (node.type === "yellowtip") {
-    //create tip
-    let rect = KFK.getShapeDynamicDefaultSize(
-      "yellowtip",
-      cocoConfig.node.yellowtip.defaultTip
+    //set editors
+    let allEditorDIV = document.createElement("div");
+    $(allEditorDIV).addClass("cocoeditors");
+    nodeDIV.appendChild(allEditorDIV);
+    let lastEditorDIV = document.createElement("div");
+    $(lastEditorDIV).addClass("lastcocoeditor");
+    nodeDIV.appendChild(lastEditorDIV);
+    if (KFK.APP.model.showEditor === "none") {
+        $(allEditorDIV).css("display", "none");
+        $(lastEditorDIV).css("display", "none");
+    } else if (KFK.APP.model.showEditor === "last") {
+        $(allEditorDIV).css("display", "none");
+        $(lastEditorDIV).css("display", "block");
+    } else if (KFK.APP.model.showEditor === "all") {
+        $(allEditorDIV).css("display", "block");
+        $(lastEditorDIV).css("display", "none");
+    }
+    jqNodeDIV.attr("nodetype", node.type);
+    jqNodeDIV.attr(
+        "edittable",
+        cocoConfig.node[node.type].edittable ? true : false
     );
-    KFK._setTipBkgImage(
-      jqNodeDIV,
-      cocoConfig.node.yellowtip.defaultTip,
-      cocoConfig.node.yellowtip.defaultColor
-    );
-    jqNodeDIV.attr("variant", cocoConfig.node.yellowtip.defaultTip);
-    jqNodeDIV.css("width", rect.w);
-    jqNodeDIV.css("height", rect.h);
-    jqNodeDIV.addClass("yellowtip");
-  } else if (node.type === "textblock") {
-    let rect = KFK.getShapeDynamicDefaultSize("textblock", "default");
-    jqNodeDIV.css("width", rect.w);
-    jqNodeDIV.css("height", rect.h);
-  }
+    if (node.type === "yellowtip") {
+        //设置图形的缺省颜色
+        KFK._setTipBkgColor(jqNodeDIV, KFK.APP.model.tipBkgColor);
+    }
 
-  jqNodeDIV.addClass("kfknode");
-  jqNodeDIV.addClass('kfk_' + node.type);
-  nodeDIV.appendChild(innerObj);
-  jBkg.appendTo(jqNodeDIV);
+    KFK.C3.appendChild(nodeDIV);
 
+    await KFK.setNodeEventHandler(jqNodeDIV);
 
-  //set editors
-  let allEditorDIV = document.createElement("div");
-  $(allEditorDIV).addClass("cocoeditors");
-  nodeDIV.appendChild(allEditorDIV);
-  let lastEditorDIV = document.createElement("div");
-  $(lastEditorDIV).addClass("lastcocoeditor");
-  nodeDIV.appendChild(lastEditorDIV);
-  if (KFK.APP.model.showEditor === "none") {
-    $(allEditorDIV).css("display", "none");
-    $(lastEditorDIV).css("display", "none");
-  } else if (KFK.APP.model.showEditor === "last") {
-    $(allEditorDIV).css("display", "none");
-    $(lastEditorDIV).css("display", "block");
-  } else if (KFK.APP.model.showEditor === "all") {
-    $(allEditorDIV).css("display", "block");
-    $(lastEditorDIV).css("display", "none");
-  }
-  jqNodeDIV.attr("nodetype", node.type);
-  jqNodeDIV.attr("edittable", cocoConfig.node[node.type].edittable ? true : false);
-  if (node.type === "yellowtip") {
-    //设置图形的缺省颜色 
-    KFK._setTipBkgColor(jqNodeDIV, KFK.APP.model.tipBkgColor);
-  }
-
-  KFK.C3.appendChild(nodeDIV);
-
-  KFK.setNodeEventHandler(jqNodeDIV);
-
-  return nodeDIV;
+    return nodeDIV;
 };
 
 //删除添加eventHandler带来的额外的、会引起复制节点event响应不正常的内容
-KFK.cleanNodeEventFootprint = function (jqNodeDIV) {
-  jqNodeDIV.find(".ui-resizable-handle").remove();
-  jqNodeDIV.find(".locklabel").remove();
-  jqNodeDIV.removeClass(
-    "ui-resizable ui-draggable ui-draggable-handle ui-draggable-dragging ui-droppable selected ui-resizable-autohide shadow1 shadow2 lock"
-  );
+KFK.cleanNodeEventFootprint = function(jqNodeDIV) {
+    jqNodeDIV.find(".ui-resizable-handle").remove();
+    jqNodeDIV.find(".locklabel").remove();
+    jqNodeDIV.removeClass(
+        "ui-resizable ui-draggable ui-draggable-handle ui-draggable-dragging ui-droppable selected ui-resizable-autohide shadow1 shadow2 lock"
+    );
 };
 
-KFK.syncNodeContentPut = async function (nodeID, content) {
-  if (KFK.docIsReadOnly()) return;
-  try {
-    let zipped = await gzip(content);
-    let payload = {
-      doc_id: KFK.APP.model.cocodoc.doc_id,
-      etype: 'DIV',
-      nodeid: nodeID,
-      content: zipped,
-      offline: false,
-      lastupdate: new Date().getTime()
-    };
-    let result = await KFK.sendCmd("CONTENT", payload);
-  } catch (err) {
-    KFK.debug(err);
-  }
+KFK.syncNodeContentPut = async function(nodeID, content) {
+    if (KFK.docIsReadOnly()) return;
+    try {
+        let zipped = await gzip(content);
+        let payload = {
+            doc_id: KFK.APP.model.cocodoc.doc_id,
+            etype: "DIV",
+            nodeid: nodeID,
+            content: zipped,
+            offline: false,
+            lastupdate: new Date().getTime(),
+        };
+        let result = await KFK.sendCmd("CONTENT", payload);
+    } catch (err) {
+        KFK.debug(err);
+    }
 };
 
-KFK.syncNodePut = async function (cmd, jqDIV, reason, jqBeforeChange, isUndoRedo = false, ser = 0, count = 1) {
-  if (KFK.docIsReadOnly()) return;
-  if (KFK.nodeLocked(jqDIV)) return;
-  if (ser === undefined || count === undefined) {
-    KFK.error("syncNodePut call must have ser and count provided");
-  }
-  try {
-    if (!(KFK.APP.model.cocouser && KFK.APP.model.cocouser.name)) {
-      console.error("userinfo was not configured");
-      return;
+KFK.syncNodePut = async function(
+    cmd,
+    jqDIV,
+    reason,
+    jqBeforeChange,
+    isUndoRedo = false,
+    ser = 0,
+    count = 1
+) {
+    if (KFK.docIsReadOnly()) return;
+    if (KFK.nodeLocked(jqDIV)) return;
+    if (jqDIV)
+        jqDIV.find('.brsnode').remove();
+    if (jqBeforeChange)
+        jqBeforeChange.find('.brsnode').remove();
+    if (ser === undefined || count === undefined) {
+        KFK.error("syncNodePut call must have ser and count provided");
     }
-
-    if (cmd === "C" || cmd === "U") {
-      KFK.addEditorToNode(jqDIV, KFK.APP.model.cocouser.name);
-    }
-    //在服务端更新offline时，用lastupdate做比较
-    jqDIV.attr("lastupdate", new Date().getTime());
-    let nodeID = jqDIV.attr("id");
-    let nodeType = jqDIV.attr("nodetype");
-    let tobeSync = jqDIV.clone();
-    KFK.cleanNodeEventFootprint(tobeSync);
-    if (cmd === "U") {
-      //如果这是一个quilling
-      if (tobeSync.find('.innerobj').hasClass('ql-editor')) {
-        //保证ql-toolbar不被上传
-        tobeSync.find('.ql-toolbar').remove();
-        //保证 quilling-by不被上传
-        tobeSync.find('.quilling-by').remove();
-        //保证 ql-editor-pointer存在, 这个class用于覆盖ql-editor的text光标
-        tobeSync.find('.innerobj').addClass('ql-editor-pointer');
-      }
-    }
-    let nodeContent = tobeSync.prop("outerHTML");
-    let isOffline = tobeSync.hasClass("offline");
-    tobeSync.removeClass("offline");
-
-    let htmlContent = tobeSync.prop("outerHTML");
-    let base64Content = KFK.codeToBase64(htmlContent);
-    let gzipped = await gzip(htmlContent);
-    let payload = {
-      doc_id: KFK.APP.model.cocodoc.doc_id,
-      etype: 'DIV',
-      nodeid: nodeID,
-      content: cmd === "D" ? nodeID : gzipped,
-      offline: isOffline,
-      lastupdate: tobeSync.attr("lastupdate")
-    };
-    if (isUndoRedo === false) {
-      let fromContent = "";
-      let toContent = "";
-      let fromId = "";
-      let toId = "";
-      if (cmd === "U") {
-        if (jqBeforeChange && reason !== "offline_not_undoable") {
-          // 参数传递过来
-          KFK.cleanNodeEventFootprint(jqBeforeChange);
-          fromContent = jqBeforeChange.prop("outerHTML");
-          fromId = jqBeforeChange.attr("id");
+    try {
+        if (!(KFK.APP.model.cocouser && KFK.APP.model.cocouser.name)) {
+            console.error("userinfo was not configured");
+            return;
         }
-        toContent = tobeSync.prop("outerHTML");
-        toId = tobeSync.attr("id");
-      } else if (cmd === "C") {
-        fromContent = "";
-        fromId = "";
-        if (reason === "MARK_UNDOABLE") {
-          KFK.cleanNodeEventFootprint(KFK.fromJQ);
-          fromContent = KFK.fromJQ.prop("outerHTML");
-          fromId = KFK.fromJQ.attr("id");
+
+        if (cmd === "C" || cmd === "U") {
+            KFK.addEditorToNode(jqDIV, KFK.APP.model.cocouser.name);
         }
-        toContent = tobeSync.prop("outerHTML");
-        toId = tobeSync.attr("id");
-      } else if (cmd === "D") {
-        fromContent = tobeSync.prop("outerHTML");
-        fromId = tobeSync.attr("id");
-        toContent = "";
-        toId = "";
-      }
-      if (ser === 0) {
-        KFK.opArr_from = [];
-        KFK.opArr_to = [];
-        KFK.opArr_fromId = [];
-        KFK.opArr_toId = [];
-      }
-      KFK.opArr_from.push(fromContent);
-      KFK.opArr_to.push(toContent);
-      KFK.opArr_fromId.push(fromId);
-      KFK.opArr_toId.push(toId);
-
-
-      if (reason !== "offline_not_undoable") {
-        if (ser === count - 1) {
-          let opEntry = {
-            cmd: cmd,
-            etype: 'DIV',
-            from: KFK.opArr_from,
-            to: KFK.opArr_to,
-            fromId: KFK.opArr_fromId,
-            toId: KFK.opArr_toId
-          };
-          // KFK.debug('Batch :', ser, 'of', count);
-          // KFK.debug("Compele batch op_entry: ", opEntry);
-          KFK.yarkOpEntry(opEntry);
+        //在服务端更新offline时，用lastupdate做比较
+        jqDIV.attr("lastupdate", new Date().getTime());
+        let nodeID = jqDIV.attr("id");
+        let nodeType = jqDIV.attr("nodetype");
+        let tobeSync = jqDIV.clone();
+        KFK.cleanNodeEventFootprint(tobeSync);
+        if (cmd === "U") {
+            //如果这是一个quilling
+            if (tobeSync.find(".innerobj").hasClass("ql-editor")) {
+                //保证ql-toolbar不被上传
+                tobeSync.find(".ql-toolbar").remove();
+                //保证 quilling-by不被上传
+                tobeSync.find(".quilling-by").remove();
+                //保证 ql-editor-pointer存在, 这个class用于覆盖ql-editor的text光标
+                tobeSync.find(".innerobj").addClass("ql-editor-pointer");
+            }
         }
-      }
-    }
+        let nodeContent = tobeSync.prop("outerHTML");
+        let isOffline = tobeSync.hasClass("offline");
+        tobeSync.removeClass("offline");
 
-    jqDIV.removeClass("offline");
+        let htmlContent = tobeSync.prop("outerHTML");
+        let base64Content = KFK.codeToBase64(htmlContent);
+        let gzipped = await gzip(htmlContent);
+        let payload = {
+            doc_id: KFK.APP.model.cocodoc.doc_id,
+            etype: "DIV",
+            nodeid: nodeID,
+            content: cmd === "D" ? nodeID : gzipped,
+            offline: isOffline,
+            lastupdate: tobeSync.attr("lastupdate"),
+        };
+        if (isUndoRedo === false) {
+            let fromContent = "";
+            let toContent = "";
+            let fromId = "";
+            let toId = "";
+            if (cmd === "U") {
+                if (jqBeforeChange && reason !== "offline_not_undoable") {
+                    // 参数传递过来
+                    KFK.cleanNodeEventFootprint(jqBeforeChange);
+                    fromContent = jqBeforeChange.prop("outerHTML");
+                    fromId = jqBeforeChange.attr("id");
+                }
+                toContent = tobeSync.prop("outerHTML");
+                toId = tobeSync.attr("id");
+            } else if (cmd === "C") {
+                fromContent = "";
+                fromId = "";
+                if (reason === "MARK_UNDOABLE") {
+                    KFK.cleanNodeEventFootprint(KFK.fromJQ);
+                    fromContent = KFK.fromJQ.prop("outerHTML");
+                    fromId = KFK.fromJQ.attr("id");
+                }
+                toContent = tobeSync.prop("outerHTML");
+                toId = tobeSync.attr("id");
+            } else if (cmd === "D") {
+                fromContent = tobeSync.prop("outerHTML");
+                fromId = tobeSync.attr("id");
+                toContent = "";
+                toId = "";
+            }
+            if (ser === 0) {
+                KFK.opArr_from = [];
+                KFK.opArr_to = [];
+                KFK.opArr_fromId = [];
+                KFK.opArr_toId = [];
+            }
+            KFK.opArr_from.push(fromContent);
+            KFK.opArr_to.push(toContent);
+            KFK.opArr_fromId.push(fromId);
+            KFK.opArr_toId.push(toId);
 
-    let result = await KFK.sendCmd(cmd, payload);
-    //TODO: 仔细考虑离线处理策略
-    if (result === false) {
-      jqDIV.addClass("offline");
+            if (reason !== "offline_not_undoable") {
+                if (ser === count - 1) {
+                    let opEntry = {
+                        cmd: cmd,
+                        etype: "DIV",
+                        from: KFK.opArr_from,
+                        to: KFK.opArr_to,
+                        fromId: KFK.opArr_fromId,
+                        toId: KFK.opArr_toId,
+                    };
+                    // KFK.debug('Batch :', ser, 'of', count);
+                    // KFK.debug("Compele batch op_entry: ", opEntry);
+                    KFK.yarkOpEntry(opEntry);
+                }
+            }
+        }
+
+        jqDIV.removeClass("offline");
+
+        let result = await KFK.sendCmd(cmd, payload);
+        //TODO: 仔细考虑离线处理策略
+        if (result === false) {
+            jqDIV.addClass("offline");
+        }
+    } catch (err) {
+        KFK.debug(err);
+    } finally {
+        KFK.C3.dispatchEvent(KFK.refreshC3event);
     }
-  } catch (err) {
-    KFK.debug(err);
-  } finally {
-    KFK.C3.dispatchEvent(KFK.refreshC3event);
-  }
 };
 
-KFK.syncLinePut = async function (cmd, svgLine, reason, svgFrom, isUndoRedo) {
-  if (KFK.docIsReadOnly()) return;
+KFK.syncLinePut = async function(cmd, svgLine, reason, svgFrom, isUndoRedo) {
+    if (KFK.docIsReadOnly()) return;
 
-  try {
-    if (!(KFK.APP.model.cocouser && KFK.APP.model.cocouser.name)) {
-      console.error("userinfo was not configured");
-      return;
-    }
-    if (cmd === "C" || cmd === "U") {
-      svgLine.attr('lastEditor', KFK.APP.model.cocouser.name);
-    }
-    svgLine.attr('lastupdate', new Date().getTime());
-    let isOffline = svgLine.hasClass("offline");
-    svgLine.removeClass("offline");
-    let svgContent = svgLine.svg();
-    let gzipped = await gzip(svgContent);
-    let payload = {
-      doc_id: KFK.APP.model.cocodoc.doc_id,
-      etype: 'SLINE',
-      nodeid: svgLine.attr("id"),
-      content: cmd === "D" ? svgLine.attr("id") : gzipped,
-      offline: isOffline,
-      lastupdate: svgLine.attr("lastupdate")
-    };
+    try {
+        if (!(KFK.APP.model.cocouser && KFK.APP.model.cocouser.name)) {
+            console.error("userinfo was not configured");
+            return;
+        }
+        if (cmd === "C" || cmd === "U") {
+            svgLine.attr("lastEditor", KFK.APP.model.cocouser.name);
+        }
+        svgLine.attr("lastupdate", new Date().getTime());
+        let isOffline = svgLine.hasClass("offline");
+        svgLine.removeClass("offline");
+        let svgContent = svgLine.svg();
+        let gzipped = await gzip(svgContent);
+        let payload = {
+            doc_id: KFK.APP.model.cocodoc.doc_id,
+            etype: "SLINE",
+            nodeid: svgLine.attr("id"),
+            content: cmd === "D" ? svgLine.attr("id") : gzipped,
+            offline: isOffline,
+            lastupdate: svgLine.attr("lastupdate"),
+        };
 
-    let formContent = toContent = fromId = toId = "";
-    switch (cmd) {
-      case "C":
-        fromContent = ""; fromId = "";
-        toContent = svgLine ? svgLine.svg() : "";
-        toId = svgLine ? svgLine.attr("id") : "";
-        break;
-      case "U":
-        fromContent = svgFrom ? svgFrom.svg() : "";
-        fromId = svgFrom ? svgFrom.attr("id") : "";
-        toContent = svgLine ? svgLine.svg() : '';
-        toId = svgLine ? svgLine.attr("id") : '';
-        break;
-      case "D":
-        fromContent = svgLine ? svgLine.svg() : '';
-        fromId = svgLine ? svgLine.attr("id") : '';
-        toContent = ""; toId = "";
-        break;
-    }
-    if (isUndoRedo === false) {
-      let opEntry = {
-        cmd: cmd,
-        etype: 'SLINE',
-        from: fromContent,
-        fromId: fromId,
-        to: toContent,
-        toId: toId,
-      };
-      if (reason !== "offline_not_undoable") {
-        KFK.yarkOpEntry(opEntry);
-      }
-    } else {
-      KFK.debug("syncLinePut, isUndoRedo", isUndoRedo, "payload", payload);
-    }
+        let formContent = (toContent = fromId = toId = "");
+        switch (cmd) {
+            case "C":
+                fromContent = "";
+                fromId = "";
+                toContent = svgLine ? svgLine.svg() : "";
+                toId = svgLine ? svgLine.attr("id") : "";
+                break;
+            case "U":
+                fromContent = svgFrom ? svgFrom.svg() : "";
+                fromId = svgFrom ? svgFrom.attr("id") : "";
+                toContent = svgLine ? svgLine.svg() : "";
+                toId = svgLine ? svgLine.attr("id") : "";
+                break;
+            case "D":
+                fromContent = svgLine ? svgLine.svg() : "";
+                fromId = svgLine ? svgLine.attr("id") : "";
+                toContent = "";
+                toId = "";
+                break;
+        }
+        if (isUndoRedo === false) {
+            let opEntry = {
+                cmd: cmd,
+                etype: "SLINE",
+                from: fromContent,
+                fromId: fromId,
+                to: toContent,
+                toId: toId,
+            };
+            if (reason !== "offline_not_undoable") {
+                KFK.yarkOpEntry(opEntry);
+            }
+        } else {
+            KFK.debug("syncLinePut, isUndoRedo", isUndoRedo, "payload", payload);
+        }
 
-    svgLine.removeClass("offline");
-    let result = await KFK.sendCmd(cmd, payload);
-    if (result === false) {
-      svgLine.addClass("offline");
+        svgLine.removeClass("offline");
+        let result = await KFK.sendCmd(cmd, payload);
+        if (result === false) {
+            svgLine.addClass("offline");
+        }
+    } catch (err) {
+        KFK.debug(err);
+    } finally {
+        KFK.C3.dispatchEvent(KFK.refreshC3event);
     }
-  } catch (err) {
-    KFK.debug(err);
-  } finally {
-    KFK.C3.dispatchEvent(KFK.refreshC3event);
-  }
 };
 
-KFK.yarkOpEntry = function (opEntry) {
-  KFK.opstack.splice(KFK.opz + 1, KFK.opstacklen);
-  if (KFK.opstack.length >= KFK.opstacklen) {
-    KFK.opstack.shift();
-    KFK.opz = KFK.opz - 1;
-    if (KFK.opz < -1) KFK.opz = -1;
-  }
-  KFK.opstack.push(opEntry);
-  KFK.opz = KFK.opz + 1;
+KFK.yarkOpEntry = function(opEntry) {
+    KFK.opstack.splice(KFK.opz + 1, KFK.opstacklen);
+    if (KFK.opstack.length >= KFK.opstacklen) {
+        KFK.opstack.shift();
+        KFK.opz = KFK.opz - 1;
+        if (KFK.opz < -1) KFK.opz = -1;
+    }
+    KFK.opstack.push(opEntry);
+    KFK.opz = KFK.opz + 1;
 };
 
 function getNull(value) {
-  switch (value) {
-    case undefined:
-    case null:
-    case "undefined":
-    case "null":
-      return true;
-    default:
-      return false;
-  }
+    switch (value) {
+        case undefined:
+        case null:
+        case "undefined":
+        case "null":
+            return true;
+        default:
+            return false;
+    }
 }
 
 function getBoolean(value) {
-  switch (value) {
-    case true:
-    case "true":
-    case 1:
-    case "1":
-    case "on":
-    case "yes":
-      return true;
-    default:
-      return false;
-  }
+    switch (value) {
+        case true:
+        case "true":
+        case 1:
+        case "1":
+        case "on":
+        case "yes":
+            return true;
+        default:
+            return false;
+    }
 }
 
-KFK.showDocOpMenu = function (doc, index, evt) {
-  evt.stopPropagation();
-  let docopmenu = $('.docopmenu');
-  KFK.APP.setData('model', 'currentDoc', doc);
-  if (docopmenu.hasClass('noshow') || index !== KFK.lastDocOpIndex) {
-    let x = evt.pageX;
-    let y = evt.pageY;
-    docopmenu.css({
-      'position': "absolute",
-      'left': x - 135,
-      'top': y - 10,
-      'z-index': 999999
-    });
-    docopmenu.removeClass('noshow');
-    KFK.lastDocOpIndex = index;
-  } else {
-    docopmenu.addClass('noshow');
-  }
+KFK.showDocOpMenu = function(doc, index, evt) {
+    evt.stopPropagation();
+    let docopmenu = $(".docopmenu");
+    KFK.APP.setData("model", "currentDoc", doc);
+    if (docopmenu.hasClass("noshow") || index !== KFK.lastDocOpIndex) {
+        let x = evt.pageX;
+        let y = evt.pageY;
+        docopmenu.css({
+            position: "absolute",
+            left: x - 135,
+            top: y - 10,
+            "z-index": 999999,
+        });
+        docopmenu.removeClass("noshow");
+        KFK.lastDocOpIndex = index;
+    } else {
+        docopmenu.addClass("noshow");
+    }
 };
 
-KFK.hideDocOpMenu = function () {
-  let docopmenu = $('.docopmenu');
-  docopmenu.addClass('noshow');
-}
+KFK.hideDocOpMenu = function() {
+    let docopmenu = $(".docopmenu");
+    docopmenu.addClass("noshow");
+};
 
 //jqNode can be a node or even a svgline
-KFK.anyLocked = function (jqNode) {
-  if (jqNode)
-    return KFK.docIsReadOnly() || KFK.nodeLocked(jqNode);
-  else
-    return KFK.docIsReadOnly();
+KFK.anyLocked = function(jqNode) {
+    if (jqNode) return KFK.docIsReadOnly() || KFK.nodeLocked(jqNode);
+    else return KFK.docIsReadOnly();
 };
 
-KFK.notAnyLocked = function (jqNode) {
-  return !KFK.anyLocked(jqNode);
+KFK.notAnyLocked = function(jqNode) {
+    return !KFK.anyLocked(jqNode);
 };
 
-KFK.docIsReadOnly = function () {
-  return KFK.APP.model.cocodoc.readonly;
+KFK.docIsReadOnly = function() {
+    return KFK.APP.model.cocodoc.readonly;
 };
-KFK.docIsNotReadOnly = function () {
-  return !KFK.APP.model.cocodoc.readonly;
-};
-
-KFK.nodeLocked = function (jqNode) {
-  //Even works for svline, because svg line has .hasClass function as well
-  return jqNode.hasClass("lock");
-};
-KFK.lineLocked = function (svgLine) {
-  return svgLine.hasClass("lock");
+KFK.docIsNotReadOnly = function() {
+    return !KFK.APP.model.cocodoc.readonly;
 };
 
-
-KFK.setModeIndicatorForYellowTip = function (tipvariant) {
-  if ($('#modeIndicatorDiv').lenght < 1) {
-    KFK.debug("modeIndicatorDiv not found");
-    return;
-  }
-  $("#modeIndicatorDiv").empty();
-  let svg = $(SVGs[tipvariant]);
-  svg.css("width", "18px");
-  svg.css("height", "18px");
-  svg.appendTo($("#modeIndicatorDiv"));
+KFK.nodeLocked = function(jqNode) {
+    //Even works for svline, because svg line has .hasClass function as well
+    return jqNode.hasClass("lock");
+};
+KFK.lineLocked = function(svgLine) {
+    return svgLine.hasClass("lock");
 };
 
-KFK.setTipVariant = function (tipvariant) {
-  cocoConfig.node.yellowtip.defaultTip = tipvariant;
-  if (KFK.mode === "yellowtip") {
-    KFK.setModeIndicatorForYellowTip(tipvariant);
-    $("#modeIndicatorImg").hide();
-    $("#modeIndicatorDiv").show();
-  }
-  let theJqNode = KFK.getPropertyApplyToJqNode();
-  if (theJqNode !== null && KFK.notAnyLocked(theJqNode)) {
-    let oldColor = KFK.getTipBkgColor(theJqNode);
-    theJqNode.attr("variant", tipvariant);
-    KFK.setTipBkgImage(theJqNode, tipvariant, oldColor);
-  }
-};
-KFK.setTipBkgImage = async function (jqDIV, svgid, svgcolor) {
-  KFK.fromJQ = jqDIV.clone();
-  KFK._setTipBkgImage(jqDIV, svgid, svgcolor);
-  await KFK.syncNodePut("U", jqDIV, "change bkg image", KFK.fromJQ, false, 0, 1);
-};
-KFK._setTipBkgImage = function (jqDIV, svgid, svgcolor) {
-  jqDIV.find(".tip_bkg").remove();
-  let bkgSVG = $(SVGs[svgid]);
-  bkgSVG.addClass("tip_bkg");
-  bkgSVG.css("width", "100%");
-  bkgSVG.css("height", "100%");
-  bkgSVG.css("z-index", "-1");
-  let svgMainPath = bkgSVG.find(".svg_main_path");
-  svgMainPath.attr("fill", svgcolor);
-  bkgSVG.appendTo(jqDIV);
+KFK.setModeIndicatorForYellowTip = function(tipvariant) {
+    if ($("#modeIndicatorDiv").lenght < 1) {
+        KFK.debug("modeIndicatorDiv not found");
+        return;
+    }
+    $("#modeIndicatorDiv").empty();
+    let svg = $(SVGs[tipvariant]);
+    svg.css("width", "18px");
+    svg.css("height", "18px");
+    svg.appendTo($("#modeIndicatorDiv"));
 };
 
-KFK.setTipBkgColor = async function (theJqNode, bgColor) {
-  KFK.fromJQ = theJqNode.clone();
-  let ret = KFK._setTipBkgColor(theJqNode, bgColor);
-  if (ret)
-    await KFK.syncNodePut("U", theJqNode, "change bkg color", KFK.fromJQ, false, 0, 1);
+KFK.setTipVariant = function(tipvariant) {
+    cocoConfig.node.yellowtip.defaultTip = tipvariant;
+    if (KFK.mode === "yellowtip") {
+        KFK.setModeIndicatorForYellowTip(tipvariant);
+        $("#modeIndicatorImg").hide();
+        $("#modeIndicatorDiv").show();
+    }
+    let theJqNode = KFK.getPropertyApplyToJqNode();
+    if (theJqNode !== null && KFK.notAnyLocked(theJqNode)) {
+        let oldColor = KFK.getTipBkgColor(theJqNode);
+        theJqNode.attr("variant", tipvariant);
+        KFK.setTipBkgImage(theJqNode, tipvariant, oldColor);
+    }
 };
-
-KFK._setTipBkgColor = function (theJqNode, bgColor) {
-  if (theJqNode === null) {
-    console.warn("setTipBkgColor to null nodeDIV");
-    return;
-  }
-  let svgImg = theJqNode.find(".tip_bkg .svg_main_path");
-  if (svgImg.length > 0) {
-    svgImg.attr("fill", bgColor);
-    return true;
-  } else {
-    KFK.debug(
-      `Can't change main path color. Node type ${theJqNode.attr("nodetype")} id:${theJqNode.attr("id")}   .svg_main_path not found`
+KFK.setTipBkgImage = async function(jqDIV, svgid, svgcolor) {
+    KFK.fromJQ = jqDIV.clone();
+    KFK._setTipBkgImage(jqDIV, svgid, svgcolor);
+    await KFK.syncNodePut(
+        "U",
+        jqDIV,
+        "change bkg image",
+        KFK.fromJQ,
+        false,
+        0,
+        1
     );
-    return false;
-  }
 };
-KFK.getTipBkgColor = function (jqNode) {
-  if (jqNode === null) {
-    console.warn("getTipBkgColor to null nodeDIV, return default");
-    return cocoConfig.node.yellowtip.defaultColor;
-  }
-  let svgImg = jqNode.find(".tip_bkg .svg_main_path");
-  if (svgImg.length > 0) {
-    return svgImg.attr("fill");
-  } else {
-    return cocoConfig.node.yellowtip.defaultColor;
-  }
+KFK._setTipBkgImage = function(jqDIV, svgid, svgcolor) {
+    jqDIV.find(".tip_bkg").remove();
+    let bkgSVG = $(SVGs[svgid]);
+    bkgSVG.addClass("tip_bkg");
+    bkgSVG.css("width", "100%");
+    bkgSVG.css("height", "100%");
+    bkgSVG.css("z-index", "-3");
+    let svgMainPath = bkgSVG.find(".svg_main_path");
+    svgMainPath.attr("fill", svgcolor);
+    bkgSVG.appendTo(jqDIV);
 };
 
-KFK.stringToArray = function (str) {
-  let arr = [];
-  if (str) {
-    arr = str.split(',');
-    if (arr.length === 1 && arr[0] === '')
-      arr = [];
-  }
-  return arr;
+KFK.setTipBkgColor = async function(theJqNode, bgColor) {
+    KFK.fromJQ = theJqNode.clone();
+    let ret = KFK._setTipBkgColor(theJqNode, bgColor);
+    if (ret)
+        await KFK.syncNodePut(
+            "U",
+            theJqNode,
+            "change bkg color",
+            KFK.fromJQ,
+            false,
+            0,
+            1
+        );
 };
 
-KFK.getNodeLinkIds = function (jq1, direction) {
-  let linksStr = jq1.attr(direction);
-  let linksArr = KFK.stringToArray(linksStr);
-  //过滤掉不存在的节点
-  // linksArr = linksArr.filter((aId) => {
-  //   return $(`#${aId}`).length > 0;
-  // })
-  return linksArr;
-}
-
-KFK.removeConnectById = function (connect_id) {
-  try { KFK.svgDraw.find(`.${connect_id}`).remove(); } catch (err) { }
-  let triangle_id = connect_id + "_triangle";
-  try { KFK.svgDraw.find(`.${triangle_id}`).remove(); } catch (err) { }
-};
-
-KFK.redrawLinkLines = function (jqNode, reason = 'unknown', bothside = true) {
-  // KFK.debug('Redrawlinks', reason, 'bothside', bothside);
-  let myId = jqNode.attr("id");
-  let toIds = KFK.getNodeLinkIds(jqNode, 'linkto');
-  let list = KFK.svgDraw.find('.connect');
-  list.each((connect) => {
-    if (connect.attr('fid') === myId) {
-      let connect_id = connect.attr("id");
-      connect.remove();
-      let triangle_id = connect_id + "_triangle";
-      KFK.svgDraw.find(`.${triangle_id}`).remove();
+KFK._setTipBkgColor = function(theJqNode, bgColor) {
+    if (theJqNode === null) {
+        console.warn("setTipBkgColor to null nodeDIV");
+        return;
     }
-  });
-  toIds.forEach((toId, index) => {
-    if (toId !== myId) {
-      let jqTo = $(`#${toId}`);
-      KFK.drawPathBetween(jqNode, jqTo);
+    let svgImg = theJqNode.find(".tip_bkg .svg_main_path");
+    if (svgImg.length > 0) {
+        svgImg.attr("fill", bgColor);
+        return true;
+    } else {
+        KFK.debug(
+            `Can't change main path color. Node type ${theJqNode.attr(
+        "nodetype"
+      )} id:${theJqNode.attr("id")}   .svg_main_path not found`
+        );
+        return false;
     }
-  });
-  if (bothside) {
-    KFK.JC3.find('.kfknode').each((index, aNode) => {
-      let jqConnectFrom = $(aNode);
-      if (jqConnectFrom.attr("id") !== myId) {
-        let arr = KFK.stringToArray(jqConnectFrom.attr('linkto'));
-        if (arr.indexOf(myId) >= 0)
-          KFK.drawPathBetween(jqConnectFrom, jqNode);
-      }
+};
+KFK.getTipBkgColor = function(jqNode) {
+    if (jqNode === null) {
+        console.warn("getTipBkgColor to null nodeDIV, return default");
+        return cocoConfig.node.yellowtip.defaultColor;
+    }
+    let svgImg = jqNode.find(".tip_bkg .svg_main_path");
+    if (svgImg.length > 0) {
+        return svgImg.attr("fill");
+    } else {
+        return cocoConfig.node.yellowtip.defaultColor;
+    }
+};
+
+KFK.stringToArray = function(str) {
+    let arr = [];
+    if (str) {
+        arr = str.split(",");
+        if (arr.length === 1 && arr[0] === "") arr = [];
+    }
+    return arr;
+};
+
+KFK.getNodeLinkIds = function(jq1, direction) {
+    let linksStr = jq1.attr(direction);
+    let linksArr = KFK.stringToArray(linksStr);
+    //过滤掉不存在的节点
+    // linksArr = linksArr.filter((aId) => {
+    //   return $(`#${aId}`).length > 0;
+    // })
+    return linksArr;
+};
+
+KFK.removeConnectById = function(connect_id) {
+    try {
+        KFK.svgDraw.find(`.${connect_id}`).remove();
+    } catch (err) {}
+    let triangle_id = connect_id + "_triangle";
+    try {
+        KFK.svgDraw.find(`.${triangle_id}`).remove();
+    } catch (err) {}
+};
+
+KFK.redrawLinkLines = function(jqNode, reason = "unknown", bothside = true) {
+    // KFK.debug('Redrawlinks', reason, 'bothside', bothside);
+    let myId = jqNode.attr("id");
+    let toIds = KFK.getNodeLinkIds(jqNode, "linkto");
+    let list = KFK.svgDraw.find(".connect");
+    list.each((connect) => {
+        if (connect.attr("fid") === myId) {
+            let connect_id = connect.attr("id");
+            connect.remove();
+            let triangle_id = connect_id + "_triangle";
+            KFK.svgDraw.find(`.${triangle_id}`).remove();
+        }
     });
-  }
+    toIds.forEach((toId, index) => {
+        if (toId !== myId) {
+            let jqTo = $(`#${toId}`);
+            KFK.drawPathBetween(jqNode, jqTo);
+        }
+    });
+    if (bothside) {
+        KFK.JC3.find(".kfknode").each((index, aNode) => {
+            let jqConnectFrom = $(aNode);
+            if (jqConnectFrom.attr("id") !== myId) {
+                let arr = KFK.stringToArray(jqConnectFrom.attr("linkto"));
+                if (arr.indexOf(myId) >= 0) KFK.drawPathBetween(jqConnectFrom, jqNode);
+            }
+        });
+    }
 };
 
 //resize node时，记下当前shape variant的size，下次创建同样shape时，使用这个size
-KFK.setShapeDynamicDefaultSize = function (nodeType, variant, width, height) {
-  if (cocoConfig.defaultSize[nodeType] === undefined) cocoConfig.defaultSize[nodeType] = {};
-  if (cocoConfig.defaultSize[nodeType][variant] === undefined)
-    cocoConfig.defaultSize[nodeType][variant] = {};
-  cocoConfig.defaultSize[nodeType][variant].width = width;
-  cocoConfig.defaultSize[nodeType][variant].height = height;
+KFK.setShapeDynamicDefaultSize = function(nodeType, variant, width, height) {
+    if (cocoConfig.defaultSize[nodeType] === undefined)
+        cocoConfig.defaultSize[nodeType] = {};
+    if (cocoConfig.defaultSize[nodeType][variant] === undefined)
+        cocoConfig.defaultSize[nodeType][variant] = {};
+    cocoConfig.defaultSize[nodeType][variant].width = width;
+    cocoConfig.defaultSize[nodeType][variant].height = height;
 };
 
-KFK.getShapeDynamicDefaultSize = function (nodeType, variant) {
-  let ret = {};
-  //如果有 defaultSize[nodeType][variant]
-  if (cocoConfig.defaultSize[nodeType] && cocoConfig.defaultSize[nodeType][variant]
-    && cocoConfig.defaultSize[nodeType][variant].width
-    && cocoConfig.defaultSize[nodeType][variant].height
-  ) {
-    ret = {
-      w: cocoConfig.defaultSize[nodeType][variant].width,
-      h: cocoConfig.defaultSize[nodeType][variant].height,
-    };
-  } else if (cocoConfig.defaultSize[nodeType].width && cocoConfig.defaultSize[nodeType].height) {
-    //如果有 defaultSize[nodeType]
-    ret = {
-      w: cocoConfig.defaultSize[nodeType].width,
-      h: cocoConfig.defaultSize[nodeType].height,
-    };
-  } else {
-    //如果上面两个都没有，则用style的定义
-    ret = {
-      w: cocoConfig.node[nodeType].style.width,
-      h: cocoConfig.node[nodeType].style.height,
-    };
-  }
-  return ret;
+KFK.getShapeDynamicDefaultSize = function(nodeType, variant) {
+    let ret = {};
+    //如果有 defaultSize[nodeType][variant]
+    if (
+        cocoConfig.defaultSize[nodeType] &&
+        cocoConfig.defaultSize[nodeType][variant] &&
+        cocoConfig.defaultSize[nodeType][variant].width &&
+        cocoConfig.defaultSize[nodeType][variant].height
+    ) {
+        ret = {
+            w: cocoConfig.defaultSize[nodeType][variant].width,
+            h: cocoConfig.defaultSize[nodeType][variant].height,
+        };
+    } else if (
+        cocoConfig.defaultSize[nodeType].width &&
+        cocoConfig.defaultSize[nodeType].height
+    ) {
+        //如果有 defaultSize[nodeType]
+        ret = {
+            w: cocoConfig.defaultSize[nodeType].width,
+            h: cocoConfig.defaultSize[nodeType].height,
+        };
+    } else {
+        //如果上面两个都没有，则用style的定义
+        ret = {
+            w: cocoConfig.node[nodeType].style.width,
+            h: cocoConfig.node[nodeType].style.height,
+        };
+    }
+    return ret;
 };
 
 //用于对已有的nodeEvent进行修改控制，如enable, disable, destroy
 //action: one of resizable/droppable/draggable
 //cmd: one of enable, disable destroy
-KFK.updateNodeEvent = function (jqNode, action, cmd) {
-  if (action === "resizable") {
-    if (cocoConfig.node[jqNode.attr("nodetype")].resizable) {
-      jqNode.resizable(cmd);
+KFK.updateNodeEvent = function(jqNode, action, cmd) {
+    if (action === "resizable") {
+        if (cocoConfig.node[jqNode.attr("nodetype")].resizable) {
+            jqNode.resizable(cmd);
+        }
+    } else if (action === "droppable") {
+        if (cocoConfig.node[jqNode.attr("nodetype")].droppable) {
+            jqNode.droppable(cmd);
+        }
+    } else if (action === "draggable") {
+        jqNode.draggable(cmd);
     }
-  } else if (action === "droppable") {
-    if (cocoConfig.node[jqNode.attr("nodetype")].droppable) {
-      jqNode.droppable(cmd);
-    }
-  } else if (action === "draggable") {
-    jqNode.draggable(cmd);
-  }
 };
-KFK.setNodeEventHandler = function (jqNodeDIV) {
-  let jqNodeType = jqNodeDIV.attr("nodetype");
-  if (jqNodeType === undefined) {
-    KFK.warn("strange thing, setNodeEventHandler for an undefined node");
-    KFK.printCallStack();
-  }
-  //resize node
-  try {
-    if (cocoConfig.node[jqNodeType].resizable) {
-      jqNodeDIV.resizable({
-        autoHide: true,
-        start: () => {
-          KFK.fromJQ = jqNodeDIV.clone();
-          KFK.resizing = true;
-        },
-        resize: () => { },
-        stop: async () => {
-          KFK.debug("Stop Resizing...");
-          if (KFK.APP.model.cococonfig.snap) {
-            let tmpRight = KFK.divRight(jqNodeDIV);
-            let tmpBottom = KFK.divBottom(jqNodeDIV);
-            let newRight = tmpRight;
-            let newBottom = tmpBottom;
-            if (
-              tmpRight % KFK.APP.model.gridWidth <
-              KFK.APP.model.gridWidth * 0.5
-            ) {
-              newRight =
-                Math.floor(tmpRight / KFK.APP.model.gridWidth) *
-                KFK.APP.model.gridWidth;
+KFK.setNodeEventHandler = async function(jqNodeDIV, callback) {
+    let jqNodeType = jqNodeDIV.attr("nodetype");
+    if (jqNodeType === undefined) {
+        KFK.warn("strange thing, setNodeEventHandler for an undefined node");
+        KFK.printCallStack();
+    }
+    //resize node
+    try {
+        if (cocoConfig.node[jqNodeType].resizable) {
+            jqNodeDIV.resizable({
+                autoHide: true,
+                start: () => {
+                    KFK.fromJQ = jqNodeDIV.clone();
+                    KFK.resizing = true;
+                },
+                resize: () => {},
+                stop: async() => {
+                    KFK.debug("Stop Resizing...");
+                    if (KFK.APP.model.cococonfig.snap) {
+                        let tmpRight = KFK.divRight(jqNodeDIV);
+                        let tmpBottom = KFK.divBottom(jqNodeDIV);
+                        let newRight = tmpRight;
+                        let newBottom = tmpBottom;
+                        if (
+                            tmpRight % KFK.APP.model.gridWidth <
+                            KFK.APP.model.gridWidth * 0.5
+                        ) {
+                            newRight =
+                                Math.floor(tmpRight / KFK.APP.model.gridWidth) *
+                                KFK.APP.model.gridWidth;
+                        } else {
+                            newRight =
+                                (Math.floor(tmpRight / KFK.APP.model.gridWidth) + 1) *
+                                KFK.APP.model.gridWidth;
+                        }
+                        if (
+                            tmpBottom % KFK.APP.model.gridWidth <
+                            KFK.APP.model.gridWidth * 0.5
+                        ) {
+                            newBottom =
+                                Math.floor(tmpBottom / KFK.APP.model.gridWidth) *
+                                KFK.APP.model.gridWidth;
+                        } else {
+                            newBottom =
+                                (Math.floor(tmpBottom / KFK.APP.model.gridWidth) + 1) *
+                                KFK.APP.model.gridWidth;
+                        }
+                        jqNodeDIV.css(
+                            "width",
+                            KFK.divWidth(jqNodeDIV) + (newRight - tmpRight)
+                        );
+                        jqNodeDIV.css(
+                            "height",
+                            KFK.divHeight(jqNodeDIV) + (newBottom - tmpBottom)
+                        );
+                    }
+                    KFK.setShapeDynamicDefaultSize(
+                        jqNodeType,
+                        jqNodeDIV.attr("variant"),
+                        KFK.divWidth(jqNodeDIV),
+                        KFK.divHeight(jqNodeDIV)
+                    );
+                    if (jqNodeType === "image") {
+                        jqNodeDIV.find(".innerobj").css("width", jqNodeDIV.css("width"));
+                        jqNodeDIV.find(".innerobj").css("height", jqNodeDIV.css("height"));
+                    }
+                    KFK.resizing = false;
+                    KFK.afterResizing = true;
+                    //节点大小resize后，也要重画连接线
+                    KFK.redrawLinkLines(jqNodeDIV, "after resize");
+
+                    KFK.setSelectedNodesBoundingRect();
+
+                    await KFK.syncNodePut(
+                        "U",
+                        jqNodeDIV,
+                        "resize node",
+                        KFK.fromJQ,
+                        false,
+                        0,
+                        1
+                    );
+                },
+            });
+        }
+        if (cocoConfig.node[jqNodeType].minWidth) {
+            jqNodeDIV.resizable(
+                "option",
+                "minWidth",
+                cocoConfig.node[jqNodeType].minWidth
+            );
+        }
+        if (cocoConfig.node[jqNodeType].minHeight) {
+            jqNodeDIV.resizable(
+                "option",
+                "minHeight",
+                cocoConfig.node[jqNodeType].minHeight
+            );
+        }
+    } catch (error) {
+        console.error(error);
+    }
+    // jqNodeDIV.resizable('disable');
+
+    //drag node
+    try {
+        jqNodeDIV.draggable({
+            scroll: true,
+            containment: "parent",
+            start: (evt, ui) => {
+                KFK.fromJQ = jqNodeDIV.clone();
+                evt.stopImmediatePropagation();
+                evt.stopPropagation();
+                KFK.originZIndex = KFK.getZIndex(jqNodeDIV);
+                jqNodeDIV.css("z-index", "99999");
+                KFK.dragging = true;
+                KFK.positionBeforeDrag = {
+                    x: KFK.divLeft(jqNodeDIV),
+                    y: KFK.divTop(jqNodeDIV),
+                };
+            },
+            drag: (evt, ui) => {},
+            stop: async(evt, ui) => {
+                KFK.dragging = false;
+
+                //如果做了这个标记，则不再做U操作，否则，节点又会被同步回来
+                if (jqNodeDIV.shouldBeDeleted === true) {
+                    return;
+                }
+                if (KFK.APP.model.cococonfig.snap) {
+                    let tmpLeft = KFK.divLeft(jqNodeDIV);
+                    let tmpTop = KFK.divTop(jqNodeDIV);
+                    let newLeft = tmpLeft;
+                    let newTop = tmpTop;
+                    if (
+                        tmpLeft % KFK.APP.model.gridWidth <
+                        KFK.APP.model.gridWidth * 0.5
+                    ) {
+                        newLeft =
+                            Math.floor(tmpLeft / KFK.APP.model.gridWidth) *
+                            KFK.APP.model.gridWidth;
+                    } else {
+                        newLeft =
+                            (Math.floor(tmpLeft / KFK.APP.model.gridWidth) + 1) *
+                            KFK.APP.model.gridWidth;
+                    }
+                    if (
+                        tmpTop % KFK.APP.model.gridWidth <
+                        KFK.APP.model.gridWidth * 0.5
+                    ) {
+                        newTop =
+                            Math.floor(tmpTop / KFK.APP.model.gridWidth) *
+                            KFK.APP.model.gridWidth;
+                    } else {
+                        newTop =
+                            (Math.floor(tmpTop / KFK.APP.model.gridWidth) + 1) *
+                            KFK.APP.model.gridWidth;
+                    }
+                    jqNodeDIV.css("left", newLeft);
+                    jqNodeDIV.css("top", newTop);
+                }
+
+                let movedSer = 0;
+                let movedCount = 1;
+                //如果按住了shiftkey, 则只移动当前node, 不移动其他被选定Node
+                if (!evt.shiftKey) {
+                    //拖动其它被同时选中的对象
+                    let index = -1;
+                    for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+                        if (KFK.selectedDIVs[i].attr("id") === jqNodeDIV.attr("id")) {
+                            index = i;
+                            break;
+                        }
+                    }
+
+                    if (KFK.selectedDIVs.length > 1 && index >= 0) {
+                        KFK.debug("others shuld be moved");
+                        //要移动的个数是被选中的全部
+                        movedCount = KFK.selectedDIVs.length;
+                        let delta = {
+                            x: KFK.divLeft(jqNodeDIV) - KFK.positionBeforeDrag.x,
+                            y: KFK.divTop(jqNodeDIV) - KFK.positionBeforeDrag.y,
+                        };
+                        for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+                            let tmpFromJQ = KFK.selectedDIVs[i].clone();
+                            if (i === index) continue;
+                            //虽然这出跳过了被拖动的节点，但在后面这个节点一样要被移动
+                            //因此，所有被移动的节点数量就是所有被选中的节点数量
+                            KFK.selectedDIVs[i].css(
+                                "left",
+                                KFK.divLeft(KFK.selectedDIVs[i]) + delta.x
+                            );
+                            KFK.selectedDIVs[i].css(
+                                "top",
+                                KFK.divTop(KFK.selectedDIVs[i]) + delta.y
+                            );
+                            await KFK.syncNodePut(
+                                "U",
+                                KFK.selectedDIVs[i],
+                                "move following selected",
+                                tmpFromJQ,
+                                false,
+                                movedSer,
+                                movedCount
+                            );
+                            movedSer = movedSer + 1;
+                        }
+                        for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+                            KFK.redrawLinkLines(KFK.selectedDIVs[i], "codrag", true);
+                        }
+                    } else {
+                        KFK.debug(
+                            "will not move other nodes, selectedDIVs",
+                            KFK.selectedDIVs.length,
+                            " first index",
+                            index
+                        );
+                    }
+                }
+
+                KFK.afterDragging = true;
+                jqNodeDIV.css("z-index", KFK.originZIndex);
+                KFK.originZIndex = 1;
+                //节点移动后，对连接到节点上的连接线重新划线
+                KFK.redrawLinkLines(jqNodeDIV, "after moving");
+                KFK.setSelectedNodesBoundingRect();
+                await KFK.syncNodePut(
+                    "U",
+                    jqNodeDIV,
+                    "after drag",
+                    KFK.fromJQ,
+                    false,
+                    movedSer,
+                    movedCount
+                );
+                movedSer = movedSer + 1;
+            },
+        });
+    } catch (error) {
+        console.error(error);
+    }
+    try {
+        if (cocoConfig.node[jqNodeType].droppable) {
+            jqNodeDIV.droppable({
+                activeClass: "ui-state-hover",
+                hoverClass: "ui-state-active",
+                accept: ".kfknode",
+                drop: async(evt, ui) => {
+                    //lockMode时可以Marge
+                    if (KFK.KEYDOWN.ctrl === false && KFK.KEYDOWN.meta === false) return;
+                    if (KFK.anyLocked(jqNodeDIV) || KFK.anyLocked(ui.draggable)) return;
+                    let parent_node_type = jqNodeDIV.attr("nodetype");
+                    let child_node_type = ui.draggable.attr("nodetype");
+                    //同种类型可以merge
+                    // if (parent_node_type === child_node_type) {
+                    // let innerObj = $(`#${jqNodeDIV.attr("id")}`);
+                    let fromJQ = jqNodeDIV.clone();
+                    let innerObj = jqNodeDIV.find(".innerobj");
+                    let oldHtml = innerObj.html();
+                    let droppedInner = ui.draggable.find(".innerobj");
+                    let droppedHtml = droppedInner.html();
+                    let newHtml = oldHtml + droppedHtml;
+                    //如果shift也按着，则直接使用dropped对象的html替换
+                    if (KFK.KEYDOWN.shift === true) {
+                        newHtml = droppedHtml;
+                    }
+                    let jqBig = jqNodeDIV;
+                    let jqSmall = ui.draggable;
+                    //这里要求，被替换的node要比被拖动的node尺寸大，
+                    //如果不做这个要求，那么，一个拖动过来，遮住被替换node一个边的情况下，也会执行替换，这不是所期望的
+                    if (
+                        KFK.unpx(jqSmall.css("left")) > KFK.unpx(jqBig.css("left")) &&
+                        KFK.unpx(jqSmall.css("top")) > KFK.unpx(jqBig.css("top")) &&
+                        KFK.unpx(jqSmall.css("left")) + KFK.unpx(jqSmall.css("width")) <
+                        KFK.unpx(jqBig.css("left")) + KFK.unpx(jqBig.css("width")) &&
+                        KFK.unpx(jqSmall.css("top")) + KFK.unpx(jqSmall.css("height")) <
+                        KFK.unpx(jqBig.css("top")) + KFK.unpx(jqBig.css("height"))
+                    ) {
+                        innerObj.html(newHtml);
+                        //删掉之前那个被拖动的
+                        //在拖动覆盖其它节点，内容合并后删除被拖动节点时，这个标志是一定要加的，防止draggable end事件中，重新上传U指令，这样内容又会update回来
+                        //请参考draggable end事件处
+                        ui.draggable.shouldBeDeleted = true;
+                        await KFK.deleteNode_request(ui.draggable);
+                        //更新这个被粘贴的
+                        await KFK.syncNodePut(
+                            "U",
+                            jqNodeDIV,
+                            "new text",
+                            fromJQ,
+                            false,
+                            0,
+                            1
+                        );
+                    }
+                    // }
+                },
+            });
+        }
+    } catch (error) {
+        console.error(error);
+    }
+
+    try {
+        jqNodeDIV.hover(
+            () => {
+                $(document.body).css("cursor", "pointer");
+                KFK.hoverJqDiv(jqNodeDIV);
+                jqNodeDIV.addClass("shadow1");
+                // jqNodeDIV.resizable('enable');
+            },
+            () => {
+                $(document.body).css("cursor", "default");
+                jqNodeDIV.removeClass("shadow1");
+                // jqNodeDIV.resizable('disable');
+                KFK.hoverJqDiv(null);
+            }
+        );
+    } catch (error) {
+        console.error(error);
+    }
+
+    try {
+        //防止点在节点上，以后，画出框选框
+        jqNodeDIV.mousedown((evt) => {
+            KFK.closeActionLog();
+            evt.stopImmediatePropagation();
+            evt.stopPropagation();
+        });
+    } catch (error) {
+        console.error(error);
+    }
+    //click node
+    try {
+        jqNodeDIV.click((evt) => {
+            if (KFK.inPresentingMode || KFK.inOverviewMode) return;
+            if (KFK.isEditting && KFK.quillEdittingNode) {
+                if (KFK.quillEdittingNode !== jqNodeDIV) {
+                    KFK.finishQuillEditting();
+                }
+                evt.stopImmediatePropagation();
+                evt.stopPropagation();
+                evt.preventDefault();
+                return;
+            }
+            KFK.pickedSvgLine = null;
+            KFK.afterDragging = false;
+            KFK.afterResizing = false;
+            evt.stopImmediatePropagation();
+            evt.stopPropagation();
+            evt.preventDefault();
+            KFK.focusOnNode(jqNodeDIV);
+            if (KFK.mode === "pointer") {
+                KFK.selectNodesOnClick(jqNodeDIV, evt.shiftKey);
+                KFK.resetPropertyOnMultipleNodesSelected();
+            } else if (KFK.mode === "connect") {
+                if (KFK.afterDragging === false) {
+                    KFK.yarkLinkNode(jqNodeDIV, evt.shiftKey, "", KFK.FROM_CLIENT);
+                } else {
+                    KFK.afterDragging = true;
+                }
+                evt.stopImmediatePropagation();
+                evt.stopPropagation();
+                evt.preventDefault();
+                return;
+            } else if (KFK.mode === "lock") {
+                KFK.hoverJqDiv(jqNodeDIV);
+                KFK.hoverSvgLine(null);
+                KFK.tryToLockUnlock(evt.shiftKey);
+                evt.preventDefault();
+                evt.stopPropagation();
+                return;
+            } else if (KFK.mode === "brain") {
+                KFK.hoverJqDiv(jqNodeDIV);
+                KFK.hoverSvgLine(null);
+                KFK.toggleBrainstorm();
+                evt.preventDefault();
+                evt.stopPropagation();
+                KFK.setMode("pointer");
+                return;
+            }
+        });
+    } catch (error) {
+        console.error(error);
+    }
+
+    try {
+        jqNodeDIV.dblclick(async function(evt) {
+            evt.stopPropagation();
+            evt.preventDefault();
+            if (KFK.anyLocked(jqNodeDIV)) return;
+            //下面这句判断其实没用，因为在演示模式和概览模式下，都加了遮罩，点不到nodeDIV上
+            if (KFK.inPresentingMode === true || KFK.inOverviewMode) return;
+
+            //如果正在quill编辑的话
+            if (KFK.isEditting && KFK.quillEdittingNode) {
+                //看是否是当前节点, 如果是，正在编辑的节点，返回
+                if (KFK.quillEdittingNode === jqNodeDIV) {
+                    // console.log("Quilling same node, return then");
+                    return;
+                } else {
+                    // console.log("Quilling another node, end it");
+                    //否则的话， 就把前一个Quill编辑结束
+                    await KFK.finishQuillEditting();
+                    //然后启动，当前节点的Quill编辑
+                    // console.log("Then start my quilling");
+                    KFK.startNodeEditing(jqNodeDIV);
+                }
             } else {
-              newRight =
-                (Math.floor(tmpRight / KFK.APP.model.gridWidth) + 1) *
-                KFK.APP.model.gridWidth;
+                // console.log("Not quilling");
+                KFK.startNodeEditing(jqNodeDIV);
             }
-            if (
-              tmpBottom % KFK.APP.model.gridWidth <
-              KFK.APP.model.gridWidth * 0.5
-            ) {
-              newBottom =
-                Math.floor(tmpBottom / KFK.APP.model.gridWidth) *
-                KFK.APP.model.gridWidth;
-            } else {
-              newBottom =
-                (Math.floor(tmpBottom / KFK.APP.model.gridWidth) + 1) *
-                KFK.APP.model.gridWidth;
-            }
-            jqNodeDIV.css("width", KFK.divWidth(jqNodeDIV) + (newRight - tmpRight));
-            jqNodeDIV.css("height", KFK.divHeight(jqNodeDIV) + (newBottom - tmpBottom));
-          }
-          KFK.setShapeDynamicDefaultSize(
-            jqNodeType,
-            jqNodeDIV.attr("variant"),
-            KFK.divWidth(jqNodeDIV),
-            KFK.divHeight(jqNodeDIV)
-          );
-          if (jqNodeType === "image") {
-            jqNodeDIV.find(".innerobj").css("width", jqNodeDIV.css("width"));
-            jqNodeDIV.find(".innerobj").css("height", jqNodeDIV.css("height"));
-          }
-          KFK.resizing = false;
-          KFK.afterResizing = true;
-          //节点大小resize后，也要重画连接线
-          KFK.redrawLinkLines(jqNodeDIV, 'after resize');
-
-          KFK.setSelectedNodesBoundingRect();
-
-          await KFK.syncNodePut("U", jqNodeDIV, "resize node", KFK.fromJQ, false, 0, 1);
-        }
-      });
+        });
+    } catch (error) {
+        console.error(error);
     }
-    if (cocoConfig.node[jqNodeType].minWidth) {
-      jqNodeDIV.resizable("option", "minWidth", cocoConfig.node[jqNodeType].minWidth);
-    }
-    if (cocoConfig.node[jqNodeType].minHeight) {
-      jqNodeDIV.resizable(
-        "option",
-        "minHeight",
-        cocoConfig.node[jqNodeType].minHeight
-      );
-    }
-  } catch (error) {
-    console.error(error);
-  }
-  // jqNodeDIV.resizable('disable');
-
-  //drag node
-  try {
-    jqNodeDIV.draggable({
-      scroll: true,
-      containment: "parent",
-      start: (evt, ui) => {
-        KFK.fromJQ = jqNodeDIV.clone();
-        evt.stopImmediatePropagation();
-        evt.stopPropagation();
-        KFK.originZIndex = KFK.getZIndex(jqNodeDIV);
-        jqNodeDIV.css("z-index", "99999");
-        KFK.dragging = true;
-        KFK.positionBeforeDrag = {
-          x: KFK.divLeft(jqNodeDIV),
-          y: KFK.divTop(jqNodeDIV)
-        };
-      },
-      drag: (evt, ui) => { },
-      stop: async (evt, ui) => {
-        KFK.dragging = false;
-
-        //如果做了这个标记，则不再做U操作，否则，节点又会被同步回来
-        if (jqNodeDIV.shouldBeDeleted === true) {
-          return;
-        }
-        if (KFK.APP.model.cococonfig.snap) {
-          let tmpLeft = KFK.divLeft(jqNodeDIV);
-          let tmpTop = KFK.divTop(jqNodeDIV);
-          let newLeft = tmpLeft;
-          let newTop = tmpTop;
-          if (tmpLeft % KFK.APP.model.gridWidth < KFK.APP.model.gridWidth * 0.5) {
-            newLeft =
-              Math.floor(tmpLeft / KFK.APP.model.gridWidth) *
-              KFK.APP.model.gridWidth;
-          } else {
-            newLeft =
-              (Math.floor(tmpLeft / KFK.APP.model.gridWidth) + 1) *
-              KFK.APP.model.gridWidth;
-          }
-          if (tmpTop % KFK.APP.model.gridWidth < KFK.APP.model.gridWidth * 0.5) {
-            newTop =
-              Math.floor(tmpTop / KFK.APP.model.gridWidth) *
-              KFK.APP.model.gridWidth;
-          } else {
-            newTop =
-              (Math.floor(tmpTop / KFK.APP.model.gridWidth) + 1) *
-              KFK.APP.model.gridWidth;
-          }
-          jqNodeDIV.css("left", newLeft);
-          jqNodeDIV.css("top", newTop);
-        }
-
-        let movedSer = 0;
-        let movedCount = 1;
-        //如果按住了shiftkey, 则只移动当前node, 不移动其他被选定Node
-        if (!evt.shiftKey) {
-          //拖动其它被同时选中的对象
-          let index = -1;
-          for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-            if (KFK.selectedDIVs[i].attr("id") === jqNodeDIV.attr("id")) {
-              index = i;
-              break;
-            }
-          }
-
-          if (KFK.selectedDIVs.length > 1 && index >= 0) {
-            KFK.debug("others shuld be moved");
-            //要移动的个数是被选中的全部
-            movedCount = KFK.selectedDIVs.length;
-            let delta = {
-              x: KFK.divLeft(jqNodeDIV) - KFK.positionBeforeDrag.x,
-              y: KFK.divTop(jqNodeDIV) - KFK.positionBeforeDrag.y
-            };
-            for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-              let tmpFromJQ = KFK.selectedDIVs[i].clone();
-              if (i === index) continue;
-              //虽然这出跳过了被拖动的节点，但在后面这个节点一样要被移动
-              //因此，所有被移动的节点数量就是所有被选中的节点数量
-              KFK.selectedDIVs[i].css("left", KFK.divLeft(KFK.selectedDIVs[i]) + delta.x);
-              KFK.selectedDIVs[i].css("top", KFK.divTop(KFK.selectedDIVs[i]) + delta.y);
-              await KFK.syncNodePut("U", KFK.selectedDIVs[i], "move following selected", tmpFromJQ, false, movedSer, movedCount);
-              movedSer = movedSer + 1;
-            }
-            for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-              KFK.redrawLinkLines(KFK.selectedDIVs[i], "codrag", true);
-            }
-          } else {
-            KFK.debug("will not move other nodes, selectedDIVs", KFK.selectedDIVs.length, " first index", index);
-          }
-        }
-
-        KFK.afterDragging = true;
-        jqNodeDIV.css("z-index", KFK.originZIndex);
-        KFK.originZIndex = 1;
-        //节点移动后，对连接到节点上的连接线重新划线
-        KFK.redrawLinkLines(jqNodeDIV, 'after moving');
-        KFK.setSelectedNodesBoundingRect();
-        await KFK.syncNodePut("U", jqNodeDIV, "after drag", KFK.fromJQ, false, movedSer, movedCount);
-        movedSer = movedSer + 1;
-      }
-    });
-  } catch (error) {
-    console.error(error);
-  }
-  try {
-    if (cocoConfig.node[jqNodeType].droppable) {
-      jqNodeDIV.droppable({
-        activeClass: "ui-state-hover",
-        hoverClass: "ui-state-active",
-        accept: ".kfknode",
-        drop: async (evt, ui) => {
-          //lockMode时可以Marge
-          if (KFK.KEYDOWN.ctrl === false && KFK.KEYDOWN.meta === false) return;
-          if (KFK.anyLocked(jqNodeDIV) || KFK.anyLocked(ui.draggable)) return;
-          let parent_node_type = jqNodeDIV.attr("nodetype");
-          let child_node_type = ui.draggable.attr("nodetype");
-          //同种类型可以merge
-          // if (parent_node_type === child_node_type) {
-          // let innerObj = $(`#${jqNodeDIV.attr("id")}`);
-          let fromJQ = jqNodeDIV.clone();
-          let innerObj = jqNodeDIV.find(".innerobj");
-          let oldHtml = innerObj.html();
-          let droppedInner = ui.draggable.find(".innerobj");
-          let droppedHtml = droppedInner.html();
-          let newHtml = oldHtml + droppedHtml;
-          //如果shift也按着，则直接使用dropped对象的html替换
-          if (KFK.KEYDOWN.shift === true) {
-            newHtml = droppedHtml;
-          }
-          let jqBig = jqNodeDIV;
-          let jqSmall = ui.draggable;
-          //这里要求，被替换的node要比被拖动的node尺寸大，
-          //如果不做这个要求，那么，一个拖动过来，遮住被替换node一个边的情况下，也会执行替换，这不是所期望的
-          if (
-            KFK.unpx(jqSmall.css("left")) > KFK.unpx(jqBig.css("left")) &&
-            KFK.unpx(jqSmall.css("top")) > KFK.unpx(jqBig.css("top")) &&
-            KFK.unpx(jqSmall.css("left")) + KFK.unpx(jqSmall.css("width")) <
-            KFK.unpx(jqBig.css("left")) + KFK.unpx(jqBig.css("width")) &&
-            KFK.unpx(jqSmall.css("top")) + KFK.unpx(jqSmall.css("height")) <
-            KFK.unpx(jqBig.css("top")) + KFK.unpx(jqBig.css("height"))
-          ) {
-            innerObj.html(newHtml);
-            //删掉之前那个被拖动的
-            //在拖动覆盖其它节点，内容合并后删除被拖动节点时，这个标志是一定要加的，防止draggable end事件中，重新上传U指令，这样内容又会update回来
-            //请参考draggable end事件处
-            ui.draggable.shouldBeDeleted = true;
-            await KFK.deleteNode_request(ui.draggable);
-            //更新这个被粘贴的
-            await KFK.syncNodePut("U", jqNodeDIV, "new text", fromJQ, false, 0, 1);
-          }
-          // }
-        }
-      });
-    }
-  } catch (error) {
-    console.error(error);
-  }
-
-  try {
-    jqNodeDIV.hover(
-      () => {
-        $(document.body).css("cursor", "pointer");
-        KFK.hoverJqDiv(jqNodeDIV);
-        jqNodeDIV.addClass("shadow1");
-        // jqNodeDIV.resizable('enable');
-      },
-      () => {
-        $(document.body).css("cursor", "default");
-        jqNodeDIV.removeClass("shadow1");
-        // jqNodeDIV.resizable('disable');
-        KFK.hoverJqDiv(null);
-      }
-    );
-  } catch (error) {
-    console.error(error);
-  }
-
-  try {
-    //防止点在节点上，以后，画出框选框
-    jqNodeDIV.mousedown(evt => {
-      KFK.closeActionLog();
-      evt.stopImmediatePropagation();
-      evt.stopPropagation();
-    });
-  } catch (error) {
-    console.error(error);
-  }
-  //click node
-  try {
-    jqNodeDIV.click(evt => {
-      if (KFK.inPresentingMode || KFK.inOverviewMode) return;
-      if (KFK.isEditting && KFK.quillEdittingNode) {
-        if (KFK.quillEdittingNode !== jqNodeDIV) {
-          KFK.finishQuillEditting();
-        }
-        evt.stopImmediatePropagation();
-        evt.stopPropagation();
-        evt.preventDefault();
-        return;
-      }
-      KFK.pickedSvgLine = null;
-      KFK.afterDragging = false;
-      KFK.afterResizing = false;
-      evt.stopImmediatePropagation();
-      evt.stopPropagation();
-      evt.preventDefault();
-      KFK.focusOnNode(jqNodeDIV);
-      if (KFK.mode === "pointer") {
-        KFK.selectNodesOnClick(jqNodeDIV, evt.shiftKey);
-        KFK.resetPropertyOnMultipleNodesSelected();
-      } else if (KFK.mode === "connect") {
-        if (KFK.afterDragging === false) {
-          KFK.yarkLinkNode(jqNodeDIV, evt.shiftKey, '', KFK.FROM_CLIENT);
-        } else {
-          KFK.afterDragging = true;
-        }
-        evt.stopImmediatePropagation();
-        evt.stopPropagation();
-        evt.preventDefault();
-        return;
-      } else if (KFK.mode === "lock") {
-        KFK.hoverJqDiv(jqNodeDIV);
-        KFK.hoverSvgLine(null);
-        KFK.tryToLockUnlock(evt.shiftKey);
-        evt.preventDefault();
-        evt.stopPropagation();
-        return;
-      }
-    });
-  } catch (error) {
-    console.error(error);
-  }
-
-  try {
-    jqNodeDIV.dblclick(async function (evt) {
-      evt.stopPropagation();
-      evt.preventDefault();
-      if (KFK.anyLocked(jqNodeDIV)) return;
-      //下面这句判断其实没用，因为在演示模式和概览模式下，都加了遮罩，点不到nodeDIV上
-      if (KFK.inPresentingMode === true || KFK.inOverviewMode) return;
-
-      //如果正在quill编辑的话
-      if (KFK.isEditting && KFK.quillEdittingNode) {
-        //看是否是当前节点, 如果是，正在编辑的节点，返回
-        if (KFK.quillEdittingNode === jqNodeDIV) {
-          // console.log("Quilling same node, return then");
-          return;
-        } else {
-          // console.log("Quilling another node, end it");
-          //否则的话， 就把前一个Quill编辑结束
-          await KFK.finishQuillEditting();
-          //然后启动，当前节点的Quill编辑
-          // console.log("Then start my quilling");
-          KFK.startNodeEditing(jqNodeDIV);
-        }
-      } else {
-        // console.log("Not quilling");
-        KFK.startNodeEditing(jqNodeDIV);
-      }
-    });
-  } catch (error) {
-    console.error(error);
-  }
+    if (callback) await callback();
 };
 
 // getSelection、createRange兼容
-KFK.isSupportRange = function () {
-  return typeof document.createRange === 'function' || typeof window.getSelection === 'function'
+KFK.isSupportRange = function() {
+    return (
+        typeof document.createRange === "function" ||
+        typeof window.getSelection === "function"
+    );
 };
 
-KFK.getCurrentRange = function () {
-  let range = null
-  let selection = null
-  if (KFK.isSupportRange()) {
-    selection = document.getSelection()
-    if (selection.getRangeAt && selection.rangeCount) {
-      range = document.getSelection().getRangeAt(0)
+KFK.getCurrentRange = function() {
+    let range = null;
+    let selection = null;
+    if (KFK.isSupportRange()) {
+        selection = document.getSelection();
+        if (selection.getRangeAt && selection.rangeCount) {
+            range = document.getSelection().getRangeAt(0);
+        }
+    } else {
+        range = document.selection.createRange();
     }
-  } else {
-    range = document.selection.createRange()
-  }
-  return range
+    return range;
 };
-KFK.insertHtmlAfterRange = function (html) {
-  let selection = null
-  let range = null
-  if (KFK.isSupportRange()) {
-    // IE > 9 and 其它浏览器
-    selection = document.getSelection()
-    if (selection.getRangeAt && selection.rangeCount) {
-      let fragment, node, lastNode
-      range = selection.getRangeAt(0)
-      range.deleteContents()
-      let el = document.createElement('span')
-      el.innerHTML = html
-      // 创建空文档对象,IE > 8支持documentFragment
-      fragment = document.createDocumentFragment()
+KFK.insertHtmlAfterRange = function(html) {
+    let selection = null;
+    let range = null;
+    if (KFK.isSupportRange()) {
+        // IE > 9 and 其它浏览器
+        selection = document.getSelection();
+        if (selection.getRangeAt && selection.rangeCount) {
+            let fragment, node, lastNode;
+            range = selection.getRangeAt(0);
+            range.deleteContents();
+            let el = document.createElement("span");
+            el.innerHTML = html;
+            // 创建空文档对象,IE > 8支持documentFragment
+            fragment = document.createDocumentFragment();
 
-      while ((node = el.firstChild)) {
-        lastNode = fragment.appendChild(node)
-      }
-      range.insertNode(fragment)
+            while ((node = el.firstChild)) {
+                lastNode = fragment.appendChild(node);
+            }
+            range.insertNode(fragment);
 
-      if (lastNode) {
-        range = range.cloneRange()
-        range.setStartAfter(lastNode)
-        range.collapse(true)
-        selection.removeAllRanges()
-        selection.addRange(range)
-      }
+            if (lastNode) {
+                range = range.cloneRange();
+                range.setStartAfter(lastNode);
+                range.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            }
+        }
+    } else if (document.selection && document.selection.type != "Control") {
+        // IE < 9
+        document.selection.createRange().pasteHTML(html);
     }
-  } else if (document.selection && document.selection.type != 'Control') {
-    // IE < 9
-    document.selection.createRange().pasteHTML(html)
-  }
 };
 
-KFK.cleanTextInput = function (jInner, allowBR) {
-  let html = jInner.prop('innerHTML');
-  html = html.replace('<div>', ' ');
-  html = html.replace('</div>', ' ');
-  if (allowBR) {
-    html = html.replace(/<br><br>$/, '<br>');
-    html = html + "<br><br>";
-  } else {
-    html = html.replace('<br>', '');
-  }
-  jInner.prop('innerHTML', html);
-  // KFK.insertHtmlAfterRange('<br><br>');
-  if (window.getSelection) { //ie11 10 9 ff safari
-    jInner.focus();
-    var range = window.getSelection(); //创建range
-    range.selectAllChildren(jInner[0]); //range 选择obj下所有子内容
-    range.collapseToEnd(); //光标移至最后
-  } else if (document.selection) { //ie10 9 8 7 6 5
-    var range = document.selection.createRange(); //创建选择对象
-    //var range = document.body.createTextRange();
-    range.moveToElementText(jInner[0]); //range定位到obj
-    range.collapse(false); //光标移至最后
-    range.select();
-  }
+KFK.cleanTextInput = function(jInner, allowBR) {
+    let html = jInner.prop("innerHTML");
+    html = html.replace("<div>", " ");
+    html = html.replace("</div>", " ");
+    if (allowBR) {
+        html = html.replace(/<br><br>$/, "<br>");
+        html = html + "<br><br>";
+    } else {
+        html = html.replace("<br>", "");
+    }
+    jInner.prop("innerHTML", html);
+    // KFK.insertHtmlAfterRange('<br><br>');
+    if (window.getSelection) {
+        //ie11 10 9 ff safari
+        jInner.focus();
+        var range = window.getSelection(); //创建range
+        range.selectAllChildren(jInner[0]); //range 选择obj下所有子内容
+        range.collapseToEnd(); //光标移至最后
+    } else if (document.selection) {
+        //ie10 9 8 7 6 5
+        var range = document.selection.createRange(); //创建选择对象
+        //var range = document.body.createTextRange();
+        range.moveToElementText(jInner[0]); //range定位到obj
+        range.collapse(false); //光标移至最后
+        range.select();
+    }
 };
 
 //启动单行文字编辑
-KFK.startInlineEditing = function (jqNodeDIV) {
-  console.log("startInlineEditing....");
-  KFK.isEditting = true;
-  jqNodeDIV.find('.innerobj').focus();
-  KFK.inlineEditor = jqNodeDIV;
-  let allowBR = jqNodeDIV.attr('nodetype') !== 'text';
-  jqNodeDIV.keydown(function (evt) {
-    if (evt.keyCode === 13 && (evt.shiftKey || evt.ctrlKey || evt.metaKey)) {
-      let jInner = jqNodeDIV.find('.innerobj');
-      KFK.cleanTextInput(jInner, allowBR);
-      evt.stopPropagation();
-      evt.preventDefault();
-    } else if (evt.keyCode === 13) {  //ENTER || PageUp
-      let jInner = jqNodeDIV.find('.innerobj');
-      KFK.cleanTextInput(jInner, allowBR);
-      evt.stopPropagation();
-      evt.preventDefault()
-    } else if (evt.keyCode == 35 || evt.keyCode === 34) {  //END  || PageDown
-      evt.stopPropagation();
-      evt.preventDefault();
+KFK.startInlineEditing = function(jqNodeDIV) {
+    console.log("startInlineEditing....");
+    KFK.isEditting = true;
+    jqNodeDIV.find(".innerobj").focus();
+    KFK.inlineEditor = jqNodeDIV;
+    let allowBR = jqNodeDIV.attr("nodetype") !== "text";
+    jqNodeDIV.keydown(function(evt) {
+        if (evt.keyCode === 13 && (evt.shiftKey || evt.ctrlKey || evt.metaKey)) {
+            let jInner = jqNodeDIV.find(".innerobj");
+            KFK.cleanTextInput(jInner, allowBR);
+            evt.stopPropagation();
+            evt.preventDefault();
+        } else if (evt.keyCode === 13) {
+            //ENTER || PageUp
+            let jInner = jqNodeDIV.find(".innerobj");
+            KFK.cleanTextInput(jInner, allowBR);
+            evt.stopPropagation();
+            evt.preventDefault();
+        } else if (evt.keyCode == 35 || evt.keyCode === 34) {
+            //END  || PageDown
+            evt.stopPropagation();
+            evt.preventDefault();
+        } else if (evt.keyCode === 36 || evt.keyCode === 33) {
+            //HOME
+            evt.stopPropagation();
+            evt.preventDefault();
+            // let jInner = jqNodeDIV.find('.innerobj');
+            // if (window.getSelection) { //ie11 10 9 ff safari
+            //   jInner.focus();
+            //   var range = window.getSelection(); //创建range
+            //   range.selectAllChildren(jInner[0]); //range 选择obj下所有子内容
+            //   range.collapseToStart(); //光标移至最后
+            // } else if (document.selection) { //ie10 9 8 7 6 5
+            //   var range = document.selection.createRange(); //创建选择对象
+            //   //var range = document.body.createTextRange();
+            //   range.moveToElementText(jInner[0]); //range定位到obj
+            //   range.moveEnd(jInner[0], 0);
+            //   range.moveStart(jInner[0], 0);
+            //   range.collapse(); //光标移至最后
+            // }
+        }
+        // on esc do not set value back to node
+        // if (evt.keyCode === 27) {
+        //   console.log("presessed ESC");
+        // }
+    });
+};
+KFK.endInlineEditing = function() {
+    KFK.isEditting = false;
+    KFK.inlineEditor = null;
+};
 
-    } else if (evt.keyCode === 36 || evt.keyCode === 33) { //HOME
-      evt.stopPropagation();
-      evt.preventDefault();
-      // let jInner = jqNodeDIV.find('.innerobj');
-      // if (window.getSelection) { //ie11 10 9 ff safari
-      //   jInner.focus();
-      //   var range = window.getSelection(); //创建range
-      //   range.selectAllChildren(jInner[0]); //range 选择obj下所有子内容
-      //   range.collapseToStart(); //光标移至最后
-      // } else if (document.selection) { //ie10 9 8 7 6 5
-      //   var range = document.selection.createRange(); //创建选择对象
-      //   //var range = document.body.createTextRange();
-      //   range.moveToElementText(jInner[0]); //range定位到obj
-      //   range.moveEnd(jInner[0], 0);
-      //   range.moveStart(jInner[0], 0);
-      //   range.collapse(); //光标移至最后
-      // }
+KFK.startNodeEditing = async function(jqNodeDIV, enterSelect) {
+    if (KFK.anyLocked(jqNodeDIV)) return;
+    if (KFK.isEditting && KFK.quillEdittingNode) {
+        return;
     }
-    // on esc do not set value back to node
-    // if (evt.keyCode === 27) {
-    //   console.log("presessed ESC");
-    // }
-  });
-};
-KFK.endInlineEditing = function () {
-  KFK.isEditting = false;
-  KFK.inlineEditor = null;
-}
-
-KFK.startNodeEditing = async function (jqNodeDIV, enterSelect) {
-  if (KFK.anyLocked(jqNodeDIV)) return;
-  if (KFK.isEditting && KFK.quillEdittingNode) {
-    return;
-  }
-  if (jqNodeDIV.attr('nodetype') === 'text') {
-    KFK.startInlineEditing(jqNodeDIV);
-  } else if (jqNodeDIV.attr('nodetype') === 'richtext') {
-    KFK.askQuill = jqNodeDIV;
-    await KFK.sendCmd('ASKQUILL', { nodeid: jqNodeDIV.attr("id") });
-  } else
-    KFK.startNodeEditing_withTextArea(jqNodeDIV, enterSelect);
+    if (jqNodeDIV.attr("nodetype") === "text") {
+        KFK.startInlineEditing(jqNodeDIV);
+    } else if (jqNodeDIV.attr("nodetype") === "richtext") {
+        KFK.askQuill = jqNodeDIV;
+        await KFK.sendCmd("ASKQUILL", { nodeid: jqNodeDIV.attr("id") });
+    } else KFK.startNodeEditing_withTextArea(jqNodeDIV, enterSelect);
 };
 
-KFK.finishQuillEditting = async function () {
-  let jInner = KFK.quillEdittingNode.find('.innerobj');
-  let inner = el(jInner);
-  let delta = KFK.quill.getContents();
-  let converter = new QuillDeltaToHtmlConverter(delta.ops, {});
-  let html = converter.convert();
-  // jInner.removeClass('ql-container');
-  // jInner.removeClass('ql-snow');
-  jInner.addClass('ql-viewer');
-  jInner.addClass('ql-editor');
-  $('.ql-toolbar').remove();
-  KFK.quillEdittingNode.draggable("enable");
-  inner.innerHTML = html;
+KFK.finishQuillEditting = async function() {
+    let jInner = KFK.quillEdittingNode.find(".innerobj");
+    let inner = el(jInner);
+    let delta = KFK.quill.getContents();
+    let converter = new QuillDeltaToHtmlConverter(delta.ops, {});
+    let html = converter.convert();
+    // jInner.removeClass('ql-container');
+    // jInner.removeClass('ql-snow');
+    jInner.addClass("ql-viewer");
+    jInner.addClass("ql-editor");
+    $(".ql-toolbar").remove();
+    KFK.quillEdittingNode.draggable("enable");
+    inner.innerHTML = html;
 
-  await KFK.syncNodePut("U", KFK.quillEdittingNode, "quill edit", KFK.beforeQuillEdit, false, 0, 1);
-  KFK.isEditting = false;
-  KFK.quillEdittingNode = undefined;
+    await KFK.syncNodePut(
+        "U",
+        KFK.quillEdittingNode,
+        "quill edit",
+        KFK.beforeQuillEdit,
+        false,
+        0,
+        1
+    );
+    KFK.isEditting = false;
+    KFK.quillEdittingNode = undefined;
 };
 
-KFK.cancelQuillEditting = async function (byName) {
-  let jInner = KFK.quillEdittingNode.find('.innerobj');
-  if (!jInner.hasClass('ql-viewer'))
-    jInner.addClass('ql-viewer');
-  if (!jInner.hasClass('ql-editor'))
-    jInner.addClass('ql-editor');
-  $('.ql-toolbar').remove();
-  KFK.quillEdittingNode.draggable("enable");
+KFK.cancelQuillEditting = async function(byName) {
+    let jInner = KFK.quillEdittingNode.find(".innerobj");
+    if (!jInner.hasClass("ql-viewer")) jInner.addClass("ql-viewer");
+    if (!jInner.hasClass("ql-editor")) jInner.addClass("ql-editor");
+    $(".ql-toolbar").remove();
+    KFK.quillEdittingNode.draggable("enable");
 
-  //quilling-by显示两秒
-  $('.quilling-by').remove();
-  let jtmp = $(`<div class="quilling-by">${byName}</div>`);
-  jtmp.appendTo(KFK.quillEdittingNode);
-  setTimeout(function () {
-    jtmp.remove();
-  }, 2000);
+    //quilling-by显示两秒
+    $(".quilling-by").remove();
+    let jtmp = $(`<div class="quilling-by">${byName}</div>`);
+    jtmp.appendTo(KFK.quillEdittingNode);
+    setTimeout(function() {
+        jtmp.remove();
+    }, 2000);
 
-  KFK.isEditting = false;
-  KFK.quillEdittingNode = undefined;
+    KFK.isEditting = false;
+    KFK.quillEdittingNode = undefined;
 };
 
-KFK.onStopQuill = async function (nodeid, byName) {
-  if (KFK.quillEdittingNode) {
-    if (KFK.quillEdittingNode.attr("id") === nodeid) {
-      KFK.cancelQuillEditting(byName);
+KFK.onStopQuill = async function(nodeid, byName) {
+    if (KFK.quillEdittingNode) {
+        if (KFK.quillEdittingNode.attr("id") === nodeid) {
+            KFK.cancelQuillEditting(byName);
+        }
     }
-  }
 };
 
-KFK.onOkToQuill = async function (nodeid) {
-  if (KFK.askQuill !== undefined) {
-    let id = KFK.askQuill.attr("id");
-    let tmp = $(`#${id}`);
-    if (tmp.length > 0 && id === nodeid) {
-      KFK.startNodeEditing_withQuill(KFK.askQuill);
+KFK.onOkToQuill = async function(nodeid) {
+    if (KFK.askQuill !== undefined) {
+        let id = KFK.askQuill.attr("id");
+        let tmp = $(`#${id}`);
+        if (tmp.length > 0 && id === nodeid) {
+            KFK.startNodeEditing_withQuill(KFK.askQuill);
+        }
+        KFK.askQuill = undefined;
     }
-    KFK.askQuill = undefined;
-  }
 };
 
-KFK.startNodeEditing_withQuill = function (jqNodeDIV) {
-  if (KFK.anyLocked(jqNodeDIV)) return;
-  //disableBodyScroll(el(jqNodeDIV));
-  KFK.beforeQuillEdit = jqNodeDIV.clone();
-  let jInner = jqNodeDIV.find('.innerobj');
-  jInner.removeClass('ql-viewer');
-  jInner.removeClass('ql-editor');
-  let inner = el(jInner);
+KFK.startNodeEditing_withQuill = function(jqNodeDIV) {
+    if (KFK.anyLocked(jqNodeDIV)) return;
+    //disableBodyScroll(el(jqNodeDIV));
+    KFK.beforeQuillEdit = jqNodeDIV.clone();
+    let jInner = jqNodeDIV.find(".innerobj");
+    jInner.removeClass("ql-viewer");
+    jInner.removeClass("ql-editor");
+    let inner = el(jInner);
 
-  KFK.isEditting = true;
-  jqNodeDIV.css("display", "block");
-  jqNodeDIV.draggable("disable");
-  KFK.quillEdittingNode = jqNodeDIV;
-  var toolbarOptions = [
-    ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
-    ['blockquote', 'code-block'],
+    KFK.isEditting = true;
+    jqNodeDIV.css("display", "block");
+    jqNodeDIV.draggable("disable");
+    KFK.quillEdittingNode = jqNodeDIV;
+    var toolbarOptions = [
+        ["bold", "italic", "underline", "strike"], // toggled buttons
+        ["blockquote", "code-block"],
 
-    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-    [{ 'script': 'sub' }, { 'script': 'super' }],      // superscript/subscript
-    [{ 'indent': '-1' }, { 'indent': '+1' }],          // outdent/indent
+        [{ list: "ordered" }, { list: "bullet" }],
+        [{ script: "sub" }, { script: "super" }], // superscript/subscript
+        [{ indent: "-1" }, { indent: "+1" }], // outdent/indent
 
-    [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
-    [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+        [{ size: ["small", false, "large", "huge"] }], // custom dropdown
+        [{ header: [1, 2, 3, 4, 5, 6, false] }],
 
-    [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
-    [{ 'font': KFK.customQuillFontNames }],
-    [{ 'align': [] }],
+        [{ color: [] }, { background: [] }], // dropdown with defaults from theme
+        [{ font: KFK.customQuillFontNames }],
+        [{ align: [] }],
 
-    ['clean']                                         // remove formatting button
-  ];
+        ["clean"], // remove formatting button
+    ];
 
-  var Font = Quill.import('formats/font');
-  Font.whitelist = KFK.customQuillFontNames;
-  Quill.register(Font, true);
-  KFK.quill = new Quill(inner, {
-    modules: {
-      toolbar: toolbarOptions,
-    },
-    placeholder: '点这里开始编辑...',
-    theme: 'snow'  // or 'bubble'
-  });
-  //这个地方直观重要，这样就把这些按键限制在Quill Editor中
-  //如果propogation上去的话，会导致整个浏览器窗口滚动
-  jInner.keydown(function (evt) {
-    // console.log('quill editor key ' + evt.keyCode);
-    evt.stopPropagation();
-    if (!evt.shiftKey) {
-      if (evt.keyCode == 35 || evt.keyCode === 34) {  //END  || PageDown
-        evt.preventDefault();
-      } else if (evt.keyCode === 36 || evt.keyCode === 33) { //HOME
-        evt.preventDefault();
-      }
+    var Font = Quill.import("formats/font");
+    Font.whitelist = KFK.customQuillFontNames;
+    Quill.register(Font, true);
+    KFK.quill = new Quill(inner, {
+        modules: {
+            toolbar: toolbarOptions,
+        },
+        placeholder: "点这里开始编辑...",
+        theme: "snow", // or 'bubble'
+    });
+    //这个地方直观重要，这样就把这些按键限制在Quill Editor中
+    //如果propogation上去的话，会导致整个浏览器窗口滚动
+    jInner.keydown(function(evt) {
+        // console.log('quill editor key ' + evt.keyCode);
+        evt.stopPropagation();
+        if (!evt.shiftKey) {
+            if (evt.keyCode == 35 || evt.keyCode === 34) {
+                //END  || PageDown
+                evt.preventDefault();
+            } else if (evt.keyCode === 36 || evt.keyCode === 33) {
+                //HOME
+                evt.preventDefault();
+            }
+        }
+    });
+    jInner.addClass("ql-editor-pointer");
+    KFK.quill.on("text-change", function(delta1, delta2, source) {
+        if (KFK.pct > 1) {
+            //只有当有其它人在线时，再做syncNodeContentPut
+            if (KFK.quillChangeTimer === undefined) {
+                KFK.quillChangeTimer = setTimeout(async() => {
+                    //两秒钟后，可能用户已经退出编辑，此时的quillEdittingNode会被置为undefined
+                    if (KFK.quillEdittingNode !== null) {
+                        let delta = KFK.quill.getContents();
+                        let converter = new QuillDeltaToHtmlConverter(delta.ops, {});
+                        let html = converter.convert();
+                        await KFK.syncNodeContentPut(
+                            KFK.quillEdittingNode.attr("id"),
+                            html
+                        );
+                    }
+                    KFK.quillChangeTimer = undefined;
+                }, 1000);
+            }
+        }
+    });
+};
+
+KFK.startNodeEditing_withTextArea = function(jqNodeDIV, enterSelect) {
+    if (getBoolean(jqNodeDIV.attr("edittable")) && KFK.notAnyLocked(jqNodeDIV)) {
+        KFK.fromJQ = jqNodeDIV.clone();
+        let innerText = el(jqNodeDIV.find(".innerobj"));
+        KFK.editTextNodeWithTextArea(innerText, el(jqNodeDIV), enterSelect);
     }
-  });
-  jInner.addClass('ql-editor-pointer');
-  KFK.quill.on('text-change', function (delta1, delta2, source) {
-    if (KFK.pct > 1) { //只有当有其它人在线时，再做syncNodeContentPut
-      if (KFK.quillChangeTimer === undefined) {
-        KFK.quillChangeTimer = setTimeout(async () => {
-          //两秒钟后，可能用户已经退出编辑，此时的quillEdittingNode会被置为undefined
-          if (KFK.quillEdittingNode !== null) {
-            let delta = KFK.quill.getContents();
-            let converter = new QuillDeltaToHtmlConverter(delta.ops, {});
-            let html = converter.convert();
-            await KFK.syncNodeContentPut(KFK.quillEdittingNode.attr("id"), html);
-          }
-          KFK.quillChangeTimer = undefined;
-        }, 1000);
-      }
-    }
-  });
 };
 
-KFK.startNodeEditing_withTextArea = function (jqNodeDIV, enterSelect) {
-  if (
-    getBoolean(jqNodeDIV.attr("edittable")) &&
-    KFK.notAnyLocked(jqNodeDIV)
-  ) {
-    KFK.fromJQ = jqNodeDIV.clone();
-    let innerText = el(jqNodeDIV.find(".innerobj"));
-    KFK.editTextNodeWithTextArea(innerText, el(jqNodeDIV), enterSelect);
-  }
-}
-
-KFK.divLeft = function (jqDiv) {
-  return KFK.unpx(jqDiv.css('left'));
+KFK.divLeft = function(jqDiv) {
+    return KFK.unpx(jqDiv.css("left"));
 };
-KFK.divCenter = function (jqDiv) {
-  return KFK.divLeft(jqDiv) + KFK.divWidth(jqDiv) * 0.5;
+KFK.divCenter = function(jqDiv) {
+    return KFK.divLeft(jqDiv) + KFK.divWidth(jqDiv) * 0.5;
 };
-KFK.divRight = function (jqDiv) {
-  return KFK.divLeft(jqDiv) + KFK.divWidth(jqDiv);
+KFK.divRight = function(jqDiv) {
+    return KFK.divLeft(jqDiv) + KFK.divWidth(jqDiv);
 };
-KFK.divTop = function (jqDiv) {
-  return KFK.unpx(jqDiv.css('top'));
+KFK.divTop = function(jqDiv) {
+    return KFK.unpx(jqDiv.css("top"));
 };
-KFK.divMiddle = function (jqDiv) {
-  return KFK.divTop(jqDiv) + KFK.divHeight(jqDiv) * 0.5;
+KFK.divMiddle = function(jqDiv) {
+    return KFK.divTop(jqDiv) + KFK.divHeight(jqDiv) * 0.5;
 };
-KFK.divBottom = function (jqDiv) {
-  return KFK.divTop(jqDiv) + KFK.divHeight(jqDiv);
+KFK.divBottom = function(jqDiv) {
+    return KFK.divTop(jqDiv) + KFK.divHeight(jqDiv);
 };
-KFK.divWidth = function (jqDiv) {
-  return jqDiv.width();
+KFK.divWidth = function(jqDiv) {
+    return jqDiv.width();
 };
-KFK.divHeight = function (jqDiv) {
-  return jqDiv.height();
+KFK.divHeight = function(jqDiv) {
+    return jqDiv.height();
 };
-KFK.divRect = function (jqDiv) {
-  return {
-    left: KFK.divLeft(jqDiv),
-    top: KFK.divTop(jqDiv),
-    right: KFK.divRight(jqDiv),
-    bottom: KFK.divBottom(jqDiv),
-    center: KFK.divCenter(jqDiv),
-    middle: KFK.divMiddle(jqDiv),
-    width: KFK.divWidth(jqDiv),
-    height: KFK.divHeight(jqDiv)
-  };
+KFK.divRect = function(jqDiv) {
+    return {
+        left: KFK.divLeft(jqDiv),
+        top: KFK.divTop(jqDiv),
+        right: KFK.divRight(jqDiv),
+        bottom: KFK.divBottom(jqDiv),
+        center: KFK.divCenter(jqDiv),
+        middle: KFK.divMiddle(jqDiv),
+        width: KFK.divWidth(jqDiv),
+        height: KFK.divHeight(jqDiv),
+    };
 };
 
-
-KFK.getUnlockedCount = function () {
-  let numberOfNotLocked = 0;
-  for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-    if (KFK.anyLocked(KFK.selectedDIVs[i]) === false) {
-      numberOfNotLocked = numberOfNotLocked + 1;
-    }
-  }
-  return numberOfNotLocked;
-};
-
-
-KFK.alignNodes = async function (direction) {
-  if (KFK.selectedDIVs.length < 2) return;
-  let hasOneLocked = false;
-  KFK.selectedDIVs.forEach(aJQ => {
-    if (KFK.anyLocked(aJQ)) {
-      hasOneLocked = true;
-    }
-  });
-  // if (hasOneLocked) return;
-  let numberOfNotLocked = 0;
-  let movedSer = 0;
-  let movedCount = 0;
-  switch (direction) {
-    case "left":
-      let left = KFK.divLeft(KFK.selectedDIVs[0]);
-      for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-        let tmp_left = KFK.divLeft(KFK.selectedDIVs[i]);
-        left = tmp_left < left ? tmp_left : left;
-      }
-      movedSer = 0;
-      movedCount = KFK.getUnlockedCount();
-
-      for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-        let jqDIV = $(KFK.selectedDIVs[i]);
-        let jqOld = jqDIV.clone();
-        if (KFK.anyLocked(jqDIV) === false) {
-          jqDIV.css("left", left);
-          await KFK.syncNodePut("U", jqDIV, "after align left", jqOld, false, movedSer, movedCount);
-          movedSer = movedSer + 1;
-        }
-      }
-      break;
-    case "center":
-      let centerX =
-        KFK.divLeft(KFK.selectedDIVs[0]) +
-        KFK.divWidth(KFK.selectedDIVs[0]) * 0.5;
-      movedSer = 0;
-      movedCount = KFK.getUnlockedCount();
-      for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-        let jqDIV = $(KFK.selectedDIVs[i]);
-        let jqOld = jqDIV.clone();
-        if (KFK.anyLocked(jqDIV) === false) {
-          jqDIV.css("left", centerX - KFK.divWidth(KFK.selectedDIVs[i]) * 0.5);
-          await KFK.syncNodePut("U", jqDIV, "after align center", jqOld, false, movedSer, movedCount);
-          movedSer = movedSer + 1;
-        }
-      }
-      break;
-    case "right":
-      let right = KFK.divRight(KFK.selectedDIVs[0]);
-      KFK.selectedDIVs.forEach(aNode => {
-        let tmp_right = KFK.divRight(aNode);
-        right = tmp_right > right ? tmp_right : right;
-      });
-      movedSer = 0;
-      movedCount = KFK.getUnlockedCount();
-      for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-        let jqDIV = KFK.selectedDIVs[i];
-        let jqOld = jqDIV.clone();
-        if (KFK.anyLocked(jqDIV) === false) {
-          jqDIV.css("left", right - KFK.divWidth(KFK.selectedDIVs[i]));
-          await KFK.syncNodePut("U", jqDIV, "after align right", jqOld, false, movedSer, movedCount);
-          movedSer = movedSer + 1;
-        }
-      }
-      break;
-    case "top":
-      let top = KFK.divTop(KFK.selectedDIVs[0]);
-      KFK.selectedDIVs.forEach(aNode => {
-        let tmp_top = KFK.divTop(aNode);
-        top = tmp_top < top ? tmp_top : top;
-      });
-      movedSer = 0;
-      movedCount = KFK.getUnlockedCount();
-      for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-        let jqDIV = KFK.selectedDIVs[i];
-        let jqOld = jqDIV.clone();
-        if (KFK.anyLocked(jqDIV) === false) {
-          jqDIV.css("top", top);
-          await KFK.syncNodePut("U", jqDIV, "after align top", jqOld, false, movedSer, movedCount);
-          movedSer = movedSer + 1;
-        }
-      }
-      break;
-    case "middle":
-      let centerY =
-        KFK.divTop(KFK.selectedDIVs[0]) +
-        KFK.divHeight(KFK.selectedDIVs[0]) * 0.5;
-
-      movedSer = 0;
-      movedCount = KFK.getUnlockedCount();
-      for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-        let jqDIV = KFK.selectedDIVs[i];
-        let jqOld = jqDIV.clone();
-        if (KFK.anyLocked(jqDIV) === false) {
-          jqDIV.css("top", centerY - KFK.divHeight(KFK.selectedDIVs[i]) * 0.5);
-          await KFK.syncNodePut("U", jqDIV, "after align middle", jqOld, false, movedSer, movedCount);
-          movedSer = movedSer + 1;
-        }
-      }
-      break;
-    case "bottom":
-      let bottom = KFK.divBottom(KFK.selectedDIVs[0]);
-      KFK.selectedDIVs.forEach(aNode => {
-        let tmp_bottom = KFK.divBottom(aNode);
-        bottom = tmp_bottom > bottom ? tmp_bottom : bottom;
-      });
-
-
-      movedSer = 0;
-      movedCount = KFK.getUnlockedCount();
-      for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-        let jqDIV = KFK.selectedDIVs[i];
-        let jqOld = jqDIV.clone();
-        if (KFK.anyLocked(jqDIV) === false) {
-          jqDIV.css("top", bottom - KFK.divHeight(KFK.selectedDIVs[i]));
-          await KFK.syncNodePut("U", jqDIV, "after align middle", jqOld, false, movedSer, movedCount);
-          movedSer = movedSer + 1;
-        }
-      }
-      break;
-    case "hori":
-      let nodeLeftMost = KFK.selectedDIVs[0];
-      let totalWidth = 0;
-      let leftMost = KFK.divLeft(KFK.selectedDIVs[0]);
-      //找到最左边的node及其left位置， leftMost
-      KFK.selectedDIVs.forEach(aNode => {
-        totalWidth += KFK.divWidth(aNode);
-        let tmp_left = KFK.divLeft(aNode);
-        if (tmp_left < leftMost) {
-          nodeLeftMost = aNode;
-          leftMost = tmp_left;
-        }
-      });
-      //找到最右边的node及其右侧边位置， rightMost
-      let nodeAtRightMost = KFK.selectedDIVs[0];
-      let rightMost = KFK.divRight(KFK.selectedDIVs[0]);
-      KFK.selectedDIVs.forEach(aNode => {
-        let tmp_right = KFK.divRight(aNode);
-        if (tmp_right > rightMost) {
-          nodeAtRightMost = aNode;
-          rightMost = tmp_right;
-        }
-      });
-      //计算中间的space
-      let availableWidth = rightMost - leftMost;
-      let space_hori =
-        (availableWidth - totalWidth) / (KFK.selectedDIVs.length - 1);
-      let tmpHoriArr = [];
-      KFK.selectedDIVs.forEach(aNode => {
-        tmpHoriArr.push(aNode);
-      });
-      //最左边一个不移动
-      tmpHoriArr.splice(tmpHoriArr.indexOf(nodeLeftMost), 1);
-      //把除nodeLeftMos之外节点的中间X放入数组
-      let centerArr = tmpHoriArr.map(aNode => {
-        return KFK.divCenter(aNode);
-      });
-      let posX = KFK.divRight(nodeLeftMost);
-      movedSer = 0;
-      //这里要减去一，因为最左边的一个不移动
-      movedCount = KFK.getUnlockedCount() - 1;
-      while (centerArr.length > 0) {
-        //找到剩余Node中最靠右边的一个
-        let min = Math.min.apply(null, centerArr);
-        let index = centerArr.indexOf(min);
-        let newLeft = posX + space_hori;
-        let jqDIV = tmpHoriArr[index];
-        let jqOld = jqDIV.clone();
-        if (KFK.anyLocked(jqDIV) === false) {
-          //重设其位置
-          jqDIV.css("left", newLeft);
-          await KFK.syncNodePut("U", jqDIV, "after align hori", jqOld, false, movedSer, movedCount);
-          movedSer = movedSer + 1;
-        }
-
-        //为下一个节点准备基准点
-        posX = newLeft + KFK.divWidth(tmpHoriArr[index]);
-        centerArr.splice(index, 1);
-        tmpHoriArr.splice(index, 1);
-      }
-      break;
-    case "vert":
-      let nodeTopMost = KFK.selectedDIVs[0];
-      let totalHeight = 0;
-      let topMost = KFK.divTop(KFK.selectedDIVs[0]);
-      KFK.selectedDIVs.forEach(aNode => {
-        totalHeight += KFK.divHeight(aNode);
-        let tmp_top = KFK.divTop(aNode);
-        if (tmp_top < topMost) {
-          nodeTopMost = aNode;
-          topMost = tmp_top;
-        }
-      });
-      let nodeAtBottomMost = KFK.selectedDIVs[0];
-      let bottomMost = KFK.divBottom(KFK.selectedDIVs[0]);
-      KFK.selectedDIVs.forEach(aNode => {
-        let tmp_bottom = KFK.divBottom(aNode);
-        if (tmp_bottom > bottomMost) {
-          nodeAtBottomMost = aNode;
-          bottomMost = tmp_bottom;
-        }
-      });
-      let availableHeight = bottomMost - topMost;
-      let space_vert =
-        (availableHeight - totalHeight) / (KFK.selectedDIVs.length - 1);
-      let tmpVertArr = [];
-      KFK.selectedDIVs.forEach(aNode => {
-        tmpVertArr.push(aNode);
-      });
-      //最上面一个不移动
-      tmpVertArr.splice(tmpVertArr.indexOf(nodeTopMost), 1);
-      let middleArr = tmpVertArr.map(aNode => {
-        return KFK.divMiddle(aNode);
-      });
-      let posY = KFK.divBottom(nodeTopMost);
-      movedSer = 0;
-      //这里要减去一，因为最上面一个不移动
-      movedCount = KFK.getUnlockedCount() - 1;
-      while (middleArr.length > 0) {
-        let min = Math.min.apply(null, middleArr);
-        let index = middleArr.indexOf(min);
-        let newTop = posY + space_vert;
-        let jqDIV = tmpVertArr[index];
-        let jqOld = jqDIV.clone();
-        if (KFK.anyLocked(jqDIV) === false) {
-          jqDIV.css("top", newTop);
-          await KFK.syncNodePut("U", jqDIV, "after align right", jqOld, false, movedSer, movedCount);
-          movedSer = movedSer + 1;
-        }
-        posY = newTop + KFK.divHeight(tmpVertArr[index]);
-        middleArr.splice(index, 1);
-        tmpVertArr.splice(index, 1);
-      }
-      break;
-  }
-  KFK.setSelectedNodesBoundingRect();
-  KFK.selectedDIVs.forEach(aNode => {
-    KFK.redrawLinkLines(aNode, 'align', true);
-  });
-};
-
-KFK.scroll_posX = function (x) {
-  return x + KFK.scrollContainer.scrollLeft();
-};
-KFK.scroll_posY = function (y) {
-  return y + KFK.scrollContainer.scrollTop();
-};
-
-KFK.offsetLineDataAttr = function (lineDIV, offset) {
-  let x1 = parseInt($(lineDIV).attr("x1"));
-  let y1 = parseInt($(lineDIV).attr("y1"));
-  let x2 = parseInt($(lineDIV).attr("x2"));
-  let y2 = parseInt($(lineDIV).attr("y2"));
-  x1 += offset.x;
-  y1 += offset.y;
-  x2 += offset.x;
-  y2 += offset.y;
-  $(lineDIV).attr("x1", x1);
-  $(lineDIV).attr("y1", y1);
-  $(lineDIV).attr("x2", x2);
-  $(lineDIV).attr("y2", y2);
-};
-
-KFK.deleteNode_request = async function (jqDIV) {
-  KFK.debug("sync D to delete this node " + jqDIV.attr("id"));
-  await KFK.syncNodePut("D", jqDIV, "delete node", null, false, 0, 1);
-}
-KFK.deleteNode_exec = function (jqDIV) {
-  //删除linkto线条
-  let myId = jqDIV.attr("id");
-  let toIds = KFK.stringToArray(jqDIV.attr("linkto"));
-  toIds.forEach((toId) => {
-    let lineClassSelector = `.line_${myId}_${toId}`;
-    let triClassSelector = `.line_${myId}_${toId}_triangle`;
-    try { KFK.svgDraw.findOne(lineClassSelector).remove(); } catch (err) { } finally { };
-    try { KFK.svgDraw.findOne(triClassSelector).remove(); } catch (err) { } finally { };
-  });
-  //重置全局ZIndex 同时，删除那些链接到当前节点的连接线
-  let myZI = KFK.getZIndex(jqDIV);
-  let count = 0;
-  let allnodes = KFK.JC3.find(".kfknode");
-  let tmp1 = "";
-  let tmp2 = "";
-  allnodes.each((index, aDIV) => {
-    count += 1;
-    let jqDIV = $(aDIV);
-    let fromId = jqDIV.attr("id");
-    let tmpzi = KFK.getZIndex(jqDIV);
-    if (tmpzi > myZI) {
-      KFK.setZIndex(jqDIV, tmpzi - 1);
-    }
-    tmp1 = jqDIV.attr("linkto");
-    let arr = KFK.stringToArray(tmp1);
-    if (arr.indexOf(myId) >= 0) {
-      let lineClassSelector = `.line_${fromId}_${myId}`;
-      let triClassSelector = `.line_${fromId}_${myId}_triangle`;
-      try { KFK.svgDraw.findOne(lineClassSelector).remove(); } catch (err) { } finally { };
-      try { KFK.svgDraw.findOne(triClassSelector).remove(); } catch (err) { } finally { };
-    }
-    // KFK.removeLinkTo(jqDIV, myId);
-    // tmp2 = jqDIV.attr("linkto");
-    // if (tmp1 !== tmp2) {
-    //   KFK.debug("remove link for ", fromId);
-    //   let lineClassSelector = `.line_${fromId}_${myId}`;
-    //   let triClassSelector = `.line_${fromId}_${myId}_triangle`;
-    //   try { KFK.svgDraw.findOne(lineClassSelector).remove(); }catch(err){} finally { };
-    //   try { KFK.svgDraw.findOne(triClassSelector).remove(); }catch(err){} finally { };
-    // } else {
-    //   KFK.debug(fromId, ' has no link to me');
-    // }
-  });
-  let nodeIndex = KFK.selectedDIVs.indexOf(jqDIV);
-  if (nodeIndex >= 0) {
-    KFK.selectedDIVs.splice(nodeIndex, 1);
-  }
-
-
-  jqDIV.remove();
-};
-
-KFK._deleteLine = function (svgLine) {
-  KFK.debug("sync D to delete this node");
-  svgLine.attr({ 'stroke-width': svgLine.attr('origin-width') });
-  KFK.syncLinePut("D", svgLine, "delete node", null, false);
-};
-
-KFK.getNodeIdsFromConnectId = function (cid) {
-  let nid = tid = cid;
-  nid = nid.substr(nid.indexOf('_') + 1);
-  nid = nid.substr(0, nid.indexOf('_'));
-  tid = tid.substr(tid.lastIndexOf('_') + 1);
-  return [nid, tid];
-};
-KFK.deleteHoverOrSelectedDiv = async function (evt, cutMode = false) {
-  //如果有多个节点被选择，则优先进行多项删除
-  if (KFK.selectedDIVs.length > 1) {
-    KFK.copyCandidateDIVs = [];
-    KFK.debug("delete, selected >1");
-    let notLockedCount = 0;
+KFK.getUnlockedCount = function() {
+    let numberOfNotLocked = 0;
     for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-      if (KFK.anyLocked(KFK.selectedDIVs[i]) === false) {
-        notLockedCount += 1;
-      }
-    }
-    KFK.debug(`没锁定的节点数量是 ${notLockedCount}, 一共是${KFK.selectedDIVs.length}`);
-    if (notLockedCount > 0) {
-      let delSer = 0;
-      let delCount = notLockedCount;
-      for (let i = 0; i < KFK.selectedDIVs.length;) {
         if (KFK.anyLocked(KFK.selectedDIVs[i]) === false) {
-          if (cutMode === true)
-            KFK.copyCandidateDIVs.push(KFK.selectedDIVs[i]);
-          await KFK.syncNodePut("D", KFK.selectedDIVs[i], "delete node", null, false, i, delCount);
-          i++;
+            numberOfNotLocked = numberOfNotLocked + 1;
         }
-      }
     }
-  } else {
-    //没有多项选择时，则进行单项删除
-    //首先，先处理鼠标滑过的NODE
-    if (KFK.hoverJqDiv()) {
-      let theDIV = KFK.hoverJqDiv();
-      if (KFK.anyLocked(theDIV)) return;
-      KFK.copyCandidateDIVs = [theDIV.clone()];
-      //这个地方加上shouldBeDeleted标志应该没有必要，不过还是加一下
-      //在拖动覆盖其它节点，内容合并后删除被拖动节点时，这个标志是一定要加的，防止draggable end事件中，重新上传U指令，这样内容又会update回来
-      theDIV.shouldBeDeleted = true;
-      KFK.deleteNode_request(theDIV);
-      KFK.hoverJqDiv(null);
-    } else if (KFK.hoverSvgLine()) {
-      let theSvgLine = KFK.hoverSvgLine();
-      //然后，再看鼠标滑过的线条
-      if (KFK.anyLocked(theSvgLine)) return;
-      KFK.copyCandidateLines = [theSvgLine.clone()];
-      KFK._deleteLine(theSvgLine);
-      KFK.hoverSvgLine(null);
-    } else if (KFK.hoveredConnectId) {
-      //最后看鼠标滑过的connect（节点间连接线）
-      if (KFK.docIsReadOnly()) return;
-      //Find ids of the two nodes connected by this connect.
-      let tmpNodeIdPair = KFK.getNodeIdsFromConnectId(KFK.hoveredConnectId);
-      nid = tmpNodeIdPair[0];
-      tid = tmpNodeIdPair[1];
-      let jqFrom = $(`#${nid}`);
-      let jqTo = $(`#${tid}`);
-      if (KFK.anyLocked(jqFrom)) return;
-      if (KFK.anyLocked(jqTo)) return;
-      let oldJq = jqFrom.clone();
-      //Remove this connect from the FROM node
-      KFK.removeLinkTo(jqFrom, tid);
-      let connect_id = `line_${nid}_${tid}`;
-      //Remove ths connect drawing
-      KFK.removeConnectById(connect_id);
-      //删除一个connect, 则jqFrom被修改
-      await KFK.syncNodePut("U", jqFrom, "remove connect", oldJq, false, 0, 1);
-      KFK.debug(KFK.hoveredConnectId, nid, tid);
-    }
-  }
+    return numberOfNotLocked;
 };
 
-KFK.editHoverObject = async function (evt, enterSelect = false) {
-  if (KFK.hoverJqDiv()) {
-    if (KFK.anyLocked(KFK.hoverJqDiv())) return;
-    //回车的evt要组织掉,否则,在textarea.select()时,会导致文字丢失
-    evt.preventDefault();
-    evt.stopImmediatePropagation();
-    evt.stopPropagation();
-    KFK.startNodeEditing(KFK.hoverJqDiv(), enterSelect);
-  }
+KFK.alignNodes = async function(direction) {
+    if (KFK.selectedDIVs.length < 2) return;
+    let hasOneLocked = false;
+    KFK.selectedDIVs.forEach((aJQ) => {
+        if (KFK.anyLocked(aJQ)) {
+            hasOneLocked = true;
+        }
+    });
+    // if (hasOneLocked) return;
+    let numberOfNotLocked = 0;
+    let movedSer = 0;
+    let movedCount = 0;
+    switch (direction) {
+        case "left":
+            let left = KFK.divLeft(KFK.selectedDIVs[0]);
+            for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+                let tmp_left = KFK.divLeft(KFK.selectedDIVs[i]);
+                left = tmp_left < left ? tmp_left : left;
+            }
+            movedSer = 0;
+            movedCount = KFK.getUnlockedCount();
+
+            for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+                let jqDIV = $(KFK.selectedDIVs[i]);
+                let jqOld = jqDIV.clone();
+                if (KFK.anyLocked(jqDIV) === false) {
+                    jqDIV.css("left", left);
+                    await KFK.syncNodePut(
+                        "U",
+                        jqDIV,
+                        "after align left",
+                        jqOld,
+                        false,
+                        movedSer,
+                        movedCount
+                    );
+                    movedSer = movedSer + 1;
+                }
+            }
+            break;
+        case "center":
+            let centerX =
+                KFK.divLeft(KFK.selectedDIVs[0]) +
+                KFK.divWidth(KFK.selectedDIVs[0]) * 0.5;
+            movedSer = 0;
+            movedCount = KFK.getUnlockedCount();
+            for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+                let jqDIV = $(KFK.selectedDIVs[i]);
+                let jqOld = jqDIV.clone();
+                if (KFK.anyLocked(jqDIV) === false) {
+                    jqDIV.css("left", centerX - KFK.divWidth(KFK.selectedDIVs[i]) * 0.5);
+                    await KFK.syncNodePut(
+                        "U",
+                        jqDIV,
+                        "after align center",
+                        jqOld,
+                        false,
+                        movedSer,
+                        movedCount
+                    );
+                    movedSer = movedSer + 1;
+                }
+            }
+            break;
+        case "right":
+            let right = KFK.divRight(KFK.selectedDIVs[0]);
+            KFK.selectedDIVs.forEach((aNode) => {
+                let tmp_right = KFK.divRight(aNode);
+                right = tmp_right > right ? tmp_right : right;
+            });
+            movedSer = 0;
+            movedCount = KFK.getUnlockedCount();
+            for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+                let jqDIV = KFK.selectedDIVs[i];
+                let jqOld = jqDIV.clone();
+                if (KFK.anyLocked(jqDIV) === false) {
+                    jqDIV.css("left", right - KFK.divWidth(KFK.selectedDIVs[i]));
+                    await KFK.syncNodePut(
+                        "U",
+                        jqDIV,
+                        "after align right",
+                        jqOld,
+                        false,
+                        movedSer,
+                        movedCount
+                    );
+                    movedSer = movedSer + 1;
+                }
+            }
+            break;
+        case "top":
+            let top = KFK.divTop(KFK.selectedDIVs[0]);
+            KFK.selectedDIVs.forEach((aNode) => {
+                let tmp_top = KFK.divTop(aNode);
+                top = tmp_top < top ? tmp_top : top;
+            });
+            movedSer = 0;
+            movedCount = KFK.getUnlockedCount();
+            for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+                let jqDIV = KFK.selectedDIVs[i];
+                let jqOld = jqDIV.clone();
+                if (KFK.anyLocked(jqDIV) === false) {
+                    jqDIV.css("top", top);
+                    await KFK.syncNodePut(
+                        "U",
+                        jqDIV,
+                        "after align top",
+                        jqOld,
+                        false,
+                        movedSer,
+                        movedCount
+                    );
+                    movedSer = movedSer + 1;
+                }
+            }
+            break;
+        case "middle":
+            let centerY =
+                KFK.divTop(KFK.selectedDIVs[0]) +
+                KFK.divHeight(KFK.selectedDIVs[0]) * 0.5;
+
+            movedSer = 0;
+            movedCount = KFK.getUnlockedCount();
+            for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+                let jqDIV = KFK.selectedDIVs[i];
+                let jqOld = jqDIV.clone();
+                if (KFK.anyLocked(jqDIV) === false) {
+                    jqDIV.css("top", centerY - KFK.divHeight(KFK.selectedDIVs[i]) * 0.5);
+                    await KFK.syncNodePut(
+                        "U",
+                        jqDIV,
+                        "after align middle",
+                        jqOld,
+                        false,
+                        movedSer,
+                        movedCount
+                    );
+                    movedSer = movedSer + 1;
+                }
+            }
+            break;
+        case "bottom":
+            let bottom = KFK.divBottom(KFK.selectedDIVs[0]);
+            KFK.selectedDIVs.forEach((aNode) => {
+                let tmp_bottom = KFK.divBottom(aNode);
+                bottom = tmp_bottom > bottom ? tmp_bottom : bottom;
+            });
+
+            movedSer = 0;
+            movedCount = KFK.getUnlockedCount();
+            for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+                let jqDIV = KFK.selectedDIVs[i];
+                let jqOld = jqDIV.clone();
+                if (KFK.anyLocked(jqDIV) === false) {
+                    jqDIV.css("top", bottom - KFK.divHeight(KFK.selectedDIVs[i]));
+                    await KFK.syncNodePut(
+                        "U",
+                        jqDIV,
+                        "after align middle",
+                        jqOld,
+                        false,
+                        movedSer,
+                        movedCount
+                    );
+                    movedSer = movedSer + 1;
+                }
+            }
+            break;
+        case "hori":
+            let nodeLeftMost = KFK.selectedDIVs[0];
+            let totalWidth = 0;
+            let leftMost = KFK.divLeft(KFK.selectedDIVs[0]);
+            //找到最左边的node及其left位置， leftMost
+            KFK.selectedDIVs.forEach((aNode) => {
+                totalWidth += KFK.divWidth(aNode);
+                let tmp_left = KFK.divLeft(aNode);
+                if (tmp_left < leftMost) {
+                    nodeLeftMost = aNode;
+                    leftMost = tmp_left;
+                }
+            });
+            //找到最右边的node及其右侧边位置， rightMost
+            let nodeAtRightMost = KFK.selectedDIVs[0];
+            let rightMost = KFK.divRight(KFK.selectedDIVs[0]);
+            KFK.selectedDIVs.forEach((aNode) => {
+                let tmp_right = KFK.divRight(aNode);
+                if (tmp_right > rightMost) {
+                    nodeAtRightMost = aNode;
+                    rightMost = tmp_right;
+                }
+            });
+            //计算中间的space
+            let availableWidth = rightMost - leftMost;
+            let space_hori =
+                (availableWidth - totalWidth) / (KFK.selectedDIVs.length - 1);
+            let tmpHoriArr = [];
+            KFK.selectedDIVs.forEach((aNode) => {
+                tmpHoriArr.push(aNode);
+            });
+            //最左边一个不移动
+            tmpHoriArr.splice(tmpHoriArr.indexOf(nodeLeftMost), 1);
+            //把除nodeLeftMos之外节点的中间X放入数组
+            let centerArr = tmpHoriArr.map((aNode) => {
+                return KFK.divCenter(aNode);
+            });
+            let posX = KFK.divRight(nodeLeftMost);
+            movedSer = 0;
+            //这里要减去一，因为最左边的一个不移动
+            movedCount = KFK.getUnlockedCount() - 1;
+            while (centerArr.length > 0) {
+                //找到剩余Node中最靠右边的一个
+                let min = Math.min.apply(null, centerArr);
+                let index = centerArr.indexOf(min);
+                let newLeft = posX + space_hori;
+                let jqDIV = tmpHoriArr[index];
+                let jqOld = jqDIV.clone();
+                if (KFK.anyLocked(jqDIV) === false) {
+                    //重设其位置
+                    jqDIV.css("left", newLeft);
+                    await KFK.syncNodePut(
+                        "U",
+                        jqDIV,
+                        "after align hori",
+                        jqOld,
+                        false,
+                        movedSer,
+                        movedCount
+                    );
+                    movedSer = movedSer + 1;
+                }
+
+                //为下一个节点准备基准点
+                posX = newLeft + KFK.divWidth(tmpHoriArr[index]);
+                centerArr.splice(index, 1);
+                tmpHoriArr.splice(index, 1);
+            }
+            break;
+        case "vert":
+            let nodeTopMost = KFK.selectedDIVs[0];
+            let totalHeight = 0;
+            let topMost = KFK.divTop(KFK.selectedDIVs[0]);
+            KFK.selectedDIVs.forEach((aNode) => {
+                totalHeight += KFK.divHeight(aNode);
+                let tmp_top = KFK.divTop(aNode);
+                if (tmp_top < topMost) {
+                    nodeTopMost = aNode;
+                    topMost = tmp_top;
+                }
+            });
+            let nodeAtBottomMost = KFK.selectedDIVs[0];
+            let bottomMost = KFK.divBottom(KFK.selectedDIVs[0]);
+            KFK.selectedDIVs.forEach((aNode) => {
+                let tmp_bottom = KFK.divBottom(aNode);
+                if (tmp_bottom > bottomMost) {
+                    nodeAtBottomMost = aNode;
+                    bottomMost = tmp_bottom;
+                }
+            });
+            let availableHeight = bottomMost - topMost;
+            let space_vert =
+                (availableHeight - totalHeight) / (KFK.selectedDIVs.length - 1);
+            let tmpVertArr = [];
+            KFK.selectedDIVs.forEach((aNode) => {
+                tmpVertArr.push(aNode);
+            });
+            //最上面一个不移动
+            tmpVertArr.splice(tmpVertArr.indexOf(nodeTopMost), 1);
+            let middleArr = tmpVertArr.map((aNode) => {
+                return KFK.divMiddle(aNode);
+            });
+            let posY = KFK.divBottom(nodeTopMost);
+            movedSer = 0;
+            //这里要减去一，因为最上面一个不移动
+            movedCount = KFK.getUnlockedCount() - 1;
+            while (middleArr.length > 0) {
+                let min = Math.min.apply(null, middleArr);
+                let index = middleArr.indexOf(min);
+                let newTop = posY + space_vert;
+                let jqDIV = tmpVertArr[index];
+                let jqOld = jqDIV.clone();
+                if (KFK.anyLocked(jqDIV) === false) {
+                    jqDIV.css("top", newTop);
+                    await KFK.syncNodePut(
+                        "U",
+                        jqDIV,
+                        "after align right",
+                        jqOld,
+                        false,
+                        movedSer,
+                        movedCount
+                    );
+                    movedSer = movedSer + 1;
+                }
+                posY = newTop + KFK.divHeight(tmpVertArr[index]);
+                middleArr.splice(index, 1);
+                tmpVertArr.splice(index, 1);
+            }
+            break;
+    }
+    KFK.setSelectedNodesBoundingRect();
+    KFK.selectedDIVs.forEach((aNode) => {
+        KFK.redrawLinkLines(aNode, "align", true);
+    });
 };
 
-KFK.duplicateHoverObject = async function (evt, action = undefined) {
-  KFK.debug("entered duplicateHoverObject");
-  if (KFK.docIsReadOnly()) return;
-  let offset = { x: 0, y: 0 };
-  if (action === "copy") {
-    if (KFK.selectedDIVs.length > 1) { //优先多选
-      KFK.debug("multiple nodes were selected");
-      KFK.copyCandidateDIVs = KFK.selectedDIVs.map(div => {
-        return div.clone();
-      });
-      return true;
-    } else if (KFK.getPropertyApplyToJqNode()) { //然后selected
-      KFK.copyCandidateDIVs = [KFK.getPropertyApplyToJqNode().clone()];
-      KFK.copyCandidateLines = [];
-      return true;
-    } else if (KFK.hoverSvgLine() && (action === undefined || action === "copy")) {
-      KFK.hoverSvgLine().attr({ 'stroke-width': KFK.hoverSvgLine().attr('origin-width') });
-      KFK.copyCandidateLines = [KFK.hoverSvgLine().clone()];
-      KFK.copyCandidateDIVs = [];
-      // KFK.scrLog('对象已复制, 移动鼠标看所需位置再次按META-D或META-V安放')
-      //下面这句代码在第一次按META-D时就粘贴了一条,有些不用,
-      // await KFK.makeACopyOfLine(KFK.lineToCopy, evt.shiftKey);
-      return true;
+KFK.scroll_posX = function(x) {
+    return x + KFK.scrollContainer.scrollLeft();
+};
+KFK.scroll_posY = function(y) {
+    return y + KFK.scrollContainer.scrollTop();
+};
+
+KFK.offsetLineDataAttr = function(lineDIV, offset) {
+    let x1 = parseInt($(lineDIV).attr("x1"));
+    let y1 = parseInt($(lineDIV).attr("y1"));
+    let x2 = parseInt($(lineDIV).attr("x2"));
+    let y2 = parseInt($(lineDIV).attr("y2"));
+    x1 += offset.x;
+    y1 += offset.y;
+    x2 += offset.x;
+    y2 += offset.y;
+    $(lineDIV).attr("x1", x1);
+    $(lineDIV).attr("y1", y1);
+    $(lineDIV).attr("x2", x2);
+    $(lineDIV).attr("y2", y2);
+};
+
+KFK.deleteNode_request = async function(jqDIV) {
+    KFK.debug("sync D to delete this node " + jqDIV.attr("id"));
+    await KFK.syncNodePut("D", jqDIV, "delete node", null, false, 0, 1);
+};
+KFK.deleteNode_exec = function(jqDIV) {
+    //删除linkto线条
+    let myId = jqDIV.attr("id");
+    let toIds = KFK.stringToArray(jqDIV.attr("linkto"));
+    toIds.forEach((toId) => {
+        let lineClassSelector = `.line_${myId}_${toId}`;
+        let triClassSelector = `.line_${myId}_${toId}_triangle`;
+        try {
+            KFK.svgDraw.findOne(lineClassSelector).remove();
+        } catch (err) {} finally {}
+        try {
+            KFK.svgDraw.findOne(triClassSelector).remove();
+        } catch (err) {} finally {}
+    });
+    //重置全局ZIndex 同时，删除那些链接到当前节点的连接线
+    let myZI = KFK.getZIndex(jqDIV);
+    let count = 0;
+    let allnodes = KFK.JC3.find(".kfknode");
+    let tmp1 = "";
+    let tmp2 = "";
+    allnodes.each((index, aDIV) => {
+        count += 1;
+        let jqDIV = $(aDIV);
+        let fromId = jqDIV.attr("id");
+        let tmpzi = KFK.getZIndex(jqDIV);
+        if (tmpzi > myZI) {
+            KFK.setZIndex(jqDIV, tmpzi - 1);
+        }
+        tmp1 = jqDIV.attr("linkto");
+        let arr = KFK.stringToArray(tmp1);
+        if (arr.indexOf(myId) >= 0) {
+            let lineClassSelector = `.line_${fromId}_${myId}`;
+            let triClassSelector = `.line_${fromId}_${myId}_triangle`;
+            try {
+                KFK.svgDraw.findOne(lineClassSelector).remove();
+            } catch (err) {} finally {}
+            try {
+                KFK.svgDraw.findOne(triClassSelector).remove();
+            } catch (err) {} finally {}
+        }
+        // KFK.removeLinkTo(jqDIV, myId);
+        // tmp2 = jqDIV.attr("linkto");
+        // if (tmp1 !== tmp2) {
+        //   KFK.debug("remove link for ", fromId);
+        //   let lineClassSelector = `.line_${fromId}_${myId}`;
+        //   let triClassSelector = `.line_${fromId}_${myId}_triangle`;
+        //   try { KFK.svgDraw.findOne(lineClassSelector).remove(); }catch(err){} finally { };
+        //   try { KFK.svgDraw.findOne(triClassSelector).remove(); }catch(err){} finally { };
+        // } else {
+        //   KFK.debug(fromId, ' has no link to me');
+        // }
+    });
+    let nodeIndex = KFK.selectedDIVs.indexOf(jqDIV);
+    if (nodeIndex >= 0) {
+        KFK.selectedDIVs.splice(nodeIndex, 1);
+    }
+
+    jqDIV.remove();
+};
+
+KFK._deleteLine = function(svgLine) {
+    KFK.debug("sync D to delete this node");
+    svgLine.attr({ "stroke-width": svgLine.attr("origin-width") });
+    KFK.syncLinePut("D", svgLine, "delete node", null, false);
+};
+
+KFK.getNodeIdsFromConnectId = function(cid) {
+    let nid = (tid = cid);
+    nid = nid.substr(nid.indexOf("_") + 1);
+    nid = nid.substr(0, nid.indexOf("_"));
+    tid = tid.substr(tid.lastIndexOf("_") + 1);
+    return [nid, tid];
+};
+KFK.deleteHoverOrSelectedDiv = async function(evt, cutMode = false) {
+    //如果有多个节点被选择，则优先进行多项删除
+    if (KFK.selectedDIVs.length > 1) {
+        KFK.copyCandidateDIVs = [];
+        KFK.debug("delete, selected >1");
+        let notLockedCount = 0;
+        for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+            if (KFK.anyLocked(KFK.selectedDIVs[i]) === false) {
+                notLockedCount += 1;
+            }
+        }
+        KFK.debug(
+            `没锁定的节点数量是 ${notLockedCount}, 一共是${KFK.selectedDIVs.length}`
+        );
+        if (notLockedCount > 0) {
+            let delSer = 0;
+            let delCount = notLockedCount;
+            for (let i = 0; i < KFK.selectedDIVs.length;) {
+                if (KFK.anyLocked(KFK.selectedDIVs[i]) === false) {
+                    if (cutMode === true) KFK.copyCandidateDIVs.push(KFK.selectedDIVs[i]);
+                    await KFK.syncNodePut(
+                        "D",
+                        KFK.selectedDIVs[i],
+                        "delete node",
+                        null,
+                        false,
+                        i,
+                        delCount
+                    );
+                    i++;
+                }
+            }
+        }
     } else {
-      return false;
+        //没有多项选择时，则进行单项删除
+        //首先，先处理鼠标滑过的NODE
+        if (KFK.hoverJqDiv()) {
+            let theDIV = KFK.hoverJqDiv();
+            if (KFK.anyLocked(theDIV)) return;
+            KFK.copyCandidateDIVs = [theDIV.clone()];
+            //这个地方加上shouldBeDeleted标志应该没有必要，不过还是加一下
+            //在拖动覆盖其它节点，内容合并后删除被拖动节点时，这个标志是一定要加的，防止draggable end事件中，重新上传U指令，这样内容又会update回来
+            theDIV.shouldBeDeleted = true;
+            KFK.deleteNode_request(theDIV);
+            KFK.hoverJqDiv(null);
+        } else if (KFK.hoverSvgLine()) {
+            let theSvgLine = KFK.hoverSvgLine();
+            //然后，再看鼠标滑过的线条
+            if (KFK.anyLocked(theSvgLine)) return;
+            KFK.copyCandidateLines = [theSvgLine.clone()];
+            KFK._deleteLine(theSvgLine);
+            KFK.hoverSvgLine(null);
+        } else if (KFK.hoveredConnectId) {
+            //最后看鼠标滑过的connect（节点间连接线）
+            if (KFK.docIsReadOnly()) return;
+            //Find ids of the two nodes connected by this connect.
+            let tmpNodeIdPair = KFK.getNodeIdsFromConnectId(KFK.hoveredConnectId);
+            nid = tmpNodeIdPair[0];
+            tid = tmpNodeIdPair[1];
+            let jqFrom = $(`#${nid}`);
+            let jqTo = $(`#${tid}`);
+            if (KFK.anyLocked(jqFrom)) return;
+            if (KFK.anyLocked(jqTo)) return;
+            let oldJq = jqFrom.clone();
+            //Remove this connect from the FROM node
+            KFK.removeLinkTo(jqFrom, tid);
+            let connect_id = `line_${nid}_${tid}`;
+            //Remove ths connect drawing
+            KFK.removeConnectById(connect_id);
+            //删除一个connect, 则jqFrom被修改
+            await KFK.syncNodePut("U", jqFrom, "remove connect", oldJq, false, 0, 1);
+            KFK.debug(KFK.hoveredConnectId, nid, tid);
+        }
     }
-  } else if (action === 'paste') {
-    if (KFK.copyCandidateDIVs && KFK.copyCandidateDIVs.length > 0) {
-      await KFK.makeCopyOfJQs(KFK.copyCandidateDIVs, evt.shiftKey);
-    } else if (KFK.copyCandidateLines && KFK.copyCandidateLines.length > 0) {
-      await KFK.makeCopyOfLines(KFK.copyCandidateLines, evt.shiftKey);
+};
+
+KFK.editHoverObject = async function(evt, enterSelect = false) {
+    if (KFK.hoverJqDiv()) {
+        if (KFK.anyLocked(KFK.hoverJqDiv())) return;
+        //回车的evt要组织掉,否则,在textarea.select()时,会导致文字丢失
+        evt.preventDefault();
+        evt.stopImmediatePropagation();
+        evt.stopPropagation();
+        KFK.startNodeEditing(KFK.hoverJqDiv(), enterSelect);
     }
-    // if (KFK.jqToCopy) {
-    // } else if (KFK.lineToCopy) {
-    //   await KFK.makeACopyOfLine(KFK.lineToCopy, evt.shiftKey);
-    //   //await KFK.makeACopyOfLine(KFK.lineToCopy, evt.shiftKey);
-    // }
+};
+
+KFK.duplicateHoverObject = async function(evt, action = undefined) {
+    KFK.debug("entered duplicateHoverObject");
+    if (KFK.docIsReadOnly()) return;
+    let offset = { x: 0, y: 0 };
+    if (action === "copy") {
+        if (KFK.selectedDIVs.length > 1) {
+            //优先多选
+            KFK.debug("multiple nodes were selected");
+            KFK.copyCandidateDIVs = KFK.selectedDIVs.map((div) => {
+                return div.clone();
+            });
+            return true;
+        } else if (KFK.getPropertyApplyToJqNode()) {
+            //然后selected
+            KFK.copyCandidateDIVs = [KFK.getPropertyApplyToJqNode().clone()];
+            KFK.copyCandidateLines = [];
+            return true;
+        } else if (
+            KFK.hoverSvgLine() &&
+            (action === undefined || action === "copy")
+        ) {
+            KFK.hoverSvgLine().attr({
+                "stroke-width": KFK.hoverSvgLine().attr("origin-width"),
+            });
+            KFK.copyCandidateLines = [KFK.hoverSvgLine().clone()];
+            KFK.copyCandidateDIVs = [];
+            // KFK.scrLog('对象已复制, 移动鼠标看所需位置再次按META-D或META-V安放')
+            //下面这句代码在第一次按META-D时就粘贴了一条,有些不用,
+            // await KFK.makeACopyOfLine(KFK.lineToCopy, evt.shiftKey);
+            return true;
+        } else {
+            return false;
+        }
+    } else if (action === "paste") {
+        if (KFK.copyCandidateDIVs && KFK.copyCandidateDIVs.length > 0) {
+            await KFK.makeCopyOfJQs(KFK.copyCandidateDIVs, evt.shiftKey);
+        } else if (KFK.copyCandidateLines && KFK.copyCandidateLines.length > 0) {
+            await KFK.makeCopyOfLines(KFK.copyCandidateLines, evt.shiftKey);
+        }
+        // if (KFK.jqToCopy) {
+        // } else if (KFK.lineToCopy) {
+        //   await KFK.makeACopyOfLine(KFK.lineToCopy, evt.shiftKey);
+        //   //await KFK.makeACopyOfLine(KFK.lineToCopy, evt.shiftKey);
+        // }
+        return true;
+    }
     return true;
-  }
-  return true;
-  evt.stopPropagation();
+    evt.stopPropagation();
 };
 
-KFK.makeCopyOfJQs = async function (jqstocopy, shiftKey) {
-  //现在是移动指定位置再次META-D才放置对象,因此offset没用.事实上,offset在复制node时就一直没有用到
-  let offset = { x: 0, y: 0 };
-  let theDIV = el(jqstocopy[0]);
+KFK.makeCopyOfJQs = async function(jqstocopy, shiftKey) {
+    //现在是移动指定位置再次META-D才放置对象,因此offset没用.事实上,offset在复制node时就一直没有用到
+    let offset = { x: 0, y: 0 };
+    let theDIV = el(jqstocopy[0]);
 
-  let startPoint = { x: KFK.divLeft(jqstocopy[0]), y: KFK.divTop(jqstocopy[0]) };
-  for (let i = 0; i < jqstocopy.length; i++) {
-    let oldJqPos = { x: KFK.divLeft(jqstocopy[i]), y: KFK.divTop(jqstocopy[i]) };
-    let deltaX = oldJqPos.x - startPoint.x;
-    let deltaY = oldJqPos.y - startPoint.y;
-    let jqNewNode = jqstocopy[i].clone(false);
-    jqNewNode.attr("id", KFK.myuid());
-    jqNewNode.css("left", KFK.scrXToJc3X(KFK.currentMousePos.x) - parseInt(jqNewNode.css("width")) * 0.5 + deltaX);
-    jqNewNode.css("top", KFK.scrYToJc3Y(KFK.currentMousePos.y) - parseInt(jqNewNode.css("height")) * 0.5 + deltaY);
-    //按住shift 复制时，也就是META-SHIFT-D, 则保留linkto
-    if (!shiftKey) {
-      jqNewNode.removeAttr("linkto");
+    let startPoint = {
+        x: KFK.divLeft(jqstocopy[0]),
+        y: KFK.divTop(jqstocopy[0]),
+    };
+    for (let i = 0; i < jqstocopy.length; i++) {
+        let oldJqPos = {
+            x: KFK.divLeft(jqstocopy[i]),
+            y: KFK.divTop(jqstocopy[i]),
+        };
+        let deltaX = oldJqPos.x - startPoint.x;
+        let deltaY = oldJqPos.y - startPoint.y;
+        let jqNewNode = jqstocopy[i].clone(false);
+        jqNewNode.attr("id", KFK.myuid());
+        jqNewNode.css(
+            "left",
+            KFK.scrXToJc3X(KFK.currentMousePos.x) -
+            parseInt(jqNewNode.css("width")) * 0.5 +
+            deltaX
+        );
+        jqNewNode.css(
+            "top",
+            KFK.scrYToJc3Y(KFK.currentMousePos.y) -
+            parseInt(jqNewNode.css("height")) * 0.5 +
+            deltaY
+        );
+        //按住shift 复制时，也就是META-SHIFT-D, 则保留linkto
+        if (!shiftKey) {
+            jqNewNode.removeAttr("linkto");
+        }
+        KFK.cleanNodeEventFootprint(jqNewNode);
+        jqNewNode.appendTo(KFK.C3);
+        await KFK.setNodeEventHandler(jqNewNode, async function() {
+            if (i === 0) KFK.focusOnNode(jqNewNode);
+            await KFK.syncNodePut(
+                "C",
+                jqNewNode,
+                "duplicate node",
+                null,
+                false,
+                0,
+                1
+            );
+        });
     }
-    KFK.cleanNodeEventFootprint(jqNewNode);
-    jqNewNode.appendTo(KFK.C3);
-    KFK.setNodeEventHandler(jqNewNode);
-    if (i === 0)
-      KFK.focusOnNode(jqNewNode);
-    await KFK.syncNodePut("C", jqNewNode, "duplicate node", null, false, 0, 1);
-  }
-  return;
+    return;
 };
-KFK.makeCopyOfLines = async function (linestocopy) {
-  let startPoint = { x: linestocopy[0].cx(), y: linestocopy[0].cy() };
-  for (let i = 0; i < linestocopy.length; i++) {
-    let newLine = linestocopy[i].clone();
-    let deltaX = linestocopy[i].cx() - startPoint.x;
-    let deltaY = linestocopy[i].cy() - startPoint.y;
+KFK.makeCopyOfLines = async function(linestocopy) {
+    let startPoint = { x: linestocopy[0].cx(), y: linestocopy[0].cy() };
+    for (let i = 0; i < linestocopy.length; i++) {
+        let newLine = linestocopy[i].clone();
+        let deltaX = linestocopy[i].cx() - startPoint.x;
+        let deltaY = linestocopy[i].cy() - startPoint.y;
+
+        let newline_id = "line_" + KFK.myuid();
+        let classes = newLine.classes();
+        classes.forEach((className, index) => {
+            if (className !== "kfkline") {
+                newLine.removeClass(className);
+            }
+        });
+        newLine.attr("id", newline_id);
+        newLine.addClass(newline_id);
+        //现在是移动指定位置再次META-D才放置对象,因此offset没用.
+        //之前的代码在x,y后面分别加了个20, 以便不覆盖到节点
+        //现在第一次点取不马上复制了,+offset已经没有了必要
+        newLine.center(
+            KFK.scrXToJc3X(KFK.currentMousePos.x) + deltaX,
+            KFK.scrYToJc3Y(KFK.currentMousePos.y) + deltaY
+        );
+        newLine.addTo(KFK.lineToCopy.parent());
+        KFK.addSvgLineEventListner(newLine);
+        await KFK.syncLinePut("C", newLine, "duplicate line", null, false);
+    }
+};
+KFK.makeACopyOfLine = async function(linetocopy) {
+    let newLine = KFK.lineToCopy.clone();
 
     let newline_id = "line_" + KFK.myuid();
     let classes = newLine.classes();
     classes.forEach((className, index) => {
-      if (className !== 'kfkline') {
-        newLine.removeClass(className);
-      }
+        if (className !== "kfkline") {
+            newLine.removeClass(className);
+        }
     });
     newLine.attr("id", newline_id);
     newLine.addClass(newline_id);
     //现在是移动指定位置再次META-D才放置对象,因此offset没用.
     //之前的代码在x,y后面分别加了个20, 以便不覆盖到节点
     //现在第一次点取不马上复制了,+offset已经没有了必要
-    newLine.center(KFK.scrXToJc3X(KFK.currentMousePos.x) + deltaX, KFK.scrYToJc3Y(KFK.currentMousePos.y) + deltaY);
+    //TODO: curentMousePos位置有问题, 现在应该是JC3的了
+    newLine.center(
+        KFK.scrXToJc3X(KFK.currentMousePos.x),
+        KFK.scrYToJc3Y(KFK.currentMousePos.y)
+    );
     newLine.addTo(KFK.lineToCopy.parent());
     KFK.addSvgLineEventListner(newLine);
     await KFK.syncLinePut("C", newLine, "duplicate line", null, false);
-  }
-};
-KFK.makeACopyOfLine = async function (linetocopy) {
-  let newLine = KFK.lineToCopy.clone();
-
-  let newline_id = "line_" + KFK.myuid();
-  let classes = newLine.classes();
-  classes.forEach((className, index) => {
-    if (className !== 'kfkline') {
-      newLine.removeClass(className);
-    }
-  });
-  newLine.attr("id", newline_id);
-  newLine.addClass(newline_id);
-  //现在是移动指定位置再次META-D才放置对象,因此offset没用.
-  //之前的代码在x,y后面分别加了个20, 以便不覆盖到节点
-  //现在第一次点取不马上复制了,+offset已经没有了必要
-  //TODO: curentMousePos位置有问题, 现在应该是JC3的了
-  newLine.center(KFK.scrXToJc3X(KFK.currentMousePos.x), KFK.scrYToJc3Y(KFK.currentMousePos.y));
-  newLine.addTo(KFK.lineToCopy.parent());
-  KFK.addSvgLineEventListner(newLine);
-  await KFK.syncLinePut("C", newLine, "duplicate line", null, false);
 };
 
-KFK.getBoundingRectOfSelectedDIVs = function () {
-  if (KFK.selectedDIVs.length == 0) return;
-  let ret = {
-    left: KFK.divLeft(KFK.selectedDIVs[0]),
-    top: KFK.divTop(KFK.selectedDIVs[0]),
-    right: KFK.divRight(KFK.selectedDIVs[0]),
-    bottom: KFK.divBottom(KFK.selectedDIVs[0])
-  };
-  for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-    let tmpRect = {
-      left: KFK.divLeft(KFK.selectedDIVs[i]),
-      top: KFK.divTop(KFK.selectedDIVs[i]),
-      right: KFK.divRight(KFK.selectedDIVs[i]),
-      bottom: KFK.divBottom(KFK.selectedDIVs[i])
+KFK.getBoundingRectOfSelectedDIVs = function() {
+    if (KFK.selectedDIVs.length == 0) return;
+    let ret = {
+        left: KFK.divLeft(KFK.selectedDIVs[0]),
+        top: KFK.divTop(KFK.selectedDIVs[0]),
+        right: KFK.divRight(KFK.selectedDIVs[0]),
+        bottom: KFK.divBottom(KFK.selectedDIVs[0]),
     };
-    if (tmpRect.left < ret.left) {
-      ret.left = tmpRect.left;
+    for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+        let tmpRect = {
+            left: KFK.divLeft(KFK.selectedDIVs[i]),
+            top: KFK.divTop(KFK.selectedDIVs[i]),
+            right: KFK.divRight(KFK.selectedDIVs[i]),
+            bottom: KFK.divBottom(KFK.selectedDIVs[i]),
+        };
+        if (tmpRect.left < ret.left) {
+            ret.left = tmpRect.left;
+        }
+        if (tmpRect.top < ret.top) {
+            ret.top = tmpRect.top;
+        }
+        if (tmpRect.right > ret.right) {
+            ret.right = tmpRect.right;
+        }
+        if (tmpRect.bottom > ret.bottom) {
+            ret.bottom = tmpRect.bottom;
+        }
     }
-    if (tmpRect.top < ret.top) {
-      ret.top = tmpRect.top;
-    }
-    if (tmpRect.right > ret.right) {
-      ret.right = tmpRect.right;
-    }
-    if (tmpRect.bottom > ret.bottom) {
-      ret.bottom = tmpRect.bottom;
-    }
-  }
-  ret.width = ret.right - ret.left;
-  ret.height = ret.bottom - ret.top;
+    ret.width = ret.right - ret.left;
+    ret.height = ret.bottom - ret.top;
 
-  return ret;
+    return ret;
 };
 
-KFK.getText = function (jqdiv) {
-  let text_filter = ".innerobj";
-  return jqdiv.find(text_filter).text();
+KFK.getText = function(jqdiv) {
+    let text_filter = ".innerobj";
+    return jqdiv.find(text_filter).text();
 };
 
-KFK.setText = function (jqdiv, text) {
-  let text_filter = ".innerobj";
-  return jqdiv.find(text_filter).text(text);
+KFK.setText = function(jqdiv, text) {
+    let text_filter = ".innerobj";
+    return jqdiv.find(text_filter).text(text);
 };
 
-KFK.jc3PosToJc1Pos = function (pos) {
-  return {
-    x: pos.x + KFK.LeftB,
-    y: pos.y + KFK.TopB
-  };
+KFK.jc3PosToJc1Pos = function(pos) {
+    return {
+        x: pos.x + KFK.LeftB,
+        y: pos.y + KFK.TopB,
+    };
 };
 
-KFK.jc3XToJc1X = function (x) {
-  return x + KFK.LeftB;
-}
-KFK.jc3YToJc1Y = function (y) {
-  return y + KFK.TopB;
-}
-KFK.jc1XToJc3X = function (x) {
-  return x - KFK.LeftB;
-}
-KFK.jc1YToJc3Y = function (y) {
-  return y - KFK.TopB;
-}
+KFK.jc3XToJc1X = function(x) {
+    return x + KFK.LeftB;
+};
+KFK.jc3YToJc1Y = function(y) {
+    return y + KFK.TopB;
+};
+KFK.jc1XToJc3X = function(x) {
+    return x - KFK.LeftB;
+};
+KFK.jc1YToJc3Y = function(y) {
+    return y - KFK.TopB;
+};
 
 //Screen pos x to JC3 pos x
-KFK.scrXToJc3X = function (x) {
-  return KFK.scrXToJc1X(x) - KFK.LeftB;
+KFK.scrXToJc3X = function(x) {
+    return KFK.scrXToJc1X(x) - KFK.LeftB;
 };
-KFK.scrYToJc3Y = function (y) {
-  return KFK.scrYToJc1Y(y) - KFK.TopB;
+KFK.scrYToJc3Y = function(y) {
+    return KFK.scrYToJc1Y(y) - KFK.TopB;
 };
 
 //Screen pos x to JC1 pos x
-KFK.scrXToJc1X = function (x) {
-  return x + KFK.JS1.scrollLeft();
+KFK.scrXToJc1X = function(x) {
+    return x + KFK.JS1.scrollLeft();
 };
-KFK.scrYToJc1Y = function (y) {
-  return y + KFK.JS1.scrollTop();
+KFK.scrYToJc1Y = function(y) {
+    return y + KFK.JS1.scrollTop();
 };
-KFK.jc1XToScrX = function (x) {
-  return x - KFK.JS1.scrollLeft();
-}
-KFK.jc1YToScrY = function (y) {
-  return y - KFK.JS1.scrollTop();
-}
-
-KFK.saveLocalCocoConfig = function () {
-  localStorage.setItem('cococonfig', JSON.stringify(KFK.APP.model.cococonfig));
+KFK.jc1XToScrX = function(x) {
+    return x - KFK.JS1.scrollLeft();
+};
+KFK.jc1YToScrY = function(y) {
+    return y - KFK.JS1.scrollTop();
 };
 
-KFK.rgba2hex = function (orig) {
-  var a, isPercent,
-    rgb = orig.replace(/\s/g, '').match(/^rgba?\((\d+),(\d+),(\d+),?([^,\s)]+)?/i),
-    alpha = (rgb && rgb[4] || "").trim(),
-    hex = rgb ?
-      (rgb[1] | 1 << 8).toString(16).slice(1) +
-      (rgb[2] | 1 << 8).toString(16).slice(1) +
-      (rgb[3] | 1 << 8).toString(16).slice(1) : orig;
-  if (alpha !== "") {
-    a = alpha;
-  } else {
-    a = 01;
-  }
-
-  a = Math.round(a * 100) / 100;
-  var alpha = Math.round(a * 255);
-  var hexAlpha = (alpha + 0x10000).toString(16).substr(-2).toUpperCase();
-  hex = hex + hexAlpha;
-
-  return '#' + hex;
+KFK.saveLocalCocoConfig = function() {
+    localStorage.setItem("cococonfig", JSON.stringify(KFK.APP.model.cococonfig));
 };
 
-KFK.secureHexColor = function (color) {
-  if (color.startsWith("rgb")) {
-    return KFK.rgba2hex(color);
-  } else {
-    return color;
-  }
-}
+KFK.rgba2hex = function(orig) {
+    var a,
+        isPercent,
+        rgb = orig
+        .replace(/\s/g, "")
+        .match(/^rgba?\((\d+),(\d+),(\d+),?([^,\s)]+)?/i),
+        alpha = ((rgb && rgb[4]) || "").trim(),
+        hex = rgb ?
+        (rgb[1] | (1 << 8)).toString(16).slice(1) +
+        (rgb[2] | (1 << 8)).toString(16).slice(1) +
+        (rgb[3] | (1 << 8)).toString(16).slice(1) :
+        orig;
+    if (alpha !== "") {
+        a = alpha;
+    } else {
+        a = 01;
+    }
 
-KFK.showGridChanged = function (checked) {
-  KFK.APP.model.cococonfig.showgrid = checked;
-  if (checked) {
-    let bgcolor = $('#containerbkg').css('background-color');
-    bgcolor = KFK.secureHexColor(bgcolor);
-    KFK.setGridColor(bgcolor);
-  } else {
-    $('#containerbkg').removeClass("grid1");
-    $('#containerbkg').removeClass("grid2");
-  }
-  KFK.saveLocalCocoConfig();
-};
-KFK.showBoundingChanged = function (checked) {
-  KFK.APP.model.showbounding = checked;
-  if (checked) {
-    $('.pageBoundingLine').removeClass('noshow');
-  } else {
-    $('.pageBoundingLine').addClass('noshow');
-  }
-  KFK.saveLocalCocoConfig();
-};
-KFK.snapChanged = function (checked) {
-  KFK.APP.model.snap = checked;
-  KFK.saveLocalCocoConfig();
+    a = Math.round(a * 100) / 100;
+    var alpha = Math.round(a * 255);
+    var hexAlpha = (alpha + 0x10000).toString(16).substr(-2).toUpperCase();
+    hex = hex + hexAlpha;
+
+    return "#" + hex;
 };
 
-KFK.toggleShowLock = function (checked) {
-  KFK.APP.model.showlock = checked;
-  //.locklabel无论是在DIV上,还是在svgline上,下面的代码都起作用, svg真神奇
-  if (checked) {
-    $('.locklabel').removeClass('noshow');
-  } else {
-    $('.locklabel').addClass('noshow');
-  }
-  KFK.saveLocalCocoConfig();
+KFK.secureHexColor = function(color) {
+    if (color.startsWith("rgb")) {
+        return KFK.rgba2hex(color);
+    } else {
+        return color;
+    }
 };
 
-KFK.lineCapChanged = function (checked) {
-  let theLine = KFK.getPropertyApplyToSvgLine();
-  KFK.setLineToRemember(theLine);
-  if (theLine === null || KFK.anyLocked(theLine)) return;
-  KFK.setLineModel({ linecap: checked });
-  theLine.attr({
-    "stroke-linecap": checked ? 'round' : 'square',
-  });
-  KFK.syncLinePut(
-    "U",
-    theLine,
-    "set line color",
-    KFK.lineToRemember,
-    false
-  );
+KFK.showGridChanged = function(checked) {
+    KFK.APP.model.cococonfig.showgrid = checked;
+    if (checked) {
+        let bgcolor = $("#containerbkg").css("background-color");
+        bgcolor = KFK.secureHexColor(bgcolor);
+        KFK.setGridColor(bgcolor);
+    } else {
+        $("#containerbkg").removeClass("grid1");
+        $("#containerbkg").removeClass("grid2");
+    }
+    KFK.saveLocalCocoConfig();
+};
+KFK.showBoundingChanged = function(checked) {
+    KFK.APP.model.showbounding = checked;
+    if (checked) {
+        $(".pageBoundingLine").removeClass("noshow");
+    } else {
+        $(".pageBoundingLine").addClass("noshow");
+    }
+    KFK.saveLocalCocoConfig();
+};
+KFK.snapChanged = function(checked) {
+    KFK.APP.model.snap = checked;
+    KFK.saveLocalCocoConfig();
 };
 
-KFK.init = async function () {
-  if (KFK.inited === true) {
-    console.error("KFK.init was called more than once, maybe loadImages error");
-    return;
-  }
-  KFK.debug("Initializing...");
-  KFK.checkBrowser();
-  KFK.pickerMatlib = $('.matlib-topick');
+KFK.toggleShowLock = function(checked) {
+    KFK.APP.model.showlock = checked;
+    //.locklabel无论是在DIV上,还是在svgline上,下面的代码都起作用, svg真神奇
+    if (checked) {
+        $(".locklabel").removeClass("noshow");
+    } else {
+        $(".locklabel").addClass("noshow");
+    }
+    KFK.saveLocalCocoConfig();
+};
 
-  $("#minimap").removeClass("noshow");
-  $("#left_menu").removeClass("noshow");
-  /*
-  //先不做重新载入,每次进入使用缺省配置可能对培养用户习惯更合适一些
-  try {
-    let localCocoConfigStr = localStorage.getItem('cococonfig');
-    if (localCocoConfigStr) {
-      let cococonfig = JSON.parse(localCocoConfigStr);
-      if (cococonfig.showgrid !== undefined) {
-        KFK.mergeAppData('model.cococonfig', cococonfig);
-        if (cococonfig.showgrid === true)
-          $('#containerbkg').show();
-        else
-          $('#containerbkg').hide();
+KFK.lineCapChanged = function(checked) {
+    let theLine = KFK.getPropertyApplyToSvgLine();
+    KFK.setLineToRemember(theLine);
+    if (theLine === null || KFK.anyLocked(theLine)) return;
+    KFK.setLineModel({ linecap: checked });
+    theLine.attr({
+        "stroke-linecap": checked ? "round" : "square",
+    });
+    KFK.syncLinePut("U", theLine, "set line color", KFK.lineToRemember, false);
+};
+
+KFK.init = async function() {
+    if (KFK.inited === true) {
+        console.error("KFK.init was called more than once, maybe loadImages error");
+        return;
+    }
+    KFK.debug("Initializing...");
+    KFK.checkBrowser();
+    KFK.pickerMatlib = $(".matlib-topick");
+
+    $("#minimap").removeClass("noshow");
+    $("#left_menu").removeClass("noshow");
+    /*
+      //先不做重新载入,每次进入使用缺省配置可能对培养用户习惯更合适一些
+      try {
+        let localCocoConfigStr = localStorage.getItem('cococonfig');
+        if (localCocoConfigStr) {
+          let cococonfig = JSON.parse(localCocoConfigStr);
+          if (cococonfig.showgrid !== undefined) {
+            KFK.mergeAppData('model.cococonfig', cococonfig);
+            if (cococonfig.showgrid === true)
+              $('#containerbkg').show();
+            else
+              $('#containerbkg').hide();
+          }
+        }
+      } catch (error) {
+        KFK.error("load local cococonfig found error");
       }
-    }
-  } catch (error) {
-    KFK.error("load local cococonfig found error");
-  }
-  */
-  KFK.initExplorer();
-  KFK.showSection({
-    sigin: false,
-    register: false,
-    explorer: false,
-    designer: false
-  });
+      */
+    KFK.initExplorer();
+    await KFK.showSection({
+        sigin: false,
+        register: false,
+        explorer: false,
+        designer: false,
+    });
 
-  KFK.scrLog("彩板-多人协作网络白板", 1000);
-  await KFK.checkSession();
+    KFK.scrLog("彩板-多人协作网络白板", 1000);
+    await KFK.checkSession();
 };
 
-KFK.initExplorer = function () {
-  if (KFK.explorerInitialized) return;
-  try {
-    KFK.loadAvatars();
-    KFK.explorerInitialized = true;
-    KFK.debug("[Initialized] explorer");
-  } catch (error) {
-    console.error("Explorer initialization error");
-    console.error(error);
-  }
-}
-
-KFK.initDesigner = function () {
-  if (KFK.designerInitialized) return;
-  try {
-    KFK.loadImages();
-    KFK.initLayout();
-    KFK.initQuillFonts();
-    KFK.initC3();
-    KFK.initPropertyForm();
-    KFK.initLineMover();
-    KFK.initColorPicker();
-    KFK.showCenterIndicator();
-    KFK.initPropertySvgGroup();
-    KFK.designerInitialized = true;
-    KFK.debug("[Initialized] designer");
-  } catch (error) {
-    console.error("Designer initialization error");
-    console.error(error);
-  }
-}
-
-KFK.initPropertySvgGroup = function () {
-  $.each(KFK.APP.tip_groups, (index, group) => {
-    let title = group.title;
-    let svgHolder = $(group.div);
-    let svgs = group.svgs;
-    for (let i = 0; i < svgs.length; i++) {
-      let span = document.createElement("span");
-      let jspan = $(span);
-      let name = svgs[i];
-      let svgstr = SVGs[name];
-      let svgImg = $(svgstr);
-      svgImg.css("width", "36px");
-      svgImg.css("height", "36px");
-      svgImg.css("padding", "2px");
-      jspan.css("width", "36px");
-      jspan.css("height", "36px");
-      jspan.css("padding", "2px");
-      jspan.on('mouseover', (evt) => {
-        let target = svgImg;
-        let svgMainPath = target.find(".svg_main_path");
-        if (svgMainPath.length > 0)
-          svgMainPath.attr("fill", '#E5DBFF');
-        else
-          jspan.css('background-color', '#E5DBFF');
-      });
-      jspan.on('mouseout', (evt) => {
-        let target = svgImg;
-        let svgMainPath = target.find(".svg_main_path");
-        if (svgMainPath.length > 0)
-          svgMainPath.attr("fill", '#F7F7C6');
-        else
-          jspan.css('background-color', '#FFFFFF');
-      });
-      svgImg.on('click', (evt) => {
-        KFK.justCreatedJqNode = null;
-        KFK.setMode('yellowtip');
-        this.setTipVariant(name);
-      });
-      svgImg.appendTo(jspan);
-      jspan.appendTo(svgHolder);
-
+KFK.initExplorer = function() {
+    if (KFK.explorerInitialized) return;
+    try {
+        KFK.loadAvatars();
+        KFK.explorerInitialized = true;
+        KFK.debug("[Initialized] explorer");
+    } catch (error) {
+        console.error("Explorer initialization error");
+        console.error(error);
     }
-  })
+};
+
+KFK.initDesigner = function() {
+    if (KFK.designerInitialized) return;
+    try {
+        KFK.loadImages();
+        KFK.initLayout();
+        KFK.initQuillFonts();
+        KFK.initC3();
+        KFK.initPropertyForm();
+        KFK.initLineMover();
+        KFK.initColorPicker();
+        KFK.showCenterIndicator();
+        KFK.initPropertySvgGroup();
+        KFK.designerInitialized = true;
+        KFK.debug("[Initialized] designer");
+    } catch (error) {
+        console.error("Designer initialization error");
+        console.error(error);
+    }
+};
+
+KFK.initPropertySvgGroup = function() {
+    $.each(KFK.APP.tip_groups, (index, group) => {
+        let title = group.title;
+        let svgHolder = $(group.div);
+        let svgs = group.svgs;
+        for (let i = 0; i < svgs.length; i++) {
+            let span = document.createElement("span");
+            let jspan = $(span);
+            let name = svgs[i];
+            let svgstr = SVGs[name];
+            let svgImg = $(svgstr);
+            svgImg.css("width", "36px");
+            svgImg.css("height", "36px");
+            svgImg.css("padding", "2px");
+            jspan.css("width", "36px");
+            jspan.css("height", "36px");
+            jspan.css("padding", "2px");
+            jspan.on("mouseover", (evt) => {
+                let target = svgImg;
+                let svgMainPath = target.find(".svg_main_path");
+                if (svgMainPath.length > 0) svgMainPath.attr("fill", "#E5DBFF");
+                else jspan.css("background-color", "#E5DBFF");
+            });
+            jspan.on("mouseout", (evt) => {
+                let target = svgImg;
+                let svgMainPath = target.find(".svg_main_path");
+                if (svgMainPath.length > 0) svgMainPath.attr("fill", "#F7F7C6");
+                else jspan.css("background-color", "#FFFFFF");
+            });
+            svgImg.on("click", (evt) => {
+                KFK.justCreatedJqNode = null;
+                KFK.setMode("yellowtip");
+                this.setTipVariant(name);
+            });
+            svgImg.appendTo(jspan);
+            jspan.appendTo(svgHolder);
+        }
+    });
 };
 
 //checkSesion有两个地方被调用,一个是在第一次进入, init 方法中, 一个是在OPENANN后
 //OPENANN后调用,会发生WS连接被第二次打开的情况,ws.js中使用了重用,杜绝发生连接两个websocket的情况
-KFK.checkSession = async function () {
-  KFK.info("...checkSession");
-  //WSReconnectTime只用来记录在Designer使用过程中的网络断掉后的重连次数
-  //那个是ws.js自动控制重连的,重连时,ws.js会调用KFK.onWSConnected, 在那里,对WSReconnectTime进行技术 
-  KFK.setAppData("model", "prjs", []);
+KFK.checkSession = async function() {
+    KFK.info("...checkSession");
+    //WSReconnectTime只用来记录在Designer使用过程中的网络断掉后的重连次数
+    //那个是ws.js自动控制重连的,重连时,ws.js会调用KFK.onWSConnected, 在那里,对WSReconnectTime进行技术
+    KFK.setAppData("model", "prjs", []);
 
-  KFK.cocouser = null;
-  await KFK.readLocalCocoUser();
-  if (KFK.cocouser) {
-    KFK.debug("checksession: found KFK.cocouser" + KFK.cocouser.name);
-    KFK.setAppData('model', 'isDemoEnv', (KFK.cocouser.userid.indexOf("@cocopad_demo.org") > 0));
-  }
-  if (KFK.cocouser && KFK.cocouser.sessionToken) {
-    //匿名用户获得临时身份后,会重新进入CheckSession,就也会运行到这里
-    //这时,WS.ws已经是处于连接状态的,再次调用WS.start时, ws.js中会重用之前的连接,
-    //但是会充值WS.connectTimes为0
-    KFK.debug('checksession: LU yes, connect server');
-    await WS.start(KFK.onWsConnected, KFK.onWsMsg, KFK.onWsClosed, KFK.onWsReconnect, KFK.onWsGiveup, 100, "checkSession", "KEEP", KFK.wsTryTimesBeforeGiveup);
-  } else if (KFK.shareCode) { //没有localUser, but URL中有shareCode
-    //两种URL形式都连接WS
-    if (KFK.urlMode === 'ivtcode') {
-      KFK.debug('checksession: LU no, ivtURL yes,  connect server');
-    } else {
-      KFK.debug('checksession: LU no, scURL yes, connect server');
+    KFK.cocouser = null;
+    await KFK.readLocalCocoUser();
+    if (KFK.cocouser) {
+        KFK.debug("checksession: found KFK.cocouser" + KFK.cocouser.name);
+        KFK.setAppData(
+            "model",
+            "isDemoEnv",
+            KFK.cocouser.userid.indexOf("@cocopad_demo.org") > 0
+        );
     }
-    await WS.start(KFK.onWsConnected, KFK.onWsMsg, KFK.onWsClosed, KFK.onWsReconnect, KFK.onWsGiveup, 100, "checkSession", "KEEP", KFK.wsTryTimesBeforeGiveup);
-  } else { //no local user, URL中无shareCode
-    //读本地存储shareCode
-    let localShareCode = localStorage.getItem('shareCode');
-    if (localShareCode === null) { //no local user nor local sharecode
-      KFK.debug('checksession: LU no, SCURL no, LSC no, goto fresh register');
-      KFK.gotoRegister();
-      KFK.setAppData('show', 'waiting', false);
-    } else { //no local user but has local sharecode
-      if (localShareCode.length === 8) { //local sharecode is a ivtcode
-        KFK.urlMode = "ivtcode";
-        KFK.shareCode = localShareCode;
-        KFK.debug('checksession: LU no, SCURL no, LSC no, LIVT yes, goto register');
-        KFK.gotoRegister();
-        KFK.setAppData('show', 'waiting', false);
-      } else { //local sharecod is a sharecode
-        KFK.urlMode = "sharecode";
-        KFK.shareCode = localShareCode;
-        KFK.debug('checksession: LU no, SCURL no, LSC yes, connect server');
-        await WS.start(KFK.onWsConnected, KFK.onWsMsg, KFK.onWsClosed, KFK.onWsReconnect, KFK.onWsGiveup, 100, "checkSession", "KEEP", KFK.wsTryTimesBeforeGiveup);
-      }
-    }
-  }
-};
-
-KFK.onWsClosed = function () {
-  KFK.debug("WS Closed");
-};
-
-KFK.onWsGiveup = function () {
-  KFK.debug("WS connect giveup");
-  KFK.setAppData('show', 'waiting', false);
-  $('.reconnect-mask').removeClass('nodisplay');
-  $('#reconnect-warning').html('服务器连接失败, 请稍后刷新重试');
-};
-KFK.onWsReconnect = function () {
-  $('.reconnect-mask').removeClass('nodisplay');
-  $('#reconnect-warning').html('服务器竟然开小差了，正在尝试重连。。。');
-  KFK.setAppData('show', 'waiting', true);
-  KFK.isTryingToReconnect = true;
-};
-KFK.onWsConnected = function () {
-  KFK.WS = WS;
-  KFK.debug("Connect Times", KFK.WS.connectTimes);
-  KFK.setAppData('show', 'waiting', false);
-  $('.reconnect-mask').addClass('nodisplay');
-  KFK.APP.setData("show", "wsready", true);
-  //第一次连接，这条消息会被kj迎回来覆盖，正常
-  if (KFK.isTryingToReconnect === undefined) {
-    //The first time
-    //这里是第一次启动cocopad，服务器连接成功时的处理方式
-    //refreshProjectList会用到很多需要Auth的操作，但shareDocInUrl不需要
-    //如果URL中没有ShareCodeInURL
-    //正常情况下，会进入到浏览器界面
     if (KFK.cocouser && KFK.cocouser.sessionToken) {
-      KFK.sendCmd('UPDMYORG', {});
-      if (KFK.shareCode === null) {
-        KFK.refreshProjectList();
-      } else { //URL中有shareCode或者ivtCode
-        if (KFK.cocouser.userid.indexOf("@cocopad_demo.org") < 0) {
-          //已经正常注册的用户,不需要有shareCode记录在本地
-          localStorage.removeItem("shareCode");
-          KFK.debug("正常用户不保存sharecode");
-        } else { //如果是demo用户
-          //sharecode根据情况,都放一个,这样后面正式注册时,删除
-          //docIdInUrl时,这个sharecode与其实际doc_id不符,不过无所谓
-          //这样,本地localStorage中的shareCode即可能是个shareCode, 也可能是个ivtcode
-          localStorage.setItem('shareCode', KFK.shareCode);
+        //匿名用户获得临时身份后,会重新进入CheckSession,就也会运行到这里
+        //这时,WS.ws已经是处于连接状态的,再次调用WS.start时, ws.js中会重用之前的连接,
+        //但是会充值WS.connectTimes为0
+        KFK.debug("checksession: LU yes, connect server");
+        await WS.start(
+            KFK.onWsConnected,
+            KFK.onWsMsg,
+            KFK.onWsClosed,
+            KFK.onWsReconnect,
+            KFK.onWsGiveup,
+            100,
+            "checkSession",
+            "KEEP",
+            KFK.wsTryTimesBeforeGiveup
+        );
+    } else if (KFK.shareCode) {
+        //没有localUser, but URL中有shareCode
+        //两种URL形式都连接WS
+        if (KFK.urlMode === "ivtcode") {
+            KFK.debug("checksession: LU no, ivtURL yes,  connect server");
+        } else {
+            KFK.debug("checksession: LU no, scURL yes, connect server");
         }
-        if (KFK.urlMode === 'sharecode')
-          KFK.openSharedDoc(KFK.shareCode);
-        else
-          KFK.refreshProjectList();
-      }
-    } else { //no local user
-      if (KFK.shareCode === null) { //这个运行不到,因为,只要连接服务器,要么是有本地用户信息,要么有shareCode
-        KFK.gotoRegister();
-      } else { // has sharecode
-        localStorage.setItem('shareCode', KFK.shareCode);
-        if (KFK.urlMode === 'sharecode')
-          KFK.openSharedDoc(KFK.shareCode);
-        else {
-          KFK.sendCmd('GETINVITOR', {});
-          KFK.gotoRegister();
-        }
-      }
-    }
-  } else {
-    //重新连接
-    KFK.debug('>>>>>>>>WS Reconnect success...');
-    let count = 0;
-    $(document)
-      .find(".offline")
-      .each(async (index, aNodeDIV) => {
-        count += 1;
-        await KFK.syncNodePut("U", $(aNodeDIV), "offline_not_undoable", null, false, 0, 1);
-      });
-    KFK.info(`There are ${count} offline nodes `);
-    if (count === 0) {
-      KFK.debug('cocodoc in storage', JSON.parse(localStorage.getItem('cocodoc')));
-      KFK.debug('cocodoc in mem', KFK.APP.model.cocodoc);
-      KFK.sendCmd('DOC_ID', { doc_id: KFK.APP.model.cocodoc.doc_id });
-    }
-    KFK.isTryingToReconnect = undefined;
-  }
-};
-KFK.rememberLayoutDisplay = function () {
-  KFK.layoutRemembered = {
-    showbounding: KFK.APP.model.cococonfig.showbounding,
-    showgrid: KFK.APP.model.cococonfig.showgrid,
-    minimap: KFK.APP.show.section.minimap,
-    toplogo: $('#toplogo').css("visibility"),
-    docHeaderInfo: $('.docHeaderInfo').css("visibility"),
-    rtcontrol: $('#rtcontrol').css("visibility"),
-    left: $('#left').css("display"),
-    right: $('#right').css("display"),
-  }
-};
-KFK.restoreLayoutDisplay = function () {
-  KFK.APP.model.cococonfig.showgrid = KFK.layoutRemembered.showgrid;
-  if (KFK.layoutRemembered.showgrid)
-    $('#containerbkg').addClass('grid1');
-  else
-    $('#containerbkg').removeClass('grid1');
-  KFK.APP.model.cococonfig.showbounding = KFK.layoutRemembered.showbounding;
-  if (KFK.layoutRemembered.showbounding === true)
-    $('.pageBoundingLine').removeClass('noshow');
-  else
-    $('.pageBoundingLine').addClass('noshow');
-
-
-  KFK.showSection({ minimap: KFK.layoutRemembered.minimap });
-  $('#toplogo').css("visibility", KFK.layoutRemembered.toplogo);
-  $('.docHeaderInfo').css("visibility", KFK.layoutRemembered.docHeaderInfo);
-  $('#rtcontrol').css("visibility", KFK.layoutRemembered.rtcontrol);
-  $('#left').css("display", KFK.layoutRemembered.left);
-  $('#right').css("display", KFK.layoutRemembered.right);
-};
-KFK.setLayoutDisplay = function (config) {
-  KFK.debug('setlayoutdisplay', JSON.stringify(config));
-  KFK.rememberLayoutDisplay();
-  if (config.showgrid !== null) {
-    KFK.APP.model.cococonfig.showgrid = config.showgrid;
-    if (config.showgrid === true)
-      $('#containerbkg').addClass('grid1');
-    else
-      $('#containerbkg').removeClass('grid1');
-  }
-
-  if (config.showbounding !== undefined) {
-    KFK.APP.model.cococonfig.showbounding = config.showbounding;
-    if (config.showbounding === true) {
-      $('.pageBoundingLine').removeClass('noshow');
+        await WS.start(
+            KFK.onWsConnected,
+            KFK.onWsMsg,
+            KFK.onWsClosed,
+            KFK.onWsReconnect,
+            KFK.onWsGiveup,
+            100,
+            "checkSession",
+            "KEEP",
+            KFK.wsTryTimesBeforeGiveup
+        );
     } else {
-      $('.pageBoundingLine').addClass('noshow');
+        //no local user, URL中无shareCode
+        //读本地存储shareCode
+        let localShareCode = localStorage.getItem("shareCode");
+        if (localShareCode === null) {
+            //no local user nor local sharecode
+            KFK.debug("checksession: LU no, SCURL no, LSC no, goto fresh register");
+            KFK.gotoRegister();
+            KFK.setAppData("show", "waiting", false);
+        } else {
+            //no local user but has local sharecode
+            if (localShareCode.length === 8) {
+                //local sharecode is a ivtcode
+                KFK.urlMode = "ivtcode";
+                KFK.shareCode = localShareCode;
+                KFK.debug(
+                    "checksession: LU no, SCURL no, LSC no, LIVT yes, goto register"
+                );
+                KFK.gotoRegister();
+                KFK.setAppData("show", "waiting", false);
+            } else {
+                //local sharecod is a sharecode
+                KFK.urlMode = "sharecode";
+                KFK.shareCode = localShareCode;
+                KFK.debug("checksession: LU no, SCURL no, LSC yes, connect server");
+                await WS.start(
+                    KFK.onWsConnected,
+                    KFK.onWsMsg,
+                    KFK.onWsClosed,
+                    KFK.onWsReconnect,
+                    KFK.onWsGiveup,
+                    100,
+                    "checkSession",
+                    "KEEP",
+                    KFK.wsTryTimesBeforeGiveup
+                );
+            }
+        }
     }
-  }
-
-  KFK.showSection({ minimap: config.minimap });
-  $('#toplogo').css("visibility", config.toplogo);
-  $('.docHeaderInfo').css("visibility", config.docHeaderInfo);
-  $('#rtcontrol').css("visibility", config.rtcontrol);
-  $('#left').css("display", config.left);
-  $('#right').css("display", config.right);
 };
 
-KFK.showSection = function (options) {
-  let section = $.extend({}, KFK.APP.show.section, options);
-  KFK.APP.setData("show", "section", section);
+KFK.onWsClosed = function() {
+    KFK.debug("WS Closed");
 };
 
-KFK.showForm = function (options) {
-  let form = $.extend({}, KFK.APP.show.form, options);
-  KFK.APP.setData("show", "form", form);
+KFK.onWsGiveup = function() {
+    KFK.debug("WS connect giveup");
+    KFK.setAppData("show", "waiting", false);
+    $(".reconnect-mask").removeClass("nodisplay");
+    $("#reconnect-warning").html("服务器连接失败, 请稍后刷新重试");
+};
+KFK.onWsReconnect = function() {
+    $(".reconnect-mask").removeClass("nodisplay");
+    $("#reconnect-warning").html("服务器竟然开小差了，正在尝试重连。。。");
+    KFK.setAppData("show", "waiting", true);
+    KFK.isTryingToReconnect = true;
+};
+KFK.onWsConnected = function() {
+    KFK.WS = WS;
+    KFK.debug("Connect Times", KFK.WS.connectTimes);
+    KFK.setAppData("show", "waiting", false);
+    $(".reconnect-mask").addClass("nodisplay");
+    KFK.APP.setData("show", "wsready", true);
+    //第一次连接，这条消息会被kj迎回来覆盖，正常
+    if (KFK.isTryingToReconnect === undefined) {
+        //The first time
+        //这里是第一次启动cocopad，服务器连接成功时的处理方式
+        //refreshProjectList会用到很多需要Auth的操作，但shareDocInUrl不需要
+        //如果URL中没有ShareCodeInURL
+        //正常情况下，会进入到浏览器界面
+        if (KFK.cocouser && KFK.cocouser.sessionToken) {
+            KFK.sendCmd("UPDMYORG", {});
+            if (KFK.shareCode === null) {
+                KFK.refreshProjectList();
+            } else {
+                //URL中有shareCode或者ivtCode
+                if (KFK.cocouser.userid.indexOf("@cocopad_demo.org") < 0) {
+                    //已经正常注册的用户,不需要有shareCode记录在本地
+                    localStorage.removeItem("shareCode");
+                    KFK.debug("正常用户不保存sharecode");
+                } else {
+                    //如果是demo用户
+                    //sharecode根据情况,都放一个,这样后面正式注册时,删除
+                    //docIdInUrl时,这个sharecode与其实际doc_id不符,不过无所谓
+                    //这样,本地localStorage中的shareCode即可能是个shareCode, 也可能是个ivtcode
+                    localStorage.setItem("shareCode", KFK.shareCode);
+                }
+                if (KFK.urlMode === "sharecode") KFK.openSharedDoc(KFK.shareCode);
+                else KFK.refreshProjectList();
+            }
+        } else {
+            //no local user
+            if (KFK.shareCode === null) {
+                //这个运行不到,因为,只要连接服务器,要么是有本地用户信息,要么有shareCode
+                KFK.gotoRegister();
+            } else {
+                // has sharecode
+                localStorage.setItem("shareCode", KFK.shareCode);
+                if (KFK.urlMode === "sharecode") KFK.openSharedDoc(KFK.shareCode);
+                else {
+                    KFK.sendCmd("GETINVITOR", {});
+                    KFK.gotoRegister();
+                }
+            }
+        }
+    } else {
+        //重新连接
+        KFK.debug(">>>>>>>>WS Reconnect success...");
+        let count = 0;
+        $(document)
+            .find(".offline")
+            .each(async(index, aNodeDIV) => {
+                count += 1;
+                await KFK.syncNodePut(
+                    "U",
+                    $(aNodeDIV),
+                    "offline_not_undoable",
+                    null,
+                    false,
+                    0,
+                    1
+                );
+            });
+        KFK.info(`There are ${count} offline nodes `);
+        if (count === 0) {
+            KFK.debug(
+                "cocodoc in storage",
+                JSON.parse(localStorage.getItem("cocodoc"))
+            );
+            KFK.debug("cocodoc in mem", KFK.APP.model.cocodoc);
+            KFK.sendCmd("DOC_ID", { doc_id: KFK.APP.model.cocodoc.doc_id });
+        }
+        KFK.isTryingToReconnect = undefined;
+    }
+};
+KFK.rememberLayoutDisplay = function() {
+    KFK.layoutRemembered = {
+        showbounding: KFK.APP.model.cococonfig.showbounding,
+        showgrid: KFK.APP.model.cococonfig.showgrid,
+        minimap: KFK.APP.show.section.minimap,
+        toplogo: $("#toplogo").css("visibility"),
+        docHeaderInfo: $(".docHeaderInfo").css("visibility"),
+        rtcontrol: $("#rtcontrol").css("visibility"),
+        left: $("#left").css("display"),
+        right: $("#right").css("display"),
+    };
+};
+KFK.restoreLayoutDisplay = async function() {
+    KFK.APP.model.cococonfig.showgrid = KFK.layoutRemembered.showgrid;
+    if (KFK.layoutRemembered.showgrid) $("#containerbkg").addClass("grid1");
+    else $("#containerbkg").removeClass("grid1");
+    KFK.APP.model.cococonfig.showbounding = KFK.layoutRemembered.showbounding;
+    if (KFK.layoutRemembered.showbounding === true)
+        $(".pageBoundingLine").removeClass("noshow");
+    else $(".pageBoundingLine").addClass("noshow");
+
+    await KFK.showSection({ minimap: KFK.layoutRemembered.minimap });
+    $("#toplogo").css("visibility", KFK.layoutRemembered.toplogo);
+    $(".docHeaderInfo").css("visibility", KFK.layoutRemembered.docHeaderInfo);
+    $("#rtcontrol").css("visibility", KFK.layoutRemembered.rtcontrol);
+    $("#left").css("display", KFK.layoutRemembered.left);
+    $("#right").css("display", KFK.layoutRemembered.right);
+};
+KFK.setLayoutDisplay = async function(config) {
+    KFK.debug("setlayoutdisplay", JSON.stringify(config));
+    KFK.rememberLayoutDisplay();
+    if (config.showgrid !== null) {
+        KFK.APP.model.cococonfig.showgrid = config.showgrid;
+        if (config.showgrid === true) $("#containerbkg").addClass("grid1");
+        else $("#containerbkg").removeClass("grid1");
+    }
+
+    if (config.showbounding !== undefined) {
+        KFK.APP.model.cococonfig.showbounding = config.showbounding;
+        if (config.showbounding === true) {
+            $(".pageBoundingLine").removeClass("noshow");
+        } else {
+            $(".pageBoundingLine").addClass("noshow");
+        }
+    }
+
+    await KFK.showSection({ minimap: config.minimap });
+    $("#toplogo").css("visibility", config.toplogo);
+    $(".docHeaderInfo").css("visibility", config.docHeaderInfo);
+    $("#rtcontrol").css("visibility", config.rtcontrol);
+    $("#left").css("display", config.left);
+    $("#right").css("display", config.right);
 };
 
-KFK.showDialog = function (options) {
-  let dialog = $.extend({}, KFK.APP.show.dialog, options);
-  KFK.APP.setData("show", "dialog", dialog);
+KFK.showSection = async function(options) {
+    let section = $.extend({}, KFK.APP.show.section, options);
+    await KFK.APP.setData("show", "section", section);
 };
-KFK.mergeAppData = async (data, key, value) => {
-  if (typeof data === 'string' && typeof key === 'string' && typeof value === 'object') {
-    let tmpData = $.extend({}, KFK.APP[data][key], value);
-    await KFK.APP.setData(data, key, tmpData);
-  } else if (typeof data === 'string' && data.indexOf('.') > 0 && typeof key === 'object') {
-    let arr = data.split('.');
-    let tmpData = $.extend({}, KFK.APP[arr[0]][arr[1]], key);
-    await KFK.APP.setData(arr[0], arr[1], tmpData);
-  }
+
+KFK.showForm = async function(options) {
+    let form = $.extend({}, KFK.APP.show.form, options);
+    await KFK.APP.setData("show", "form", form);
+};
+
+KFK.showDialog = async function(options) {
+    let dialog = $.extend({}, KFK.APP.show.dialog, options);
+    await KFK.APP.setData("show", "dialog", dialog);
+};
+KFK.mergeAppData = async(data, key, value) => {
+    if (
+        typeof data === "string" &&
+        typeof key === "string" &&
+        typeof value === "object"
+    ) {
+        let tmpData = $.extend({}, KFK.APP[data][key], value);
+        await KFK.APP.setData(data, key, tmpData);
+    } else if (
+        typeof data === "string" &&
+        data.indexOf(".") > 0 &&
+        typeof key === "object"
+    ) {
+        let arr = data.split(".");
+        let tmpData = $.extend({}, KFK.APP[arr[0]][arr[1]], key);
+        await KFK.APP.setData(arr[0], arr[1], tmpData);
+    }
 };
 
 KFK.setAppData = (data, key, value) => {
-  KFK.APP.setData(data, key, value);
+    KFK.APP.setData(data, key, value);
 };
 
-
-KFK.openSharedDoc = async function (shareCode) {
-  KFK.debug('>>>>>>>>openSharedDoc', shareCode);
-  //如果是sharecode, 则去服务器取
-  await KFK.refreshDesigner(null, '');
-  KFK.debug("send OPENSHAREDDOC ", shareCode);
-  setTimeout(function () {
-    KFK.sendCmd('OPENSHAREDDOC', { shareCode: shareCode });
-  }, 200);
+KFK.openSharedDoc = async function(shareCode) {
+    KFK.debug(">>>>>>>>openSharedDoc", shareCode);
+    //如果是sharecode, 则去服务器取
+    await KFK.refreshDesigner(null, "");
+    KFK.debug("send OPENSHAREDDOC ", shareCode);
+    setTimeout(function() {
+        KFK.sendCmd("OPENSHAREDDOC", { shareCode: shareCode });
+    }, 200);
 };
 
 //载入文档前的初始化
 //如果doc_id, 只初始化,不载入文档. 在用户执行清除文档时,就执行这个操作
-KFK.refreshDesigner = async function (doc_id, docpwd) {
-  if (doc_id !== null)
-    KFK.info('>>>>>>refereshDesigner for doc', doc_id);
-  else
-    KFK.info('>>>>>>refereshDesigner only, no doc will be load');
-  if ($('#S1').length < 1) {
-    console.warn("S1 not found, designer is missing, should not happen");
-    return;
-  }
-  KFK.initDesigner();
-  await KFK.readLocalCocoUser();
-  KFK.myHide($('.docHeaderInfo'));
-  KFK.myHide(KFK.JC3);
-  //每次进入Designer, 都会清空内部所有对象
-  //清空以后,先把svgLayer做出来
-  KFK.addSvgLayer();
-
-  KFK.opstack.splice(0, KFK.opstacklen);
-  KFK.opz = -1;
-  KFK.setAppData("model", "actionlog", []);
-
-  KFK.showSection({
-    signin: false,
-    register: false,
-    explorer: false,
-    designer: true
-  });
-  KFK.showForm({
-    newdoc: false,
-    newprj: false,
-    prjlist: false,
-    doclist: false,
-    share: false,
-  });
-  KFK.tryToOpenDocId = doc_id;
-  // KFK.APP.setData("model", "cocodoc", KFK.DocController.getDummyDoc());
-  // localStorage.removeItem("cocodoc");
-
-  KFK.initShowEditors("none");
-  KFK.addDocumentEventHandler();
-  KFK.focusOnC3();
-  KFK.cancelAlreadySelected();
-
-  KFK.setRightTabIndex(2);
-  //需要在explorer状态下隐藏的，都可以加上noshow, 在进入Designer时，noshow会被去掉
-  //并以动画形式显示出来
-  $(".padlayout").removeClass("noshow");
-  $(".padlayout").fadeIn(1000, function () {
-    // Animation complete
-  });
-
-  if (doc_id !== null)
-    KFK.info("Designer is fully ready, load doc[", doc_id, "] now");
-  else
-    KFK.info("Designer is fully ready, but no doc load since doc_id not set");
-  KFK.currentView = "designer";
-  if (doc_id !== null)
-    KFK.loadDoc(doc_id, docpwd);
-}
-
-
-KFK.loadDoc = function (doc_id, pwd) {
-  KFK.info("loadDoc", doc_id, pwd);
-  try {
-    let payload = { doc_id: doc_id, pwd: pwd };
-    if (KFK.cocouser && KFK.cocouser.sessionToken) {
-      if (KFK.docDuringLoading !== null) {
-        KFK.debug('docduringloading is not null, cancel loading');
-        KFK.cancelLoading = true;
-        KFK.JC3.empty();
-      }
-      KFK.docDuringLoading = doc_id;
-      KFK.myHide(KFK.JC3);
-      KFK.debug('Open doc normally');
-      KFK.sendCmd("OPENDOC", payload);
-    } else {
-      KFK.debug('Open doc annonymously');
-      KFK.sendCmd('OPENANN', payload);
+KFK.refreshDesigner = async function(doc_id, docpwd) {
+    if (doc_id !== null) KFK.info(">>>>>>refereshDesigner for doc", doc_id);
+    else KFK.info(">>>>>>refereshDesigner only, no doc will be load");
+    if ($("#S1").length < 1) {
+        console.warn("S1 not found, designer is missing, should not happen");
+        return;
     }
+    KFK.initDesigner();
+    await KFK.readLocalCocoUser();
+    KFK.myHide($(".docHeaderInfo"));
+    KFK.myHide(KFK.JC3);
+    //每次进入Designer, 都会清空内部所有对象
+    //清空以后,先把svgLayer做出来
+    KFK.addSvgLayer();
 
-    KFK.showSection({
-      signin: false,
-      register: false,
-      explorer: false,
-      designer: true
+    KFK.opstack.splice(0, KFK.opstacklen);
+    KFK.opz = -1;
+    KFK.setAppData("model", "actionlog", []);
+
+    await KFK.showSection({
+        signin: false,
+        register: false,
+        explorer: false,
+        designer: true,
     });
-  } catch (err) {
-    console.error(err);
-  } finally {
-    KFK.inited = true;
-  }
+    KFK.showForm({
+        newdoc: false,
+        newprj: false,
+        prjlist: false,
+        doclist: false,
+        share: false,
+    });
+    KFK.tryToOpenDocId = doc_id;
+    // KFK.APP.setData("model", "cocodoc", KFK.DocController.getDummyDoc());
+    // localStorage.removeItem("cocodoc");
+
+    KFK.initShowEditors("none");
+    KFK.addDocumentEventHandler();
+    KFK.focusOnC3();
+    KFK.cancelAlreadySelected();
+
+    KFK.setRightTabIndex(2);
+    //需要在explorer状态下隐藏的，都可以加上noshow, 在进入Designer时，noshow会被去掉
+    //并以动画形式显示出来
+    $(".padlayout").removeClass("noshow");
+    $(".padlayout").fadeIn(1000, function() {
+        // Animation complete
+    });
+
+    if (doc_id !== null)
+        KFK.info("Designer is fully ready, load doc[", doc_id, "] now");
+    else
+        KFK.info("Designer is fully ready, but no doc load since doc_id not set");
+    KFK.currentView = "designer";
+    if (doc_id !== null) await KFK.loadDoc(doc_id, docpwd);
 };
 
-KFK.refreshProjectList = async function () {
-  await KFK.sendCmd("LISTPRJ", { skip: 0 });
-}
+KFK.loadDoc = async function(doc_id, pwd) {
+    KFK.info("loadDoc", doc_id, pwd);
+    try {
+        let payload = { doc_id: doc_id, pwd: pwd };
+        if (KFK.cocouser && KFK.cocouser.sessionToken) {
+            if (KFK.docDuringLoading !== null) {
+                KFK.debug("docduringloading is not null, cancel loading");
+                KFK.cancelLoading = true;
+                KFK.JC3.empty();
+            }
+            KFK.docDuringLoading = doc_id;
+            KFK.myHide(KFK.JC3);
+            KFK.debug("Open doc normally");
+            KFK.sendCmd("OPENDOC", payload);
+        } else {
+            KFK.debug("Open doc annonymously");
+            KFK.sendCmd("OPENANN", payload);
+        }
 
-KFK.setCurrentPrj = function (prj) {
-  KFK.APP.setData("model", "cocoprj", prj);
-  if (prj.prjid !== "all" && prj.prjid !== 'others' && prj.prjid !== "mine") {
-    KFK.APP.setData("model", "lastrealproject", prj);
-  }
-  localStorage.setItem("cocoprj", JSON.stringify(prj));
+        await KFK.showSection({
+            signin: false,
+            register: false,
+            explorer: false,
+            designer: true,
+        });
+    } catch (err) {
+        console.error(err);
+    } finally {
+        KFK.inited = true;
+    }
 };
 
-KFK.clearCurrentProject = function () {
-  KFK.APP.setData("model", "cocoprj", { prjid: '', name: '' });
-  KFK.APP.setData("model", "lastrealproject", { prjid: '', name: '' });
-  localStorage.removeItem("cocoprj");
+KFK.refreshProjectList = async function() {
+    await KFK.sendCmd("LISTPRJ", { skip: 0 });
 };
-KFK.resetAllLocalData = function (keep = {}) {
-  localStorage.removeItem("cocoprj");
-  localStorage.removeItem("cocodoc");
-  KFK.APP.setData("model", "cocodoc", { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', readonly: false });
-  if (NotSet(keep.user))
-    KFK.APP.setData("model", "cocouser", { userid: '', name: '', avatar: 'avatar-0', avatar_src: null });
-  KFK.APP.setData("model", "cocoprj", { prjid: '', name: '' });
-  KFK.APP.setData("model", "lastrealproject", { prjid: '', name: '' });
-  KFK.APP.setData("model", "prjs", []);
-  KFK.APP.setData("model", "docs", []);
-  //清除vorgs和 myorgs数据
-  if (NotSet(keep.vorgs))
-    KFK.APP.setData("model", "vorgs", []);
-  if (NotSet(keep.myorgs))
-    KFK.APP.setData("model", "myorgs", []);
-  KFK.APP.setData("model", "org", { neworg: { name: '', }, newuserid: '', changeorgname: '', });
-  //标志 左侧的org tab没有被打开过
-  KFK.orgTabInitialized = false;
-  KFK.explorerRefreshed = false;
+
+KFK.setCurrentPrj = function(prj) {
+    KFK.APP.setData("model", "cocoprj", prj);
+    if (prj.prjid !== "all" && prj.prjid !== "others" && prj.prjid !== "mine") {
+        KFK.APP.setData("model", "lastrealproject", prj);
+    }
+    localStorage.setItem("cocoprj", JSON.stringify(prj));
 };
-KFK.toggleDetails = function (row) {
-  if (row.detailsShowing) {
-    row.toggleDetails();
-  } else {
-    let theorg = row.item;
-    KFK.APP.model.org.changeorgname = theorg.name;
-    KFK.sendCmd('ORGUSERLIST', { _id: theorg._id });
-    KFK.idRowMap[theorg._id] = row;
-  }
+
+KFK.clearCurrentProject = function() {
+    KFK.APP.setData("model", "cocoprj", { prjid: "", name: "" });
+    KFK.APP.setData("model", "lastrealproject", { prjid: "", name: "" });
+    localStorage.removeItem("cocoprj");
 };
-KFK.showCreateNewDoc = function () {
-  if (
-    KFK.APP.model.lastrealproject.prjid === "" ||
-    KFK.APP.model.lastrealproject.prjid === "all" ||
-    KFK.APP.model.lastrealproject.prjid === "others" ||
-    KFK.APP.model.lastrealproject.prjid === "mine"
-  ) {
-    //如果没有选择项目,则去选择项目
-    //设置选择项目(gotoPrj)后的回调方法
-    KFK.onPrjSelected = KFK.showCreateNewDoc;
-    KFK.gotoPrjList("在哪个项目中新建白板？", true);
-  } else {
-    KFK.onPrjSelected = undefined;
+KFK.resetAllLocalData = function(keep = {}) {
+    localStorage.removeItem("cocoprj");
+    localStorage.removeItem("cocodoc");
+    KFK.APP.setData("model", "cocodoc", {
+        doc_id: "dummydocnotallowed",
+        name: "",
+        prjid: "dummydocnotallowed",
+        owner: "dummydocnotallowed",
+        readonly: false,
+    });
+    if (NotSet(keep.user))
+        KFK.APP.setData("model", "cocouser", {
+            userid: "",
+            name: "",
+            avatar: "avatar-0",
+            avatar_src: null,
+        });
+    KFK.APP.setData("model", "cocoprj", { prjid: "", name: "" });
+    KFK.APP.setData("model", "lastrealproject", { prjid: "", name: "" });
+    KFK.APP.setData("model", "prjs", []);
+    KFK.APP.setData("model", "docs", []);
+    //清除vorgs和 myorgs数据
+    if (NotSet(keep.vorgs)) KFK.APP.setData("model", "vorgs", []);
+    if (NotSet(keep.myorgs)) KFK.APP.setData("model", "myorgs", []);
+    KFK.APP.setData("model", "org", {
+        neworg: { name: "" },
+        newuserid: "",
+        changeorgname: "",
+    });
+    //标志 左侧的org tab没有被打开过
+    KFK.orgTabInitialized = false;
+    KFK.explorerRefreshed = false;
+};
+KFK.toggleDetails = function(row) {
+    if (row.detailsShowing) {
+        row.toggleDetails();
+    } else {
+        let theorg = row.item;
+        KFK.APP.model.org.changeorgname = theorg.name;
+        KFK.sendCmd("ORGUSERLIST", { _id: theorg._id });
+        KFK.idRowMap[theorg._id] = row;
+    }
+};
+KFK.showCreateNewDoc = function() {
+    if (
+        KFK.APP.model.lastrealproject.prjid === "" ||
+        KFK.APP.model.lastrealproject.prjid === "all" ||
+        KFK.APP.model.lastrealproject.prjid === "others" ||
+        KFK.APP.model.lastrealproject.prjid === "mine"
+    ) {
+        //如果没有选择项目,则去选择项目
+        //设置选择项目(gotoPrj)后的回调方法
+        KFK.onPrjSelected = KFK.showCreateNewDoc;
+        KFK.gotoPrjList("在哪个项目中新建白板？", true);
+    } else {
+        KFK.onPrjSelected = undefined;
+        KFK.APP.setData("show", "form", {
+            newdoc: true,
+            newprj: false,
+            prjlist: true,
+            doclist: false,
+            explorerTabIndex: 1,
+            bottomlinks: true,
+        });
+    }
+};
+
+KFK.showFullHelp = function() {
+    KFK.info("showFullHelp not implemented");
+};
+
+KFK.gotoSignin = async function() {
+    // KFK.APP.setData("model", "signin", { userid: "", pwd: "" });
+    KFK.setAppData("model", "signInButWaitVerify", false);
+    await KFK.showSection({
+        register: false,
+        signin: true,
+        explorer: false,
+        designer: false,
+    });
+};
+
+KFK.gotoRegister = async function() {
+    KFK.APP.setData("model", "register", {
+        userid: "",
+        pwd: "",
+        pwd2: "",
+        name: "",
+        step: "reg",
+        code: "",
+    });
+    await KFK.showSection({
+        signin: false,
+        register: true,
+        explorer: false,
+        designer: false,
+    });
+};
+
+KFK.remoteCheckUserId = function(userid) {
+    KFK.usefAlreadyExist = false;
+    KFK.WS.put("IFEXIST", { userid: userid });
+};
+
+KFK.showCreateNewPrj = function() {
     KFK.APP.setData("show", "form", {
-      newdoc: true,
-      newprj: false,
-      prjlist: true,
-      doclist: false,
-      explorerTabIndex: 1,
-      bottomlinks: true
+        newdoc: false,
+        newprj: true,
+        prjlist: false,
+        doclist: true,
+        explorerTabIndex: 0,
+        bottomlinks: true,
     });
-  }
 };
-
-KFK.showFullHelp = function () {
-  KFK.info("showFullHelp not implemented");
-};
-
-KFK.gotoSignin = function () {
-  // KFK.APP.setData("model", "signin", { userid: "", pwd: "" });
-  KFK.setAppData("model", "signInButWaitVerify", false);
-  KFK.showSection({
-    register: false,
-    signin: true,
-    explorer: false,
-    designer: false
-  });
-};
-
-KFK.gotoRegister = function () {
-  KFK.APP.setData("model", "register", {
-    userid: "",
-    pwd: "",
-    pwd2: "",
-    name: "",
-    step: 'reg',
-    code: '',
-  });
-  KFK.showSection({
-    signin: false,
-    register: true,
-    explorer: false,
-    designer: false
-  });
-};
-
-KFK.remoteCheckUserId = function (userid) {
-  KFK.usefAlreadyExist = false;
-  KFK.WS.put("IFEXIST", { userid: userid });
-};
-
-
-
-KFK.showCreateNewPrj = function () {
-  KFK.APP.setData("show", "form", {
-    newdoc: false,
-    newprj: true,
-    prjlist: false,
-    doclist: true,
-    explorerTabIndex: 0,
-    bottomlinks: true
-  });
-};
-KFK.selectPrjTab = function () {
-  KFK.APP.setData("show", "form", {
-    newdoc: false,
-    newprj: false,
-    prjlist: true,
-    doclist: true,
-    explorerTabIndex: 0,
-    bottomlinks: true
-  });
-};
-KFK.onClickOrgTab = async function () {
-  //用户第一次进入,或者推出登录(此时,在Signout中,orgTabInitialized会被重置为False),重新进入时
-  if (IsFalse(KFK.orgTabInitialized)) {
-    //我创建的组织myorg accordion是否为打开状态?
-    if (KFK.accordion['myorg']) {
-      await KFK.sendCmd('LISTMYORG', {});
-    }
-    //我加入的组织vorg accordion是否为打开状态?
-    if (KFK.accordion['vorg']) {
-      await KFK.sendCmd('LISTVORG', {});
-    }
-    //接下去再点我的组织, 上面if中的过程就不会再执行了
-    KFK.orgTabInitialized = true;
-  }
-};
-KFK.onClickMatTab = async function () {
-  KFK.materialUpdated || await KFK.refreshMatLib();
-};
-KFK.refreshMatLib = async function () {
-  await KFK.sendCmd('LISTMAT', {});
-  KFK.materialUpdated = true;
-};
-KFK.gotoExplorerTab = function (tabIndex) {
-  KFK.mergeAppData("show.form", { explorerTabIndex: tabIndex });
-}
-KFK.gotoDocNavTab = function (tabIndex) {
-  KFK.APP.docNavTabIndex = tabIndex;
-};
-
-//这里检查是否有project
-KFK.showProjects = async function () {
-  KFK.showForm({ newdoc: false, newprj: false, prjlist: true, doclist: true });
-  let currentprj = localStorage.getItem("cocoprj");
-  if (!getNull(currentprj)) {
-    let prj = JSON.parse(currentprj);
-    let found = -1;
-    for (let i = 2; i < KFK.APP.model.prjs.length; i++) {
-      if (prj.prjid === KFK.APP.model.prjs[i].prjid) {
-        found = i;
-        break;
-      }
-    }
-    if (found < 0) {
-      if (KFK.APP.model.prjs.length > 0) {
-        KFK.gotoPrjList("请选择一个项目");
-      } else {
-        KFK.showCreateNewPrj();
-      }
-    } else {
-      KFK.setCurrentPrj(prj);
-      await KFK.sendCmd("LISTDOC", { prjid: prj.prjid });
-    }
-  } else {
-    await KFK.sendCmd("LISTDOC", { prjid: "all" });
-  }
-};
-KFK.gotoPrjList = function (msg = null, userealprjs = false) {
-  let prjs = KFK.APP.model.prjs;
-  if (Array.isArray(prjs) === false)
-    prjs = [];
-  // if (prjs.length >= 3 && prjs[0].prjid === 'all' && userealprjs === true) {
-  //   prjs.splice(0, 3);
-  //   KFK.APP.setData("model", "prjs", prjs);
-  // }
-  // if (userealprjs === false && (prjs.length < 3 || prjs[0].prjid !== 'all')) {
-  //   prjs.unshift({ _id: "mine", prjid: "mine", name: "我创建的所有项目中的白板", owner: "me" });
-  //   prjs.unshift({ _id: "others", prjid: "others", name: "我参与过的别人共享的白板", owner: "me" });
-  //   prjs.unshift({ _id: "all", prjid: "all", name: "我最近使用过的白板", owner: "me" });
-  //   KFK.APP.setData("model", "prjs", prjs);
-  // }
-
-  if (msg && typeof msg === "string") {
-    KFK.APP.setData("model", "prjwarning", msg);
-  } else {
-    KFK.APP.setData("model", "prjwarning", " ");
-  }
-
-  KFK.APP.setData("show", "form", {
-    newdoc: false,
-    newprj: false,
-    prjlist: true,
-    doclist: true,
-    bottomlinks: true,
-    explorerTabIndex: 0
-  });
-  if (KFK.currentView === 'designer') {
-    KFK.currentView = "explorer";
-    KFK.showSection({ explorer: true, designer: false });
-  }
-};
-
-KFK.deleteMatItem = function (item, index, button) {
-  const h = KFK.APP.$createElement;
-  // Using HTML string
-  const titleVNode = h('div', { domProps: { innerHTML: '确定要删除素材吗？' } })
-  // More complex structure
-  const messageVNode = h('div', { class: ['foobar'] }, [
-    h('b-img', {
-      props: {
-        src: item.thumbnail,
-        thumbnail: true,
-        center: true,
-        fluid: true,
-      }
-    })
-  ]);
-  KFK.APP.$bvModal.msgBoxConfirm([messageVNode], {
-    title: [titleVNode],
-    size: 'sm', buttonSize: 'sm', okVariant: 'danger',
-    okTitle: '确认', cancelTitle: '取消',
-    footerClass: 'p-2', hideHeaderClose: false, centered: true
-  }).then(isOkay => {
-    if (isOkay) {
-      KFK.sendCmd('DELMAT', { matid: item.matid });
-      KFK.APP.model.mats.splice(index, 1);
-    }
-  }).catch(err => { console.error(err.message); })
-};
-
-KFK.deletePrjItem = function (item, index, button) {
-  KFK.APP.$bvModal.msgBoxConfirm('删除项目: [' + item.name + ']', {
-    title: '请确认删除', size: 'md', buttonSize: 'sm', okVariant: 'danger',
-    okTitle: '确认', cancelTitle: '取消',
-    footerClass: 'p-2', hideHeaderClose: false, centered: true
-  }).then(isOkay => {
-    if (isOkay) { KFK.deletePrj(item.prjid); }
-  }).catch(err => { console.error(err.message); })
-};
-
-KFK.deleteDocItem = function (item, index, button) {
-  KFK.APP.$bvModal.msgBoxConfirm('删除文档: [' + item.name + ']', {
-    title: '请确认删除', size: 'sm', buttonSize: 'sm', okVariant: 'danger',
-    okTitle: '确认', cancelTitle: '取消',
-    footerClass: 'p-2', hideHeaderClose: false, centered: true
-  }).then(isOkay => {
-    if (isOkay) { KFK.deleteDoc(item._id); }
-  }).catch(err => { console.error(err.message); })
-};
-
-KFK.sleep = async function (miliseconds) {
-  await new Promise(resolve => setTimeout(resolve, miliseconds));
-};
-
-KFK.toggleShowHelp = function () {
-  KFK.APP.model.showInModalMiniHelp = !KFK.APP.model.showInModalMiniHelp;
-};
-
-KFK.createNewDoc = function () {
-  let docName = KFK.APP.model.newdocname;
-  let docPwd = KFK.APP.model.newdocpwd;
-  KFK.APP.state.newdoc.name = Validator.validateDocName(docName);
-  // KFK.APP.state.newdoc.pwd = Validator.validateDocPwd(docPwd);
-  if (KFK.APP.state.newdoc.name) {
-    KFK.sendCmd("NEWDOC", {
-      prjid: KFK.APP.model.lastrealproject.prjid,
-      name: docName,
-      pwd: docPwd
-    });
-  }
-};
-KFK.createNewPrj = function () {
-  let prjName = KFK.APP.model.newprjname;
-  if (Validator.validatePrjName(prjName)) {
-    KFK.APP.state.newprj.name = true;
-    KFK.sendCmd("NEWPRJ", { name: prjName });
-  } else {
-    KFK.APP.state.newprj.name = false;
-  }
-};
-KFK.sayHello = function () {
-  KFK.scrLog("hello, cocopad");
-};
-
-
-KFK.startActiveLogWatcher = function () {
-  KFK.getActionLog();
-  //自动刷新活动记录，但不是每次接收到有更新，就去服务器端刷新，
-  //而是每五秒钟，检查收到的更新数量，如果五秒钟内有更新，updateReceived>0, 
-  //才调用KFK.getActionLog()去服务器端拉取
-  setInterval(
-    function () {
-      if (KFK.updateReceived > 0) {
-        KFK.updateReceived = 0;
-        KFK.getActionLog();
-      }
-    },
-    5000);
-};
-
-KFK.enterOrg = async function (_id) {
-  await KFK.sendCmd('ENTERORG', { _id: _id });
-};
-KFK.deleteOrg = async function (aOrg, name) {
-  if (aOrg.grade === 'C') {
-    KFK.scrLog('缺省组织不能删除');
-    return;
-  }
-  KFK.APP.$bvModal.msgBoxConfirm('删除组织: [' + name + ']', {
-    title: '请确认删除', size: 'sm', buttonSize: 'sm', okVariant: 'danger',
-    okTitle: '确认', cancelTitle: '取消',
-    footerClass: 'p-2', hideHeaderClose: false, centered: true
-  }).then(async (isOkay) => {
-    if (isOkay) { await KFK.sendCmd('DELETEORG', { _id: aOrg._id }); }
-  }).catch(err => { console.error(err.message); })
-};
-
-KFK.createNewOrg = async function () {
-  let orgname = KFK.APP.model.org.neworg.name;
-  if (Validator.validateOrgName(orgname)) {
-    await KFK.sendCmd('NEWORG', { name: orgname });
-  } else {
-    KFK.scrLog("组织名称不符合要求");
-  }
-}
-KFK.addOrgUser = async function (org_id, rowIndex) {
-  let jInput = $('#inline-form-input-newuserid-' + rowIndex);
-  let newuserid = jInput.val();
-  if (Validator.validateUserId(newuserid)) {
-    await KFK.sendCmd('ORGUSERADD', { _id: org_id, tobeadd_userid: newuserid })
-  } else {
-    KFK.scrLog("用户ID格式有误");
-  }
-};
-KFK.changeOrgName = async function (org, rowIndex) {
-  let jInput = $('#inline-form-input-changeorgname-' + rowIndex);
-  let newName = jInput.val();
-  if (Validator.validateOrgName(newName)) {
-    await KFK.sendCmd('SETORGNAME', { orgid: org.orgid, name: newName, cocouser_orgid: KFK.APP.model.cocouser.orgid });
-  } else {
-    KFK.scrLog("新名字不符合要求");
-  }
-};
-KFK.deleteOrgUser = function (org, orguser, index, evt) {
-  KFK.sendCmd("ORGUSERDEL", { _id: org._id, orgid: org.orgid, memberid: orguser.userid });
-};
-
-KFK.toggleAccordionEnteredOrg = async function () {
-  if (KFK.accordion['vorg'] === undefined ||
-    KFK.accordion['vorg'] === false) {
-    KFK.accordion['vorg'] = true;
-    await KFK.sendCmd('LISTVORG', {});
-  } else {
-    KFK.accordion['vorg'] = false;
-  }
-};
-
-KFK.toggleAccordionMyOrg = async function () {
-  if (KFK.accordion['myorg'] === undefined ||
-    KFK.accordion['myorg'] === false) {
-    KFK.accordion['myorg'] = true;
-    await KFK.sendCmd('LISTMYORG', {});
-  } else {
-    KFK.accordion['myorg'] = false;
-  }
-};
-
-
-KFK.signout = async function () {
-  await KFK.sendCmd("SIGNOUT", { userid: KFK.APP.model.cocouser.userid });
-};
-
-KFK.getProductUrl = function () {
-  return cocoConfig.product.url;
-};
-KFK.getInvitationUrl = function () {
-  return KFK.getProductUrl() + "/?r=" + KFK.APP.model.cocouser.ivtcode;
-};
-
-KFK.updateCocouser = function (data) {
-  let oldCocouser = KFK.APP.model.cocouser;
-  let cocouser = $.extend({}, oldCocouser, data);
-  if (cocouser.avatar === 'avatar-temp')
-    cocouser.avatar_src = KFK.images[cocouser.avatar].src;
-  else
-    cocouser.avatar_src = KFK.avatars[cocouser.avatar].src;
-  localStorage.setItem("cocouser", JSON.stringify(cocouser));
-  KFK.APP.setData("model", "cocouser", cocouser);
-  KFK.cocouser = cocouser;
-  KFK.debug('updateCocouser to ', cocouser.userid);
-};
-KFK.removeCocouser = function () {
-  localStorage.removeItem("cocouser");
-  KFK.APP.setData("model", "cocouser", { userid: '', name: '', avatar: 'avatar-0', avatar_src: null });
-}
-KFK.readLocalCocoUser = async function () {
-  let cuinls = localStorage.getItem('cocouser');
-  await KFK.sleep(10);
-  let cocouser = JSON.parse(cuinls);
-  if (cocouser && cocouser.sessionToken) {
-    KFK.cocouser = cocouser;
-    KFK.APP.setData("model", "cocouser", cocouser);
-    //这个用于控制HTML显示，不能设置为null, 但又不方便使用，所以，再加上使用KFK.cocouser
-  } else {
-    KFK.cocouser = null;
-  }
-};
-KFK.notImplemented = function () {
-  KFK.debug("not implemented");
-};
-KFK.openDemoDoc = function () {
-  KFK.log("Not implemented");
-};
-
-KFK.deletePrj = async function (prjid) {
-  await KFK.sendCmd("DELPRJ", { prjid: prjid });
-};
-
-KFK.msgOK = function () {
-  KFK.showSection({
-    sigin: false,
-    register: false,
-    explorer: true,
-    designer: false
-  });
-  KFK.gotoDocs();
-};
-
-KFK.deleteDoc = async function (doc_id) {
-  let payload = { doc_id: doc_id };
-  await KFK.sendCmd("DELDOC", payload);
-
-};
-
-KFK.setDocReadonly = async function (doc) {
-  KFK.sendCmd("TGLREAD", { doc_id: doc._id });
-};
-
-KFK.gotoLastRealProject = function () {
-  if (NotBlank(KFK.APP.model.lastrealproject.prjid)) {
-    // KFK.APP.docNavTabIndex = 3;
-    KFK.gotoPrj(KFK.APP.model.lastrealproject.prjid, KFK.APP.model.lastrealproject.name)
-  } else {
-    KFK.APP.model.docs = [];
-    KFK.scrLog("尚没有选定的项目", 1000);
-  }
-};
-
-KFK.gotoPrj = async function (prjid, name) {
-  try {
-    let cocoprj = { prjid: prjid, name: name };
-    KFK.setCurrentPrj(cocoprj);
-    await KFK.sendCmd("LISTDOC", { prjid: prjid });
-    KFK.loadedProjectId = prjid;
-    if (KFK.onPrjSelected) {
-      //回调方法, 在选择了项目(gotoPrj)后,回调选择项目后的动作
-      //用于选择项目做某件事
-      KFK.onPrjSelected();
-    } else {
-      await KFK.mergeAppData("show", "form", {
+KFK.selectPrjTab = function() {
+    KFK.APP.setData("show", "form", {
         newdoc: false,
         newprj: false,
         prjlist: true,
         doclist: true,
-        explorerTabIndex: 1
-      });
+        explorerTabIndex: 0,
+        bottomlinks: true,
+    });
+};
+KFK.onClickOrgTab = async function() {
+    //用户第一次进入,或者推出登录(此时,在Signout中,orgTabInitialized会被重置为False),重新进入时
+    if (IsFalse(KFK.orgTabInitialized)) {
+        //我创建的组织myorg accordion是否为打开状态?
+        if (KFK.accordion["myorg"]) {
+            await KFK.sendCmd("LISTMYORG", {});
+        }
+        //我加入的组织vorg accordion是否为打开状态?
+        if (KFK.accordion["vorg"]) {
+            await KFK.sendCmd("LISTVORG", {});
+        }
+        //接下去再点我的组织, 上面if中的过程就不会再执行了
+        KFK.orgTabInitialized = true;
     }
-  } catch (error) {
-    console.error("gotoPrj found error", error.message);
-  }
 };
-KFK.gotoRecent = function () {
-  KFK.APP.docNavTabIndex = 2;
-  KFK.gotoPrj('all', '最近访问的');
+KFK.onClickMatTab = async function() {
+    KFK.materialUpdated || (await KFK.loadMatLibForMyself());
 };
-KFK.gotoDocs = async function () {
-  if (KFK.loadedProjectId === null) {
-    KFK.gotoRecent();
-  }
+KFK.loadMatLibForMyself = async function() {
+    await KFK.sendCmd("LISTMAT", {});
 };
-
-KFK.pickPrjForCreateDoc = function () {
-  KFK.onPrjSelected = KFK.showCreateNewDoc;
-  KFK.gotoPrjList("在哪个项目中新建白板？", true);
+KFK.refreshMatLibForAll = async function() {
+    await KFK.sendCmd("REFRESHMAT", {});
 };
-KFK.prjRowClickHandler = function (record, index) {
-  KFK.APP.docNavTabIndex = 3;
-  KFK.gotoPrj(record.prjid, record.name);
+KFK.gotoExplorerTab = function(tabIndex) {
+    KFK.mergeAppData("show.form", { explorerTabIndex: tabIndex });
 };
-KFK.matRowClickHandler = function (record, index) {
-  console.log("show big image has not been implemented");
+KFK.gotoDocNavTab = function(tabIndex) {
+    KFK.APP.docNavTabIndex = tabIndex;
 };
 
-KFK.sendCmd = async function (cmd, payload) {
-  if (KFK.WS === null) {
-    KFK.warn('sendCmcd when KFK.WS is null. cmd is', cmd, 'payload is', payload);
-  } else
-    await KFK.WS.put(cmd, payload);
-};
-
-KFK.docRowClickHandler = async function (doc, index) {
-  if (KFK.getAclAccessable(doc)) {
-    if (doc.pwd === "*********") {
-      KFK.APP.setData("model", "opendocpwd", "");
-      KFK.showDialog({ inputDocPasswordDialog: true });
-      KFK.tryToOpenDocId = doc._id;
+//这里检查是否有project
+KFK.showProjects = async function() {
+    KFK.showForm({ newdoc: false, newprj: false, prjlist: true, doclist: true });
+    let currentprj = localStorage.getItem("cocoprj");
+    if (!getNull(currentprj)) {
+        let prj = JSON.parse(currentprj);
+        let found = -1;
+        for (let i = 2; i < KFK.APP.model.prjs.length; i++) {
+            if (prj.prjid === KFK.APP.model.prjs[i].prjid) {
+                found = i;
+                break;
+            }
+        }
+        if (found < 0) {
+            if (KFK.APP.model.prjs.length > 0) {
+                KFK.gotoPrjList("请选择一个项目");
+            } else {
+                KFK.showCreateNewPrj();
+            }
+        } else {
+            KFK.setCurrentPrj(prj);
+            await KFK.sendCmd("LISTDOC", { prjid: prj.prjid });
+        }
     } else {
-      await KFK.refreshDesigner(doc._id, "");
+        await KFK.sendCmd("LISTDOC", { prjid: "all" });
     }
-  } else {
-    KFK.showNotAclAccessable();
-  }
+};
+KFK.gotoPrjList = async function(msg = null, userealprjs = false) {
+    let prjs = KFK.APP.model.prjs;
+    if (Array.isArray(prjs) === false) prjs = [];
+    // if (prjs.length >= 3 && prjs[0].prjid === 'all' && userealprjs === true) {
+    //   prjs.splice(0, 3);
+    //   KFK.APP.setData("model", "prjs", prjs);
+    // }
+    // if (userealprjs === false && (prjs.length < 3 || prjs[0].prjid !== 'all')) {
+    //   prjs.unshift({ _id: "mine", prjid: "mine", name: "我创建的所有项目中的白板", owner: "me" });
+    //   prjs.unshift({ _id: "others", prjid: "others", name: "我参与过的别人共享的白板", owner: "me" });
+    //   prjs.unshift({ _id: "all", prjid: "all", name: "我最近使用过的白板", owner: "me" });
+    //   KFK.APP.setData("model", "prjs", prjs);
+    // }
+
+    if (msg && typeof msg === "string") {
+        KFK.APP.setData("model", "prjwarning", msg);
+    } else {
+        KFK.APP.setData("model", "prjwarning", " ");
+    }
+
+    KFK.APP.setData("show", "form", {
+        newdoc: false,
+        newprj: false,
+        prjlist: true,
+        doclist: true,
+        bottomlinks: true,
+        explorerTabIndex: 0,
+    });
+    if (KFK.currentView === "designer") {
+        KFK.currentView = "explorer";
+        await KFK.showSection({ explorer: true, designer: false });
+    }
+};
+
+KFK.deleteMatItem = function(item, index, button) {
+    const h = KFK.APP.$createElement;
+    console.log(item);
+    // Using HTML string
+    const titleVNode = h("div", {
+        domProps: { innerHTML: "确定要删除素材吗？" },
+    });
+    // More complex structure
+    const messageVNode = h("div", { class: ["foobar"] }, [
+        h("b-img", {
+            props: {
+                src: item.thumbnail,
+                thumbnail: true,
+                center: true,
+                fluid: true,
+            },
+        }),
+    ]);
+    KFK.APP.$bvModal
+        .msgBoxConfirm([messageVNode], {
+            title: [titleVNode],
+            size: "sm",
+            buttonSize: "sm",
+            okVariant: "danger",
+            okTitle: "确认",
+            cancelTitle: "取消",
+            footerClass: "p-2",
+            hideHeaderClose: false,
+            centered: true,
+        })
+        .then((isOkay) => {
+            if (isOkay) {
+                KFK.sendCmd("DELMAT", { matid: item.matid });
+                KFK.APP.model.mats.splice(index, 1);
+            }
+        })
+        .catch((err) => {
+            console.error(err.message);
+        });
+};
+
+KFK.deletePrjItem = function(item, index, button) {
+    KFK.APP.$bvModal
+        .msgBoxConfirm("删除项目: [" + item.name + "]", {
+            title: "请确认删除",
+            size: "md",
+            buttonSize: "sm",
+            okVariant: "danger",
+            okTitle: "确认",
+            cancelTitle: "取消",
+            footerClass: "p-2",
+            hideHeaderClose: false,
+            centered: true,
+        })
+        .then((isOkay) => {
+            if (isOkay) {
+                KFK.deletePrj(item.prjid);
+            }
+        })
+        .catch((err) => {
+            console.error(err.message);
+        });
+};
+
+KFK.deleteDocItem = function(item, index, button) {
+    KFK.APP.$bvModal
+        .msgBoxConfirm("删除文档: [" + item.name + "]", {
+            title: "请确认删除",
+            size: "sm",
+            buttonSize: "sm",
+            okVariant: "danger",
+            okTitle: "确认",
+            cancelTitle: "取消",
+            footerClass: "p-2",
+            hideHeaderClose: false,
+            centered: true,
+        })
+        .then((isOkay) => {
+            if (isOkay) {
+                KFK.deleteDoc(item._id);
+            }
+        })
+        .catch((err) => {
+            console.error(err.message);
+        });
+};
+
+KFK.sleep = async function(miliseconds) {
+    await new Promise((resolve) => setTimeout(resolve, miliseconds));
+};
+
+KFK.toggleShowHelp = function() {
+    KFK.APP.model.showInModalMiniHelp = !KFK.APP.model.showInModalMiniHelp;
+};
+
+KFK.createNewDoc = function() {
+    let docName = KFK.APP.model.newdocname;
+    let docPwd = KFK.APP.model.newdocpwd;
+    KFK.APP.state.newdoc.name = Validator.validateDocName(docName);
+    // KFK.APP.state.newdoc.pwd = Validator.validateDocPwd(docPwd);
+    if (KFK.APP.state.newdoc.name) {
+        KFK.sendCmd("NEWDOC", {
+            prjid: KFK.APP.model.lastrealproject.prjid,
+            name: docName,
+            pwd: docPwd,
+        });
+    }
+};
+KFK.createNewPrj = function() {
+    let prjName = KFK.APP.model.newprjname;
+    if (Validator.validatePrjName(prjName)) {
+        KFK.APP.state.newprj.name = true;
+        KFK.sendCmd("NEWPRJ", { name: prjName });
+    } else {
+        KFK.APP.state.newprj.name = false;
+    }
+};
+KFK.sayHello = function() {
+    KFK.scrLog("hello, cocopad");
+};
+
+KFK.startActiveLogWatcher = function() {
+    KFK.getActionLog();
+    //自动刷新活动记录，但不是每次接收到有更新，就去服务器端刷新，
+    //而是每五秒钟，检查收到的更新数量，如果五秒钟内有更新，updateReceived>0,
+    //才调用KFK.getActionLog()去服务器端拉取
+    setInterval(function() {
+        if (KFK.updateReceived > 0) {
+            KFK.updateReceived = 0;
+            KFK.getActionLog();
+        }
+    }, 5000);
+};
+
+KFK.enterOrg = async function(_id) {
+    await KFK.sendCmd("ENTERORG", { _id: _id });
+};
+KFK.deleteOrg = async function(aOrg, name) {
+    if (aOrg.grade === "C") {
+        KFK.scrLog("缺省组织不能删除");
+        return;
+    }
+    KFK.APP.$bvModal
+        .msgBoxConfirm("删除组织: [" + name + "]", {
+            title: "请确认删除",
+            size: "sm",
+            buttonSize: "sm",
+            okVariant: "danger",
+            okTitle: "确认",
+            cancelTitle: "取消",
+            footerClass: "p-2",
+            hideHeaderClose: false,
+            centered: true,
+        })
+        .then(async(isOkay) => {
+            if (isOkay) {
+                await KFK.sendCmd("DELETEORG", { _id: aOrg._id });
+            }
+        })
+        .catch((err) => {
+            console.error(err.message);
+        });
+};
+
+KFK.createNewOrg = async function() {
+    let orgname = KFK.APP.model.org.neworg.name;
+    if (Validator.validateOrgName(orgname)) {
+        await KFK.sendCmd("NEWORG", { name: orgname });
+    } else {
+        KFK.scrLog("组织名称不符合要求");
+    }
+};
+KFK.addOrgUser = async function(org_id, rowIndex) {
+    let jInput = $("#inline-form-input-newuserid-" + rowIndex);
+    let newuserid = jInput.val();
+    if (Validator.validateUserId(newuserid)) {
+        await KFK.sendCmd("ORGUSERADD", { _id: org_id, tobeadd_userid: newuserid });
+    } else {
+        KFK.scrLog("用户ID格式有误");
+    }
+};
+KFK.changeOrgName = async function(org, rowIndex) {
+    let jInput = $("#inline-form-input-changeorgname-" + rowIndex);
+    let newName = jInput.val();
+    if (Validator.validateOrgName(newName)) {
+        await KFK.sendCmd("SETORGNAME", {
+            orgid: org.orgid,
+            name: newName,
+            cocouser_orgid: KFK.APP.model.cocouser.orgid,
+        });
+    } else {
+        KFK.scrLog("新名字不符合要求");
+    }
+};
+KFK.deleteOrgUser = function(org, orguser, index, evt) {
+    KFK.sendCmd("ORGUSERDEL", {
+        _id: org._id,
+        orgid: org.orgid,
+        memberid: orguser.userid,
+    });
+};
+
+KFK.toggleAccordionEnteredOrg = async function() {
+    if (KFK.accordion["vorg"] === undefined || KFK.accordion["vorg"] === false) {
+        KFK.accordion["vorg"] = true;
+        await KFK.sendCmd("LISTVORG", {});
+    } else {
+        KFK.accordion["vorg"] = false;
+    }
+};
+
+KFK.toggleAccordionMyOrg = async function() {
+    if (
+        KFK.accordion["myorg"] === undefined ||
+        KFK.accordion["myorg"] === false
+    ) {
+        KFK.accordion["myorg"] = true;
+        await KFK.sendCmd("LISTMYORG", {});
+    } else {
+        KFK.accordion["myorg"] = false;
+    }
+};
+
+KFK.signout = async function() {
+    await KFK.sendCmd("SIGNOUT", { userid: KFK.APP.model.cocouser.userid });
+};
+
+KFK.getProductUrl = function() {
+    return cocoConfig.product.url;
+};
+KFK.getInvitationUrl = function() {
+    return KFK.getProductUrl() + "/?r=" + KFK.APP.model.cocouser.ivtcode;
+};
+
+KFK.updateCocouser = function(data) {
+    let oldCocouser = KFK.APP.model.cocouser;
+    let cocouser = $.extend({}, oldCocouser, data);
+    if (cocouser.avatar === "avatar-temp")
+        cocouser.avatar_src = KFK.images[cocouser.avatar].src;
+    else cocouser.avatar_src = KFK.avatars[cocouser.avatar].src;
+    localStorage.setItem("cocouser", JSON.stringify(cocouser));
+    KFK.APP.setData("model", "cocouser", cocouser);
+    KFK.cocouser = cocouser;
+    KFK.debug("updateCocouser to ", cocouser.userid);
+};
+KFK.removeCocouser = function() {
+    localStorage.removeItem("cocouser");
+    KFK.APP.setData("model", "cocouser", {
+        userid: "",
+        name: "",
+        avatar: "avatar-0",
+        avatar_src: null,
+    });
+};
+KFK.readLocalCocoUser = async function() {
+    let cuinls = localStorage.getItem("cocouser");
+    await KFK.sleep(10);
+    let cocouser = JSON.parse(cuinls);
+    if (cocouser && cocouser.sessionToken) {
+        KFK.cocouser = cocouser;
+        KFK.APP.setData("model", "cocouser", cocouser);
+        //这个用于控制HTML显示，不能设置为null, 但又不方便使用，所以，再加上使用KFK.cocouser
+    } else {
+        KFK.cocouser = null;
+    }
+};
+KFK.notImplemented = function() {
+    KFK.debug("not implemented");
+};
+KFK.openDemoDoc = function() {
+    KFK.log("Not implemented");
+};
+
+KFK.deletePrj = async function(prjid) {
+    await KFK.sendCmd("DELPRJ", { prjid: prjid });
+};
+
+KFK.msgOK = async function() {
+    await KFK.showSection({
+        sigin: false,
+        register: false,
+        explorer: true,
+        designer: false,
+    });
+    KFK.gotoDocs();
+};
+
+KFK.deleteDoc = async function(doc_id) {
+    let payload = { doc_id: doc_id };
+    await KFK.sendCmd("DELDOC", payload);
+};
+
+KFK.setDocReadonly = async function(doc) {
+    KFK.sendCmd("TGLREAD", { doc_id: doc._id });
+};
+
+KFK.gotoLastRealProject = function() {
+    if (NotBlank(KFK.APP.model.lastrealproject.prjid)) {
+        // KFK.APP.docNavTabIndex = 3;
+        KFK.gotoPrj(
+            KFK.APP.model.lastrealproject.prjid,
+            KFK.APP.model.lastrealproject.name
+        );
+    } else {
+        KFK.APP.model.docs = [];
+        KFK.scrLog("尚没有选定的项目", 1000);
+    }
+};
+
+KFK.gotoPrj = async function(prjid, name) {
+    try {
+        let cocoprj = { prjid: prjid, name: name };
+        KFK.setCurrentPrj(cocoprj);
+        await KFK.sendCmd("LISTDOC", { prjid: prjid });
+        KFK.loadedProjectId = prjid;
+        if (KFK.onPrjSelected) {
+            //回调方法, 在选择了项目(gotoPrj)后,回调选择项目后的动作
+            //用于选择项目做某件事
+            KFK.onPrjSelected();
+        } else {
+            await KFK.mergeAppData("show", "form", {
+                newdoc: false,
+                newprj: false,
+                prjlist: true,
+                doclist: true,
+                explorerTabIndex: 1,
+            });
+        }
+    } catch (error) {
+        console.error("gotoPrj found error", error.message);
+    }
+};
+KFK.gotoRecent = function() {
+    KFK.APP.docNavTabIndex = 2;
+    KFK.gotoPrj("all", "最近访问的");
+};
+KFK.gotoDocs = async function() {
+    if (KFK.loadedProjectId === null) {
+        KFK.gotoRecent();
+    }
+};
+
+KFK.pickPrjForCreateDoc = function() {
+    KFK.onPrjSelected = KFK.showCreateNewDoc;
+    KFK.gotoPrjList("在哪个项目中新建白板？", true);
+};
+KFK.prjRowClickHandler = function(record, index) {
+    KFK.APP.docNavTabIndex = 3;
+    KFK.gotoPrj(record.prjid, record.name);
+};
+KFK.matRowClickHandler = function(record, index) {
+    console.log("show big image has not been implemented");
+};
+
+KFK.sendCmd = async function(cmd, payload) {
+    if (KFK.WS === null) {
+        KFK.warn(
+            "sendCmcd when KFK.WS is null. cmd is",
+            cmd,
+            "payload is",
+            payload
+        );
+    } else await KFK.WS.put(cmd, payload);
+};
+
+KFK.docRowClickHandler = async function(doc, index) {
+    if (KFK.getAclAccessable(doc)) {
+        if (doc.pwd === "*********") {
+            KFK.APP.setData("model", "opendocpwd", "");
+            KFK.showDialog({ inputDocPasswordDialog: true });
+            KFK.tryToOpenDocId = doc._id;
+        } else {
+            await KFK.refreshDesigner(doc._id, "");
+        }
+    } else {
+        KFK.showNotAclAccessable();
+    }
 };
 
 //这个时候,在服务端
@@ -5046,3265 +5552,3824 @@ KFK.docRowClickHandler = async function (doc, index) {
 //-> on client side got OPENANNY -> record temp uer -> checksession again
 //-> openharedDoc again -> sever: is a temp uer, then OpenDoc -> ASKPWD? (yes)
 //-> input passwd, then come to here
-KFK.getDocPwd = async function () {
-  KFK.APP.setData("model", "passwordinputok", "ok");
-  await KFK.refreshDesigner(KFK.tryToOpenDocId, KFK.APP.model.opendocpwd);
+KFK.getDocPwd = async function() {
+    KFK.APP.setData("model", "passwordinputok", "ok");
+    await KFK.refreshDesigner(KFK.tryToOpenDocId, KFK.APP.model.opendocpwd);
 };
-KFK.cancelDocPwd = function () {
-  KFK.APP.setData("model", "passwordinputok", "cancel");
-  KFK.gotoRecent();
+KFK.cancelDocPwd = function() {
+    KFK.APP.setData("model", "passwordinputok", "cancel");
+    KFK.gotoRecent();
 };
-KFK.onDocPwdHidden = function (bvModalEvt) {
-  //这个值初始为show,这样，不运行点对话框外部，把对话框隐藏起来
-  if (KFK.APP.model.passwordinputok === "show") bvModalEvt.preventDefault();
-};
-
-KFK.showRechargeDialog = function () {
-  KFK.showDialog({ rechargeDialog: true });
-};
-KFK.showPriceListDialog = function () {
-  KFK.showDialog({ rechargeDialog: false, priceListDialog: true });
-};
-KFK.showResetPwdModal = function (item) {
-  KFK.tryToResetPwdDoc = item;
-  KFK.APP.setData("model", "docOldPwd", "");
-  KFK.APP.setData("model", "docNewPwd", "");
-  KFK.showDialog({ resetDocPasswordDialog: true });
+KFK.onDocPwdHidden = function(bvModalEvt) {
+    //这个值初始为show,这样，不运行点对话框外部，把对话框隐藏起来
+    if (KFK.APP.model.passwordinputok === "show") bvModalEvt.preventDefault();
 };
 
-KFK.showRemovePwdModal = function (item, index, button) {
-  KFK.tryToRemovePwdDoc = item;
-  KFK.APP.setData("model", "inputUserPwd", "");
-  KFK.showDialog({ userPasswordDialog: true });
+KFK.showRechargeDialog = function() {
+    KFK.showDialog({ rechargeDialog: true });
+};
+KFK.showPriceListDialog = function() {
+    KFK.showDialog({ rechargeDialog: false, priceListDialog: true });
+};
+KFK.showResetPwdModal = function(item) {
+    KFK.tryToResetPwdDoc = item;
+    KFK.APP.setData("model", "docOldPwd", "");
+    KFK.APP.setData("model", "docNewPwd", "");
+    KFK.showDialog({ resetDocPasswordDialog: true });
 };
 
-KFK.toggleFromResetToRemovePwd = function () {
-  KFK.tryToRemovePwdDoc = KFK.tryToResetPwdDoc;
-  KFK.APP.setData("model", "inputUserPwd", "");
-  KFK.showDialog({ resetDocPasswordDialog: false, userPasswordDialog: true });
+KFK.showRemovePwdModal = function(item, index, button) {
+    KFK.tryToRemovePwdDoc = item;
+    KFK.APP.setData("model", "inputUserPwd", "");
+    KFK.showDialog({ userPasswordDialog: true });
 };
 
-KFK.removeDocPwd = function () {
-  let payload = {
-    doc_id: KFK.tryToRemovePwdDoc._id,
-    userid: KFK.cocouser.userid,
-    pwd: KFK.APP.model.inputUserPwd
-  };
-  KFK.sendCmd("REMOVEPWD", payload);
+KFK.toggleFromResetToRemovePwd = function() {
+    KFK.tryToRemovePwdDoc = KFK.tryToResetPwdDoc;
+    KFK.APP.setData("model", "inputUserPwd", "");
+    KFK.showDialog({ resetDocPasswordDialog: false, userPasswordDialog: true });
 };
 
-KFK.resetDocPwd = function () {
-  let payload = {
-    doc_id: KFK.tryToResetPwdDoc._id,
-    oldpwd: KFK.APP.model.docOldPwd ? KFK.APP.model.docOldPwd : "",
-    newpwd: KFK.APP.model.docNewPwd ? KFK.APP.model.docNewPwd : ""
-  };
-  KFK.sendCmd("RESETPWD", payload);
+KFK.removeDocPwd = function() {
+    let payload = {
+        doc_id: KFK.tryToRemovePwdDoc._id,
+        userid: KFK.cocouser.userid,
+        pwd: KFK.APP.model.inputUserPwd,
+    };
+    KFK.sendCmd("REMOVEPWD", payload);
 };
 
-
-KFK._onDocFullyLoaded = async function () {
-  KFK.myFadeIn($('.docHeaderInfo'));
-  KFK.docDuringLoading = null;
-  // KFK.JC3.removeClass("noshow");
-  KFK.APP.setData("model", "docLoaded", true);
-  if (KFK.APP.model.cocodoc.readonly) {
-    $("#linetransformer").draggable("disable");
-    $("#right").toggle("slide", { duration: 100, direction: "right" });
-    $("#left").toggle("slide", { duration: 100, direction: "left" });
-    $("#top").toggle("slide", { duration: 100, direction: "left" });
-  } else {
-    $("#linetransformer").draggable("enable");
-  }
-  KFK.JC3.find('.kfknode').each((index, node) => {
-    let jqNode = $(node);
-    let str = jqNode.attr("linkto");
-    let arr = KFK.stringToArray(str);
-    let tmp1 = arr.length;
-    arr = arr.filter((aId) => {
-      return $(`#${aId}`).length > 0;
-    });
-    let tmp2 = arr.length;
-    if (tmp1 !== tmp2) {
-      if (tmp2 === 0) {
-        jqNode.removeAttr('linkto');
-      } else {
-        jqNode.attr('linkto', arr.join(','));
-      }
-    }
-    KFK.redrawLinkLines(jqNode, ' after designer ready', false);
-  });
-  // KFK.info('ondocFullyLoaded, doc is', KFK.APP.model.cocodoc);
-  KFK.C3.dispatchEvent(KFK.refreshC3event);
-  KFK.myFadeOut($('.loading'));
-  KFK.myFadeIn(KFK.JC3, 100);
-  $('#overallbackground').removeClass('grid1');
-  //focusOnC3会导致C3居中
-  KFK.focusOnC3();
-  //因此,这里再重新滚动一下.这样保证在文档新导入时,可以滚动到第一屏
-  KFK.scrollToPos({ x: KFK.LeftB, y: KFK.TopB });
-  if (KFK.JC3.find('.kfknode').length === 0) {
-    //YIQCooor要么是出black, 要么是white, 在style.css中放了color-dynamic-black和color-dynamic-white
-    $('.showFirstTimeHelp').addClass(`color-dynamic-${KFK.YIQColor}`);
-    KFK.setAppData('model', 'firstTime', true);
-    setTimeout(function () {
-      KFK.setAppData('model', 'firstTime', false);
-    }, 3000);
-  } else {
-    KFK.setAppData('model', 'firstTime', false);
-
-  }
+KFK.resetDocPwd = function() {
+    let payload = {
+        doc_id: KFK.tryToResetPwdDoc._id,
+        oldpwd: KFK.APP.model.docOldPwd ? KFK.APP.model.docOldPwd : "",
+        newpwd: KFK.APP.model.docNewPwd ? KFK.APP.model.docNewPwd : "",
+    };
+    KFK.sendCmd("RESETPWD", payload);
 };
 
-KFK.checkLoading = async function (num) {
-};
-
-KFK.cleanupJC3 = async function () {
-  await KFK.JC3.empty();
-  KFK.addSvgLayer();
-};
-
-KFK.recreateFullDoc = async function (objects, callback) {
-  KFK.cancelLoading = false;
-  KFK.myShow($('.loading'));
-  KFK.cleanupJC3();
-  for (let i = 0; i < objects.length; i++) {
-    if (KFK.cancelLoading) { //也就是把之前正在loading的中断掉
-      KFK.myHide($('.loading'));
-      KFK.cancelLoading = false;
-      break;
+KFK._onDocFullyLoaded = async function() {
+    KFK.myFadeIn($(".docHeaderInfo"));
+    KFK.docDuringLoading = null;
+    // KFK.JC3.removeClass("noshow");
+    KFK.APP.setData("model", "docLoaded", true);
+    if (KFK.APP.model.cocodoc.readonly) {
+        $("#linetransformer").draggable("disable");
+        $("#right").toggle("slide", { duration: 100, direction: "right" });
+        $("#left").toggle("slide", { duration: 100, direction: "left" });
+        $("#top").toggle("slide", { duration: 100, direction: "left" });
     } else {
-      if (KFK.currentView === 'designer') {
-        KFK.myShow($('.loading'));
-      } else {
-        KFK.myHide($('.loading'));
-      }
-      await KFK.recreateObject(objects[i], callback);
-
-      let progress = Math.round(i / objects.length * 100);
-      let strprogress = (progress < 10) ? `0${progress}` : `${progress}`;
-      if (progress % 5 === 0) {
-        KFK.setAppData("model", "loading_value", strprogress);
-        await KFK.sleep(5);
-      }
+        $("#linetransformer").draggable("enable");
     }
-  }
-  KFK.setAppData("model", "loading_value", "100");
-  KFK._onDocFullyLoaded();
-};
-
-KFK.recreateObject = async function (obj, callback) {
-  if (obj.etype === 'document') {
-    KFK.recreateDoc(obj, callback);
-  } else if (obj.etype === 'DIV') {
-    await KFK.recreateNode(obj, callback);
-  } else if (obj.etype === 'SLINE') {
-    await KFK.recreateSLine(obj, callback);
-  } else {
-    KFK.error('Unknown etype, guess it');
-    let tmpHtml = await KFK.gzippedContentToString(obj.content);
-    KFK.detail(tmpHtml);
-    if (
-      tmpHtml.indexOf('nodetype') > 0 &&
-      tmpHtml.indexOf('edittable') > 0 &&
-      tmpHtml.indexOf('kfknode') > 0
-    ) {
-      obj.etype = 'DIV';
-      KFK.recreateNode(obj, callback);
-    }
-  }
-};
-KFK.recreateDoc = function (obj, callback) {
-  try {
-    let docRet = obj.content;
-    docRet.ownerAvatar_src = KFK.avatars[docRet.ownerAvatar].src;
-    KFK.debug('recreateDoc()', docRet);
-    KFK.APP.setData("model", "cocodoc", docRet);
-    KFK.setAppData('model', 'readonlyDesc', (docRet.readonlyReason === 'OWNER' ? '只读: 白板发起人设置为只读' :
-      docRet.readonlyReason.startsWith('BOSS') ? '只读: 协作者人数超过组织设定的' + docRet.readonlyReason.substr(4) + '人' : ''));
-    if (docRet.bgcolor !== undefined) {
-      KFK.setBGColorTo(docRet.bgcolor);
-      $("#cocoBkgColor").spectrum("set", docRet.bgcolor);
-    }
-    localStorage.setItem("cocodoc", JSON.stringify(docRet));
-  } catch (err) {
-    console.error(err);
-  } finally {
-    if (callback) callback(1);
-  }
-};
-KFK.recreateSLine = async function (obj, callback) {
-  try {
-    let isALockedNode = obj.lock;
-    let content = await KFK.gzippedContentToString(obj.content);
-    let line_id = obj.nodeid;
-    let theLine = KFK.restoreSvgLine(line_id, content);
-    if (isALockedNode) {
-      KFK.NodeController.lockline(KFK, theLine);
-    } else {
-      KFK.NodeController.unlockline(KFK, theLine);
-    }
-  } catch (err) {
-    console.error(err);
-  } finally {
-    if (callback) callback(1);
-  }
-};
-
-KFK.gzippedContentToString = async function (content) {
-  if (content.type !== 'Buffer' || content.data === undefined) {
-    console.error("gzippedContentToString was passed in wrong content", content);
-  }
-  let tmp = await ungzip(new Buffer(content.data));
-  return tmp.toString('utf8');
-};
-
-KFK.recreateNode = async function (obj, callback) {
-  if (KFK.quillEdittingNode && KFK.quillEdittingNode.attr("id") === obj.nodeid) {
-    //如果我正在编辑，别人更新过来的不做处理
-    // console.log("I am quilling, but other is changing it");
-    return;
-  }
-
-  try {
-
-    let isALockedNode = obj.lock;
-
-    html = await KFK.gzippedContentToString(obj.content);
-    // console.log('html = ', html);
-
-    let jqDIV = $($.parseHTML(html));
-    let nodeid = jqDIV.attr("id");
-
-
-    if (jqDIV.hasClass("notify")) {
-      //TODO: notification
-    } else if (jqDIV.hasClass("ad")) {
-      //TODO: Advertisement
-    } else {
-      //需要先清理，否则在替换已有node时，会导致无法resize
-      KFK.cleanNodeEventFootprint(jqDIV);
-      KFK.setNodeShowEditor(jqDIV);
-      if ($(`#${nodeid}`).length > 0) {
-        $(`#${nodeid}`).prop("outerHTML", jqDIV.prop("outerHTML"));
-      } else {
-        KFK.JC3.append(jqDIV);
-      }
-      jqDIV = $(`#${nodeid}`);
-      if (KFK.APP.model.cocodoc.readonly === false) {
-        KFK.setNodeEventHandler(jqDIV);
-        if (isALockedNode) {
-          // KFK.debug('is a locked');
-          KFK.NodeController.lock(jqDIV);
+    KFK.JC3.find(".kfknode").each((index, node) => {
+        let jqNode = $(node);
+        let str = jqNode.attr("linkto");
+        let arr = KFK.stringToArray(str);
+        let tmp1 = arr.length;
+        arr = arr.filter((aId) => {
+            return $(`#${aId}`).length > 0;
+        });
+        let tmp2 = arr.length;
+        if (tmp1 !== tmp2) {
+            if (tmp2 === 0) {
+                jqNode.removeAttr("linkto");
+            } else {
+                jqNode.attr("linkto", arr.join(","));
+            }
         }
-      }
-      KFK.redrawLinkLines(jqDIV, 'server update');
-    }
-  } catch (error) {
-    KFK.error(error);
-  } finally {
-    if (callback) callback(1);
+        KFK.redrawLinkLines(jqNode, " after designer ready", false);
+    });
+    // KFK.info('ondocFullyLoaded, doc is', KFK.APP.model.cocodoc);
     KFK.C3.dispatchEvent(KFK.refreshC3event);
-  }
+    KFK.myFadeOut($(".loading"));
+    KFK.myFadeIn(KFK.JC3, 100);
+    $("#overallbackground").removeClass("grid1");
+    //focusOnC3会导致C3居中
+    KFK.focusOnC3();
+    //因此,这里再重新滚动一下.这样保证在文档新导入时,可以滚动到第一屏
+    KFK.scrollToPos({ x: KFK.LeftB, y: KFK.TopB });
+    if (KFK.JC3.find(".kfknode").length === 0) {
+        //YIQCooor要么是出black, 要么是white, 在style.css中放了color-dynamic-black和color-dynamic-white
+        $(".showFirstTimeHelp").addClass(`color-dynamic-${KFK.YIQColor}`);
+        KFK.setAppData("model", "firstTime", true);
+        setTimeout(function() {
+            KFK.setAppData("model", "firstTime", false);
+        }, 3000);
+    } else {
+        KFK.setAppData("model", "firstTime", false);
+    }
 };
-KFK.updateQuillingContent = async function (response) {
-  try {
-    let doc_id = response.doc_id;
-    let nodeid = response.nodeid;
-    if (doc_id !== KFK.APP.model.cocodoc.doc_id) {
-      KFK.debug("updateQuillingContent should not send to me,  I am in another doc");
-      return;
-    }
-    let jqInner = $(`#${nodeid} .innerobj`);
-    if (jqInner.length > 0) {
-      html = await KFK.gzippedContentToString(response.content);
-      el(jqInner).innerHTML = html;
-      let div = $(`#${nodeid}`);
 
-      //quilling-by显示两秒
-      if ($('.quilling-by').length === 0) {
-        let jtmp = $(`<div class="quilling-by">${response.by}</div>`);
-        jtmp.appendTo(div);
-        setTimeout(function () {
-          jtmp.remove();
-        }, 2000);
-      }
+KFK.checkLoading = async function(num) {};
+
+KFK.cleanupJC3 = async function() {
+    await KFK.JC3.empty();
+    KFK.addSvgLayer();
+};
+
+KFK.recreateFullDoc = async function(objects, callback) {
+    KFK.cancelLoading = false;
+    KFK.myShow($(".loading"));
+    KFK.cleanupJC3();
+    KFK.stopBrainstorm();
+    for (let i = 0; i < objects.length; i++) {
+        if (KFK.cancelLoading) {
+            //也就是把之前正在loading的中断掉
+            KFK.myHide($(".loading"));
+            KFK.cancelLoading = false;
+            break;
+        } else {
+            if (KFK.currentView === "designer") {
+                KFK.myShow($(".loading"));
+            } else {
+                KFK.myHide($(".loading"));
+            }
+            await KFK.recreateObject(objects[i], callback);
+
+            let progress = Math.round((i / objects.length) * 100);
+            let strprogress = progress < 10 ? `0${progress}` : `${progress}`;
+            if (progress % 5 === 0) {
+                KFK.setAppData("model", "loading_value", strprogress);
+                await KFK.sleep(5);
+            }
+        }
     }
-  } catch (error) {
-    KFK.error(error);
-  }
+    KFK.setAppData("model", "loading_value", "100");
+    KFK._onDocFullyLoaded();
+};
+
+KFK.recreateObject = async function(obj, callback) {
+    if (obj.etype === "document") {
+        KFK.recreateDoc(obj, callback);
+    } else if (obj.etype === "DIV") {
+        await KFK.recreateNode(obj, callback);
+    } else if (obj.etype === "SLINE") {
+        await KFK.recreateSLine(obj, callback);
+    } else {
+        KFK.error("Unknown etype, guess it");
+        let tmpHtml = await KFK.gzippedContentToString(obj.content);
+        KFK.detail(tmpHtml);
+        if (
+            tmpHtml.indexOf("nodetype") > 0 &&
+            tmpHtml.indexOf("edittable") > 0 &&
+            tmpHtml.indexOf("kfknode") > 0
+        ) {
+            obj.etype = "DIV";
+            KFK.recreateNode(obj, callback);
+        }
+    }
+};
+KFK.recreateDoc = function(obj, callback) {
+    try {
+        let docRet = obj.content;
+        docRet.ownerAvatar_src = KFK.avatars[docRet.ownerAvatar].src;
+        KFK.debug("recreateDoc()", docRet);
+        KFK.APP.setData("model", "cocodoc", docRet);
+        KFK.setAppData(
+            "model",
+            "readonlyDesc",
+            docRet.readonlyReason === "OWNER" ?
+            "只读: 白板发起人设置为只读" :
+            docRet.readonlyReason.startsWith("BOSS") ?
+            "只读: 协作者人数超过组织设定的" +
+            docRet.readonlyReason.substr(4) +
+            "人" :
+            ""
+        );
+        if (docRet.bgcolor !== undefined) {
+            KFK.setBGColorTo(docRet.bgcolor);
+            $("#cocoBkgColor").spectrum("set", docRet.bgcolor);
+        }
+        localStorage.setItem("cocodoc", JSON.stringify(docRet));
+    } catch (err) {
+        console.error(err);
+    } finally {
+        if (callback) callback(1);
+    }
+};
+KFK.recreateSLine = async function(obj, callback) {
+    try {
+        let isALockedNode = obj.lock;
+        let content = await KFK.gzippedContentToString(obj.content);
+        let line_id = obj.nodeid;
+        let theLine = KFK.restoreSvgLine(line_id, content);
+        if (isALockedNode) {
+            KFK.NodeController.lockline(KFK, theLine);
+        } else {
+            KFK.NodeController.unlockline(KFK, theLine);
+        }
+    } catch (err) {
+        console.error(err);
+    } finally {
+        if (callback) callback(1);
+    }
+};
+
+KFK.gzippedContentToString = async function(content) {
+    if (content.type !== "Buffer" || content.data === undefined) {
+        console.error(
+            "gzippedContentToString was passed in wrong content",
+            content
+        );
+    }
+    let tmp = await ungzip(new Buffer(content.data));
+    return tmp.toString("utf8");
+};
+
+KFK.recreateNode = async function(obj, callback) {
+    if (
+        KFK.quillEdittingNode &&
+        KFK.quillEdittingNode.attr("id") === obj.nodeid
+    ) {
+        //如果我正在编辑，别人更新过来的不做处理
+        // console.log("I am quilling, but other is changing it");
+        return;
+    }
+
+    try {
+        let isALockedNode = obj.lock;
+
+        html = await KFK.gzippedContentToString(obj.content);
+        // console.log('html = ', html);
+
+        let jqDIV = $($.parseHTML(html));
+        let nodeid = jqDIV.attr("id");
+
+        if (jqDIV.hasClass("notify")) {
+            //TODO: notification
+        } else if (jqDIV.hasClass("ad")) {
+            //TODO: Advertisement
+        } else {
+            //需要先清理，否则在替换已有node时，会导致无法resize
+            KFK.cleanNodeEventFootprint(jqDIV);
+            KFK.setNodeShowEditor(jqDIV);
+            if ($(`#${nodeid}`).length > 0) {
+                $(`#${nodeid}`).prop("outerHTML", jqDIV.prop("outerHTML"));
+            } else {
+                KFK.JC3.append(jqDIV);
+            }
+            jqDIV = $(`#${nodeid}`);
+            if (KFK.APP.model.cocodoc.readonly === false) {
+                await KFK.setNodeEventHandler(jqDIV, async function() {
+                    if (isALockedNode) {
+                        // KFK.debug('is a locked');
+                        KFK.NodeController.lock(jqDIV);
+                    }
+                });
+            }
+            KFK.redrawLinkLines(jqDIV, "server update");
+        }
+    } catch (error) {
+        KFK.error(error);
+    } finally {
+        if (callback) callback(1);
+        KFK.C3.dispatchEvent(KFK.refreshC3event);
+    }
+};
+KFK.updateQuillingContent = async function(response) {
+    try {
+        let doc_id = response.doc_id;
+        let nodeid = response.nodeid;
+        if (doc_id !== KFK.APP.model.cocodoc.doc_id) {
+            KFK.debug(
+                "updateQuillingContent should not send to me,  I am in another doc"
+            );
+            return;
+        }
+        let jqInner = $(`#${nodeid} .innerobj`);
+        if (jqInner.length > 0) {
+            html = await KFK.gzippedContentToString(response.content);
+            el(jqInner).innerHTML = html;
+            let div = $(`#${nodeid}`);
+
+            //quilling-by显示两秒
+            if ($(".quilling-by").length === 0) {
+                let jtmp = $(`<div class="quilling-by">${response.by}</div>`);
+                jtmp.appendTo(div);
+                setTimeout(function() {
+                    jtmp.remove();
+                }, 2000);
+            }
+        }
+    } catch (error) {
+        KFK.error(error);
+    }
 };
 //从服务器收到D指令，
-KFK.deleteObject_for_Response = function (obj) {
-  try {
-    if (obj.etype === 'DIV') {
-      let tobeDelete = $(`#${obj.nodeid}`);
-      if (tobeDelete.length <= 0)
-        KFK.debug("Server ask to delete", obj.nodeid, ", but it does not exist");
-      else
-        KFK.deleteNode_exec(tobeDelete);
-    } else if (obj.etype === 'SLINE') {
-      let selector = `.${obj.nodeid}`;
-      try {
-        KFK.svgDraw.findOne(selector).remove();
-      } catch (error) {
-        KFK.error(error);
-      }
-
-    }
-  } finally {
-    KFK.C3.dispatchEvent(KFK.refreshC3event);
-  }
-}
-
-KFK.getLineOptions = function (div) {
-  return JSON.parse(KFK.base64ToCode(div.attr("options")));
-};
-KFK.setLineOptions = function (div, options) {
-  div.attr("options", KFK.codeToBase64(JSON.stringify(options)));
-};
-KFK.codeToBase64 = function (code) {
-  return Buffer.from(code).toString("base64");
-};
-KFK.base64ToCode = function (base64) {
-  return Buffer.from(base64, "base64").toString("utf-8");
-};
-
-KFK.getPropertyApplyToJqNode = function () {
-  let ret = null;
-  if (KFK.hoverJqDiv() !== null) {
-    ret = KFK.hoverJqDiv();
-  } else if (KFK.lastFocusOnJqNode != null) {
-    ret = KFK.lastFocusOnJqNode;
-  } else if (KFK.justCreatedJqNode != null) {
-    ret = KFK.justCreatedJqNode;
-  } else {
-    ret = null;
-  }
-  // console.log('getProprtyApplyToJqNode ret', ret);
-  return ret;
-};
-KFK.getPropertyApplyToSvgLine = function () {
-  if (KFK.hoverSvgLine() != null) {
-    return KFK.hoverSvgLine();
-  } else if (KFK.pickedSvgLine != null) {
-    return KFK.pickedSvgLine;
-  } else if (KFK.justCreatedSvgLine != null) {
-    return KFK.justCreatedSvgLine;
-  } else {
-    return null;
-  }
-};
-
-KFK.setLineModel = function (options) {
-  let setting = $.extend({}, KFK.APP.model.svg.connect.line, options);
-  KFK.APP.setData("model", "line", setting);
-}
-KFK.changeBorderRadius = async function (radius) {
-  let jqNode = KFK.getPropertyApplyToJqNode();
-  if (jqNode != null && KFK.notAnyLocked(jqNode)) {
-    KFK.fromJQ = jqNode.clone();
-    jqNode.css("border-radius", radius);
-    await KFK.syncNodePut("U", jqNode, "set border radius", KFK.fromJQ, false, 0, 1);
-  }
-};
-KFK.changeToTransparent = async function () {
-  let jqNode = KFK.getPropertyApplyToJqNode();
-  if (jqNode != null && KFK.notAnyLocked(jqNode)) {
-    KFK.fromJQ = jqNode.clone();
-    jqNode.css("background-color", "transparent");
-    jqNode.css("border-color", "transparent");
-    await KFK.syncNodePut("U", jqNode, "set border radius", KFK.fromJQ, false, 0, 1);
-  }
-};
-KFK.setWritingMode = async function (wmode) {
-  let jqNode = KFK.getPropertyApplyToJqNode();
-  if (NotSet(jqNode) || KFK.anyLocked(jqNode)) return;
-  KFK.fromJQ = jqNode.clone();
-  jqNode.css("writing-mode", wmode);
-  await KFK.syncNodePut("U", jqNode, "set font writing-mode", KFK.fromJQ, false, 0, 1);
-};
-KFK.initPropertyForm = function () {
-  KFK.debug('...initPropertyForm');
-  let spinnerFontSize = $("#spinner_font_size").spinner({
-    min: 8,
-    max: 100,
-    step: 1,
-    start: 18,
-    spin: async function (evt, ui) {
-      let jqNode = KFK.getPropertyApplyToJqNode();
-      if (jqNode != null && KFK.notAnyLocked(jqNode)) {
-        KFK.fromJQ = jqNode.clone();
-        jqNode.find('.innerobj').css("font-size", KFK.px(ui.value));
-        await KFK.syncNodePut("U", jqNode, "set font size", KFK.fromJQ, false, 0, 1);
-      }
-    }
-  });
-  spinnerFontSize.spinner("value", 18);
-  $("#spinner_font_size").height("6px");
-  let spinnerBorderWidth = $("#spinner_border_width").spinner({
-    min: 0,
-    max: 20,
-    step: 1,
-    start: 1,
-    spin: async function (evt, ui) {
-      let jqNode = KFK.getPropertyApplyToJqNode();
-      if (jqNode != null && KFK.notAnyLocked(jqNode)) {
-        KFK.fromJQ = jqNode.clone();
-        jqNode.css("border-width", ui.value);
-        jqNode.css("border-style", "solid");
-        await KFK.syncNodePut("U", jqNode, "set border width", KFK.fromJQ, false, 0, 1);
-      }
-    }
-  });
-  spinnerBorderWidth.spinner("value", 0);
-  $("#spinner_border_width").height("6px");
-
-  let spinnerBorderRadius = $("#spinner_border_radius").spinner({
-    min: 0,
-    max: 200,
-    step: 1,
-    start: 20,
-    spin: async function (evt, ui) {
-      let jqNode = KFK.getPropertyApplyToJqNode();
-      if (jqNode != null && KFK.notAnyLocked(jqNode)) {
-        KFK.fromJQ = jqNode.clone();
-        jqNode.css("border-radius", ui.value);
-        await KFK.syncNodePut("U", jqNode, "set border radius", KFK.fromJQ, false, 0, 1);
-      }
-    }
-  });
-  spinnerBorderRadius.spinner("value", 20);
-  $("#spinner_border_radius").height("6px");
-
-  let spinnerLineWidth = $("#spinner_line_width").spinner({
-    min: 1,
-    max: 1000,
-    step: 1,
-    start: 1,
-    spin: async function (evt, ui) {
-      let theLine = KFK.getPropertyApplyToSvgLine();
-      if (theLine === null || KFK.anyLocked(theLine)) return;
-      KFK.setLineModel({ width: ui.value });
-      theLine.attr({
-        "stroke-width": ui.value,
-        "origin-width": ui.value
-      });
-      await KFK.syncLinePut(
-        "U",
-        theLine,
-        "set line color",
-        KFK.lineToRemember,
-        false
-      );
-      KFK.setLineToRemember(theLine);
-    }
-  });
-  spinnerLineWidth.spinner("value", 1);
-  $("#spinner_line_width").height("6px");
-
-  $("input.fonts-selector")
-    .fontpicker({
-      lang: "zh-CN",
-      variants: true,
-      lazyload: true,
-      nrRecents: 3,
-      googleFonts: "Alegreya,Boogaloo,Coiny,Dosis,Emilys Candy,Faster One,Galindo".split(
-        ","
-      ),
-      localFonts: {
-        // Default: web safe fonts
-        Arial: { category: "sans-serif", variants: "400,400i,600,600i,900,900i" },
-        "Courier New": { category: "monospace", variants: "400,400i,600,600i,900,900i" },
-        Georgia: { category: "serif", variants: "400,400i,600,600i,900,900i" },
-        Tahoma: { category: "sans-serif", variants: "400,400i,600,600i,900,900i" },
-        "Times New Roman": { category: "serif", variants: "400,400i,600,600i,900,900i" },
-        "Trebuchet MS": {
-          category: "sans-serif",
-          variants: "400,400i,600,600i,900,900i"
-        },
-        Verdana: { category: "sans-serif", variants: "400,400i,600,600i,900,900i" },
-        SimSun: { label: '宋体简', category: "sans-serif", variants: "400,400i,600,600i,900,900i" },
-        SimHei: { label: '黑体简', category: "sans-serif", variants: "400,400i,600,600i,900,900i" },
-        "Microsoft Yahei": {
-          label: '微软雅黑',
-          category: "sans-serif",
-          variants: "400,400i,600,600i,900,900i"
-        },
-        KaiTi: { label: '楷体', category: "sans-serif", variants: "400,400i,600,600i,900,900i" },
-        FangSong: { label: '仿宋', category: "sans-serif", variants: "400,400i,600,600i,900,900i" },
-        STHeiti: { label: '黑体繁', category: "sans-serif", variants: "400,400i,600,600i,900,900i" },
-        "Hanzipen SC": {
-          label: '钢笔手写体',
-          category: "sans-serif",
-          variants: "400,400i,600,600i,900,900i"
-        },
-        "Hannotate SC": {
-          label: '手札体',
-          category: "sans-serif",
-          variants: "400,400i,600,600i,900,900i"
-        },
-        "Xingkai SC": { label: '行楷', category: "sans-serif", variants: "400,400i,600,600i,900,900i" },
-        "Yuanti SC": { label: '圆体', category: "sans-serif", variants: "400,400i,600,600i,900,900i" }
-      }
-    })
-    .on("change", async function () {
-      // Split font into family and weight/style
-      var fontInfo = $("input.fonts-selector").val().split(":"),
-        family = fontInfo[0],
-        variant = fontInfo[1] || "400",
-        weight = parseInt(variant, 10),
-        italic = /i$/.test(variant);
-
-      // Set selected font on body
-      var css = {
-        fontFamily: "'" + family + "'",
-        fontWeight: weight,
-        fontStyle: italic ? "italic" : "normal"
-      };
-
-      //set font
-
-      let jqNode = KFK.getPropertyApplyToJqNode();
-      if (jqNode != null && KFK.notAnyLocked(jqNode)) {
-        KFK.fromJQ = jqNode.clone();
-        jqNode.find('.innerobj').css(css);
-        await KFK.syncNodePut("U", jqNode, "set node font", KFK.fromJQ, false, 0, 1);
-      }
-
-      KFK.focusOnC3();
-    });
-  $("input.fonts-selector").height(12);
-};
-
-KFK.initShowEditors = function (show_editor) {
-  KFK.APP.setData("model", "showEditor", show_editor);
-  KFK.onShowEditorChanged(show_editor);
-};
-
-KFK.onShowEditorChanged = function (show_editor) {
-  if (show_editor === "none") {
-    $(document).find(".cocoeditors").css("display", "none");
-    $(document).find(".lastcocoeditor").css("display", "none");
-  } else if (show_editor === "last") {
-    $(document).find(".cocoeditors").css("display", "none");
-    $(document).find(".lastcocoeditor").css("display", "block");
-  } else if (show_editor === "all") {
-    $(document).find(".cocoeditors").css("display", "block");
-    $(document).find(".lastcocoeditor").css("display", "none");
-  }
-};
-
-KFK.setNodeShowEditor = function (jqNode) {
-  let show_editor = KFK.APP.model.showEditor;
-  if (show_editor === "none") {
-    jqNode.find(".cocoeditors").css("display", "none");
-    jqNode.find(".lastcocoeditor").css("display", "none");
-  } else if (show_editor === "last") {
-    jqNode.find(".cocoeditors").css("display", "none");
-    jqNode.find(".lastcocoeditor").css("display", "block");
-  } else if (show_editor === "all") {
-    jqNode.find(".cocoeditors").css("display", "block");
-    jqNode.find(".lastcocoeditor").css("display", "none");
-  }
-};
-
-KFK.getContrastYIQ = function (hexcolor) {
-  if (hexcolor.startsWith('#') && hexcolor.length === 7)
-    hexcolor = hexcolor.substr(1);
-  var r = parseInt(hexcolor.substr(0, 2), 16);
-  var g = parseInt(hexcolor.substr(2, 2), 16);
-  var b = parseInt(hexcolor.substr(4, 2), 16);
-  var yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-  return (yiq >= 128) ? 'black' : 'white';
-};
-
-KFK.setBGColorTo = function (bgcolor) {
-  if (bgcolor.lenght > 7) console.warn("bgcolor ", bgcolor, "may not be hex");
-  $('#containerbkg').css('background-color', bgcolor);
-  $('#overallbackground').css('background-color', bgcolor);
-  KFK.YIQColor = KFK.getContrastYIQ(bgcolor);
-  KFK.YIQColorAux = KFK.YIQColor === 'black' ? '#6666F6' : '#CCCCCC';
-
-  $('.docHeaderInfo').removeClass('yiq-black'); $('.docHeaderInfo').removeClass('yiq-white');
-  $('.loading').removeClass('yiq-black'); $('.loading').removeClass('yiq-white');
-  $('.docHeaderInfo').addClass(`yiq-${KFK.YIQColor}`);
-  $('.loading').addClass(`yiq-${KFK.YIQColor}`);
-  $('.connect').attr('stroke', KFK.YIQColorAux);
-  $('.triangle').attr('fill', KFK.YIQColorAux);
-
-  KFK.setGridColor(bgcolor);
-};
-
-KFK.setGridColor = function (bgcolor) {
-  if (!bgcolor) {
-    bgcolor = $('#overallbackground').css('background-color');
-  }
-  if (KFK.YIQColor === 'black') {
-    $('#containerbkg').removeClass("grid1");
-    $('#containerbkg').addClass("grid2");
-    // console.log("Bgcolor is ", bgcolor, 'YIQColor is', KFK.YIQColor, 'grid is grid2');
-  } else {
-    $('#containerbkg').removeClass("grid2");
-    $('#containerbkg').addClass("grid1");
-    // console.log("Bgcolor is ", bgcolor, 'YIQColor is', KFK.YIQColor, 'grid is grid1');
-  }
-
-}
-
-KFK.initColorPicker = function () {
-  KFK.debug('...initColorPicker');
-  $("#cocoBkgColor").spectrum({
-    color: '#f00', togglePaletteOnly: 'true', hideAfterPaletteSelect: "false",
-    showButtons: "true", showAlpha: "true", chooseText: "选定", cancelText: "放弃",
-    change: function (color) {
-      //发起人可以设置所有人的bgcolor
-      try {
-        var hex = color.toHexString();
-        if (KFK.APP.model.cocodoc.owner === KFK.APP.model.cocouser.userid)
-          KFK.sendCmd('SETBGCOLOR', { doc_id: KFK.APP.model.cocodoc.doc_id, bgcolor: hex });
-        else {
-          //非发起人只能设置当前自己的
-          KFK.setBGColorTo(hex);
+KFK.deleteObject_for_Response = function(obj) {
+    try {
+        if (obj.etype === "DIV") {
+            let tobeDelete = $(`#${obj.nodeid}`);
+            if (tobeDelete.length <= 0)
+                KFK.debug(
+                    "Server ask to delete",
+                    obj.nodeid,
+                    ", but it does not exist"
+                );
+            else KFK.deleteNode_exec(tobeDelete);
+        } else if (obj.etype === "SLINE") {
+            let selector = `.${obj.nodeid}`;
+            try {
+                KFK.svgDraw.findOne(selector).remove();
+            } catch (error) {
+                KFK.error(error);
+            }
         }
-      } catch (error) {
-        console.error(error);
-      }
+    } finally {
+        KFK.C3.dispatchEvent(KFK.refreshC3event);
     }
-  });
-  $("#shapeBkgColor").spectrum({
-    color: '#f00', togglePaletteOnly: 'true', hideAfterPaletteSelect: "false",
-    showButtons: "true", showAlpha: "true", chooseText: "选定", cancelText: "放弃",
-    change: async function (color) {
-      var hex = color.toHexString();
-      KFK.APP.setData("model", "shapeBkgColor", hex);
-      let jqNode = KFK.getPropertyApplyToJqNode();
-      if (jqNode !== null && KFK.notAnyLocked(jqNode)) {
+};
+
+KFK.getLineOptions = function(div) {
+    return JSON.parse(KFK.base64ToCode(div.attr("options")));
+};
+KFK.setLineOptions = function(div, options) {
+    div.attr("options", KFK.codeToBase64(JSON.stringify(options)));
+};
+KFK.codeToBase64 = function(code) {
+    return Buffer.from(code).toString("base64");
+};
+KFK.base64ToCode = function(base64) {
+    return Buffer.from(base64, "base64").toString("utf-8");
+};
+
+KFK.getPropertyApplyToJqNode = function() {
+    let ret = null;
+    if (KFK.hoverJqDiv() !== null) {
+        ret = KFK.hoverJqDiv();
+    } else if (KFK.lastFocusOnJqNode != null) {
+        ret = KFK.lastFocusOnJqNode;
+    } else if (KFK.justCreatedJqNode != null) {
+        ret = KFK.justCreatedJqNode;
+    } else {
+        ret = null;
+    }
+    // console.log('getProprtyApplyToJqNode ret', ret);
+    return ret;
+};
+KFK.getPropertyApplyToSvgLine = function() {
+    if (KFK.hoverSvgLine() != null) {
+        return KFK.hoverSvgLine();
+    } else if (KFK.pickedSvgLine != null) {
+        return KFK.pickedSvgLine;
+    } else if (KFK.justCreatedSvgLine != null) {
+        return KFK.justCreatedSvgLine;
+    } else {
+        return null;
+    }
+};
+
+KFK.setLineModel = function(options) {
+    let setting = $.extend({}, KFK.APP.model.svg.connect.line, options);
+    KFK.APP.setData("model", "line", setting);
+};
+KFK.changeBorderRadius = async function(radius) {
+    let jqNode = KFK.getPropertyApplyToJqNode();
+    if (jqNode != null && KFK.notAnyLocked(jqNode)) {
         KFK.fromJQ = jqNode.clone();
-        jqNode.css("background-color", hex);
-        await KFK.syncNodePut("U", jqNode, "set node bg color", KFK.fromJQ, false, 0, 1);
-      }
+        jqNode.css("border-radius", radius);
+        await KFK.syncNodePut(
+            "U",
+            jqNode,
+            "set border radius",
+            KFK.fromJQ,
+            false,
+            0,
+            1
+        );
     }
-  });
-  $("#shapeBorderColor").spectrum({
-    color: '#f00', togglePaletteOnly: 'true', hideAfterPaletteSelect: "false",
-    showButtons: "true", showAlpha: "true", chooseText: "选定", cancelText: "放弃",
-    change: async function (color) {
-      var hex = color.toHexString();
-      let jqNode = KFK.getPropertyApplyToJqNode();
-      if (jqNode != null && KFK.notAnyLocked(jqNode)) {
+};
+KFK.changeToTransparent = async function() {
+    let jqNode = KFK.getPropertyApplyToJqNode();
+    if (jqNode != null && KFK.notAnyLocked(jqNode)) {
         KFK.fromJQ = jqNode.clone();
-        jqNode.css("border-color", hex);
-        await KFK.syncNodePut("U", jqNode, "set node border-color", KFK.fromJQ, false, 0, 1);
-      }
+        jqNode.css("background-color", "transparent");
+        jqNode.css("border-color", "transparent");
+        await KFK.syncNodePut(
+            "U",
+            jqNode,
+            "set border radius",
+            KFK.fromJQ,
+            false,
+            0,
+            1
+        );
     }
-  });
-  $("#lineColor").spectrum({
-    color: '#f00', togglePaletteOnly: 'true', hideAfterPaletteSelect: "false",
-    showButtons: "true", showAlpha: "true", chooseText: "选定", cancelText: "放弃",
-    change: async function (color) {
-      var hex = color.toHexString();
-      let theLine = KFK.getPropertyApplyToSvgLine();
-      if (theLine === null || KFK.anyLocked(theLine)) return;
-      theLine.attr("stroke", hex);
-      KFK.setLineModel({ color: hex });
-      await KFK.syncLinePut(
+};
+KFK.setWritingMode = async function(wmode) {
+    let jqNode = KFK.getPropertyApplyToJqNode();
+    if (NotSet(jqNode) || KFK.anyLocked(jqNode)) return;
+    KFK.fromJQ = jqNode.clone();
+    jqNode.css("writing-mode", wmode);
+    await KFK.syncNodePut(
         "U",
-        theLine,
-        "set line color",
-        KFK.lineToRemember,
-        false
-      );
-      KFK.setLineToRemember(theLine);
+        jqNode,
+        "set font writing-mode",
+        KFK.fromJQ,
+        false,
+        0,
+        1
+    );
+};
+KFK.initPropertyForm = function() {
+    KFK.debug("...initPropertyForm");
+    let spinnerFontSize = $("#spinner_font_size").spinner({
+        min: 8,
+        max: 100,
+        step: 1,
+        start: 18,
+        spin: async function(evt, ui) {
+            let jqNode = KFK.getPropertyApplyToJqNode();
+            if (jqNode != null && KFK.notAnyLocked(jqNode)) {
+                KFK.fromJQ = jqNode.clone();
+                jqNode.find(".innerobj").css("font-size", KFK.px(ui.value));
+                await KFK.syncNodePut(
+                    "U",
+                    jqNode,
+                    "set font size",
+                    KFK.fromJQ,
+                    false,
+                    0,
+                    1
+                );
+            }
+        },
+    });
+    spinnerFontSize.spinner("value", 18);
+    $("#spinner_font_size").height("6px");
+    let spinnerBorderWidth = $("#spinner_border_width").spinner({
+        min: 0,
+        max: 20,
+        step: 1,
+        start: 1,
+        spin: async function(evt, ui) {
+            let jqNode = KFK.getPropertyApplyToJqNode();
+            if (jqNode != null && KFK.notAnyLocked(jqNode)) {
+                KFK.fromJQ = jqNode.clone();
+                jqNode.css("border-width", ui.value);
+                jqNode.css("border-style", "solid");
+                await KFK.syncNodePut(
+                    "U",
+                    jqNode,
+                    "set border width",
+                    KFK.fromJQ,
+                    false,
+                    0,
+                    1
+                );
+            }
+        },
+    });
+    spinnerBorderWidth.spinner("value", 0);
+    $("#spinner_border_width").height("6px");
+
+    let spinnerBorderRadius = $("#spinner_border_radius").spinner({
+        min: 0,
+        max: 200,
+        step: 1,
+        start: 20,
+        spin: async function(evt, ui) {
+            let jqNode = KFK.getPropertyApplyToJqNode();
+            if (jqNode != null && KFK.notAnyLocked(jqNode)) {
+                KFK.fromJQ = jqNode.clone();
+                jqNode.css("border-radius", ui.value);
+                await KFK.syncNodePut(
+                    "U",
+                    jqNode,
+                    "set border radius",
+                    KFK.fromJQ,
+                    false,
+                    0,
+                    1
+                );
+            }
+        },
+    });
+    spinnerBorderRadius.spinner("value", 20);
+    $("#spinner_border_radius").height("6px");
+
+    let spinnerLineWidth = $("#spinner_line_width").spinner({
+        min: 1,
+        max: 1000,
+        step: 1,
+        start: 1,
+        spin: async function(evt, ui) {
+            let theLine = KFK.getPropertyApplyToSvgLine();
+            if (theLine === null || KFK.anyLocked(theLine)) return;
+            KFK.setLineModel({ width: ui.value });
+            theLine.attr({
+                "stroke-width": ui.value,
+                "origin-width": ui.value,
+            });
+            await KFK.syncLinePut(
+                "U",
+                theLine,
+                "set line color",
+                KFK.lineToRemember,
+                false
+            );
+            KFK.setLineToRemember(theLine);
+        },
+    });
+    spinnerLineWidth.spinner("value", 1);
+    $("#spinner_line_width").height("6px");
+
+    $("input.fonts-selector")
+        .fontpicker({
+            lang: "zh-CN",
+            variants: true,
+            lazyload: true,
+            nrRecents: 3,
+            googleFonts: "Alegreya,Boogaloo,Coiny,Dosis,Emilys Candy,Faster One,Galindo".split(
+                ","
+            ),
+            localFonts: {
+                // Default: web safe fonts
+                Arial: {
+                    category: "sans-serif",
+                    variants: "400,400i,600,600i,900,900i",
+                },
+                "Courier New": {
+                    category: "monospace",
+                    variants: "400,400i,600,600i,900,900i",
+                },
+                Georgia: { category: "serif", variants: "400,400i,600,600i,900,900i" },
+                Tahoma: {
+                    category: "sans-serif",
+                    variants: "400,400i,600,600i,900,900i",
+                },
+                "Times New Roman": {
+                    category: "serif",
+                    variants: "400,400i,600,600i,900,900i",
+                },
+                "Trebuchet MS": {
+                    category: "sans-serif",
+                    variants: "400,400i,600,600i,900,900i",
+                },
+                Verdana: {
+                    category: "sans-serif",
+                    variants: "400,400i,600,600i,900,900i",
+                },
+                SimSun: {
+                    label: "宋体简",
+                    category: "sans-serif",
+                    variants: "400,400i,600,600i,900,900i",
+                },
+                SimHei: {
+                    label: "黑体简",
+                    category: "sans-serif",
+                    variants: "400,400i,600,600i,900,900i",
+                },
+                "Microsoft Yahei": {
+                    label: "微软雅黑",
+                    category: "sans-serif",
+                    variants: "400,400i,600,600i,900,900i",
+                },
+                KaiTi: {
+                    label: "楷体",
+                    category: "sans-serif",
+                    variants: "400,400i,600,600i,900,900i",
+                },
+                FangSong: {
+                    label: "仿宋",
+                    category: "sans-serif",
+                    variants: "400,400i,600,600i,900,900i",
+                },
+                STHeiti: {
+                    label: "黑体繁",
+                    category: "sans-serif",
+                    variants: "400,400i,600,600i,900,900i",
+                },
+                "Hanzipen SC": {
+                    label: "钢笔手写体",
+                    category: "sans-serif",
+                    variants: "400,400i,600,600i,900,900i",
+                },
+                "Hannotate SC": {
+                    label: "手札体",
+                    category: "sans-serif",
+                    variants: "400,400i,600,600i,900,900i",
+                },
+                "Xingkai SC": {
+                    label: "行楷",
+                    category: "sans-serif",
+                    variants: "400,400i,600,600i,900,900i",
+                },
+                "Yuanti SC": {
+                    label: "圆体",
+                    category: "sans-serif",
+                    variants: "400,400i,600,600i,900,900i",
+                },
+            },
+        })
+        .on("change", async function() {
+            // Split font into family and weight/style
+            var fontInfo = $("input.fonts-selector").val().split(":"),
+                family = fontInfo[0],
+                variant = fontInfo[1] || "400",
+                weight = parseInt(variant, 10),
+                italic = /i$/.test(variant);
+
+            // Set selected font on body
+            var css = {
+                fontFamily: "'" + family + "'",
+                fontWeight: weight,
+                fontStyle: italic ? "italic" : "normal",
+            };
+
+            //set font
+
+            let jqNode = KFK.getPropertyApplyToJqNode();
+            if (jqNode != null && KFK.notAnyLocked(jqNode)) {
+                KFK.fromJQ = jqNode.clone();
+                jqNode.find(".innerobj").css(css);
+                await KFK.syncNodePut(
+                    "U",
+                    jqNode,
+                    "set node font",
+                    KFK.fromJQ,
+                    false,
+                    0,
+                    1
+                );
+            }
+
+            KFK.focusOnC3();
+        });
+    $("input.fonts-selector").height(12);
+};
+
+KFK.initShowEditors = function(show_editor) {
+    KFK.APP.setData("model", "showEditor", show_editor);
+    KFK.onShowEditorChanged(show_editor);
+};
+
+KFK.onShowEditorChanged = function(show_editor) {
+    if (show_editor === "none") {
+        $(document).find(".cocoeditors").css("display", "none");
+        $(document).find(".lastcocoeditor").css("display", "none");
+    } else if (show_editor === "last") {
+        $(document).find(".cocoeditors").css("display", "none");
+        $(document).find(".lastcocoeditor").css("display", "block");
+    } else if (show_editor === "all") {
+        $(document).find(".cocoeditors").css("display", "block");
+        $(document).find(".lastcocoeditor").css("display", "none");
     }
-  });
-  $("#fontColor").spectrum({
-    color: '#f00', togglePaletteOnly: 'true', hideAfterPaletteSelect: "false",
-    showButtons: "true", showAlpha: "true", chooseText: "选定", cancelText: "放弃",
-    change: async function (color) {
-      var hex = color.toHexString();
-      let jqNode = KFK.getPropertyApplyToJqNode();
-      if (jqNode != null && KFK.notAnyLocked(jqNode)) {
+};
+
+KFK.setNodeShowEditor = function(jqNode) {
+    let show_editor = KFK.APP.model.showEditor;
+    if (show_editor === "none") {
+        jqNode.find(".cocoeditors").css("display", "none");
+        jqNode.find(".lastcocoeditor").css("display", "none");
+    } else if (show_editor === "last") {
+        jqNode.find(".cocoeditors").css("display", "none");
+        jqNode.find(".lastcocoeditor").css("display", "block");
+    } else if (show_editor === "all") {
+        jqNode.find(".cocoeditors").css("display", "block");
+        jqNode.find(".lastcocoeditor").css("display", "none");
+    }
+};
+
+KFK.getContrastYIQ = function(hexcolor) {
+    if (hexcolor.startsWith("#") && hexcolor.length === 7)
+        hexcolor = hexcolor.substr(1);
+    var r = parseInt(hexcolor.substr(0, 2), 16);
+    var g = parseInt(hexcolor.substr(2, 2), 16);
+    var b = parseInt(hexcolor.substr(4, 2), 16);
+    var yiq = (r * 299 + g * 587 + b * 114) / 1000;
+    return yiq >= 128 ? "black" : "white";
+};
+
+KFK.setBGColorTo = function(bgcolor) {
+    if (bgcolor.lenght > 7) console.warn("bgcolor ", bgcolor, "may not be hex");
+    $("#containerbkg").css("background-color", bgcolor);
+    $("#overallbackground").css("background-color", bgcolor);
+    KFK.YIQColor = KFK.getContrastYIQ(bgcolor);
+    KFK.YIQColorAux = KFK.YIQColor === "black" ? "#6666F6" : "#CCCCCC";
+
+    $(".docHeaderInfo").removeClass("yiq-black");
+    $(".docHeaderInfo").removeClass("yiq-white");
+    $(".loading").removeClass("yiq-black");
+    $(".loading").removeClass("yiq-white");
+    $(".docHeaderInfo").addClass(`yiq-${KFK.YIQColor}`);
+    $(".loading").addClass(`yiq-${KFK.YIQColor}`);
+    $(".connect").attr("stroke", KFK.YIQColorAux);
+    $(".triangle").attr("fill", KFK.YIQColorAux);
+
+    KFK.setGridColor(bgcolor);
+};
+
+KFK.setGridColor = function(bgcolor) {
+    if (!bgcolor) {
+        bgcolor = $("#overallbackground").css("background-color");
+    }
+    if (KFK.YIQColor === "black") {
+        $("#containerbkg").removeClass("grid1");
+        $("#containerbkg").addClass("grid2");
+        // console.log("Bgcolor is ", bgcolor, 'YIQColor is', KFK.YIQColor, 'grid is grid2');
+    } else {
+        $("#containerbkg").removeClass("grid2");
+        $("#containerbkg").addClass("grid1");
+        // console.log("Bgcolor is ", bgcolor, 'YIQColor is', KFK.YIQColor, 'grid is grid1');
+    }
+};
+
+KFK.initColorPicker = function() {
+    KFK.debug("...initColorPicker");
+    $("#cocoBkgColor").spectrum({
+        color: "#f00",
+        togglePaletteOnly: "true",
+        hideAfterPaletteSelect: "false",
+        showButtons: "true",
+        showAlpha: "true",
+        chooseText: "选定",
+        cancelText: "放弃",
+        change: function(color) {
+            //发起人可以设置所有人的bgcolor
+            try {
+                var hex = color.toHexString();
+                if (KFK.APP.model.cocodoc.owner === KFK.APP.model.cocouser.userid)
+                    KFK.sendCmd("SETBGCOLOR", {
+                        doc_id: KFK.APP.model.cocodoc.doc_id,
+                        bgcolor: hex,
+                    });
+                else {
+                    //非发起人只能设置当前自己的
+                    KFK.setBGColorTo(hex);
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        },
+    });
+    $("#shapeBkgColor").spectrum({
+        color: "#f00",
+        togglePaletteOnly: "true",
+        hideAfterPaletteSelect: "false",
+        showButtons: "true",
+        showAlpha: "true",
+        chooseText: "选定",
+        cancelText: "放弃",
+        change: async function(color) {
+            var hex = color.toHexString();
+            KFK.APP.setData("model", "shapeBkgColor", hex);
+            let jqNode = KFK.getPropertyApplyToJqNode();
+            if (jqNode !== null && KFK.notAnyLocked(jqNode)) {
+                KFK.fromJQ = jqNode.clone();
+                jqNode.css("background-color", hex);
+                await KFK.syncNodePut(
+                    "U",
+                    jqNode,
+                    "set node bg color",
+                    KFK.fromJQ,
+                    false,
+                    0,
+                    1
+                );
+            }
+        },
+    });
+    $("#shapeBorderColor").spectrum({
+        color: "#f00",
+        togglePaletteOnly: "true",
+        hideAfterPaletteSelect: "false",
+        showButtons: "true",
+        showAlpha: "true",
+        chooseText: "选定",
+        cancelText: "放弃",
+        change: async function(color) {
+            var hex = color.toHexString();
+            let jqNode = KFK.getPropertyApplyToJqNode();
+            if (jqNode != null && KFK.notAnyLocked(jqNode)) {
+                KFK.fromJQ = jqNode.clone();
+                jqNode.css("border-color", hex);
+                await KFK.syncNodePut(
+                    "U",
+                    jqNode,
+                    "set node border-color",
+                    KFK.fromJQ,
+                    false,
+                    0,
+                    1
+                );
+            }
+        },
+    });
+    $("#lineColor").spectrum({
+        color: "#f00",
+        togglePaletteOnly: "true",
+        hideAfterPaletteSelect: "false",
+        showButtons: "true",
+        showAlpha: "true",
+        chooseText: "选定",
+        cancelText: "放弃",
+        change: async function(color) {
+            var hex = color.toHexString();
+            let theLine = KFK.getPropertyApplyToSvgLine();
+            if (theLine === null || KFK.anyLocked(theLine)) return;
+            theLine.attr("stroke", hex);
+            KFK.setLineModel({ color: hex });
+            await KFK.syncLinePut(
+                "U",
+                theLine,
+                "set line color",
+                KFK.lineToRemember,
+                false
+            );
+            KFK.setLineToRemember(theLine);
+        },
+    });
+    $("#fontColor").spectrum({
+        color: "#f00",
+        togglePaletteOnly: "true",
+        hideAfterPaletteSelect: "false",
+        showButtons: "true",
+        showAlpha: "true",
+        chooseText: "选定",
+        cancelText: "放弃",
+        change: async function(color) {
+            var hex = color.toHexString();
+            let jqNode = KFK.getPropertyApplyToJqNode();
+            if (jqNode != null && KFK.notAnyLocked(jqNode)) {
+                KFK.fromJQ = jqNode.clone();
+                jqNode.find(".innerobj").css("color", hex);
+                await KFK.syncNodePut(
+                    "U",
+                    jqNode,
+                    "set color",
+                    KFK.fromJQ,
+                    false,
+                    0,
+                    1
+                );
+            }
+        },
+    });
+    $("#tipBkgColor").spectrum({
+        color: "#f00",
+        togglePaletteOnly: "true",
+        hideAfterPaletteSelect: "false",
+        showButtons: "true",
+        showAlpha: "true",
+        chooseText: "选定",
+        cancelText: "放弃",
+        change: async function(color) {
+            var hex = color.toHexString();
+            KFK.APP.setData("model", "tipBkgColor", hex);
+            let theJqNode = KFK.getPropertyApplyToJqNode();
+            if (theJqNode != null && KFK.notAnyLocked(theJqNode)) {
+                KFK.fromJQ = theJqNode.clone();
+                KFK.setTipBkgColor(theJqNode, hex);
+                await KFK.syncNodePut(
+                    "U",
+                    theJqNode,
+                    "set tip bkg color",
+                    KFK.fromJQ,
+                    false,
+                    0,
+                    1
+                );
+            }
+        },
+    });
+};
+
+KFK.textAlignChanged = async function(evt, value) {
+    let alignInfo = $("#textAlign").val();
+    let jqNode = KFK.getPropertyApplyToJqNode();
+    KFK.setAlignmentDirectly(jqNode, alignInfo);
+    KFK.focusOnC3();
+};
+KFK.toggleCustomShape = function(evt) {
+    if ($(".customcontrol").hasClass("btn_collapse")) {
+        $(".customcontrol").removeClass("btn_collapse");
+        $(".customcontrol").addClass("btn_expand");
+        KFK.rememberWhich = [];
+        if (KFK.APP.show.customshape === true) {
+            KFK.APP.setData("show", "customshape", false);
+            KFK.rememberWhich.push("customshape");
+        }
+        if (KFK.APP.show.customfont === true) {
+            KFK.APP.setData("show", "customfont", false);
+            KFK.rememberWhich.push("customfont");
+        }
+        if (KFK.APP.show.customline == true) {
+            KFK.APP.setData("show", "customline", false);
+            KFK.rememberWhich.push("customline");
+        }
+    } else {
+        $(".customcontrol").removeClass("btn_expand");
+        $(".customcontrol").addClass("btn_collapse");
+        for (let i = 0; i < KFK.rememberWhich.length; i++) {
+            KFK.APP.setData("show", KFK.rememberWhich[i], true);
+        }
+    }
+};
+
+KFK.setAlignmentDirectly = async function(jqNode, alignInfo) {
+    if (jqNode != null && KFK.notAnyLocked(jqNode)) {
         KFK.fromJQ = jqNode.clone();
-        jqNode.find('.innerobj').css("color", hex);
-        await KFK.syncNodePut("U", jqNode, "set color", KFK.fromJQ, false, 0, 1);
-      }
+        if (jqNode.find(".innerobj").length !== 0) {
+            jqNode.find(".innerobj").css("justify-content", alignInfo);
+            jqNode
+                .find(".innerobj")
+                .css(
+                    "text-align-last",
+                    alignInfo === "flex-start" ?
+                    "left" :
+                    alignInfo === "flex-end" ?
+                    "right" :
+                    "center"
+                );
+            jqNode
+                .find(".innerobj")
+                .css(
+                    "text-align",
+                    alignInfo === "flex-start" ?
+                    "left" :
+                    alignInfo === "flex-end" ?
+                    "right" :
+                    "center"
+                );
+        } else {
+            jqNode.css("justify-content", alignInfo);
+            jqNode.css(
+                "text-align-last",
+                alignInfo === "flex-start" ?
+                "left" :
+                alignInfo === "flex-end" ?
+                "right" :
+                "center"
+            );
+            jqNode.css(
+                "text-align",
+                alignInfo === "flex-start" ?
+                "left" :
+                alignInfo === "flex-end" ?
+                "right" :
+                "center"
+            );
+        }
+        await KFK.syncNodePut(
+            "U",
+            jqNode,
+            "set text alignment",
+            KFK.fromJQ,
+            false,
+            0,
+            1
+        );
     }
-  });
-  $("#tipBkgColor").spectrum({
-    color: '#f00', togglePaletteOnly: 'true', hideAfterPaletteSelect: "false",
-    showButtons: "true", showAlpha: "true", chooseText: "选定", cancelText: "放弃",
-    change: async function (color) {
-      var hex = color.toHexString();
-      KFK.APP.setData("model", "tipBkgColor", hex);
-      let theJqNode = KFK.getPropertyApplyToJqNode();
-      if (theJqNode != null && KFK.notAnyLocked(theJqNode)) {
-        KFK.fromJQ = theJqNode.clone();
-        KFK.setTipBkgColor(theJqNode, hex);
-        await KFK.syncNodePut("U", theJqNode, "set tip bkg color", KFK.fromJQ, false, 0, 1);
-      }
-    }
-  });
 };
 
-KFK.textAlignChanged = async function (evt, value) {
-  let alignInfo = $("#textAlign").val();
-  let jqNode = KFK.getPropertyApplyToJqNode();
-  KFK.setAlignmentDirectly(jqNode, alignInfo);
-  KFK.focusOnC3();
-};
-KFK.toggleCustomShape = function (evt) {
-  if ($('.customcontrol').hasClass('btn_collapse')) {
-    $('.customcontrol').removeClass('btn_collapse');
-    $('.customcontrol').addClass('btn_expand');
-    KFK.rememberWhich = [];
-    if (KFK.APP.show.customshape === true) {
-      KFK.APP.setData('show', 'customshape', false);
-      KFK.rememberWhich.push("customshape");
-    } if (KFK.APP.show.customfont === true) {
-      KFK.APP.setData('show', 'customfont', false);
-      KFK.rememberWhich.push("customfont");
-    } if (KFK.APP.show.customline == true) {
-      KFK.APP.setData('show', 'customline', false);
-      KFK.rememberWhich.push("customline");
+KFK.vertAlignChanged = async function(evt, value) {
+    let valignInfo = $("#vertAlign").val();
+    let jqNode = KFK.getPropertyApplyToJqNode();
+    if (jqNode != null && KFK.notAnyLocked(jqNode)) {
+        KFK.fromJQ = jqNode.clone();
+        if (jqNode.find(".innerobj").length !== 0) {
+            jqNode.find(".innerobj").css("align-items", valignInfo);
+        } else {
+            jqNode.css("align-items", valignInfo);
+        }
+        await KFK.syncNodePut(
+            "U",
+            jqNode,
+            "set text vert alignment",
+            KFK.fromJQ,
+            false,
+            0,
+            1
+        );
     }
-  } else {
-    $('.customcontrol').removeClass('btn_expand');
-    $('.customcontrol').addClass('btn_collapse');
-    for (let i = 0; i < KFK.rememberWhich.length; i++) {
-      KFK.APP.setData('show', KFK.rememberWhich[i], true);
-    }
-  }
+    KFK.focusOnC3();
 };
 
-KFK.setAlignmentDirectly = async function (jqNode, alignInfo) {
-  if (jqNode != null && KFK.notAnyLocked(jqNode)) {
-    KFK.fromJQ = jqNode.clone();
-    if (jqNode.find(".innerobj").length !== 0) {
-      jqNode.find(".innerobj").css("justify-content", alignInfo);
-      jqNode.find(".innerobj").css("text-align-last",
-        alignInfo === 'flex-start' ? 'left' : alignInfo === 'flex-end' ? 'right' : 'center');
-      jqNode.find(".innerobj").css("text-align",
-        alignInfo === 'flex-start' ? 'left' : alignInfo === 'flex-end' ? 'right' : 'center');
+KFK.setMode = function(mode) {
+    if (KFK.docIsReadOnly()) mode = "pointer";
+
+    let oldMode = KFK.mode;
+    KFK.mode = mode;
+    for (let key in KFK.APP.toolActiveState) {
+        KFK.APP.toolActiveState[key] = false;
+    }
+    if (KFK.APP.toolActiveState[mode] == undefined)
+        console.warn(`APP.toolActiveState.${mode} does not exist`);
+    else KFK.APP.toolActiveState[mode] = true;
+
+    if (
+        (oldMode === "line" && mode !== "line") ||
+        (oldMode === "connect" && mode !== "connect")
+    ) {
+        KFK.cancelTempLine();
+    }
+
+    if (KFK.mode !== 'material') {
+        KFK.hidePickerMatlib();
+    }
+    if (KFK.mode === "pointer") {
+        $("#modeIndicator").hide();
     } else {
-      jqNode.css("justify-content", alignInfo);
-      jqNode.css("text-align-last",
-        alignInfo === 'flex-start' ? 'left' : alignInfo === 'flex-end' ? 'right' : 'center');
-      jqNode.css("text-align",
-        alignInfo === 'flex-start' ? 'left' : alignInfo === 'flex-end' ? 'right' : 'center');
+        if (KFK.mode === "yellowtip") {
+            KFK.setModeIndicatorForYellowTip(cocoConfig.node.yellowtip.defaultTip);
+            $("#modeIndicatorImg").hide();
+            $("#modeIndicatorDiv").show();
+        } else {
+            $("#modeIndicatorImg").attr("src", KFK.images[KFK.mode].src);
+            $("#modeIndicatorImg").show();
+            $("#modeIndicatorDiv").hide();
+        }
+        $("#modeIndicator").show();
     }
-    await KFK.syncNodePut("U", jqNode, "set text alignment", KFK.fromJQ, false, 0, 1);
-  }
+
+    if (KFK.mode === "text") {
+        KFK.APP.setData("show", "shape_property", true);
+        KFK.APP.setData("show", "customshape", false);
+        KFK.APP.setData("show", "custombacksvg", false);
+        KFK.APP.setData("show", "customfont", true);
+        KFK.APP.setData("show", "layercontrol", true);
+        KFK.APP.setData("show", "customline", false);
+        // KFK.setRightTabIndex(0);
+    } else if (KFK.mode === "textblock") {
+        KFK.APP.setData("show", "shape_property", true);
+        KFK.APP.setData("show", "customshape", true);
+        KFK.APP.setData("show", "customfont", true);
+        KFK.APP.setData("show", "custombacksvg", true);
+        KFK.APP.setData("show", "layercontrol", true);
+        KFK.APP.setData("show", "customline", false);
+        // KFK.setRightTabIndex(0);
+    } else if (KFK.mode === "yellowtip") {
+        KFK.APP.setData("show", "shape_property", true);
+        KFK.APP.setData("show", "customfont", true);
+        KFK.APP.setData("show", "custombacksvg", true);
+        KFK.APP.setData("show", "customshape", false);
+        KFK.APP.setData("show", "layercontrol", true);
+        KFK.APP.setData("show", "customline", false);
+        // KFK.setRightTabIndex(0);
+    } else if (KFK.mode === "line") {
+        KFK.APP.setData("show", "shape_property", true);
+        KFK.APP.setData("show", "customshape", false);
+        KFK.APP.setData("show", "custombacksvg", false);
+        KFK.APP.setData("show", "customfont", false);
+        KFK.APP.setData("show", "layercontrol", false);
+        KFK.APP.setData("show", "customline", true);
+        // KFK.setRightTabIndex(0);
+    } else if (KFK.mode === "material") {
+        KFK.materialUpdated || KFK.loadMatLibForMyself();
+        if (KFK.pickerMatlib.hasClass("noshow")) {
+            KFK.showPickerMatlib();
+        } else {
+            KFK.hidePickerMatlib();
+            KFK.setMode("pointer");
+        }
+    }
+
+    KFK.focusOnC3();
 };
 
-KFK.vertAlignChanged = async function (evt, value) {
-  let valignInfo = $("#vertAlign").val();
-  let jqNode = KFK.getPropertyApplyToJqNode();
-  if (jqNode != null && KFK.notAnyLocked(jqNode)) {
-    KFK.fromJQ = jqNode.clone();
-    if (jqNode.find(".innerobj").length !== 0) {
-      jqNode.find(".innerobj").css("align-items", valignInfo);
+KFK.showPickerMatlib = function(matid, url) {
+    KFK.pickerMatlib.removeClass("noshow");
+};
+KFK.hidePickerMatlib = function() {
+    KFK.pickerMatlib.addClass("noshow");
+    KFK.materialPicked = undefined;
+};
+
+KFK.pickMaterial = function(matid, url) {
+    KFK.materialPicked = { matid: matid, url: url };
+};
+
+KFK.cleanAllNodes = function() {
+    KFK.APP.$bvModal
+        .msgBoxConfirm(
+            "请确认要清空白板, 其他协作用户的白板也会一起清除, 且本操作无法回退.", {
+                title: "请确认",
+                size: "sm",
+                buttonSize: "sm",
+                okVariant: "danger",
+                okTitle: "确认清除白板",
+                cancelTitle: "放弃",
+                footerClass: "p-2",
+                hideHeaderClose: false,
+                centered: true,
+            }
+        )
+        .then(async(isOkay) => {
+            if (isOkay === true) {
+                await KFK.sendCmd("CLEANUP", { doc_id: KFK.APP.model.cocodoc.doc_id });
+            }
+        })
+        .catch((err) => {
+            console.error(err.message);
+        });
+};
+KFK.doCleanUp = async function() {
+    await KFK.refreshDesigner(KFK.APP.model.cocodoc.doc_id, "");
+    KFK.scrLog("白板已被发起人擦除");
+    KFK.stopBrainstorm();
+    KFK.C3.dispatchEvent(KFK.refreshC3event);
+};
+
+KFK.toggleMinimap = async function() {
+    for (let key in KFK.APP.toolActiveState) {
+        KFK.APP.toolActiveState[key] = false;
+    }
+    KFK.APP.toolActiveState["minimap"] = true;
+    await KFK.showSection({ minimap: !KFK.APP.show.section.minimap });
+    KFK.setMode("pointer");
+};
+
+KFK.toggleBrainstorm = function() {
+    if (NotSet(KFK.hoverJqDiv())) return;
+    if (KFK.anyLocked(KFK.hoverJqDiv())) return;
+    if (KFK.brainstormFocusNode === KFK.hoverJqDiv()) {
+        KFK.brainstormFocusNode = undefined;
+        KFK.stopBrainstorm();
     } else {
-      jqNode.css("align-items", valignInfo);
+        KFK.startBrainstorm(KFK.hoverJqDiv());
     }
-    await KFK.syncNodePut("U", jqNode, "set text vert alignment", KFK.fromJQ, false, 0, 1);
-  }
-  KFK.focusOnC3();
 };
 
-KFK.setMode = function (mode) {
-  if (KFK.docIsReadOnly()) mode = "pointer";
-
-  let oldMode = KFK.mode;
-  KFK.mode = mode;
-  for (let key in KFK.APP.toolActiveState) {
-    KFK.APP.toolActiveState[key] = false;
-  }
-  if (KFK.APP.toolActiveState[mode] == undefined)
-    console.warn(`APP.toolActiveState.${mode} does not exist`);
-  else KFK.APP.toolActiveState[mode] = true;
-
-  if ((oldMode === "line" && mode !== "line") ||
-    (oldMode === "connect" && mode !== "connect")) {
-    KFK.cancelTempLine();
-  }
-
-  if (KFK.mode === "pointer") {
-    $("#modeIndicator").hide();
-    KFK.hidePickerMatlib();
-  } else {
-    if (KFK.mode === "yellowtip") {
-      KFK.setModeIndicatorForYellowTip(cocoConfig.node.yellowtip.defaultTip);
-      $("#modeIndicatorImg").hide();
-      $("#modeIndicatorDiv").show();
-    } else {
-      $("#modeIndicatorImg").attr("src", KFK.images[KFK.mode].src);
-      $("#modeIndicatorImg").show();
-      $("#modeIndicatorDiv").hide();
-    }
-    $("#modeIndicator").show();
-  }
-
-  if (KFK.mode === "text") {
-    KFK.APP.setData("show", "shape_property", true);
-    KFK.APP.setData("show", "customshape", false);
-    KFK.APP.setData("show", "custombacksvg", false);
-    KFK.APP.setData("show", "customfont", true);
-    KFK.APP.setData("show", "layercontrol", true);
-    KFK.APP.setData("show", "customline", false);
-    // KFK.setRightTabIndex(0);
-  } else if (KFK.mode === "textblock") {
-    KFK.APP.setData("show", "shape_property", true);
-    KFK.APP.setData("show", "customshape", true);
-    KFK.APP.setData("show", "customfont", true);
-    KFK.APP.setData("show", "custombacksvg", true);
-    KFK.APP.setData("show", "layercontrol", true);
-    KFK.APP.setData("show", "customline", false);
-    // KFK.setRightTabIndex(0);
-  } else if (KFK.mode === "yellowtip") {
-    KFK.APP.setData("show", "shape_property", true);
-    KFK.APP.setData("show", "customfont", true);
-    KFK.APP.setData("show", "custombacksvg", true);
-    KFK.APP.setData("show", "customshape", false);
-    KFK.APP.setData("show", "layercontrol", true);
-    KFK.APP.setData("show", "customline", false);
-    // KFK.setRightTabIndex(0);
-  } else if (KFK.mode === "line") {
-    KFK.APP.setData("show", "shape_property", true);
-    KFK.APP.setData("show", "customshape", false);
-    KFK.APP.setData("show", "custombacksvg", false);
-    KFK.APP.setData("show", "customfont", false);
-    KFK.APP.setData("show", "layercontrol", false);
-    KFK.APP.setData("show", "customline", true);
-    // KFK.setRightTabIndex(0);
-  } else if (KFK.mode === "material") {
-    KFK.materialUpdated || KFK.refreshMatLib();
-    if (KFK.pickerMatlib.hasClass('noshow')) {
-      KFK.showPickerMatlib();
-    } else {
-      KFK.hidePickerMatlib();
-      KFK.setMode('pointer');
-    }
-  }
-
-
-  KFK.focusOnC3();
+KFK.stopBrainstorm = function() {
+    KFK.brainstormMode = false;
+    KFK.brainstormFocusNode = undefined;
+    $(".brsnode").remove();
 };
 
-KFK.showPickerMatlib = function (matid, url) {
-  KFK.pickerMatlib.removeClass('noshow');
-};
-KFK.hidePickerMatlib = function () {
-  KFK.pickerMatlib.addClass('noshow');
-  KFK.materialPicked = undefined;
-}
-
-KFK.pickMaterial = function (matid, url) {
-  KFK.materialPicked = { matid: matid, url: url };
-};
-
-KFK.cleanAllNodes = function () {
-  KFK.APP.$bvModal.msgBoxConfirm('请确认要清空白板, 其他协作用户的白板也会一起清除, 且本操作无法回退.', {
-    title: '请确认', size: 'sm', buttonSize: 'sm',
-    okVariant: 'danger', okTitle: '确认清除白板',
-    cancelTitle: '放弃', footerClass: 'p-2', hideHeaderClose: false, centered: true
-  }).then(async (isOkay) => {
-    if (isOkay === true) { await KFK.sendCmd("CLEANUP", { doc_id: KFK.APP.model.cocodoc.doc_id }); }
-  }).catch(err => { console.error(err.message); })
-};
-KFK.doCleanUp = async function () {
-  await KFK.refreshDesigner(KFK.APP.model.cocodoc.doc_id, '');
-  KFK.scrLog("白板已被发起人擦除");
-  KFK.C3.dispatchEvent(KFK.refreshC3event);
-};
-
-KFK.toggleMinimap = function () {
-  for (let key in KFK.APP.toolActiveState) {
-    KFK.APP.toolActiveState[key] = false;
-  }
-  KFK.APP.toolActiveState["minimap"] = true;
-  KFK.showSection({ minimap: !KFK.APP.show.section.minimap });
-  KFK.setMode("pointer");
+KFK.startBrainstorm = function(jqNode) {
+    if (NotSet(jqNode)) return;
+    KFK.brainstormFocusNode = jqNode;
+    KFK.brainstormMode = true;
+    $(".brsnode").remove();
+    let jBrsNode = $("<div class='brsnode' style='z-index:-1'></div>");
+    jBrsNode.appendTo(KFK.brainstormFocusNode);
 };
 
 //用在index.js中的boostrapevue
-KFK.isActive = function (mode) {
-  return KFK.mode === mode;
+KFK.isActive = function(mode) {
+    return KFK.mode === mode;
 };
 
-KFK.width = function (w) {
-  if (w) {
-    KFK._width = w;
-    KFK.stage.width(w);
-  }
-  return KFK._width;
-};
-KFK.height = function (h) {
-  if (h) {
-    KFK._height = h;
-    KFK.stage.height(h);
-  }
-  return KFK._height;
-};
-
-KFK.size = function (w, h) {
-  KFK.width(w);
-  KFK.height(h);
-};
-KFK.isKfkNode = function (jqdiv) {
-  return jqdiv && jqdiv.hasClass("kfknode");
-};
-KFK.inDesigner = function () {
-  return KFK.APP.show.section.designer;
-};
-KFK.holdEvent = function (evt) {
-  evt.stopImmediatePropagation();
-  evt.stopPropagation();
-  evt.preventDefault();
-}
-KFK.addDocumentEventHandler = function () {
-  $(document).keydown(function (evt) {
-    if (evt.keyCode === 16) KFK.KEYDOWN.shift = true;
-    else if (evt.keyCode === 17) KFK.KEYDOWN.ctrl = true;
-    else if (evt.keyCode === 18) KFK.KEYDOWN.alt = true;
-    else if (evt.keyCode === 91) KFK.KEYDOWN.meta = true;
-    if (KFK.inDesigner() && KFK.isEditting) {
-      return;
+KFK.width = function(w) {
+    if (w) {
+        KFK._width = w;
+        KFK.stage.width(w);
     }
-    if (KFK.inDesigner()) {
-      if (KFK.inPresentingMode && KFK.presentMaskMode && evt.keyCode !== 66 && evt.keyCode != 87) {
-        KFK.presentNoneMask();
-      }
-      if ((evt.keyCode >= 48 && evt.keyCode <= 57) || (evt.keyCode >= 65 && evt.keyCode <= 90)) {
-        KFK.keypool += evt.key;
-        if (KFK.keypool.endsWith('haola') || KFK.keypool.endsWith('hl') || KFK.keypool.endsWith('pr')) {
-          if (KFK.inPresentingMode === false)
-            KFK.startPresentation();
-          else
-            KFK.endPresentation();
-          KFK.keypool = ""; return;
-        } else if (KFK.keypool.endsWith('fs')) {
-          KFK.toggleFullScreen(); KFK.keypool = ""; return;
-        } else if (KFK.inPresentingMode && KFK.keypool.endsWith('stop')) {
-          KFK.endPresentation(); KFK.keypool = ""; return;
-        } else if (KFK.keypool.endsWith('first') || KFK.keypool.endsWith('home')) {
-          if (KFK.inPresentingMode) { KFK.presentFirstPage(); }
-          else { KFK.gotoFirstPage(); }
-          KFK.keypool = ""; return;
-        } else if (KFK.keypool.endsWith('last') || KFK.keypool.endsWith('end')) {
-          if (KFK.inPresentingMode) { KFK.presentLastPage(); }
-          else { KFK.gotoLastPage(); }
-          KFK.keypool = ""; return;
-        } else if (KFK.keypool.endsWith('prev')) {
-          if (KFK.inPresentingMode) { KFK.presentPrevPage(); }
-          else { KFK.gotoPrevPage(); }
-          KFK.keypool = ""; return;
-        } else if (KFK.keypool.endsWith('next')) {
-          if (KFK.inPresentingMode) { KFK.presentNextPage(); }
-          else { KFK.gotoNextPage(); }
-          KFK.keypool = ""; return;
-        } else if (KFK.keypool.match(/([0-9]+)g$/)) {
-          let m = KFK.keypool.match(/([0-9]+)g$/);
-          let pindex = parseInt(m[1]) - 1;
-          pindex = Math.max(0, Math.min(pindex, KFK.pageBounding.Pages.length - 1));
-          if (KFK.inPresentingMode) {
-            KFK.presentAnyPage(pindex);
-          } else {
-            KFK.gotoAnyPage(pindex);
-          }
-          KFK.keypool = ""; return;
-        } else if (KFK.keypool.endsWith('gt')) {
-          KFK.ZiToTop();
-        } else if (KFK.keypool.endsWith('gb')) {
-          KFK.ZiToBottom();
-        } else if (KFK.keypool.endsWith('gh')) {
-          KFK.ZiToHigher();
-        } else if (KFK.keypool.endsWith('gl')) {
-          KFK.ZiToLower();
-        } else if (KFK.keypool.endsWith('lk') || KFK.keypool.endsWith('lock')) {
-          KFK.tryToLockUnlock();
-        } else if (KFK.inPresentingMode && KFK.keypool.endsWith('b')) {
-          KFK.presentBlackMask(); KFK.keypool = ""; return;
-        } else if (KFK.inPresentingMode && KFK.keypool.endsWith('w')) {
-          KFK.presentWhiteMask(); KFK.keypool = ""; return;
-        } else if (KFK.keypool.length > 5) {
-          KFK.keypool = KFK.keypool.substr(-4);
-        }
-      }
-      if (KFK.inPresentingMode === true) {
-        if (evt.keyCode === 33) { //Page Up
-          KFK.presentPrevPage();
-          evt.preventDefault(); evt.stopPropagation();
-        } else if (evt.keyCode === 34) { //Page Down
-          KFK.presentNextPage();
-          evt.preventDefault(); evt.stopPropagation();
-        } else if (evt.keyCode === 35) { //End
-          KFK.presentLastPage();
-          evt.preventDefault(); evt.stopPropagation();
-        } else if (evt.keyCode === 36) { //Home
-          KFK.presentFirstPage();
-          evt.preventDefault(); evt.stopPropagation();
-        } else if (evt.keyCode === 37) { //Left
-          KFK.presentLeftPage();
-          evt.preventDefault(); evt.stopPropagation();
-        } else if (evt.keyCode === 38) { //Top
-          KFK.presentUpperPage();
-          evt.preventDefault(); evt.stopPropagation();
-        } else if (evt.keyCode === 39) { //Right
-          KFK.presentRightPage();
-          evt.preventDefault(); evt.stopPropagation();
-        } else if (evt.keyCode === 40) { //Down
-          KFK.presentLowerPage();
-          evt.preventDefault(); evt.stopPropagation();
-        }
-      } else {
-        if (evt.keyCode === 33) { //Page Up
-          KFK.gotoPrevPage();
-          evt.preventDefault(); evt.stopPropagation();
-        } else if (evt.keyCode === 34) { //Page Down
-          KFK.gotoNextPage();
-          evt.preventDefault(); evt.stopPropagation();
-        } else if (evt.keyCode === 35) { //END
-          KFK.gotoLastPage();
-          evt.preventDefault(); evt.stopPropagation();
-        } else if (evt.keyCode === 36) { //HOME
-          KFK.gotoFirstPage();
-          evt.preventDefault(); evt.stopPropagation();
-        } else if (evt.keyCode === 37) { //Left
-          KFK.gotoLeftPage();
-          evt.preventDefault(); evt.stopPropagation();
-        } else if (evt.keyCode === 38) { //UP
-          KFK.gotoUpperPage();
-          evt.preventDefault(); evt.stopPropagation();
-        } else if (evt.keyCode === 39) { //Right
-          KFK.gotoRightPage();
-          evt.preventDefault(); evt.stopPropagation();
-        } else if (evt.keyCode === 40) { //Down
-          KFK.gotoLowerPage();
-          evt.preventDefault(); evt.stopPropagation();
-        }
-      }
-    } // inDesigner
-
-    if (evt.keyCode === 69 && evt.shiftKey && (evt.ctrlKey || evt.metaKey)) {
-      KFK.logKey('CTRL-SHIFT-E');
-      if (KFK.inDesigner()) //在Desinger中时，可切换到explorer
-        KFK.gotoExplorer();
-      else if (KFK.currentView === 'explorer')
-        KFK.gotoDesigner();
-      //这里不能用 KFK.inDesigner===false来判断
-      //因为即便不在designer中，如果designer没有被显示过，不能切换过去
-      //因为不知道designer中显示什么，只有designer打开过一次后，才能切换过去
-      //程序中， KFK.currentView的初始值为unknown, 当第一次显示designer后，
-      //KFK.currentView的值变为designer, 切换回到explorer时，KFK.currentView的值是explorer
-      //这时，用KFK.currentView === 'explorer'进行判断是可以的
-      return;
-    } else if (evt.keyCode === 81 && (evt.ctrlKey || evt.metaKey)) {
-      KFK.logKey("CTRL-R");
-      // KFK.toggleRight();
-      KFK.holdEvent(evt);
-      return;
+    return KFK._width;
+};
+KFK.height = function(h) {
+    if (h) {
+        KFK._height = h;
+        KFK.stage.height(h);
     }
-
-    if (KFK.inDesigner() === false) return;
-    if (KFK.isEditting) return;
-    switch (evt.keyCode) {
-      case 13:
-        KFK.editHoverObject(evt, true);
-        break;
-      case 27:  //ESC
-        if (KFK.inFullScreenMode === true) {
-          evt.preventDefault();
-          evt.stopPropagation();
-          KFK.toggleFullScreen();
-        } else if (KFK.inPresentingMode === true) {
-          evt.preventDefault();
-          evt.stopPropagation();
-          KFK.presentNoneMask();
-          KFK.endPresentation();
-        }
-
-        KFK.cancelAlreadySelected();
-        if (!KFK.isEditting && KFK.mode !== "line") KFK.setMode("pointer");
-        KFK.cancelTempLine();
-        KFK.setMode("pointer");
-        KFK.hidePickerMatlib();
-        break;
-      case 90:
-        //不要移动META-Z代码，一定要在document的key-down里面，
-        //否则，在其他地方没有用。这个问题花了我三个小时时间，FX
-        if ((evt.metaKey || evt.ctrlKey) && evt.shiftKey) {
-          KFK.logKey('META-SHIFT-Z');
-          KFK.redo();
-        }
-        if ((evt.metaKey || evt.ctrlKey) && !evt.shiftKey) {
-          KFK.logKey('META-Z');
-          KFK.undo();
-        }
-        break;
-      case 76:
-        if (evt.metaKey || evt.ctrlKey) {
-          KFK.logKey('META-SHIFT-L');
-          KFK.tryToLockUnlock();
-          KFK.holdEvent(evt);
-        }
-        break;
-      case 8: //Backspace
-      case 46: //Delete
-        KFK.deleteHoverOrSelectedDiv(evt, false);
-        break;
-      default:
-        preventDefault = false;
-
-    }
-  });
-  $(document).keyup(function (evt) {
-    if (evt.keyCode === 16) KFK.KEYDOWN.shift = false;
-    else if (evt.keyCode === 17) KFK.KEYDOWN.ctrl = false;
-    else if (evt.keyCode === 18) KFK.KEYDOWN.alt = false;
-    else if (evt.keyCode === 91) KFK.KEYDOWN.meta = false;
-  });
-
-  //标记框选开始，是在JC3的mousedown中做记录的
-  //标记框选结束，也是在JC3的mouseup中做记录的
-  //但mousemove需要在document的mousemove事件处理中进行处理。 
-  //因为，如果不这样做，滑动鼠标出现选择框后，如果鼠标回到选择框内，则JC3抓不到mousemove事件
-  //导致的现象就是选择框只可以放大，不可以缩小
-  $(document).on("mousemove", function (evt) {
-    if (KFK.inDesigner() === false) return;
-    KFK.globalMouseX = evt.clientX;
-    KFK.globalMouseY = evt.clientY;
-    if (KFK.inPresentingMode || KFK.inOverviewMode) return;
-    KFK.kuangXuanEndPoint = {
-      x: KFK.scrXToJc3X(evt.clientX),
-      y: KFK.scrYToJc3Y(evt.clientY)
-    };
-    if (KFK.isDuringKuangXuan()) {
-      KFK.kuangXuan(KFK.kuangXuanStartPoint, KFK.kuangXuanEndPoint);
-    }
-  });
-
-  let timer = null;
-  $("#S1").scroll(() => {
-    if (KFK.inDesigner() === false) return;
-    /*
-    let sx = $("#S1").scrollLeft();
-    let sy = $("#S1").scrollTop();
-    if (KFK.scrollBugPatched === false) {
-      KFK.scrollContainer = $("#S1");
-      KFK.scrollBugPatched = true;
-    }
-    // $("#linetransformer").css("visibility", "hidden");
-    if (timer === null) {
-      timer = setTimeout(() => {
-        let pt = KFK.getNearGridPoint(
-          KFK.scrollContainer.scrollLeft(),
-          KFK.scrollContainer.scrollTop()
-        );
-        let deltaX = pt.x - KFK.scrollContainer.scrollLeft();
-        let deltaY = pt.y - KFK.scrollContainer.scrollTop();
-        KFK.JCBKG.css('background-position-x', deltaX);
-        KFK.JCBKG.css('background-position-y', deltaY);
-        timer = null;
-      }, 500);
-    }
-    */
-  });
-};
-
-KFK.cancelTempLine = function () {
-  if (KFK.lineTemping) {
-    KFK.lineTemping = false;
-    if (KFK.tempSvgLine) KFK.tempSvgLine.hide();
-    KFK.linkPosNode.clear();
-    KFK.linkPosLine.clear();
-  }
-};
-
-KFK.ZiToTop = function () {
-  let curJQ = KFK.getPropertyApplyToJqNode();
-  if (curJQ === null) return;
-  if (KFK.isKfkNode(curJQ) === false) return;
-  let myZI = KFK.getZIndex(curJQ);
-  let count = 0;
-  let zIndexChanger = { doc_id: KFK.APP.model.cocodoc.doc_id, ZI: {} };
-  KFK.JC3
-    .find(".kfknode")
-    .each((index, aNodeDIV) => {
-      count += 1;
-      let jqNode = $(aNodeDIV);
-      let tmpZi = KFK.getZIndex(jqNode);
-      if (tmpZi > myZI) {
-        KFK.setZIndex(jqNode, tmpZi - 1);
-        zIndexChanger.ZI[jqNode.attr("id")] = tmpZi - 1;
-      }
-    });
-  KFK.setZIndex(curJQ, count);
-  zIndexChanger.ZI[curJQ.attr("id")] = count;
-  KFK.WS.put("ZI", zIndexChanger);
-};
-
-KFK.ZiToBottom = function () {
-  let curJQ = KFK.getPropertyApplyToJqNode();
-  if (curJQ === null) return;
-  if (KFK.isKfkNode(curJQ) === false) return;
-
-  let myZI = KFK.getZIndex(curJQ);
-  let count = 0;
-  let zIndexChanger = { doc_id: KFK.APP.model.cocodoc.doc_id, ZI: {} };
-  KFK.JC3
-    .find(".kfknode")
-    .each((index, aNodeDIV) => {
-      count += 1;
-      let jqNode = $(aNodeDIV);
-      let tmpZi = KFK.getZIndex(jqNode);
-      if (tmpZi < myZI) {
-        KFK.setZIndex(jqNode, tmpZi + 1);
-        zIndexChanger.ZI[jqNode.attr("id")] = tmpZi + 1;
-      }
-    });
-  KFK.setZIndex(curJQ, 1);
-  zIndexChanger.ZI[curJQ.attr("id")] = 1;
-  KFK.sendCmd("ZI", zIndexChanger);
-};
-KFK.ZiToHigher = function () {
-  let curJQ = KFK.getPropertyApplyToJqNode();
-  if (curJQ === null) return;
-  if (KFK.isKfkNode(curJQ) === false) return;
-  let myZI = KFK.getZIndex(curJQ);
-  let count = 0;
-  let allnodes = KFK.JC3.find(".kfknode");
-  let zIndexChanger = { doc_id: KFK.APP.model.cocodoc.doc_id, ZI: {} };
-  if (myZI < allnodes.length) {
-    allnodes.each((index, aNodeDIV) => {
-      count += 1;
-      let jqNode = $(aNodeDIV);
-      let tmpZi = KFK.getZIndex(jqNode);
-      if (tmpZi === myZI + 1) {
-        KFK.setZIndex(jqNode, myZI);
-        zIndexChanger.ZI[jqNode.attr("id")] = myZI;
-      }
-    });
-    KFK.setZIndex(curJQ, myZI + 1);
-    zIndexChanger.ZI[curJQ.attr("id")] = myZI + 1;
-    KFK.sendCmd("ZI", zIndexChanger);
-  }
-};
-
-KFK.ZiToLower = function () {
-  let curJQ = KFK.getPropertyApplyToJqNode();
-  if (curJQ === null) return;
-  if (KFK.isKfkNode(curJQ) === false) return;
-  let zIndexChanger = { doc_id: KFK.APP.model.cocodoc.doc_id, ZI: {} };
-  let myZI = KFK.getZIndex(curJQ);
-  if (myZI > 1) {
-    let count = 0;
-    KFK.JC3
-      .find(".kfknode")
-      .each((index, aNodeDIV) => {
-        count += 1;
-        let jqNode = $(aNodeDIV);
-        let tmpZi = KFK.getZIndex(jqNode);
-        if (tmpZi === myZI - 1) {
-          KFK.setZIndex(jqNode, myZI);
-          zIndexChanger.ZI[jqNode.attr("id")] = myZI;
-        }
-      });
-    KFK.setZIndex(curJQ, myZI - 1);
-    zIndexChanger.ZI[curJQ.attr("id")] = myZI - 1;
-    KFK.sendCmd("ZI", zIndexChanger);
-  }
-};
-
-KFK.tryToLockUnlock = function (shiftKey) {
-  //对于节点，只有文档未锁定，以及这是当前用户为发起人时才能执行加解锁
-  if (KFK.hoverJqDiv() && KFK.isMyDoc() && KFK.docIsReadOnly() === false) {
-    if (KFK.nodeLocked(KFK.hoverJqDiv())) {
-      let opEntry = {
-        cmd: "UNLOCK",
-        from: KFK.hoverJqDiv().attr("id"),
-        to: KFK.hoverJqDiv().attr("id")
-      };
-      KFK.yarkOpEntry(opEntry);
-      KFK.sendCmd("UNLOCKNODE", {
-        doc_id: KFK.APP.model.cocodoc.doc_id,
-        nodeid: KFK.hoverJqDiv().attr("id")
-      });
-    } else {
-      let opEntry = {
-        cmd: "LOCK",
-        from: KFK.hoverJqDiv().attr("id"),
-        to: KFK.hoverJqDiv().attr("id")
-      };
-      KFK.yarkOpEntry(opEntry);
-      KFK.sendCmd("LOCKNODE", {
-        doc_id: KFK.APP.model.cocodoc.doc_id,
-        nodeid: KFK.hoverJqDiv().attr("id")
-      });
-    }
-  } else if (KFK.hoverSvgLine() && KFK.isMyDoc() && KFK.docIsReadOnly() === false) {
-    //对于直线，只有文档未锁定，以及这是当前用户为发起人时才能执行加解锁
-    if (KFK.lineLocked(KFK.hoverSvgLine())) {
-      KFK.lineToDrag = null;
-      let opEntry = {
-        cmd: "UNLOCKLINE",
-        from: KFK.hoverSvgLine().attr("id"),
-        to: KFK.hoverSvgLine().attr("id")
-      };
-      KFK.yarkOpEntry(opEntry);
-      KFK.sendCmd("UNLOCKLINE", {
-        doc_id: KFK.APP.model.cocodoc.doc_id,
-        nodeid: KFK.hoverSvgLine().attr("id")
-      });
-    } else {
-      let opEntry = {
-        cmd: "LOCKLINE",
-        from: KFK.hoverSvgLine().attr("id"),
-        to: KFK.hoverSvgLine().attr("id")
-      };
-      KFK.yarkOpEntry(opEntry);
-      KFK.sendCmd("LOCKLINE", {
-        doc_id: KFK.APP.model.cocodoc.doc_id,
-        nodeid: KFK.hoverSvgLine().attr("id")
-      });
-    }
-  } else {
-    KFK.scrLog("只有发起人能够进行加解锁");
-  }
-  if (!shiftKey) {
-    KFK.setMode('pointer');
-  }
-};
-KFK.toggleRight = function (flag) {
-  if (KFK.APP.model.cocodoc.readonly) {
-    return;
-  }
-  if (KFK.inFullScreenMode === true || KFK.controlButtonsOnly === true) return;
-  KFK.showRightTools = !KFK.showRightTools;
-  let display = KFK.showRightTools ? 'block' : 'none';
-  $("#right").css("display", display);
-};
-KFK.toggleFullScreen = function (evt) {
-  if (KFK.inPresentingMode) return;
-  KFK.inFullScreenMode = !KFK.inFullScreenMode;
-  if (KFK.inFullScreenMode === true) {
-    // if (KFK.inOverviewMode === false) {
-    //   KFK.setLayoutDisplay({
-    //     showgrid: KFK.APP.model.cococonfig.showgrid,
-    //     minimap: false,
-    //     toplogo: 'hidden',
-    //     docHeaderInfo: 'hidden',
-    //     rtcontrol: 'hidden',
-    //     left: 'none',
-    //     right: 'none',
-    //   });
-    // }
-    KFK.scrLog('进入全屏模式: 输入fs退出');
-  } else {
-    KFK.scrLog('');
-    // if (KFK.inOverviewMode === false)
-    //   KFK.restoreLayoutDisplay();
-  }
-  KFK.APP.setData('show', 'actionlog', false);
-  if (KFK.inFullScreenMode === true) {
-    KFK.openFullscreen();
-  } else {
-    KFK.closeFullscreen();
-  }
-};
-
-KFK.toggleControlButtonOnly = function (evt) {
-  KFK.controlButtonsOnly = !KFK.controlButtonsOnly;
-  if (KFK.APP.model.cocodoc.readonly) {
-    //文档锁定时，依然可以对minimap切换显示与否
-    KFK.showSection({ minimap: !KFK.controlButtonsOnly });
-    return;
-  }
-  //左侧和右侧的工具栏，可进行切换
-  let display = KFK.controlButtonsOnly ? 'none' : 'block';
-  $("#left").css("display", display);
-  $("#right").css("display", display); //actionlog总是关闭
-  KFK.APP.setData('show', 'actionlog', false);
-  //切换minimap
-  KFK.showSection({ minimap: !KFK.controlButtonsOnly });
-  $('.docHeaderInfo').css("visibility", KFK.controlButtonsOnly ? 'hidden' : 'visible');
-  $('#toplogo').css("visibility", KFK.controlButtonsOnly ? 'hidden' : 'visible');
-  //add a mask layer
-};
-KFK.showHidePanel = function (flag) {
-  if (flag === true && (KFK.inFullScreenMode === false && KFK.controlButtonsOnly === false)) {
-    $("#left").css("display", "block");
-    $("#right").css("display", "block");
-  } else {
-    $("#left").css("display", "none");
-    $("#right").css("display", "none");
-  }
-};
-
-KFK.getAclOwnerDescription = function (doc) {
-  if (doc.acl === 'S') {
-    return doc.ownerName;
-  } else if (doc.acl === 'O') {
-    return doc.orgName;
-  } else if (doc.acl === 'P') {
-    return "公共"
-  }
-};
-
-KFK.iAmOwner = function (doc) {
-  return doc.owner === KFK.APP.model.cocouser.userid;
-};
-
-KFK.getAclAccessable = function (doc) {
-  let ret = false;
-  if (doc.acl === 'S') {
-    if (KFK.APP.model.cocouser.userid === doc.owner) {
-      ret = true;
-      KFK.AclDeniedReason = '';
-    } else {
-      KFK.AclDeniedReason = '仅发起人可使用, 但当前用户不是发起人';
-    }
-  } else if (doc.acl === 'O') {
-    if (KFK.APP.model.cocouser.orgid === doc.orgid) {
-      ret = true;
-      KFK.AclDeniedReason = ''
-    } else {
-      KFK.AclDeniedReason = "仅在白板所在组织内使用, 但当前用户组织不符";
-    }
-  } else if (doc.acl === 'P') {
-    ret = true;
-    KFK.AclDeniedReason = '';
-  }
-  return ret;
-}
-
-KFK.showNotAclAccessable = function (doc) {
-  KFK.scrLog(KFK.AclDeniedReason);
-};
-
-KFK.gotoExplorer = function () {
-  if (KFK.APP.model.cocoprj.name === '') {
-    KFK.setAppData("model", "cocoprj", { "prjid": "all", "name": "我最近使用过的白板" });
-  }
-  KFK.cancelAlreadySelected();
-  if (!KFK.isEditting && KFK.mode !== "line") KFK.setMode("pointer");
-  KFK.cancelTempLine();
-  KFK.setMode("pointer");
-  KFK.hidePickerMatlib();
-  //不用每次gotoExplorer都refreshProjectList, 因为refreshProjectList要跟服务器刷新数据
-  //仅仅是切换explorer或者designer视图，没必要拉取数据
-  //只在首次切换到explorer时，拉取数据。
-  //其他时候，在creaeproject等操作的地方，会调用refreshProjectList重新拉取数据，在那时，Projects发生了变化，重新拉取是有必要的。
-  if (KFK.explorerRefreshed === false) {
-    KFK.refreshProjectList();
-  }
-  KFK.currentView = "explorer";
-  KFK.showSection({ explorer: true, designer: false });
-  KFK.showForm({
-    newdoc: false,
-    newprj: false,
-    prjlist: true,
-    doclist: true,
-    share: false,
-    explorerTabIndex: 1
-  });
-  $('#overallbackground').addClass('grid1');
-  KFK.sendCmd("SETWSSEC", { section: 'EXPLORER' });
-};
-
-KFK.gotoDesigner = function () {
-  KFK.debug("...gotoDesigner")
-  KFK.showSection({ explorer: false, designer: true });
-  KFK.showForm({
-    newdoc: false,
-    newprj: false,
-    prjlist: false,
-    doclist: false,
-    share: false,
-  });
-  KFK.currentView = "designer";
-  KFK.focusOnC3();
-  $('#overallbackground').removeClass('grid1');
-  KFK.sendCmd("SETWSSEC", { section: 'DESIGNER' });
-};
-
-KFK.dataURLtoFile = function (dataurl, filename) {
-  let arr = dataurl.split(","),
-    mime = arr[0].match(/:(.*?);/)[1],
-    bstr = atob(arr[1]),
-    n = bstr.length,
-    u8arr = new Uint8Array(n);
-  while (n--) {
-    u8arr[n] = bstr.charCodeAt(n);
-  }
-  return new File([u8arr], filename, { type: mime });
-};
-
-
-KFK.save = async function () {
-  let docPath = `/${cocoConfig.tenant.id}/${KFK.APP.model.cocodoc.doc_id}/`;
-  // let result = await KFK.OSSClient.list({
-  //     prefix: 'lucas/',
-  // });
-  try {
-    // 不带任何参数，默认最多返回1000个文件。
-    let result = await KFK.OSSClient.list({
-      prefix: "lucas/"
-    });
-    // 根据nextMarker继续列出文件。
-    if (result.isTruncated) {
-      let result = await client.list({
-        marker: result.nextMarker
-      });
-    }
-    // // 列举前缀为'my-'的文件。
-    // let result = await client.list({
-    //    prefix: 'my-'
-    // });
-    // // 列举前缀为'my-'且在'my-object'之后的文件。
-    // let result = await client.list({
-    //    prefix: 'my-',
-    //    marker: 'my-object'
-    // });
-  } catch (err) {
-    KFK.error(err);
-  }
-};
-
-KFK.checkUrl = function (str_url) {
-  let regex =
-    /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/;
-  return str.match(regex) !== null;
-};
-
-KFK.replaceHTMLTarget = function (html) {
-  html = `<div>${html}</div>`;
-  try {
-    let jq = $($.parseHTML(html));
-    jq.find("a").prop("target", "_blank");
-    ret = jq.prop("innerHTML");
-  } catch (err) {
-    ret = "";
-  }
-  return ret;
-};
-KFK.pasteContent = function () {
-  let paste = KFK.APP.model.paste;
-};
-
-KFK.showTextPasteDialog = async function (content) {
-  if (KFK.anyLocked(KFK.hoverJqDiv())) return;
-  let toAdd = content.text;
-  let showbox = false;
-  if (content.text !== "") {
-    toAdd = content.text;
-    if (RegHelper.isUrl(toAdd)) { // Plain text is a URL
-      showbox = KFK.hoverJqDiv() ? false : true;
-      await KFK.mergeAppData("model", "paste", {
-        showcontent: true, showdisplay: true, showbox: showbox,
-        content: toAdd, display: '请点击访问',
-        ctype: 'url',
-      });
-      KFK.showDialog({ pasteContentDialog: true });
-    } else {          //Normal plain text
-      showbox = KFK.hoverJqDiv() ? false : true;
-      if (showbox) {
-        await KFK.mergeAppData("model", "paste", {
-          showcontent: false, showdisplay: false, showbox: showbox,
-          content: toAdd, display: toAdd,
-          ctype: 'text',
-        });
-        KFK.showDialog({ pasteContentDialog: true });
-      } else {
-        KFK.APP.model.paste.content = toAdd;
-        KFK.placePastedContent();
-      }
-    }
-  } else if (content.html !== "") {
-    let tmpText = RegHelper.removeMeta(content.html);
-    toAdd = KFK.replaceHTMLTarget(tmpText);
-    showbox = KFK.hoverJqDiv() ? false : true;
-    if (showbox) {
-      await KFK.mergeAppData("model", "paste", {
-        showcontent: false, showdisplay: false, showbox: showbox,
-        content: toAdd, display: toAdd,
-        ctype: 'html',
-      });
-      KFK.showDialog({ pasteContentDialog: true });
-    } else {
-      KFK.APP.model.paste.content = toAdd;
-      KFK.placePastedContent();
-    }
-  }
-};
-
-KFK.placePastedContent = async function () {
-  let toAdd = KFK.APP.model.paste.content;
-  let display = KFK.APP.model.paste.display;
-  let ctype = KFK.APP.model.paste.ctype;
-  if (ctype === 'url') {
-    toAdd = `<a href="${toAdd}" target="_blank">${display}</a>`;
-  }
-  //paste image or paste text
-  if (KFK.hoverJqDiv()) {
-    if (KFK.anyLocked(KFK.hoverJqDiv())) return;
-    //把文字内容粘贴到hover div上
-
-    if (cocoConfig.node[KFK.hoverJqDiv().attr("nodetype")].edittable) {
-      KFK.fromJQ = KFK.hoverJqDiv().clone();
-      let innerObj = KFK.hoverJqDiv().find(".innerobj");
-      let oldHtml = innerObj.html();
-      //如果同时按着shift键，则使用粘贴内容覆盖原内容，如果没有按shift键，则把粘贴内容加载原内容后面
-      let newHtml = oldHtml + "<BR> " + toAdd;
-      if (KFK.KEYDOWN.shift === false) {
-        newHtml = toAdd;
-      }
-      innerObj.html(newHtml);
-      await KFK.syncNodePut("U", KFK.hoverJqDiv(), "add text to hover div", KFK.fromJQ, false, 0, 1);
-    }
-  } else {
-    //box是在pad.js中定义的paste对象时，是否显示边框和背景色的配置信息
-    //paste image in a new node
-    let box = KFK.APP.model.paste.box;
-    let jBox = KFK.placeNode(false, //shiftKey
-      KFK.myuid(), "textblock", "default",
-      KFK.scrXToJc3X(KFK.currentMousePos.x),
-      KFK.scrYToJc3Y(KFK.currentMousePos.y),
-      100, 100, toAdd, '');
-    switch (box) {
-      case 'none':
-        jBox.css("background", "#FFFFFF00");
-        jBox.css("border-color", "#33333300");
-        break;
-      case 'border':
-        jBox.css("background", "#FFFFFF00");
-        jBox.css("border-color", "#333333FF");
-        break;
-      case 'all':
-        jBox.css("background", "#FFFFFFFF");
-        jBox.css("border-color", "#333333FF");
-        break;
-    }
-    await KFK.syncNodePut("C", jBox, "create text node", null, false, 0, 1);
-  }
-};
-KFK.onCopy = async function (evt) {
-  KFK.logKey('META-C');
-  if (KFK.inDesigner() === false) return;
-  if (KFK.APP.show.dialog.ivtCodeDialog) {
-    return;
-  }
-  let someDIVcopyed = await KFK.duplicateHoverObject(evt, 'copy');
-  if (someDIVcopyed) {
-    evt.clipboardData.setData('text/plain', 'usediv');
-    evt.clipboardData.setData('text/html', 'usediv');
-    evt.preventDefault();
-    KFK.holdEvent(evt);
-  }
-  evt.preventDefault();
-  evt.preventDefault();
-  KFK.holdEvent(evt);
-};
-
-KFK.onPaste = async function (evt) {
-  if (KFK.docIsReadOnly()) return;
-  if (KFK.currentView !== 'designer') return;
-  let content = { html: "", text: "", image: null };
-  content.html = evt.clipboardData.getData("text/html");
-  content.text = evt.clipboardData.getData("Text");
-  if (content.text === "usediv") {
-    await KFK.duplicateHoverObject(evt, 'paste');
-    return;
-  } else {
-    var items = (evt.clipboardData || evt.originalEvent.clipboardData).items;
-    if (items[1] && (content.html !== '' || content.text !== '')) {
-      KFK.showTextPasteDialog(content);
-    } else if (items[0]) {
-      if (items[0].kind === "string" && (content.html !== '' || content.text !== '')) {
-        KFK.showTextPasteDialog(content);
-      } else if (items[0].kind === "file") {
-        var blob = items[0].getAsFile();
-        KFK.dropAtPos = {
-          x: KFK.scrXToJc3X(KFK.globalMouseX),
-          y: KFK.scrYToJc3Y(KFK.globalMouseY),
-        };
-        KFK.procPasteBlob(blob);
-      }
-    }
-  }
-};
-
-KFK.onCut = async function (evt) {
-  KFK.deleteHoverOrSelectedDiv(evt, true);
-};
-
-
-KFK.addEditorToNode = function (jqNode, editor) {
-  let editors = jqNode.attr("editors");
-  if (editors === undefined || editors === null || editors === "") {
-    editors = editor;
-  } else {
-    let editorsArr = editors.split("$$");
-    if (editorsArr[0] === editor) {
-      return;
-    }
-    editorsArr.unshift(editor);
-    editors = editorsArr.join("$$");
-  }
-  jqNode.attr("editors", editors);
-  if (jqNode.hasClass("kfkline")) {
-    if (jqNode.find(".cocoeditors").length === 0) {
-      let allEditorDIV = document.createElement("div");
-      $(allEditorDIV).addClass("cocoeditors");
-      let lastEditorDIV = document.createElement("div");
-      $(lastEditorDIV).addClass("lastcocoeditor");
-      el(jqNode).appendChild(lastEditorDIV);
-      el(jqNode).appendChild(allEditorDIV);
-      if (KFK.APP.model.showEditor === "none") {
-        $(allEditorDIV).css("display", "none");
-        $(lastEditorDIV).css("display", "none");
-      } else if (KFK.APP.model.showEditor === "last") {
-        $(allEditorDIV).css("display", "none");
-        $(lastEditorDIV).css("display", "block");
-      } else if (KFK.APP.model.showEditor === "all") {
-        $(allEditorDIV).css("display", "block");
-        $(lastEditorDIV).css("display", "none");
-      }
-    }
-  }
-  jqNode.find(".cocoeditors").html(KFK.getNodeEditors(jqNode).join(", "));
-  jqNode.find(".lastcocoeditor").html(editor);
-};
-
-KFK.getNodeEditors = function (jqNode) {
-  let editors = jqNode.attr("editors");
-  if (editors === undefined || editors === null || editors === "") {
-    return [];
-  }
-  let editorsArr = editors.split("$$");
-  return editorsArr;
-};
-
-KFK.changeSVGFill = function () { };
-KFK.scrCenter = function () {
-  return { x: $(window).width() * 0.5, y: $(window).height() * 0.5 };
-};
-KFK.showCenterIndicator = function (cx, cy) {
-  KFK.debug('...showCenterIndicator');
-  let center = KFK.scrCenter();
-  let centerX = cx ? cx : center.x;
-  let centerY = cy ? cy : center.y;
-  $("#centerpoint").css("left", centerX - 10);
-  $("#centerpoint").css("top", centerY - 10);
-};
-KFK.gotoFirstPage = function () {
-  KFK.currentPage = 0;
-  KFK.___gotoPage(KFK.currentPage);
-};
-KFK.gotoNextPage = function () {
-  if (KFK.currentPage < KFK.pageBounding.Pages.length - 1) {
-    KFK.currentPage++;
-    KFK.___gotoPage(KFK.currentPage);
-  } else {
-    KFK.scrLog("这已经在最后一页了", 1000);
-  }
-};
-KFK.gotoPrevPage = function () {
-  if (KFK.currentPage > 0) {
-    KFK.currentPage--;
-    KFK.___gotoPage(KFK.currentPage);
-  } else {
-    KFK.scrLog("这已经在第一页了", 1000);
-  }
-};
-KFK.gotoLastPage = function () {
-  KFK.currentPage = KFK.pageBounding.Pages.length - 1;
-  KFK.___gotoPage(KFK.currentPage);
-};
-KFK.gotoAnyPage = function (pageIndex) {
-  if (pageIndex >= 0 && pageIndex < KFK.pageBounding.Pages.length) {
-    KFK.currentPage = pageIndex;
-    KFK.___gotoPage(KFK.currentPage);
-  } else if (pageIndex >= KFK.pageBounding.Page.length) {
-    KFK.currentPage = KFK.pageBounding.Pages.length - 1;
-    KFK.___gotoPage(KFK.currentPage);
-  } else {
-    KFK.currentPage = 0;
-    KFK.___gotoPage(KFK.currentPage);
-  }
-};
-KFK.gotoUpperPage = function () {
-  let pidx = KFK.currentPage - KFK.PageNumberHori;
-  if (pidx < 0) {
-    KFK.scrLog("已经在最顶部了", 1000);
-    return;
-  }
-  KFK.currentPage = pidx;
-  KFK.___gotoPage(KFK.currentPage);
-};
-KFK.gotoLowerPage = function () {
-  let pidx = KFK.currentPage + KFK.PageNumberHori;
-  if (pidx > KFK.pageBounding.Pages.length - 1) {
-    KFK.scrLog("已经在最底部了", 1000);
-    return;
-  }
-  KFK.currentPage = pidx;
-  KFK.___gotoPage(KFK.currentPage);
-};
-KFK.gotoLeftPage = function () {
-  let rowIdx = Math.floor(KFK.currentPage / KFK.PageNumberHori);
-  let columIdx = KFK.currentPage % KFK.PageNumberHori;
-  let nextColumIdx = columIdx - 1;
-  if (nextColumIdx < 0) {
-    KFK.scrLog('已经在最左边了', 1000);
-    return;
-  }
-  let pidx = rowIdx * KFK.PageNumberHori + nextColumIdx;
-  KFK.currentPage = pidx;
-  KFK.___gotoPage(KFK.currentPage);
-};
-KFK.gotoRightPage = function () {
-  let rowIdx = Math.floor(KFK.currentPage / KFK.PageNumberHori);
-  let columIdx = KFK.currentPage % KFK.PageNumberHori;
-  let nextColumIdx = columIdx + 1;
-  if (nextColumIdx > KFK.PageNumberVert - 1) {
-    KFK.scrLog('已经在最右边了', 1000);
-    return;
-  }
-  let pidx = rowIdx * KFK.PageNumberHori + nextColumIdx;
-  KFK.currentPage = pidx;
-  KFK.___gotoPage(KFK.currentPage);
-};
-KFK.___gotoPage = function (pageIndex) {
-  // KFK.scrLog(`goto page ${pageIndex + 1}`);
-  let main = $("#C1");
-  let scroller = $("#S1");
-  let scrCenter = KFK.scrCenter();
-  let window_width = scrCenter.x * 2;
-  let window_height = scrCenter.y * 2;
-
-  let pageCenterX = KFK.currentPage % KFK.PageNumberHori * KFK.PageWidth + KFK.PageWidth * 0.5;
-  let pageCenterY = Math.floor(KFK.currentPage / KFK.PageNumberHori) * KFK.PageHeight + KFK.PageHeight * 0.5;
-
-  toLeft = pageCenterX + KFK.LeftB - scrCenter.x;
-  toTop = pageCenterY + KFK.TopB - scrCenter.y;
-
-  KFK.scrollToPos({ x: toLeft, y: toTop });
-};
-
-KFK.startPresentation = async function () {
-  if (KFK.inOverviewMode) return;
-  KFK.maskScreen();
-  KFK.openFullscreen();
-  await KFK.sleep(500);
-  KFK.setLayoutDisplay({
-    showbounding: false,
-    showgrid: false,
-    minimap: false,
-    toplogo: 'hidden',
-    docHeaderInfo: 'hidden',
-    rtcontrol: 'hidden',
-    left: 'none',
-    right: 'none',
-  });
-  let cbkg = $('#containerbkg');
-  KFK.rememberGrid = cbkg.hasClass("grid1") ? "grid1" : cbkg.hasClass("grid2") ? "grid2" : "";
-  if (KFK.rememberGrid !== "")
-    cbkg.removeClass(KFK.rememberGrid);
-  // KFK.rememberOverallBackgroundColor = $('#overallbackground').css('background-color');
-  // $('#overallbackground').css('background-color', 'black');
-  KFK.scrLog('进入演示模式: 输入pr退出');
-  KFK.inPresentingMode = true;
-  KFK.___presentPage(KFK.currentPage);
-};
-KFK.endPresentation = function () {
-  if (KFK.inOverviewMode) return;
-  KFK.unmaskScreen();
-  KFK.closeFullscreen();
-  KFK.restoreLayoutDisplay();
-  KFK.scrLog('已退出演示模式');
-  KFK.inPresentingMode = false;
-  KFK.___unsetSlideMask();
-  let cbkg = $('#containerbkg');
-  if (KFK.rememberGrid !== "")
-    cbkg.addClass(KFK.rememberGrid);
-  // $('#overallbackground').css('background-color', KFK.rememberOverallBackgroundColor);
-  let main = $("#C1");
-  let scroller = $("#S1");
-  let scrCenter = KFK.scrCenter();
-  let window_width = scrCenter.x * 2;
-  let window_height = scrCenter.y * 2;
-
-  KFK.JC3.css({ 'transform-origin': `0px 0px`, '-webkit-transform-origin': `0px 0px` });
-  KFK.JC3.css("transform", `scale(1, 1)`);
-  setTimeout(function () {
-    KFK.JC3.css("transform", `scale(1, 1) translate(0px, 0px)`);
-  }, 100);
-};
-
-KFK.presentNoneMask = function () {
-  KFK.presentMaskMode = false;
-  $('.present-mask').removeClass('white-mask');
-  $('.present-mask').removeClass('black-mask');
-  $('.present-mask').addClass('nodisplay');
-};
-KFK.presentBlackMask = function () {
-  if (KFK.presentMaskMode && KFK.presentMaskMode === true
-    && $('.present-mask').hasClass('black-mask')) {
-    KFK.presentMaskMode = false;
-    $('.present-mask').removeClass('black-mask');
-    $('.present-mask').addClass('nodisplay');
-  } else {
-    KFK.presentMaskMode = true;
-    $('.present-mask').removeClass('white-mask');
-    $('.present-mask').removeClass('nodisplay');
-    $('.present-mask').addClass('black-mask');
-  }
+    return KFK._height;
 };
-KFK.presentWhiteMask = function () {
-  if (KFK.presentMaskMode && KFK.presentMaskMode === true
-    && $('.present-mask').hasClass('white-mask')) {
-    KFK.presentMaskMode = false;
-    $('.present-mask').removeClass('white-mask');
-    $('.present-mask').addClass('nodisplay');
-  } else {
-    KFK.presentMaskMode = true;
-    $('.present-mask').removeClass('black-mask');
-    $('.present-mask').removeClass('nodisplay');
-    $('.present-mask').addClass('white-mask');
-  }
-};
-KFK.presentFirstPage = function () {
-  KFK.currentPage = 0;
-  KFK.___presentPage(KFK.currentPage);
-};
-KFK.presentNextPage = function () {
-  if (KFK.currentPage < KFK.pageBounding.Pages.length - 1) {
-    KFK.currentPage++;
-    KFK.___presentPage(KFK.currentPage);
-  } else {
-    KFK.scrLog("这是在最后一页了", 1000);
-  }
-};
-KFK.presentPrevPage = function () {
-  if (KFK.currentPage > 0) {
-    KFK.currentPage--;
-    KFK.___presentPage(KFK.currentPage);
-  } else {
-    KFK.scrLog("这已经在第一页了", 1000);
-  }
-};
-KFK.presentLastPage = function () {
-  KFK.currentPage = KFK.pageBounding.Pages.length - 1;
-  KFK.___presentPage(KFK.currentPage);
-};
-KFK.presentAnyPage = function (pageIndex) {
-  if (pageIndex >= 0 && pageIndex < KFK.pageBounding.Pages.length) {
-    KFK.currentPage = pageIndex;
-    KFK.___presentPage(KFK.currentPage);
-  } else if (pageIndex >= KFK.pageBounding.Page.length) {
-    KFK.currentPage = KFK.pageBounding.Pages.length - 1;
-    KFK.___presentPage(KFK.currentPage);
-  }
-};
-KFK.presentLeftPage = function () {
-  let rowIdx = Math.floor(KFK.currentPage / KFK.PageNumberHori);
-  let columIdx = KFK.currentPage % KFK.PageNumberHori;
-  let nextColumIdx = columIdx - 1;
-  if (nextColumIdx < 0) {
-    KFK.scrLog('已经在最左边了', 1000);
-    return;
-  }
-  let pidx = rowIdx * KFK.PageNumberHori + nextColumIdx;
-  KFK.currentPage = pidx;
-  KFK.___presentPage(KFK.currentPage);
-};
-KFK.presentRightPage = function () {
-  let rowIdx = Math.floor(KFK.currentPage / KFK.PageNumberHori);
-  let columIdx = KFK.currentPage % KFK.PageNumberHori;
-  let nextColumIdx = columIdx + 1;
-  if (nextColumIdx > KFK.PageNumberVert - 1) {
-    KFK.scrLog('已经在最右边了', 1000);
-    return;
-  }
-  let pidx = rowIdx * KFK.PageNumberHori + nextColumIdx;
-  KFK.currentPage = pidx;
-  KFK.___presentPage(KFK.currentPage);
-};
-
-KFK.presentUpperPage = function () {
-  let pidx = KFK.currentPage - KFK.PageNumberHori;
-  if (pidx < 0) {
-    KFK.scrLog("已经在最顶部了", 1000);
-    return;
-  }
-  KFK.currentPage = pidx;
-  KFK.___presentPage(KFK.currentPage);
-};
-KFK.presentLowerPage = function () {
-  let pidx = KFK.currentPage + KFK.PageNumberHori;
-  if (pidx > KFK.pageBounding.Pages.length - 1) {
-    KFK.scrLog("已经在最底部了", 1000);
-    return;
-  }
-  KFK.currentPage = pidx;
-  KFK.___presentPage(KFK.currentPage);
-};
-KFK.___presentPage = function (pageIndex) {
-  KFK.inPresentingMode = true;
-  KFK.scrLog(`page ${pageIndex}`);
-  let pages = KFK.pageBounding.Pages;
-  let main = $("#C1");
-  let scroller = $("#S1");
-  let scrCenter = KFK.scrCenter();
-  let window_width = scrCenter.x * 2;
-  let window_height = scrCenter.y * 2;
-
-  KFK.scrollToPos({
-    x: pages[pageIndex].left + KFK.LeftB,
-    y: pages[pageIndex].top + KFK.TopB
-  });
-
-  KFK.___setSlideMask(pageIndex);
-
-  let scaleX = window_width / KFK.PageWidth;
-  let scaleY = window_height / KFK.PageHeight;
-  let scale = Math.min(scaleX, scaleY);
-  let scaledW = scale * KFK.PageWidth;
-  let scaledH = scale * KFK.PageHeight;
-  let offsetX = (Math.round((window_width - scaledW) * 0.5)) / scale;
-  let offsetY = (Math.round((window_height - scaledH) * 0.5)) / scale;
-
-  KFK.JC3.css({
-    'transform-origin': `${pages[pageIndex].left}px ${pages[pageIndex].top}px`,
-    '-webkit-transform-origin': `${pages[pageIndex].left}px ${pages[pageIndex].top}px`,
-    'transform': `scale(${scale}, ${scale}) translate(${offsetX}px, ${offsetY}px)`,
-  });
-  // setTimeout(function () {
-  //   //  main.css("transform", `scale(${scale}, ${scale}) translate(${offsetX}px, ${offsetY}px)`);
-  //   KFK.JC3.css("transform", `translate(${offsetX}px, ${offsetY}px)`);
-  // }, 100);
-};
-
-KFK.___unsetSlideMask = function (page) {
-  $('.slidemask').remove();
-}
-KFK.___setSlideMask = function (pageIndex) {
-  let pages = KFK.pageBounding.Pages;
-  let jLeft = $('.maskLeft');
-  let jTop = $('.maskTop');
-  let jRight = $('.maskRight');
-  let jBottom = $('.maskBottom');
-  if (jLeft.length === 0) {
-    let maskLeft = document.createElement("div");
-    jLeft = $(maskLeft);
-    jLeft.addClass('maskLeft slidemask');
-    jLeft.css({ "background-color": "black", "position": "absolute", "z-index": 1000000000 });
-    KFK.C3.appendChild(maskLeft);
-  }
-  if (jTop.length === 0) {
-    let maskTop = document.createElement("div");
-    jTop = $(maskTop);
-    jTop.addClass('maskTop slidemask');
-    jTop.css({ "background-color": "black", "position": "absolute", "z-index": 1000000000 });
-    KFK.C3.appendChild(maskTop);
-  }
-  if (jRight.length === 0) {
-    let maskRight = document.createElement("div");
-    jRight = $(maskRight);
-    jRight.addClass('maskRight slidemask');
-    jRight.css({ "background-color": "black", "position": "absolute", "z-index": 1000000000 });
-    KFK.C3.appendChild(maskRight);
-  }
-  if (jBottom.length === 0) {
-    let maskBottom = document.createElement("div");
-    jBottom = $(maskBottom);
-    jBottom.addClass('maskBottom slidemask');
-    jBottom.css({ "background-color": "black", "position": "absolute", "z-index": 1000000000 });
-    KFK.C3.appendChild(maskBottom);
-  }
-
-  jLeft.css({
-    "left": `-${KFK.LeftB}px`,
-    "top": `-${KFK.TopB}px`,
-    "width": KFK.px(pages[pageIndex].left + KFK.LeftB),
-    "height": KFK.px(KFK._height + 2 * KFK.TopB),
-  });
-  jTop.css({
-    "left": `-${KFK.LeftB}px`,
-    "top": `-${KFK.TopB}px`,
-    "width": KFK.px(KFK._width + 2 * KFK.LeftB),
-    "height": KFK.px(pages[pageIndex].top + KFK.TopB)
-  });
-  jRight.css({
-    "left": KFK.px(pages[pageIndex].left + KFK.PageWidth),
-    "top": `-${KFK.TopB}px`,
-    "width": KFK.px((KFK.PageNumberHori - pageIndex % KFK.PageNumberHori - 1) * KFK.PageWidth + KFK.LeftB),
-    "height": KFK.px(KFK._height + 2 * KFK.TopB),
-  });
-  jBottom.css({
-    "left": `-${KFK.LeftB}px`,
-    "top": KFK.px(pages[pageIndex].top + KFK.PageHeight),
-    "width": KFK.px(KFK._width + 2 * KFK.LeftB),
-    "height": KFK.px((KFK.PageNumberVert - Math.floor(pageIndex / KFK.PageNumberHori) - 1) * KFK.PageHeight + KFK.TopB)
-  });
-}
-
-KFK.toggleOnePage = function (jc3MousePos) {
-  if (KFK.inPresentingMode) return;
-  let main = $("#C1");
-  let scroller = $("#S1");
-  let scrCenter = KFK.scrCenter();
-  let window_width = scrCenter.x * 2;
-  let window_height = scrCenter.y * 2;
-  KFK.APP.setData('show', 'actionlog', false);
-  if (KFK.inOverviewMode === true) {
-    KFK.scrLog("");
-
-    let cbkg = $('#containerbkg');
-    if (KFK.rememberGrid !== "")
-      cbkg.addClass(KFK.rememberGrid);
-
-    KFK.JC3.css({
-      'transform-origin': '0px 0px',
-      '-webkit-transform-origin': '0px 0px',
-      "transform": `scale(1, 1)`,
-    });
-    if (jc3MousePos !== undefined) {
-      KFK.scrollToPos({
-        x: jc3MousePos.x - scrCenter.x + KFK.LeftB,
-        y: jc3MousePos.y - scrCenter.y + KFK.TopB,
-      });
-    }
-    KFK.unmaskScreen();
-    KFK.inOverviewMode = false;
-    if (KFK.inFullScreenMode === false)
-      KFK.restoreLayoutDisplay();
-  } else {
-    if (KFK.inFullScreenMode === false) {
-      KFK.setLayoutDisplay({
-        showgrid: false,
-        minimap: false,
-        toplogo: 'hidden',
-        docHeaderInfo: 'hidden',
-        rtcontrol: 'hidden',
-        left: 'none',
-        right: 'none',
-      });
-    }
-    let cbkg = $('#containerbkg');
-    KFK.rememberGrid = cbkg.hasClass("grid1") ? "grid1" : cbkg.hasClass("grid2") ? "grid2" : "";
-    if (KFK.rememberGrid !== "")
-      cbkg.removeClass(KFK.rememberGrid);
-
-    KFK.scrollPosToRemember = { x: scroller.scrollLeft(), y: scroller.scrollTop() };
-    let scaleX = window_width / KFK._width;
-    let scaleY = window_height / KFK._height;
-    let scale = Math.min(scaleX, scaleY);
-    let scaledW = scale * KFK._width;
-    let scaledH = scale * KFK._height;
-
-    let offsetX = (Math.round((window_width - scaledW) * 0.5)) / scale;
-    let offsetY = (Math.round((window_height - scaledH) * 0.5)) / scale;
-    KFK.scrollToPos({
-      x: KFK.LeftB,
-      y: KFK.TopB
-    })
-    KFK.JC3.css({ 'transform-origin': '0px 0px', '-webkit-transform-origin': '0px 0px' });
-    KFK.JC3.css("transform", `scale(${scale}, ${scale})`);
-    setTimeout(function () {
-      KFK.JC3.css("transform", `scale(${scale}, ${scale}) translate(${offsetX}px, ${offsetY}px)`);
-    }, 200);
-    // main.css( "transform", `translate(${offsetX}px, ${offsetY}px)`)
-    KFK.inOverviewMode = true;
-    KFK.maskScreen();
-    KFK.scrLog("进入全局要览: 要看哪里, 就双击哪里吧", 1000);
-  }
-};
-
-
-KFK.maskScreen = function () {
-  let mask = document.createElement('div');
-  let jmask = $(mask);
-  jmask.width(KFK._width);
-  jmask.height(KFK._height);
-  jmask.addClass("mask");
-  // jmask.appendTo(KFK.JC3);
-  KFK.C3.appendChild(mask);
-};
-KFK.unmaskScreen = function () {
-  KFK.JC3.find('.mask').remove();
-};
-
-KFK.printCallStack = function () {
-  KFK.info(new Error().stack);
-};
-
-
-KFK.closeActionLog = function () {
-  KFK.APP.setData("show", "actionlog", false);
-};
-
-KFK.showActionLog = function () {
-  if (!KFK.APP.show.actionlog) {
-    KFK.getActionLog();
-  }
-  KFK.APP.setData("show", "actionlog", !KFK.APP.show.actionlog);
-};
-
-KFK.getActionLog = function () {
-  KFK.debug('refresh actionlog now');
-  KFK.sendCmd("GETBLKOPS", { doc_id: KFK.APP.model.cocodoc.doc_id });
-};
-
-KFK.navActionLog = function (item, direction) {
-  if (item.logs.length === 0) {
-    KFK.debug("no logs");
-    return;
-  }
-  if (direction === "first") {
-    //go left
-    item.pos = 0;
-  } else if (direction === "prev") {
-    //go left
-    item.pos = item.pos - 1;
-    if (item.pos < 0) {
-      item.pos = item.logs.length - 1;
-    }
-  } else if (direction === "next") {
-    item.pos = item.pos + 1;
-    if (item.pos >= item.logs.length) {
-      item.pos = 0;
-    }
-  } else if (direction === "last") {
-    item.pos = item.logs.length - 1;
-  }
-  let nodeid = item.logs[item.pos];
-  KFK.scrollToNode(nodeid);
-};
-
-KFK.actionLogFirst = function () {
-  if (KFK.actionLogToView.actionlog.length > 0) {
-    KFK.actionLogToViewIndex = 0;
-    KFK.actionLogGoto(KFK.actionLogToViewIndex);
-  }
-};
-KFK.actionLogLast = function () {
-  if (KFK.actionLogToView.actionlog.length > 0) {
-    KFK.actionLogToViewIndex = KFK.actionLogToView.actionlog.length - 1;
-    KFK.actionLogGoto(KFK.actionLogToViewIndex);
-  }
-};
-//滚动到某个对象上,并把这个对象放在屏幕中央
-KFK.scrollToNode = function (nodeid) {
-  let jqDIV = $(`#${nodeid}`);
-  if (jqDIV.length <= 0) {
-    KFK.warn("node ", nodeid, "not found");
-    return;
-  }
-  jqDIV = jqDIV.first();
-
-  let top = jqDIV.position().top;
-  let left = jqDIV.position().left;
-  let width = jqDIV.width();
-  let height = jqDIV.height();
-
-  KFK.scrollContainer = $("#S1");
-  let scrollX = left - $(window).width() * 0.5 + width * 0.5 + KFK.LeftB;
-  let scrollY = top - $(window).height() * 0.5 + height * 0.5 + KFK.TopB;
-  KFK.scrollToPos({
-    x: scrollX,
-    y: scrollY,
-  })
-
-  if (KFK.lastActionLogJqDIV != null && KFK.lastActionLogJqDIV !== jqDIV)
-    KFK.lastActionLogJqDIV.removeClass("shadow1");
-  jqDIV.addClass("shadow1");
-  KFK.lastActionLogJqDIV = jqDIV;
-  // KFK.scrollContainer.animate({ // animate your right div
-  //     scrollTop: 300 // to the position of the target
-  // }, 400);
-};
-
-KFK.upgradeToStartAccount = function () {
-  // KFK.toBeUpgradeDemoAccount = JSON.parse(
-  //   JSON.stringify(KFK.APP.model.cocouser)
-  // );
-  KFK.gotoRegister();
-};
-
-KFK.isMyDoc = () => {
-  return KFK.APP.model.cocouser.userid === KFK.APP.model.cocodoc.owner;
-};
-
-KFK.showCopyDocDialog = (doc) => {
-  KFK.tobeCopyDocId = doc._id;
-  KFK.setAppData("model", "copyToDocName", doc.name);
-  KFK.setAppData(
-    "model",
-    "showCopyOrMove",
-    doc.owner === KFK.APP.model.cocouser.userid
-  );
-  KFK.showDialog({ copyDocDialog: true });
-};
-
-KFK.showSetAclDialog = (doc) => {
-  KFK.showDialog({ setAclDialog: true });
-};
-KFK.setAcl = async () => {
-  let desc = {
-    'S': '仅发起人',
-    'O': '所在组织',
-    'P': '公开使用'
-  }
-  KFK.APP.model.currentDoc.acl_desc = desc[KFK.APP.model.currentDoc.acl];
-  await KFK.sendCmd('SETACL', { doc_id: KFK.APP.model.currentDoc._id, acl: KFK.APP.model.currentDoc.acl });
-}
-
-KFK.copyDoc = () => {
-  let newname = KFK.APP.model.copyToDocName;
-  if (Validator.validateDocName(newname)) {
-    let payload = {
-      fromDocId: KFK.tobeCopyDocId,
-      toPrjId: KFK.APP.model.copyToPrjId,
-      toName: KFK.APP.model.copyToDocName,
-      copyOrMove: KFK.APP.model.check.copyOrMove
-    };
-    KFK.sendCmd("COPYDOC", payload);
-    KFK.APP.state.copydoc.name = true;
-  } else {
-    KFK.scrLog("新文档名不符合要求");
-    KFK.APP.state.copydoc.name = false;
-  }
-};
-
-KFK.onLinkConnect = async function (data) {
-  let selectorFrom = `#${response.from}`;
-  let selectorTo = `#${response.to}`;
-  let nodeFrom = $(selectorFrom);
-  let nodeTo = $(selectorTo);
-  if (nodeFrom.length > 0 && nodeTo.length > 0) {
-    KFK.drawPathBetween(nodeFrom, nodeTo);
-    KFK.updateLocalNodeLinkIds(nodeFrom, nodeTo);
-  }
-};
-
-KFK.showSetProfileDialog = function () {
-  let profile = {
-    name: KFK.APP.model.cocouser.name,
-    avatar: KFK.APP.model.cocouser.avatar,
-    oldpwd: "",
-    newpwd: "",
-    newpwd2: ""
-  };
-  KFK.APP.state.profile.name = null;
-  KFK.APP.state.profile.oldpwd = null;
-  KFK.APP.state.profile.newpwd = null;
-  KFK.APP.state.profile.newpwd2 = null;
-  KFK.setAppData("model", "profileToSet", profile);
-  KFK.showDialog({ setProfileDialog: true });
-};
 
-KFK.setUserProfile = function (bvModalEvt) {
-  bvModalEvt.preventDefault();
-  KFK.handleProfileSubmit();
+KFK.size = function(w, h) {
+    KFK.width(w);
+    KFK.height(h);
 };
-
-KFK.handleProfileSubmit = function () {
-  KFK.APP.state.profile.name = Validator.validateUserName(
-    KFK.APP.model.profileToSet.name
-  );
-  KFK.APP.state.profile.oldpwd = Validator.validateUserPassword(
-    KFK.APP.model.profileToSet.oldpwd
-  );
-  KFK.APP.state.profile.newpwd = true;
-  KFK.APP.state.profile.newpwd2 = true;
-  //修改Profile时，新密码可以为空，则表示不修改密码，
-  if (KFK.APP.model.profileToSet.newpwd.trim() !== "") {
-    KFK.APP.state.profile.newpwd = Validator.validateUserPassword(
-      KFK.APP.model.profileToSet.newpwd
-    );
-    KFK.APP.state.profile.newpwd2 = Validator.validateUserPassword(
-      KFK.APP.model.profileToSet.newpwd2
-    );
-  }
-  KFK.APP.state.profile.newpwd2 =
-    KFK.APP.model.profileToSet.newpwd === KFK.APP.model.profileToSet.newpwd2;
-
-  if (
-    KFK.APP.state.profile.name &&
-    KFK.APP.state.profile.oldpwd &&
-    KFK.APP.state.profile.newpwd &&
-    KFK.APP.state.profile.newpwd2
-  ) {
-    KFK.sendCmd("SETPROFILE", KFK.APP.model.profileToSet);
-    KFK.showDialog({ setProfileDialog: false });
-  } else {
-    KFK.scrLog("录入信息不符合要求");
-    return;
-  }
-};
-
-
-KFK.addSvgLayer = function () {
-  KFK.svgDraw && delete KFK.svgDraw;
-  KFK.svgDraw = SVG().addTo("#C3").size(KFK._width, KFK._height);
-  KFK.svgDraw.attr("id", "D3");
-  KFK.svgDraw.addClass("svgcanvas");
-  KFK.debug('svg layer initialized');
-  KFK.pageBounding = { Pages: [] };
-  let boundingLineOption = {
-    color: '#FFFFFFCC',
-    width: 4,
-    linecap: 'square'
-  }
-  for (let i = 0; i < KFK.PageNumberVert; i++) {
-    for (let j = 0; j < KFK.PageNumberHori; j++) {
-      KFK.pageBounding.Pages.push({
-        left: j * KFK.PageWidth,
-        top: i * KFK.PageHeight
-      });
-    }
-  }
-  for (let i = 0; i <= KFK.PageNumberHori; i++) {
-    let tmpLine = KFK.svgDraw.line(i * KFK.PageWidth, 0, i * KFK.PageWidth, KFK._height);
-    tmpLine.addClass('pageBoundingLine').stroke(boundingLineOption);
-  }
-  for (let j = 0; j <= KFK.PageNumberVert; j++) {
-    let tmpLine = KFK.svgDraw.line(0, j * KFK.PageHeight, KFK._width, j * KFK.PageHeight);
-    tmpLine.addClass('pageBoundingLine').stroke(boundingLineOption);
-  }
-};
-
-KFK.restoreSvgLine = function (line_id, html) {
-  let aLine = null;
-  let selector = `.${line_id}`;
-  aLine = KFK.svgDraw.findOne(selector);
-  if (aLine === null || aLine === undefined) {
-    aLine = KFK.svgDraw.line();
-  }
-  let parent = aLine.svg(html, true);
-  aLine = parent.findOne(selector);
-  KFK.addSvgLineEventListner(aLine);
-  return aLine;
-};
-
-KFK.makePath = function (p1, p2) {
-  let rad = 10;
-  let c1 = { x: p2.x - rad, y: p1.y };
-  let c2 = { x: p2.x, y: p1.y + rad };
-
-  let pStr = `M${p1.x} ${p1.y} H${c1.x} S${c2.x} ${c1.y} ${c2.x} ${c2.y} V${p2.y}`;
-  return pStr;
+KFK.isKfkNode = function(jqdiv) {
+    return jqdiv && jqdiv.hasClass("kfknode");
 };
-
-KFK._svgDrawNodesConnect = function (fid, tid, lineClass, lineClassReverse, pstr, triangle) {
-  let theLine = null;
-  let reverseLine = KFK.svgDraw.findOne(`.${lineClassReverse}`);
-  let oldLine = KFK.svgDraw.findOne(`.${lineClass}`);
-  let reverseTriangle = KFK.svgDraw.findOne(`.${lineClassReverse}_triangle`);
-  let oldTriangle = KFK.svgDraw.findOne(`.${lineClass}_triangle`);
-  if (oldLine) {
-    oldLine.plot(pstr);
-    oldTriangle.plot(triangle);
-    theLine = oldLine;
-  } else {
-    if (reverseLine) {
-      reverseLine.removeClass(lineClassReverse);
-      reverseLine.addClass(lineClass);
-      reverseLine.plot(pstr);
-      reverseTriangle.removeClass(lineClassReverse + "_triangle");
-      reverseTriangle.addClass(lineClass + "_triangle");
-      reverseTriangle.plot(triangle);
-      theLine = reverseLine;
-    } else {
-      theLine = KFK.svgDraw.path(pstr);
-      theLine.addClass(lineClass).addClass('connect').fill("none").stroke({ width: KFK.APP.model.svg.connect.width, color: KFK.YIQColorAux || KFK.APP.model.svg.connect.color });
-      KFK.svgDraw.polygon(triangle).addClass(lineClass + "_triangle").addClass('triangle').fill(KFK.YIQColorAux).stroke({ width: KFK.APP.model.svg.connect.triangle.width, color: KFK.APP.model.svg.connect.triangle.color });
-      theLine.attr({
-        "id": lineClass,
-        "origin-width": KFK.APP.model.svg.connect.width
-      });
-    }
-  }
-  theLine.attr({
-    fid: fid,
-    tid: tid
-  });
-  theLine.off('mouseover mouseout');
-  theLine.on('mouseover', () => {
-    theLine.attr('stroke-width', KFK.APP.model.svg.connect.width * 2);
-    KFK.hoveredConnectId = theLine.attr("id");
-    KFK.debug('hover connect id', KFK.hoveredConnectId);
-  });
-  theLine.on('mouseout', () => {
-    theLine.attr('stroke-width', KFK.APP.model.svg.connect.width);
-    KFK.hoveredConnectId = null;
-  });
-};
-KFK.lockLine = function (line, lock = true) {
-  if (lock) {
-    let arr = line.array();
-    let x1 = arr[0][0], y1 = arr[0][1], x2 = arr[1][0], y2 = arr[1][1];
-    let r = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
-    let d = 10;
-    let y3 = (d * (y2 - y1)) / r + y1;
-    let x3 = (d * (x2 - x1)) / r + x1;
-    let dot = KFK.svgDraw.circle(10);
-    dot.center(x3, y3).fill('red').addClass(line.attr('id') + "_lock").addClass('locklabel');
-    dot.addTo(line.parent());
-    return dot;
-  } else {
-    try { KFK.svgDraw.findOne('.' + line.attr('id') + '_lock').remove(); } catch (err) { }
-  }
-};
-
-KFK.svgDrawLine = function (id, fx, fy, tx, ty, option) {
-  if (KFK.APP.model.cococonfig.snap) {
-    let p1 = { x: fx, y: fy };
-    let p2 = { x: tx, y: ty };
-    p1 = KFK.getNearGridPoint(p1.x, p1.y);
-    p2 = KFK.getNearGridPoint(p2.x, p2.y);
-    fx = p1.x; fy = p1.y;
-    tx = p2.x; ty = p2.y;
-  }
-  let lineClass = "kfkline";
-  let lineId = "line_" + id;
-  let theLine = KFK.svgDraw.findOne(`#line_${id}`);
-  if (theLine) {
-    theLine.plot(fx, fy, tx, ty).stroke(option);
-  } else {
-    theLine = KFK.svgDraw.line(fx, fy, tx, ty);
-    theLine.attr("id", lineId);
-    theLine.addClass(lineClass).addClass(lineId).stroke(option);
-    theLine.attr('origin-width', option.width);
-    theLine.attr('origin-color', option.color);
-    KFK.addSvgLineEventListner(theLine);
-  }
-  return theLine;
-};
-
-KFK.mouseNear = function (p1, p2, distance) {
-  return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)) <= distance;
-};
-
-KFK.moveDIVCenterToPos = function (jqDiv, pos) {
-  jqDiv.css('left', pos.x - KFK.unpx(jqDiv.css('width')) * 0.5);
-  jqDiv.css('top', pos.y - KFK.unpx(jqDiv.css('height')) * 0.5);
-}
-KFK.C3MousePos = function (evt) {
-  return { x: KFK.scrXToJc3X(evt.clientX), y: KFK.scrYToJc3Y(evt.clientY) };
-}
-KFK.ScreenMousePos = function (pos) {
-  return {
-    x: pos.x - KFK.scrollContainer.scrollLeft(),
-    y: pos.y - KFK.scrollContainer.scrollTop()
-  };
-}
-KFK.hideLineTransformer = function () {
-  $("#linetransformer").css("visibility", "hidden");
+KFK.inDesigner = function() {
+    return KFK.APP.show.section.designer;
 };
-KFK.showLineTransformer = function () {
-  $("#linetransformer").css("visibility", "visible");
-};
-KFK.addSvgLineEventListner = function (theLine) {
-  theLine.on('mouseover', (evt) => {
-    KFK.hoverSvgLine(theLine);
-    let originWidth = theLine.attr('origin-width');
-    let newWidth = originWidth > 10 ? originWidth * 1.2 : Math.max(originWidth * 1.2, 5);
-    theLine.attr({ 'stroke-width': newWidth });
-    if (KFK.lineLocked(theLine)) { $("#linetransformer").css("visibility", "hidden"); return; }
-
-    $(document.body).css("cursor", "pointer");
-    let parr = theLine.array();
-    if (KFK.mouseNear(
-      KFK.C3MousePos(evt),
-      { x: parr[0][0], y: parr[0][1] },
-      20
-    )) {
-      $("#linetransformer").css("visibility", "visible");
-      KFK.moveLinePoint = "from";
-      KFK.lineToResize = theLine;
-      KFK.setLineToRemember(theLine);
-      KFK.moveLineMoverTo(KFK.jc3PosToJc1Pos({ x: parr[0][0], y: parr[0][1] }));
-    } else if (KFK.mouseNear(
-      KFK.C3MousePos(evt),
-      { x: parr[1][0], y: parr[1][1] },
-      20
-    )) {
-      $("#linetransformer").css("visibility", "visible");
-      KFK.moveLinePoint = "to";
-      KFK.lineToResize = theLine;
-      KFK.setLineToRemember(theLine);
-      KFK.moveLineMoverTo(KFK.jc3PosToJc1Pos({ x: parr[1][0], y: parr[1][1] }));
-    } else {
-      $("#linetransformer").css("visibility", "hidden");
-    }
-  });
-  theLine.on('mouseout', () => {
-    if (KFK.lineDragging === false) {
-      KFK.hoverSvgLine(null);
-      $(document.body).css("cursor", "default");
-      theLine.attr({ 'stroke-width': theLine.attr('origin-width') });
-    }
-  });
-  theLine.on('mousedown', (evt) => {
-    KFK.closeActionLog();
-    ;
-
-    KFK.lineToDrag = theLine;
-    KFK.mousePosToRemember = {
-      x: KFK.currentMousePos.x,
-      y: KFK.currentMousePos.y,
-    };
-    KFK.setLineToRemember(theLine);
-    KFK.lineDraggingStartPoint = {
-      x: KFK.scrXToJc3X(evt.clientX),
-      y: KFK.scrYToJc3Y(evt.clientY)
-    }
-  });
-  //click line
-  theLine.on("click", (evt) => {
+KFK.holdEvent = function(evt) {
     evt.stopImmediatePropagation();
     evt.stopPropagation();
     evt.preventDefault();
-    KFK.hoverSvgLine(theLine)
-    if (KFK.anyLocked(theLine)) return;
-    if (KFK.mode === 'lock') {
-      KFK.tryToLockUnlock(evt.shiftKey);
+};
+KFK.addDocumentEventHandler = function() {
+    $(document).keydown(async function(evt) {
+        if (evt.keyCode === 16) KFK.KEYDOWN.shift = true;
+        else if (evt.keyCode === 17) KFK.KEYDOWN.ctrl = true;
+        else if (evt.keyCode === 18) KFK.KEYDOWN.alt = true;
+        else if (evt.keyCode === 91) KFK.KEYDOWN.meta = true;
+        if (KFK.inDesigner() && KFK.isEditting) {
+            return;
+        }
+        if (KFK.inDesigner()) {
+            if (
+                KFK.inPresentingMode &&
+                KFK.presentMaskMode &&
+                evt.keyCode !== 66 &&
+                evt.keyCode != 87
+            ) {
+                KFK.presentNoneMask();
+            }
+            if (
+                (evt.keyCode >= 48 && evt.keyCode <= 57) ||
+                (evt.keyCode >= 65 && evt.keyCode <= 90)
+            ) {
+                KFK.keypool += evt.key;
+                KFK.keypool = KFK.keypool.toLowerCase();
+                if (
+                    KFK.keypool.endsWith("haola") ||
+                    KFK.keypool.endsWith("hl") ||
+                    KFK.keypool.endsWith("pr")
+                ) {
+                    if (KFK.inPresentingMode === false) KFK.startPresentation();
+                    else KFK.endPresentation();
+                    KFK.keypool = "";
+                    return;
+                } else if (KFK.keypool.endsWith("nn")) {
+                    KFK.keypool = "";
+                    await KFK.toggleControlButtonOnly();
+                    return;
+                } else if (KFK.keypool.endsWith("mm")) {
+                    KFK.keypool = "";
+                    await KFK.toggleMinimap();
+                    return;
+                } else if (KFK.keypool.endsWith("br")) {
+                    KFK.toggleBrainstorm();
+                    KFK.keypool = "";
+                    return;
+                } else if (KFK.keypool.endsWith("fs")) {
+                    KFK.toggleFullScreen();
+                    KFK.keypool = "";
+                    return;
+                // } else if(KFK.keypool.endsWith("ov")){
+                //    // bug here, 切换回去的时候无法像双击一样获得准确的鼠标位置
+                //     if (KFK.inOverviewMode === true) {
+                //         console.log(KFK.currentMousePos);
+                //         let jc1Pos = KFK.jc3PosToJc1Pos(KFK.currentMousePos);
+                //         console.log(jc1Pos);
+                //         KFK.toggleOnePage(jc1Pos);
+                //     } else {
+                //         KFK.toggleOnePage();
+                //     }
+                } else if (KFK.inPresentingMode && KFK.keypool.endsWith("stop")) {
+                    KFK.endPresentation();
+                    KFK.keypool = "";
+                    return;
+                } else if (
+                    KFK.keypool.endsWith("first") ||
+                    KFK.keypool.endsWith("home")
+                ) {
+                    if (KFK.inPresentingMode) {
+                        KFK.presentFirstPage();
+                    } else {
+                        KFK.gotoFirstPage();
+                    }
+                    KFK.keypool = "";
+                    return;
+                } else if (
+                    KFK.keypool.endsWith("last") ||
+                    KFK.keypool.endsWith("end")
+                ) {
+                    if (KFK.inPresentingMode) {
+                        KFK.presentLastPage();
+                    } else {
+                        KFK.gotoLastPage();
+                    }
+                    KFK.keypool = "";
+                    return;
+                } else if (KFK.keypool.endsWith("prev")) {
+                    if (KFK.inPresentingMode) {
+                        KFK.presentPrevPage();
+                    } else {
+                        KFK.gotoPrevPage();
+                    }
+                    KFK.keypool = "";
+                    return;
+                } else if (KFK.keypool.endsWith("next")) {
+                    if (KFK.inPresentingMode) {
+                        KFK.presentNextPage();
+                    } else {
+                        KFK.gotoNextPage();
+                    }
+                    KFK.keypool = "";
+                    return;
+                } else if (KFK.keypool.match(/([0-9]+)g$/)) {
+                    let m = KFK.keypool.match(/([0-9]+)g$/);
+                    let pindex = parseInt(m[1]) - 1;
+                    pindex = Math.max(
+                        0,
+                        Math.min(pindex, KFK.pageBounding.Pages.length - 1)
+                    );
+                    if (KFK.inPresentingMode) {
+                        KFK.presentAnyPage(pindex);
+                    } else {
+                        KFK.gotoAnyPage(pindex);
+                    }
+                    KFK.keypool = "";
+                    return;
+                } else if (KFK.keypool.endsWith("gt")) {
+                    KFK.ZiToTop();
+                } else if (KFK.keypool.endsWith("gb")) {
+                    KFK.ZiToBottom();
+                } else if (KFK.keypool.endsWith("gh")) {
+                    KFK.ZiToHigher();
+                } else if (KFK.keypool.endsWith("gl")) {
+                    KFK.ZiToLower();
+                } else if (KFK.keypool.endsWith("lk") || KFK.keypool.endsWith("lock")) {
+                    KFK.tryToLockUnlock();
+                } else if (KFK.inPresentingMode && KFK.keypool.endsWith("b")) {
+                    KFK.presentBlackMask();
+                    KFK.keypool = "";
+                    return;
+                } else if (KFK.inPresentingMode && KFK.keypool.endsWith("w")) {
+                    KFK.presentWhiteMask();
+                    KFK.keypool = "";
+                    return;
+                } else if (KFK.keypool.length > 5) {
+                    KFK.keypool = KFK.keypool.substr(-4);
+                }
+            }
+            if (KFK.inPresentingMode === true) {
+                if (evt.keyCode === 33) {
+                    //Page Up
+                    KFK.presentPrevPage();
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                } else if (evt.keyCode === 34) {
+                    //Page Down
+                    KFK.presentNextPage();
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                } else if (evt.keyCode === 35) {
+                    //End
+                    KFK.presentLastPage();
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                } else if (evt.keyCode === 36) {
+                    //Home
+                    KFK.presentFirstPage();
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                } else if (evt.keyCode === 37) {
+                    //Left
+                    KFK.presentLeftPage();
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                } else if (evt.keyCode === 38) {
+                    //Top
+                    KFK.presentUpperPage();
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                } else if (evt.keyCode === 39) {
+                    //Right
+                    KFK.presentRightPage();
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                } else if (evt.keyCode === 40) {
+                    //Down
+                    KFK.presentLowerPage();
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                }
+            } else {
+                if (evt.keyCode === 33) {
+                    //Page Up
+                    KFK.gotoPrevPage();
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                } else if (evt.keyCode === 34) {
+                    //Page Down
+                    KFK.gotoNextPage();
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                } else if (evt.keyCode === 35) {
+                    //END
+                    KFK.gotoLastPage();
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                } else if (evt.keyCode === 36) {
+                    //HOME
+                    KFK.gotoFirstPage();
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                } else if (evt.keyCode === 37) {
+                    //Left
+                    KFK.gotoLeftPage();
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                } else if (evt.keyCode === 38) {
+                    //UP
+                    KFK.gotoUpperPage();
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                } else if (evt.keyCode === 39) {
+                    //Right
+                    KFK.gotoRightPage();
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                } else if (evt.keyCode === 40) {
+                    //Down
+                    KFK.gotoLowerPage();
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                }
+            }
+        } // inDesigner
+
+        if (evt.keyCode === 69 && evt.shiftKey && (evt.ctrlKey || evt.metaKey)) {
+            KFK.logKey("CTRL-SHIFT-E");
+            if (KFK.inDesigner())
+            //在Desinger中时，可切换到explorer
+                KFK.gotoExplorer();
+            else if (KFK.currentView === "explorer") KFK.gotoDesigner();
+            //这里不能用 KFK.inDesigner===false来判断
+            //因为即便不在designer中，如果designer没有被显示过，不能切换过去
+            //因为不知道designer中显示什么，只有designer打开过一次后，才能切换过去
+            //程序中， KFK.currentView的初始值为unknown, 当第一次显示designer后，
+            //KFK.currentView的值变为designer, 切换回到explorer时，KFK.currentView的值是explorer
+            //这时，用KFK.currentView === 'explorer'进行判断是可以的
+            return;
+        } else if (evt.keyCode === 81 && (evt.ctrlKey || evt.metaKey)) {
+            KFK.logKey("CTRL-R");
+            // KFK.toggleRight();
+            KFK.holdEvent(evt);
+            return;
+        }
+
+        if (KFK.inDesigner() === false) return;
+        if (KFK.isEditting) return;
+        switch (evt.keyCode) {
+            case 13:
+                KFK.editHoverObject(evt, true);
+                break;
+            case 27: //ESC
+                if (KFK.inFullScreenMode === true) {
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                    KFK.toggleFullScreen();
+                } else if (KFK.inPresentingMode === true) {
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                    KFK.presentNoneMask();
+                    KFK.endPresentation();
+                }
+
+                KFK.cancelAlreadySelected();
+                if (!KFK.isEditting && KFK.mode !== "line") KFK.setMode("pointer");
+                KFK.cancelTempLine();
+                KFK.setMode("pointer");
+                KFK.hidePickerMatlib();
+                break;
+            case 90:
+                //不要移动META-Z代码，一定要在document的key-down里面，
+                //否则，在其他地方没有用。这个问题花了我三个小时时间，FX
+                if ((evt.metaKey || evt.ctrlKey) && evt.shiftKey) {
+                    KFK.logKey("META-SHIFT-Z");
+                    KFK.redo();
+                }
+                if ((evt.metaKey || evt.ctrlKey) && !evt.shiftKey) {
+                    KFK.logKey("META-Z");
+                    KFK.undo();
+                }
+                break;
+            case 76:
+                if (evt.metaKey || evt.ctrlKey) {
+                    KFK.logKey("META-SHIFT-L");
+                    KFK.tryToLockUnlock();
+                    KFK.holdEvent(evt);
+                }
+                break;
+            case 8: //Backspace
+            case 46: //Delete
+                KFK.deleteHoverOrSelectedDiv(evt, false);
+                break;
+            default:
+                preventDefault = false;
+        }
+    });
+    $(document).keyup(function(evt) {
+        if (evt.keyCode === 16) KFK.KEYDOWN.shift = false;
+        else if (evt.keyCode === 17) KFK.KEYDOWN.ctrl = false;
+        else if (evt.keyCode === 18) KFK.KEYDOWN.alt = false;
+        else if (evt.keyCode === 91) KFK.KEYDOWN.meta = false;
+    });
+
+    //标记框选开始，是在JC3的mousedown中做记录的
+    //标记框选结束，也是在JC3的mouseup中做记录的
+    //但mousemove需要在document的mousemove事件处理中进行处理。
+    //因为，如果不这样做，滑动鼠标出现选择框后，如果鼠标回到选择框内，则JC3抓不到mousemove事件
+    //导致的现象就是选择框只可以放大，不可以缩小
+    $(document).on("mousemove", function(evt) {
+        if (KFK.inDesigner() === false) return;
+        KFK.globalMouseX = evt.clientX;
+        KFK.globalMouseY = evt.clientY;
+        if (KFK.inPresentingMode || KFK.inOverviewMode) return;
+        KFK.kuangXuanEndPoint = {
+            x: KFK.scrXToJc3X(evt.clientX),
+            y: KFK.scrYToJc3Y(evt.clientY),
+        };
+        if (KFK.isDuringKuangXuan()) {
+            KFK.kuangXuan(KFK.kuangXuanStartPoint, KFK.kuangXuanEndPoint);
+        }
+    });
+
+    let timer = null;
+    $("#S1").scroll(() => {
+        if (KFK.inDesigner() === false) return;
+        /*
+            let sx = $("#S1").scrollLeft();
+            let sy = $("#S1").scrollTop();
+            if (KFK.scrollBugPatched === false) {
+              KFK.scrollContainer = $("#S1");
+              KFK.scrollBugPatched = true;
+            }
+            // $("#linetransformer").css("visibility", "hidden");
+            if (timer === null) {
+              timer = setTimeout(() => {
+                let pt = KFK.getNearGridPoint(
+                  KFK.scrollContainer.scrollLeft(),
+                  KFK.scrollContainer.scrollTop()
+                );
+                let deltaX = pt.x - KFK.scrollContainer.scrollLeft();
+                let deltaY = pt.y - KFK.scrollContainer.scrollTop();
+                KFK.JCBKG.css('background-position-x', deltaX);
+                KFK.JCBKG.css('background-position-y', deltaY);
+                timer = null;
+              }, 500);
+            }
+            */
+    });
+};
+
+KFK.cancelTempLine = function() {
+    if (KFK.lineTemping) {
+        KFK.lineTemping = false;
+        if (KFK.tempSvgLine) KFK.tempSvgLine.hide();
+        KFK.linkPosNode.clear();
+        KFK.linkPosLine.clear();
     }
-    KFK.lineToDrag = null;
-    KFK.focusOnNode(null);
-    KFK.APP.setData("show", "shape_property", true);
-    KFK.APP.setData("show", "customshape", false);
-    KFK.APP.setData("show", "customline", true);
-    KFK.APP.setData("show", "custombacksvg", false);
-    KFK.APP.setData("show", "customfont", false);
-    KFK.APP.setData("show", "layercontrol", false);
-
-    KFK.setLineToRemember(theLine);
-
-    KFK.pickedSvgLine = theLine;
-    // KFK.setRightTabIndex();
-    let color = theLine.attr("stroke");
-    let width = theLine.attr("origin-width");
-    let linecap = theLine.attr("stroke-linecap");
-    $("#lineColor").spectrum("set", color);
-    $("#spinner_line_width").spinner("value", width);
-    let lineSetting = KFK.APP.model.svg.connect.line;
-    lineSetting = { color: color, width: width, linecap: linecap === 'round' ? true : false };
-    KFK.setAppData('model', "line", lineSetting);
-  });
-
 };
 
-KFK.initLineMover = function () {
-  KFK.debug('...initLineMover');
-  $("#linetransformer").draggable({
-    // move line resize line transform line
-    start: (evt, ui) => {
-      KFK.closeActionLog();
-      KFK.lineMoverDragging = true;
-      // KFK.fromJQ = KFK.tobeTransformJqLine.clone();
-      KFK.lineMoverOldPosition = $("#linetransformer").position();
-      // KFK.setMode('line');
-      evt.stopImmediatePropagation();
-      evt.stopPropagation();
-    },
+KFK.ZiToTop = function() {
+    let curJQ = KFK.getPropertyApplyToJqNode();
+    if (curJQ === null) return;
+    if (KFK.isKfkNode(curJQ) === false) return;
+    let myZI = KFK.getZIndex(curJQ);
+    let count = 0;
+    let zIndexChanger = { doc_id: KFK.APP.model.cocodoc.doc_id, ZI: {} };
+    KFK.JC3.find(".kfknode").each((index, aNodeDIV) => {
+        count += 1;
+        let jqNode = $(aNodeDIV);
+        let tmpZi = KFK.getZIndex(jqNode);
+        if (tmpZi > myZI) {
+            KFK.setZIndex(jqNode, tmpZi - 1);
+            zIndexChanger.ZI[jqNode.attr("id")] = tmpZi - 1;
+        }
+    });
+    KFK.setZIndex(curJQ, count);
+    zIndexChanger.ZI[curJQ.attr("id")] = count;
+    KFK.WS.put("ZI", zIndexChanger);
+};
 
-    drag: (evt, ui) => {
-      if (KFK.tempSvgLine) KFK.tempSvgLine.hide();
-      if (KFK.lineToResize === null) return;
-      let parr = KFK.lineToResize.array();
-      let stopAtPos = KFK.C3MousePos(evt);
-      if (KFK.moveLinePoint === "from") {
-        KFK.lineToResize.plot([
-          [stopAtPos.x, stopAtPos.y],
-          parr[1]
-        ]
-        );
-      } else {
-        KFK.lineToResize.plot([
-          parr[0],
-          [stopAtPos.x, stopAtPos.y],
-        ]
-        );
-      }
-    },
-    stop: async (evt, ui) => {
-      //transform line  change line
-      KFK.lineMoverDragging = false;
-      KFK.lineMoverNewPosition = $("#linetransformer").position();
-      if (KFK.lineToResize === null) return;
-      let parr = KFK.lineToResize.array();
-      let stopAtPos = KFK.C3MousePos(evt);
-      if (KFK.APP.model.cococonfig.snap) {
-        stopAtPos = KFK.getNearGridPoint(stopAtPos);
-        let smp = KFK.ScreenMousePos(stopAtPos);
-        KFK.moveDIVCenterToPos($('#linetransformer'), smp);
-      }
-      if (KFK.moveLinePoint === "from") {
-        KFK.lineToResize.plot([
-          [stopAtPos.x, stopAtPos.y],
-          parr[1]
-        ]
-        );
-      } else {
-        KFK.lineToResize.plot([
-          parr[0],
-          [stopAtPos.x, stopAtPos.y],
-        ]
-        );
-      }
-      await KFK.syncLinePut("U", KFK.lineToResize, 'resize', KFK.lineToRemember, false);
-      KFK.setLineToRemember(KFK.lineToResize);
-      $("#linetransformer").css("visibility", "hidden");
+KFK.ZiToBottom = function() {
+    let curJQ = KFK.getPropertyApplyToJqNode();
+    if (curJQ === null) return;
+    if (KFK.isKfkNode(curJQ) === false) return;
+
+    let myZI = KFK.getZIndex(curJQ);
+    let count = 0;
+    let zIndexChanger = { doc_id: KFK.APP.model.cocodoc.doc_id, ZI: {} };
+    KFK.JC3.find(".kfknode").each((index, aNodeDIV) => {
+        count += 1;
+        let jqNode = $(aNodeDIV);
+        let tmpZi = KFK.getZIndex(jqNode);
+        if (tmpZi < myZI) {
+            KFK.setZIndex(jqNode, tmpZi + 1);
+            zIndexChanger.ZI[jqNode.attr("id")] = tmpZi + 1;
+        }
+    });
+    KFK.setZIndex(curJQ, 1);
+    zIndexChanger.ZI[curJQ.attr("id")] = 1;
+    KFK.sendCmd("ZI", zIndexChanger);
+};
+KFK.ZiToHigher = function() {
+    let curJQ = KFK.getPropertyApplyToJqNode();
+    if (curJQ === null) return;
+    if (KFK.isKfkNode(curJQ) === false) return;
+    let myZI = KFK.getZIndex(curJQ);
+    let count = 0;
+    let allnodes = KFK.JC3.find(".kfknode");
+    let zIndexChanger = { doc_id: KFK.APP.model.cocodoc.doc_id, ZI: {} };
+    if (myZI < allnodes.length) {
+        allnodes.each((index, aNodeDIV) => {
+            count += 1;
+            let jqNode = $(aNodeDIV);
+            let tmpZi = KFK.getZIndex(jqNode);
+            if (tmpZi === myZI + 1) {
+                KFK.setZIndex(jqNode, myZI);
+                zIndexChanger.ZI[jqNode.attr("id")] = myZI;
+            }
+        });
+        KFK.setZIndex(curJQ, myZI + 1);
+        zIndexChanger.ZI[curJQ.attr("id")] = myZI + 1;
+        KFK.sendCmd("ZI", zIndexChanger);
     }
-  }); //line transformer. draggable()
 };
 
-KFK.svgDrawTmpLine = function (fx, fy, tx, ty, option) {
-  let tmpLineClass = "line_temp";
-
-  //按着alt的话，需要画成垂直或水平线
-  if (KFK.KEYDOWN.alt) {
-    if (Math.abs(tx - fx) < Math.abs(ty - fy))
-      tx = fx;
-    else ty = fy;
-  }
-  KFK.tempSvgLine = KFK.svgDraw.findOne(`.${tmpLineClass}`);
-  if (KFK.tempSvgLine) {
-    console.log("find existing templine, replot");
-    KFK.tempSvgLine.show();
-    KFK.tempSvgLine.plot(fx, fy, tx, ty).stroke(option);
-  } else {
-    console.log("find existing templine, drawNew line");
-    KFK.tempSvgLine = KFK.svgDraw.line(fx, fy, tx, ty).addClass(tmpLineClass).stroke(option);
-  }
+KFK.ZiToLower = function() {
+    let curJQ = KFK.getPropertyApplyToJqNode();
+    if (curJQ === null) return;
+    if (KFK.isKfkNode(curJQ) === false) return;
+    let zIndexChanger = { doc_id: KFK.APP.model.cocodoc.doc_id, ZI: {} };
+    let myZI = KFK.getZIndex(curJQ);
+    if (myZI > 1) {
+        let count = 0;
+        KFK.JC3.find(".kfknode").each((index, aNodeDIV) => {
+            count += 1;
+            let jqNode = $(aNodeDIV);
+            let tmpZi = KFK.getZIndex(jqNode);
+            if (tmpZi === myZI - 1) {
+                KFK.setZIndex(jqNode, myZI);
+                zIndexChanger.ZI[jqNode.attr("id")] = myZI;
+            }
+        });
+        KFK.setZIndex(curJQ, myZI - 1);
+        zIndexChanger.ZI[curJQ.attr("id")] = myZI - 1;
+        KFK.sendCmd("ZI", zIndexChanger);
+    }
 };
 
-KFK.svgConnectNode = function (fid, tid, fbp, tbp, fx, fy, tx, ty) {
-  if (!(fid && tid)) {
-    KFK.debug('svgConnectNode between, from', fid, 'to', tid);
-    return;
-  }
-  let lineClass = `line_${fid}_${tid}`;
-  let lineClassReverse = `line_${tid}_${fid}`;
-  let pstr = "";
-  let triangle = [];
-  let rad = 20;
-  let tri = 20;
-  let tri_half = tri * 0.5;
-  let tri_height = 17.3;
-  let tsx = tx, tsy = ty - tri_height;
-  switch (tbp) {
-    case 0:
-      tsx = tx - tri_height; tsy = ty;
-      triangle = [tsx, tsy + tri_half, tx, ty, tsx, tsy - tri_half];
-      break;
-    case 1:
-      tsx = tx; tsy = ty - tri_height;
-      triangle = [tsx - tri_half, tsy, tx, ty, tsx + tri_half, tsy];
-      break;
-    case 2:
-      tsx = tx + tri_height; tsy = ty;
-      triangle = [tsx, tsy - tri_half, tx, ty, tsx, tsy + tri_half];
-      break;
-    case 3:
-      tsx = tx; tsy = ty + tri_height;
-      triangle = [tsx - tri_half, tsy, tx, ty, tsx + tri_half, tsy];
-      break;
-  };
-  switch (fbp) {
-    case 0:
-      switch (tbp) {
+KFK.tryToLockUnlock = function(shiftKey) {
+    //对于节点，只有文档未锁定，以及这是当前用户为发起人时才能执行加解锁
+    if (KFK.hoverJqDiv() && KFK.isMyDoc() && KFK.docIsReadOnly() === false) {
+        if (KFK.nodeLocked(KFK.hoverJqDiv())) {
+            let opEntry = {
+                cmd: "UNLOCK",
+                from: KFK.hoverJqDiv().attr("id"),
+                to: KFK.hoverJqDiv().attr("id"),
+            };
+            KFK.yarkOpEntry(opEntry);
+            KFK.sendCmd("UNLOCKNODE", {
+                doc_id: KFK.APP.model.cocodoc.doc_id,
+                nodeid: KFK.hoverJqDiv().attr("id"),
+            });
+        } else {
+            let opEntry = {
+                cmd: "LOCK",
+                from: KFK.hoverJqDiv().attr("id"),
+                to: KFK.hoverJqDiv().attr("id"),
+            };
+            KFK.yarkOpEntry(opEntry);
+            KFK.sendCmd("LOCKNODE", {
+                doc_id: KFK.APP.model.cocodoc.doc_id,
+                nodeid: KFK.hoverJqDiv().attr("id"),
+            });
+        }
+    } else if (
+        KFK.hoverSvgLine() &&
+        KFK.isMyDoc() &&
+        KFK.docIsReadOnly() === false
+    ) {
+        //对于直线，只有文档未锁定，以及这是当前用户为发起人时才能执行加解锁
+        if (KFK.lineLocked(KFK.hoverSvgLine())) {
+            KFK.lineToDrag = null;
+            let opEntry = {
+                cmd: "UNLOCKLINE",
+                from: KFK.hoverSvgLine().attr("id"),
+                to: KFK.hoverSvgLine().attr("id"),
+            };
+            KFK.yarkOpEntry(opEntry);
+            KFK.sendCmd("UNLOCKLINE", {
+                doc_id: KFK.APP.model.cocodoc.doc_id,
+                nodeid: KFK.hoverSvgLine().attr("id"),
+            });
+        } else {
+            let opEntry = {
+                cmd: "LOCKLINE",
+                from: KFK.hoverSvgLine().attr("id"),
+                to: KFK.hoverSvgLine().attr("id"),
+            };
+            KFK.yarkOpEntry(opEntry);
+            KFK.sendCmd("LOCKLINE", {
+                doc_id: KFK.APP.model.cocodoc.doc_id,
+                nodeid: KFK.hoverSvgLine().attr("id"),
+            });
+        }
+    } else {
+        KFK.scrLog("只有发起人能够进行加解锁");
+    }
+    if (!shiftKey) {
+        KFK.setMode("pointer");
+    }
+};
+KFK.toggleRight = function(flag) {
+    if (KFK.APP.model.cocodoc.readonly) {
+        return;
+    }
+    if (KFK.inFullScreenMode === true || KFK.controlButtonsOnly === true) return;
+    KFK.showRightTools = !KFK.showRightTools;
+    let display = KFK.showRightTools ? "block" : "none";
+    $("#right").css("display", display);
+};
+KFK.toggleFullScreen = function(evt) {
+    if (KFK.inPresentingMode) return;
+    KFK.inFullScreenMode = !KFK.inFullScreenMode;
+    if (KFK.inFullScreenMode === true) {
+        // if (KFK.inOverviewMode === false) {
+        //   KFK.setLayoutDisplay({
+        //     showgrid: KFK.APP.model.cococonfig.showgrid,
+        //     minimap: false,
+        //     toplogo: 'hidden',
+        //     docHeaderInfo: 'hidden',
+        //     rtcontrol: 'hidden',
+        //     left: 'none',
+        //     right: 'none',
+        //   });
+        // }
+        KFK.scrLog("进入全屏模式: 输入fs退出");
+    } else {
+        KFK.scrLog("");
+        // if (KFK.inOverviewMode === false)
+        //   KFK.restoreLayoutDisplay();
+    }
+    KFK.APP.setData("show", "actionlog", false);
+    if (KFK.inFullScreenMode === true) {
+        KFK.openFullscreen();
+    } else {
+        KFK.closeFullscreen();
+    }
+};
+
+KFK.toggleControlButtonOnly = async function(evt) {
+    KFK.controlButtonsOnly = !KFK.controlButtonsOnly;
+    if (KFK.APP.model.cocodoc.readonly) {
+        //文档锁定时，依然可以对minimap切换显示与否
+        await KFK.showSection({ minimap: !KFK.controlButtonsOnly });
+        return;
+    }
+    //左侧和右侧的工具栏，可进行切换
+    let display = KFK.controlButtonsOnly ? "none" : "block";
+    $("#left").css("display", display);
+    $("#right").css("display", display); //actionlog总是关闭
+    KFK.APP.setData("show", "actionlog", false);
+    //切换minimap
+    await KFK.showSection({ minimap: !KFK.controlButtonsOnly });
+    $(".docHeaderInfo").css(
+        "visibility",
+        KFK.controlButtonsOnly ? "hidden" : "visible"
+    );
+    $("#toplogo").css(
+        "visibility",
+        KFK.controlButtonsOnly ? "hidden" : "visible"
+    );
+    //add a mask layer
+};
+KFK.showHidePanel = function(flag) {
+    if (
+        flag === true &&
+        KFK.inFullScreenMode === false &&
+        KFK.controlButtonsOnly === false
+    ) {
+        $("#left").css("display", "block");
+        $("#right").css("display", "block");
+    } else {
+        $("#left").css("display", "none");
+        $("#right").css("display", "none");
+    }
+};
+
+KFK.getAclOwnerDescription = function(doc) {
+    if (doc.acl === "S") {
+        return doc.ownerName;
+    } else if (doc.acl === "O") {
+        return doc.orgName;
+    } else if (doc.acl === "P") {
+        return "公共";
+    }
+};
+
+KFK.iAmOwner = function(doc) {
+    return doc.owner === KFK.APP.model.cocouser.userid;
+};
+
+KFK.getAclAccessable = function(doc) {
+    let ret = false;
+    if (doc.acl === "S") {
+        if (KFK.APP.model.cocouser.userid === doc.owner) {
+            ret = true;
+            KFK.AclDeniedReason = "";
+        } else {
+            KFK.AclDeniedReason = "仅发起人可使用, 但当前用户不是发起人";
+        }
+    } else if (doc.acl === "O") {
+        if (KFK.APP.model.cocouser.orgid === doc.orgid) {
+            ret = true;
+            KFK.AclDeniedReason = "";
+        } else {
+            KFK.AclDeniedReason = "仅在白板所在组织内使用, 但当前用户组织不符";
+        }
+    } else if (doc.acl === "P") {
+        ret = true;
+        KFK.AclDeniedReason = "";
+    }
+    return ret;
+};
+
+KFK.showNotAclAccessable = function(doc) {
+    KFK.scrLog(KFK.AclDeniedReason);
+};
+
+KFK.gotoExplorer = async function() {
+    if (KFK.APP.model.cocoprj.name === "") {
+        KFK.setAppData("model", "cocoprj", {
+            prjid: "all",
+            name: "我最近使用过的白板",
+        });
+    }
+    KFK.cancelAlreadySelected();
+    if (!KFK.isEditting && KFK.mode !== "line") KFK.setMode("pointer");
+    KFK.cancelTempLine();
+    KFK.setMode("pointer");
+    KFK.hidePickerMatlib();
+    //不用每次gotoExplorer都refreshProjectList, 因为refreshProjectList要跟服务器刷新数据
+    //仅仅是切换explorer或者designer视图，没必要拉取数据
+    //只在首次切换到explorer时，拉取数据。
+    //其他时候，在creaeproject等操作的地方，会调用refreshProjectList重新拉取数据，在那时，Projects发生了变化，重新拉取是有必要的。
+    if (KFK.explorerRefreshed === false) {
+        KFK.refreshProjectList();
+    }
+    KFK.currentView = "explorer";
+    await KFK.showSection({ explorer: true, designer: false });
+    KFK.showForm({
+        newdoc: false,
+        newprj: false,
+        prjlist: true,
+        doclist: true,
+        share: false,
+        explorerTabIndex: 1,
+    });
+    $("#overallbackground").addClass("grid1");
+    KFK.sendCmd("SETWSSEC", { section: "EXPLORER" });
+};
+
+KFK.gotoDesigner = async function() {
+    KFK.debug("...gotoDesigner");
+    await KFK.showSection({ explorer: false, designer: true });
+    KFK.showForm({
+        newdoc: false,
+        newprj: false,
+        prjlist: false,
+        doclist: false,
+        share: false,
+    });
+    KFK.currentView = "designer";
+    KFK.focusOnC3();
+    $("#overallbackground").removeClass("grid1");
+    KFK.sendCmd("SETWSSEC", { section: "DESIGNER" });
+};
+
+KFK.dataURLtoFile = function(dataurl, filename) {
+    let arr = dataurl.split(","),
+        mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]),
+        n = bstr.length,
+        u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+};
+
+KFK.save = async function() {
+    let docPath = `/${cocoConfig.tenant.id}/${KFK.APP.model.cocodoc.doc_id}/`;
+    // let result = await KFK.OSSClient.list({
+    //     prefix: 'lucas/',
+    // });
+    try {
+        // 不带任何参数，默认最多返回1000个文件。
+        let result = await KFK.OSSClient.list({
+            prefix: "lucas/",
+        });
+        // 根据nextMarker继续列出文件。
+        if (result.isTruncated) {
+            let result = await client.list({
+                marker: result.nextMarker,
+            });
+        }
+        // // 列举前缀为'my-'的文件。
+        // let result = await client.list({
+        //    prefix: 'my-'
+        // });
+        // // 列举前缀为'my-'且在'my-object'之后的文件。
+        // let result = await client.list({
+        //    prefix: 'my-',
+        //    marker: 'my-object'
+        // });
+    } catch (err) {
+        KFK.error(err);
+    }
+};
+
+KFK.checkUrl = function(str_url) {
+    let regex = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/;
+    return str.match(regex) !== null;
+};
+
+KFK.replaceHTMLTarget = function(html) {
+    html = `<div>${html}</div>`;
+    try {
+        let jq = $($.parseHTML(html));
+        jq.find("a").prop("target", "_blank");
+        ret = jq.prop("innerHTML");
+    } catch (err) {
+        ret = "";
+    }
+    return ret;
+};
+KFK.pasteContent = function() {
+    let paste = KFK.APP.model.paste;
+};
+
+KFK.showTextPasteDialog = async function(content) {
+    if (KFK.anyLocked(KFK.hoverJqDiv())) return;
+    let toAdd = content.text;
+    let showbox = false;
+    if (content.text !== "") {
+        toAdd = content.text;
+        if (RegHelper.isUrl(toAdd)) {
+            // Plain text is a URL
+            showbox = KFK.hoverJqDiv() ? false : true;
+            await KFK.mergeAppData("model", "paste", {
+                showcontent: true,
+                showdisplay: true,
+                showbox: showbox,
+                content: toAdd,
+                display: "请点击访问",
+                ctype: "url",
+            });
+            KFK.showDialog({ pasteContentDialog: true });
+        } else {
+            //Normal plain text
+            showbox = KFK.hoverJqDiv() ? false : true;
+            if (showbox) {
+                await KFK.mergeAppData("model", "paste", {
+                    showcontent: false,
+                    showdisplay: false,
+                    showbox: showbox,
+                    content: toAdd,
+                    display: toAdd,
+                    ctype: "text",
+                });
+                KFK.showDialog({ pasteContentDialog: true });
+            } else {
+                KFK.APP.model.paste.content = toAdd;
+                KFK.placePastedContent();
+            }
+        }
+    } else if (content.html !== "") {
+        let tmpText = RegHelper.removeMeta(content.html);
+        toAdd = KFK.replaceHTMLTarget(tmpText);
+        showbox = KFK.hoverJqDiv() ? false : true;
+        if (showbox) {
+            await KFK.mergeAppData("model", "paste", {
+                showcontent: false,
+                showdisplay: false,
+                showbox: showbox,
+                content: toAdd,
+                display: toAdd,
+                ctype: "html",
+            });
+            KFK.showDialog({ pasteContentDialog: true });
+        } else {
+            KFK.APP.model.paste.content = toAdd;
+            KFK.placePastedContent();
+        }
+    }
+};
+
+KFK.placePastedContent = async function() {
+    let toAdd = KFK.APP.model.paste.content;
+    let display = KFK.APP.model.paste.display;
+    let ctype = KFK.APP.model.paste.ctype;
+    if (ctype === "url") {
+        toAdd = `<a href="${toAdd}" target="_blank">${display}</a>`;
+    }
+    //paste image or paste text
+    if (KFK.hoverJqDiv()) {
+        if (KFK.anyLocked(KFK.hoverJqDiv())) return;
+        //把文字内容粘贴到hover div上
+
+        if (cocoConfig.node[KFK.hoverJqDiv().attr("nodetype")].edittable) {
+            KFK.fromJQ = KFK.hoverJqDiv().clone();
+            let innerObj = KFK.hoverJqDiv().find(".innerobj");
+            let oldHtml = innerObj.html();
+            //如果同时按着shift键，则使用粘贴内容覆盖原内容，如果没有按shift键，则把粘贴内容加载原内容后面
+            let newHtml = oldHtml + "<BR> " + toAdd;
+            if (KFK.KEYDOWN.shift === false) {
+                newHtml = toAdd;
+            }
+            innerObj.html(newHtml);
+            await KFK.syncNodePut(
+                "U",
+                KFK.hoverJqDiv(),
+                "add text to hover div",
+                KFK.fromJQ,
+                false,
+                0,
+                1
+            );
+        }
+    } else {
+        //box是在pad.js中定义的paste对象时，是否显示边框和背景色的配置信息
+        //paste image in a new node
+        let box = KFK.APP.model.paste.box;
+        let jBox = await KFK.placeNode(
+            false, //shiftKey
+            KFK.myuid(),
+            "textblock",
+            "default",
+            KFK.scrXToJc3X(KFK.currentMousePos.x),
+            KFK.scrYToJc3Y(KFK.currentMousePos.y),
+            100,
+            100,
+            toAdd,
+            ""
+        );
+        switch (box) {
+            case "none":
+                jBox.css("background", "#FFFFFF00");
+                jBox.css("border-color", "#33333300");
+                break;
+            case "border":
+                jBox.css("background", "#FFFFFF00");
+                jBox.css("border-color", "#333333FF");
+                break;
+            case "all":
+                jBox.css("background", "#FFFFFFFF");
+                jBox.css("border-color", "#333333FF");
+                break;
+        }
+        await KFK.syncNodePut("C", jBox, "create text node", null, false, 0, 1);
+    }
+};
+KFK.onCopy = async function(evt) {
+    KFK.logKey("META-C");
+    if (KFK.inDesigner() === false) return;
+    if (KFK.APP.show.dialog.ivtCodeDialog) {
+        return;
+    }
+    let someDIVcopyed = await KFK.duplicateHoverObject(evt, "copy");
+    if (someDIVcopyed) {
+        evt.clipboardData.setData("text/plain", "usediv");
+        evt.clipboardData.setData("text/html", "usediv");
+        evt.preventDefault();
+        KFK.holdEvent(evt);
+    }
+    evt.preventDefault();
+    evt.preventDefault();
+    KFK.holdEvent(evt);
+};
+
+KFK.onPaste = async function(evt) {
+    if (KFK.docIsReadOnly()) return;
+    if (KFK.currentView !== "designer") return;
+    let content = { html: "", text: "", image: null };
+    content.html = evt.clipboardData.getData("text/html");
+    content.text = evt.clipboardData.getData("Text");
+    if (content.text === "usediv") {
+        await KFK.duplicateHoverObject(evt, "paste");
+        return;
+    } else {
+        var items = (evt.clipboardData || evt.originalEvent.clipboardData).items;
+        if (items[1] && (content.html !== "" || content.text !== "")) {
+            KFK.showTextPasteDialog(content);
+        } else if (items[0]) {
+            if (
+                items[0].kind === "string" &&
+                (content.html !== "" || content.text !== "")
+            ) {
+                KFK.showTextPasteDialog(content);
+            } else if (items[0].kind === "file") {
+                var blob = items[0].getAsFile();
+                KFK.dropAtPos = {
+                    x: KFK.scrXToJc3X(KFK.globalMouseX),
+                    y: KFK.scrYToJc3Y(KFK.globalMouseY),
+                };
+                KFK.procPasteBlob(blob);
+            }
+        }
+    }
+};
+
+KFK.onCut = async function(evt) {
+    KFK.deleteHoverOrSelectedDiv(evt, true);
+};
+
+KFK.addEditorToNode = function(jqNode, editor) {
+    let editors = jqNode.attr("editors");
+    if (editors === undefined || editors === null || editors === "") {
+        editors = editor;
+    } else {
+        let editorsArr = editors.split("$$");
+        if (editorsArr[0] === editor) {
+            return;
+        }
+        editorsArr.unshift(editor);
+        editors = editorsArr.join("$$");
+    }
+    jqNode.attr("editors", editors);
+    if (jqNode.hasClass("kfkline")) {
+        if (jqNode.find(".cocoeditors").length === 0) {
+            let allEditorDIV = document.createElement("div");
+            $(allEditorDIV).addClass("cocoeditors");
+            let lastEditorDIV = document.createElement("div");
+            $(lastEditorDIV).addClass("lastcocoeditor");
+            el(jqNode).appendChild(lastEditorDIV);
+            el(jqNode).appendChild(allEditorDIV);
+            if (KFK.APP.model.showEditor === "none") {
+                $(allEditorDIV).css("display", "none");
+                $(lastEditorDIV).css("display", "none");
+            } else if (KFK.APP.model.showEditor === "last") {
+                $(allEditorDIV).css("display", "none");
+                $(lastEditorDIV).css("display", "block");
+            } else if (KFK.APP.model.showEditor === "all") {
+                $(allEditorDIV).css("display", "block");
+                $(lastEditorDIV).css("display", "none");
+            }
+        }
+    }
+    jqNode.find(".cocoeditors").html(KFK.getNodeEditors(jqNode).join(", "));
+    jqNode.find(".lastcocoeditor").html(editor);
+};
+
+KFK.getNodeEditors = function(jqNode) {
+    let editors = jqNode.attr("editors");
+    if (editors === undefined || editors === null || editors === "") {
+        return [];
+    }
+    let editorsArr = editors.split("$$");
+    return editorsArr;
+};
+
+KFK.changeSVGFill = function() {};
+KFK.scrCenter = function() {
+    return { x: $(window).width() * 0.5, y: $(window).height() * 0.5 };
+};
+KFK.showCenterIndicator = function(cx, cy) {
+    KFK.debug("...showCenterIndicator");
+    let center = KFK.scrCenter();
+    let centerX = cx ? cx : center.x;
+    let centerY = cy ? cy : center.y;
+    $("#centerpoint").css("left", centerX - 10);
+    $("#centerpoint").css("top", centerY - 10);
+};
+KFK.gotoFirstPage = function() {
+    KFK.currentPage = 0;
+    KFK.___gotoPage(KFK.currentPage);
+};
+KFK.gotoNextPage = function() {
+    if (KFK.currentPage < KFK.pageBounding.Pages.length - 1) {
+        KFK.currentPage++;
+        KFK.___gotoPage(KFK.currentPage);
+    } else {
+        KFK.scrLog("这已经在最后一页了", 1000);
+    }
+};
+KFK.gotoPrevPage = function() {
+    if (KFK.currentPage > 0) {
+        KFK.currentPage--;
+        KFK.___gotoPage(KFK.currentPage);
+    } else {
+        KFK.scrLog("这已经在第一页了", 1000);
+    }
+};
+KFK.gotoLastPage = function() {
+    KFK.currentPage = KFK.pageBounding.Pages.length - 1;
+    KFK.___gotoPage(KFK.currentPage);
+};
+KFK.gotoAnyPage = function(pageIndex) {
+    if (pageIndex >= 0 && pageIndex < KFK.pageBounding.Pages.length) {
+        KFK.currentPage = pageIndex;
+        KFK.___gotoPage(KFK.currentPage);
+    } else if (pageIndex >= KFK.pageBounding.Page.length) {
+        KFK.currentPage = KFK.pageBounding.Pages.length - 1;
+        KFK.___gotoPage(KFK.currentPage);
+    } else {
+        KFK.currentPage = 0;
+        KFK.___gotoPage(KFK.currentPage);
+    }
+};
+KFK.gotoUpperPage = function() {
+    let pidx = KFK.currentPage - KFK.PageNumberHori;
+    if (pidx < 0) {
+        KFK.scrLog("已经在最顶部了", 1000);
+        return;
+    }
+    KFK.currentPage = pidx;
+    KFK.___gotoPage(KFK.currentPage);
+};
+KFK.gotoLowerPage = function() {
+    let pidx = KFK.currentPage + KFK.PageNumberHori;
+    if (pidx > KFK.pageBounding.Pages.length - 1) {
+        KFK.scrLog("已经在最底部了", 1000);
+        return;
+    }
+    KFK.currentPage = pidx;
+    KFK.___gotoPage(KFK.currentPage);
+};
+KFK.gotoLeftPage = function() {
+    let rowIdx = Math.floor(KFK.currentPage / KFK.PageNumberHori);
+    let columIdx = KFK.currentPage % KFK.PageNumberHori;
+    let nextColumIdx = columIdx - 1;
+    if (nextColumIdx < 0) {
+        KFK.scrLog("已经在最左边了", 1000);
+        return;
+    }
+    let pidx = rowIdx * KFK.PageNumberHori + nextColumIdx;
+    KFK.currentPage = pidx;
+    KFK.___gotoPage(KFK.currentPage);
+};
+KFK.gotoRightPage = function() {
+    let rowIdx = Math.floor(KFK.currentPage / KFK.PageNumberHori);
+    let columIdx = KFK.currentPage % KFK.PageNumberHori;
+    let nextColumIdx = columIdx + 1;
+    if (nextColumIdx > KFK.PageNumberVert - 1) {
+        KFK.scrLog("已经在最右边了", 1000);
+        return;
+    }
+    let pidx = rowIdx * KFK.PageNumberHori + nextColumIdx;
+    KFK.currentPage = pidx;
+    KFK.___gotoPage(KFK.currentPage);
+};
+KFK.___gotoPage = function(pageIndex) {
+    // KFK.scrLog(`goto page ${pageIndex + 1}`);
+    let main = $("#C1");
+    let scroller = $("#S1");
+    let scrCenter = KFK.scrCenter();
+    let window_width = scrCenter.x * 2;
+    let window_height = scrCenter.y * 2;
+
+    let pageCenterX =
+        (KFK.currentPage % KFK.PageNumberHori) * KFK.PageWidth +
+        KFK.PageWidth * 0.5;
+    let pageCenterY =
+        Math.floor(KFK.currentPage / KFK.PageNumberHori) * KFK.PageHeight +
+        KFK.PageHeight * 0.5;
+
+    toLeft = pageCenterX + KFK.LeftB - scrCenter.x;
+    toTop = pageCenterY + KFK.TopB - scrCenter.y;
+
+    KFK.scrollToPos({ x: toLeft, y: toTop });
+};
+
+KFK.startPresentation = async function() {
+    if (KFK.inOverviewMode) return;
+    KFK.maskScreen();
+    KFK.openFullscreen();
+    await KFK.sleep(500);
+    KFK.setLayoutDisplay({
+        showbounding: false,
+        showgrid: false,
+        minimap: false,
+        toplogo: "hidden",
+        docHeaderInfo: "hidden",
+        rtcontrol: "hidden",
+        left: "none",
+        right: "none",
+    });
+    let cbkg = $("#containerbkg");
+    KFK.rememberGrid = cbkg.hasClass("grid1") ?
+        "grid1" :
+        cbkg.hasClass("grid2") ?
+        "grid2" :
+        "";
+    if (KFK.rememberGrid !== "") cbkg.removeClass(KFK.rememberGrid);
+    // KFK.rememberOverallBackgroundColor = $('#overallbackground').css('background-color');
+    // $('#overallbackground').css('background-color', 'black');
+    KFK.scrLog("进入演示模式: 输入pr退出");
+    KFK.inPresentingMode = true;
+    KFK.___presentPage(KFK.currentPage);
+};
+KFK.endPresentation = function() {
+    if (KFK.inOverviewMode) return;
+    KFK.unmaskScreen();
+    KFK.closeFullscreen();
+    KFK.restoreLayoutDisplay();
+    KFK.scrLog("已退出演示模式");
+    KFK.inPresentingMode = false;
+    KFK.___unsetSlideMask();
+    let cbkg = $("#containerbkg");
+    if (KFK.rememberGrid !== "") cbkg.addClass(KFK.rememberGrid);
+    // $('#overallbackground').css('background-color', KFK.rememberOverallBackgroundColor);
+    let main = $("#C1");
+    let scroller = $("#S1");
+    let scrCenter = KFK.scrCenter();
+    let window_width = scrCenter.x * 2;
+    let window_height = scrCenter.y * 2;
+
+    KFK.JC3.css({
+        "transform-origin": `0px 0px`,
+        "-webkit-transform-origin": `0px 0px`,
+    });
+    KFK.JC3.css("transform", `scale(1, 1)`);
+    setTimeout(function() {
+        KFK.JC3.css("transform", `scale(1, 1) translate(0px, 0px)`);
+    }, 100);
+};
+
+KFK.presentNoneMask = function() {
+    KFK.presentMaskMode = false;
+    $(".present-mask").removeClass("white-mask");
+    $(".present-mask").removeClass("black-mask");
+    $(".present-mask").addClass("nodisplay");
+};
+KFK.presentBlackMask = function() {
+    if (
+        KFK.presentMaskMode &&
+        KFK.presentMaskMode === true &&
+        $(".present-mask").hasClass("black-mask")
+    ) {
+        KFK.presentMaskMode = false;
+        $(".present-mask").removeClass("black-mask");
+        $(".present-mask").addClass("nodisplay");
+    } else {
+        KFK.presentMaskMode = true;
+        $(".present-mask").removeClass("white-mask");
+        $(".present-mask").removeClass("nodisplay");
+        $(".present-mask").addClass("black-mask");
+    }
+};
+KFK.presentWhiteMask = function() {
+    if (
+        KFK.presentMaskMode &&
+        KFK.presentMaskMode === true &&
+        $(".present-mask").hasClass("white-mask")
+    ) {
+        KFK.presentMaskMode = false;
+        $(".present-mask").removeClass("white-mask");
+        $(".present-mask").addClass("nodisplay");
+    } else {
+        KFK.presentMaskMode = true;
+        $(".present-mask").removeClass("black-mask");
+        $(".present-mask").removeClass("nodisplay");
+        $(".present-mask").addClass("white-mask");
+    }
+};
+KFK.presentFirstPage = function() {
+    KFK.currentPage = 0;
+    KFK.___presentPage(KFK.currentPage);
+};
+KFK.presentNextPage = function() {
+    if (KFK.currentPage < KFK.pageBounding.Pages.length - 1) {
+        KFK.currentPage++;
+        KFK.___presentPage(KFK.currentPage);
+    } else {
+        KFK.scrLog("这是在最后一页了", 1000);
+    }
+};
+KFK.presentPrevPage = function() {
+    if (KFK.currentPage > 0) {
+        KFK.currentPage--;
+        KFK.___presentPage(KFK.currentPage);
+    } else {
+        KFK.scrLog("这已经在第一页了", 1000);
+    }
+};
+KFK.presentLastPage = function() {
+    KFK.currentPage = KFK.pageBounding.Pages.length - 1;
+    KFK.___presentPage(KFK.currentPage);
+};
+KFK.presentAnyPage = function(pageIndex) {
+    if (pageIndex >= 0 && pageIndex < KFK.pageBounding.Pages.length) {
+        KFK.currentPage = pageIndex;
+        KFK.___presentPage(KFK.currentPage);
+    } else if (pageIndex >= KFK.pageBounding.Page.length) {
+        KFK.currentPage = KFK.pageBounding.Pages.length - 1;
+        KFK.___presentPage(KFK.currentPage);
+    }
+};
+KFK.presentLeftPage = function() {
+    let rowIdx = Math.floor(KFK.currentPage / KFK.PageNumberHori);
+    let columIdx = KFK.currentPage % KFK.PageNumberHori;
+    let nextColumIdx = columIdx - 1;
+    if (nextColumIdx < 0) {
+        KFK.scrLog("已经在最左边了", 1000);
+        return;
+    }
+    let pidx = rowIdx * KFK.PageNumberHori + nextColumIdx;
+    KFK.currentPage = pidx;
+    KFK.___presentPage(KFK.currentPage);
+};
+KFK.presentRightPage = function() {
+    let rowIdx = Math.floor(KFK.currentPage / KFK.PageNumberHori);
+    let columIdx = KFK.currentPage % KFK.PageNumberHori;
+    let nextColumIdx = columIdx + 1;
+    if (nextColumIdx > KFK.PageNumberVert - 1) {
+        KFK.scrLog("已经在最右边了", 1000);
+        return;
+    }
+    let pidx = rowIdx * KFK.PageNumberHori + nextColumIdx;
+    KFK.currentPage = pidx;
+    KFK.___presentPage(KFK.currentPage);
+};
+
+KFK.presentUpperPage = function() {
+    let pidx = KFK.currentPage - KFK.PageNumberHori;
+    if (pidx < 0) {
+        KFK.scrLog("已经在最顶部了", 1000);
+        return;
+    }
+    KFK.currentPage = pidx;
+    KFK.___presentPage(KFK.currentPage);
+};
+KFK.presentLowerPage = function() {
+    let pidx = KFK.currentPage + KFK.PageNumberHori;
+    if (pidx > KFK.pageBounding.Pages.length - 1) {
+        KFK.scrLog("已经在最底部了", 1000);
+        return;
+    }
+    KFK.currentPage = pidx;
+    KFK.___presentPage(KFK.currentPage);
+};
+KFK.___presentPage = function(pageIndex) {
+    KFK.inPresentingMode = true;
+    KFK.scrLog(`page ${pageIndex}`);
+    let pages = KFK.pageBounding.Pages;
+    let main = $("#C1");
+    let scroller = $("#S1");
+    let scrCenter = KFK.scrCenter();
+    let window_width = scrCenter.x * 2;
+    let window_height = scrCenter.y * 2;
+
+    KFK.scrollToPos({
+        x: pages[pageIndex].left + KFK.LeftB,
+        y: pages[pageIndex].top + KFK.TopB,
+    });
+
+    KFK.___setSlideMask(pageIndex);
+
+    let scaleX = window_width / KFK.PageWidth;
+    let scaleY = window_height / KFK.PageHeight;
+    let scale = Math.min(scaleX, scaleY);
+    let scaledW = scale * KFK.PageWidth;
+    let scaledH = scale * KFK.PageHeight;
+    let offsetX = Math.round((window_width - scaledW) * 0.5) / scale;
+    let offsetY = Math.round((window_height - scaledH) * 0.5) / scale;
+
+    KFK.JC3.css({
+        "transform-origin": `${pages[pageIndex].left}px ${pages[pageIndex].top}px`,
+        "-webkit-transform-origin": `${pages[pageIndex].left}px ${pages[pageIndex].top}px`,
+        transform: `scale(${scale}, ${scale}) translate(${offsetX}px, ${offsetY}px)`,
+    });
+    // setTimeout(function () {
+    //   //  main.css("transform", `scale(${scale}, ${scale}) translate(${offsetX}px, ${offsetY}px)`);
+    //   KFK.JC3.css("transform", `translate(${offsetX}px, ${offsetY}px)`);
+    // }, 100);
+};
+
+KFK.___unsetSlideMask = function(page) {
+    $(".slidemask").remove();
+};
+KFK.___setSlideMask = function(pageIndex) {
+    let pages = KFK.pageBounding.Pages;
+    let jLeft = $(".maskLeft");
+    let jTop = $(".maskTop");
+    let jRight = $(".maskRight");
+    let jBottom = $(".maskBottom");
+    if (jLeft.length === 0) {
+        let maskLeft = document.createElement("div");
+        jLeft = $(maskLeft);
+        jLeft.addClass("maskLeft slidemask");
+        jLeft.css({
+            "background-color": "black",
+            position: "absolute",
+            "z-index": 1000000000,
+        });
+        KFK.C3.appendChild(maskLeft);
+    }
+    if (jTop.length === 0) {
+        let maskTop = document.createElement("div");
+        jTop = $(maskTop);
+        jTop.addClass("maskTop slidemask");
+        jTop.css({
+            "background-color": "black",
+            position: "absolute",
+            "z-index": 1000000000,
+        });
+        KFK.C3.appendChild(maskTop);
+    }
+    if (jRight.length === 0) {
+        let maskRight = document.createElement("div");
+        jRight = $(maskRight);
+        jRight.addClass("maskRight slidemask");
+        jRight.css({
+            "background-color": "black",
+            position: "absolute",
+            "z-index": 1000000000,
+        });
+        KFK.C3.appendChild(maskRight);
+    }
+    if (jBottom.length === 0) {
+        let maskBottom = document.createElement("div");
+        jBottom = $(maskBottom);
+        jBottom.addClass("maskBottom slidemask");
+        jBottom.css({
+            "background-color": "black",
+            position: "absolute",
+            "z-index": 1000000000,
+        });
+        KFK.C3.appendChild(maskBottom);
+    }
+
+    jLeft.css({
+        left: `-${KFK.LeftB}px`,
+        top: `-${KFK.TopB}px`,
+        width: KFK.px(pages[pageIndex].left + KFK.LeftB),
+        height: KFK.px(KFK._height + 2 * KFK.TopB),
+    });
+    jTop.css({
+        left: `-${KFK.LeftB}px`,
+        top: `-${KFK.TopB}px`,
+        width: KFK.px(KFK._width + 2 * KFK.LeftB),
+        height: KFK.px(pages[pageIndex].top + KFK.TopB),
+    });
+    jRight.css({
+        left: KFK.px(pages[pageIndex].left + KFK.PageWidth),
+        top: `-${KFK.TopB}px`,
+        width: KFK.px(
+            (KFK.PageNumberHori - (pageIndex % KFK.PageNumberHori) - 1) *
+            KFK.PageWidth +
+            KFK.LeftB
+        ),
+        height: KFK.px(KFK._height + 2 * KFK.TopB),
+    });
+    jBottom.css({
+        left: `-${KFK.LeftB}px`,
+        top: KFK.px(pages[pageIndex].top + KFK.PageHeight),
+        width: KFK.px(KFK._width + 2 * KFK.LeftB),
+        height: KFK.px(
+            (KFK.PageNumberVert - Math.floor(pageIndex / KFK.PageNumberHori) - 1) *
+            KFK.PageHeight +
+            KFK.TopB
+        ),
+    });
+};
+
+KFK.toggleOnePage = function(jc3MousePos) {
+    if (KFK.inPresentingMode) return;
+    let main = $("#C1");
+    let scroller = $("#S1");
+    let scrCenter = KFK.scrCenter();
+    let window_width = scrCenter.x * 2;
+    let window_height = scrCenter.y * 2;
+    KFK.APP.setData("show", "actionlog", false);
+    if (KFK.inOverviewMode === true) {
+        KFK.scrLog("");
+
+        let cbkg = $("#containerbkg");
+        if (KFK.rememberGrid !== "") cbkg.addClass(KFK.rememberGrid);
+
+        KFK.JC3.css({
+            "transform-origin": "0px 0px",
+            "-webkit-transform-origin": "0px 0px",
+            transform: `scale(1, 1)`,
+        });
+        if (jc3MousePos !== undefined) {
+            KFK.scrollToPos({
+                x: jc3MousePos.x - scrCenter.x + KFK.LeftB,
+                y: jc3MousePos.y - scrCenter.y + KFK.TopB,
+            });
+        }
+        KFK.unmaskScreen();
+        KFK.inOverviewMode = false;
+        if (KFK.inFullScreenMode === false) KFK.restoreLayoutDisplay();
+    } else {
+        if (KFK.inFullScreenMode === false) {
+            KFK.setLayoutDisplay({
+                showgrid: false,
+                minimap: false,
+                toplogo: "hidden",
+                docHeaderInfo: "hidden",
+                rtcontrol: "hidden",
+                left: "none",
+                right: "none",
+            });
+        }
+        let cbkg = $("#containerbkg");
+        KFK.rememberGrid = cbkg.hasClass("grid1") ?
+            "grid1" :
+            cbkg.hasClass("grid2") ?
+            "grid2" :
+            "";
+        if (KFK.rememberGrid !== "") cbkg.removeClass(KFK.rememberGrid);
+
+        KFK.scrollPosToRemember = {
+            x: scroller.scrollLeft(),
+            y: scroller.scrollTop(),
+        };
+        let scaleX = window_width / KFK._width;
+        let scaleY = window_height / KFK._height;
+        let scale = Math.min(scaleX, scaleY);
+        let scaledW = scale * KFK._width;
+        let scaledH = scale * KFK._height;
+
+        let offsetX = Math.round((window_width - scaledW) * 0.5) / scale;
+        let offsetY = Math.round((window_height - scaledH) * 0.5) / scale;
+        KFK.scrollToPos({
+            x: KFK.LeftB,
+            y: KFK.TopB,
+        });
+        KFK.JC3.css({
+            "transform-origin": "0px 0px",
+            "-webkit-transform-origin": "0px 0px",
+        });
+        KFK.JC3.css("transform", `scale(${scale}, ${scale})`);
+        setTimeout(function() {
+            KFK.JC3.css(
+                "transform",
+                `scale(${scale}, ${scale}) translate(${offsetX}px, ${offsetY}px)`
+            );
+        }, 200);
+        // main.css( "transform", `translate(${offsetX}px, ${offsetY}px)`)
+        KFK.inOverviewMode = true;
+        KFK.maskScreen();
+        KFK.scrLog("进入全局要览: 要看哪里, 就双击哪里吧", 1000);
+    }
+};
+
+KFK.maskScreen = function() {
+    let mask = document.createElement("div");
+    let jmask = $(mask);
+    jmask.width(KFK._width);
+    jmask.height(KFK._height);
+    jmask.addClass("mask");
+    // jmask.appendTo(KFK.JC3);
+    KFK.C3.appendChild(mask);
+};
+KFK.unmaskScreen = function() {
+    KFK.JC3.find(".mask").remove();
+};
+
+KFK.printCallStack = function() {
+    KFK.info(new Error().stack);
+};
+
+KFK.closeActionLog = function() {
+    KFK.APP.setData("show", "actionlog", false);
+};
+
+KFK.showActionLog = function() {
+    if (!KFK.APP.show.actionlog) {
+        KFK.getActionLog();
+    }
+    KFK.APP.setData("show", "actionlog", !KFK.APP.show.actionlog);
+};
+
+KFK.getActionLog = function() {
+    KFK.debug("refresh actionlog now");
+    KFK.sendCmd("GETBLKOPS", { doc_id: KFK.APP.model.cocodoc.doc_id });
+};
+
+KFK.navActionLog = function(item, direction) {
+    if (item.logs.length === 0) {
+        KFK.debug("no logs");
+        return;
+    }
+    if (direction === "first") {
+        //go left
+        item.pos = 0;
+    } else if (direction === "prev") {
+        //go left
+        item.pos = item.pos - 1;
+        if (item.pos < 0) {
+            item.pos = item.logs.length - 1;
+        }
+    } else if (direction === "next") {
+        item.pos = item.pos + 1;
+        if (item.pos >= item.logs.length) {
+            item.pos = 0;
+        }
+    } else if (direction === "last") {
+        item.pos = item.logs.length - 1;
+    }
+    let nodeid = item.logs[item.pos];
+    KFK.scrollToNode(nodeid);
+};
+
+KFK.actionLogFirst = function() {
+    if (KFK.actionLogToView.actionlog.length > 0) {
+        KFK.actionLogToViewIndex = 0;
+        KFK.actionLogGoto(KFK.actionLogToViewIndex);
+    }
+};
+KFK.actionLogLast = function() {
+    if (KFK.actionLogToView.actionlog.length > 0) {
+        KFK.actionLogToViewIndex = KFK.actionLogToView.actionlog.length - 1;
+        KFK.actionLogGoto(KFK.actionLogToViewIndex);
+    }
+};
+//滚动到某个对象上,并把这个对象放在屏幕中央
+KFK.scrollToNode = function(nodeid) {
+    let jqDIV = $(`#${nodeid}`);
+    if (jqDIV.length <= 0) {
+        KFK.warn("node ", nodeid, "not found");
+        return;
+    }
+    jqDIV = jqDIV.first();
+
+    let top = jqDIV.position().top;
+    let left = jqDIV.position().left;
+    let width = jqDIV.width();
+    let height = jqDIV.height();
+
+    KFK.scrollContainer = $("#S1");
+    let scrollX = left - $(window).width() * 0.5 + width * 0.5 + KFK.LeftB;
+    let scrollY = top - $(window).height() * 0.5 + height * 0.5 + KFK.TopB;
+    KFK.scrollToPos({
+        x: scrollX,
+        y: scrollY,
+    });
+
+    if (KFK.lastActionLogJqDIV != null && KFK.lastActionLogJqDIV !== jqDIV)
+        KFK.lastActionLogJqDIV.removeClass("shadow1");
+    jqDIV.addClass("shadow1");
+    KFK.lastActionLogJqDIV = jqDIV;
+    // KFK.scrollContainer.animate({ // animate your right div
+    //     scrollTop: 300 // to the position of the target
+    // }, 400);
+};
+
+KFK.upgradeToStartAccount = function() {
+    // KFK.toBeUpgradeDemoAccount = JSON.parse(
+    //   JSON.stringify(KFK.APP.model.cocouser)
+    // );
+    KFK.gotoRegister();
+};
+
+KFK.isMyDoc = () => {
+    return KFK.APP.model.cocouser.userid === KFK.APP.model.cocodoc.owner;
+};
+
+KFK.showCopyDocDialog = (doc) => {
+    KFK.tobeCopyDocId = doc._id;
+    KFK.setAppData("model", "copyToDocName", doc.name);
+    KFK.setAppData(
+        "model",
+        "showCopyOrMove",
+        doc.owner === KFK.APP.model.cocouser.userid
+    );
+    KFK.showDialog({ copyDocDialog: true });
+};
+
+KFK.showSetAclDialog = (doc) => {
+    KFK.showDialog({ setAclDialog: true });
+};
+KFK.setAcl = async() => {
+    let desc = {
+        S: "仅发起人",
+        O: "所在组织",
+        P: "公开使用",
+    };
+    KFK.APP.model.currentDoc.acl_desc = desc[KFK.APP.model.currentDoc.acl];
+    await KFK.sendCmd("SETACL", {
+        doc_id: KFK.APP.model.currentDoc._id,
+        acl: KFK.APP.model.currentDoc.acl,
+    });
+};
+
+KFK.copyDoc = () => {
+    let newname = KFK.APP.model.copyToDocName;
+    if (Validator.validateDocName(newname)) {
+        let payload = {
+            fromDocId: KFK.tobeCopyDocId,
+            toPrjId: KFK.APP.model.copyToPrjId,
+            toName: KFK.APP.model.copyToDocName,
+            copyOrMove: KFK.APP.model.check.copyOrMove,
+        };
+        KFK.sendCmd("COPYDOC", payload);
+        KFK.APP.state.copydoc.name = true;
+    } else {
+        KFK.scrLog("新文档名不符合要求");
+        KFK.APP.state.copydoc.name = false;
+    }
+};
+
+KFK.onLinkConnect = async function(data) {
+    let selectorFrom = `#${response.from}`;
+    let selectorTo = `#${response.to}`;
+    let nodeFrom = $(selectorFrom);
+    let nodeTo = $(selectorTo);
+    if (nodeFrom.length > 0 && nodeTo.length > 0) {
+        KFK.drawPathBetween(nodeFrom, nodeTo);
+        KFK.buildConnectionBetween(nodeFrom, nodeTo);
+    }
+};
+
+KFK.showSetProfileDialog = function() {
+    let profile = {
+        name: KFK.APP.model.cocouser.name,
+        avatar: KFK.APP.model.cocouser.avatar,
+        oldpwd: "",
+        newpwd: "",
+        newpwd2: "",
+    };
+    KFK.APP.state.profile.name = null;
+    KFK.APP.state.profile.oldpwd = null;
+    KFK.APP.state.profile.newpwd = null;
+    KFK.APP.state.profile.newpwd2 = null;
+    KFK.setAppData("model", "profileToSet", profile);
+    KFK.showDialog({ setProfileDialog: true });
+};
+
+KFK.setUserProfile = function(bvModalEvt) {
+    bvModalEvt.preventDefault();
+    KFK.handleProfileSubmit();
+};
+
+KFK.handleProfileSubmit = function() {
+    KFK.APP.state.profile.name = Validator.validateUserName(
+        KFK.APP.model.profileToSet.name
+    );
+    KFK.APP.state.profile.oldpwd = Validator.validateUserPassword(
+        KFK.APP.model.profileToSet.oldpwd
+    );
+    KFK.APP.state.profile.newpwd = true;
+    KFK.APP.state.profile.newpwd2 = true;
+    //修改Profile时，新密码可以为空，则表示不修改密码，
+    if (KFK.APP.model.profileToSet.newpwd.trim() !== "") {
+        KFK.APP.state.profile.newpwd = Validator.validateUserPassword(
+            KFK.APP.model.profileToSet.newpwd
+        );
+        KFK.APP.state.profile.newpwd2 = Validator.validateUserPassword(
+            KFK.APP.model.profileToSet.newpwd2
+        );
+    }
+    KFK.APP.state.profile.newpwd2 =
+        KFK.APP.model.profileToSet.newpwd === KFK.APP.model.profileToSet.newpwd2;
+
+    if (
+        KFK.APP.state.profile.name &&
+        KFK.APP.state.profile.oldpwd &&
+        KFK.APP.state.profile.newpwd &&
+        KFK.APP.state.profile.newpwd2
+    ) {
+        KFK.sendCmd("SETPROFILE", KFK.APP.model.profileToSet);
+        KFK.showDialog({ setProfileDialog: false });
+    } else {
+        KFK.scrLog("录入信息不符合要求");
+        return;
+    }
+};
+
+KFK.addSvgLayer = function() {
+    KFK.svgDraw && delete KFK.svgDraw;
+    KFK.svgDraw = SVG().addTo("#C3").size(KFK._width, KFK._height);
+    KFK.svgDraw.attr("id", "D3");
+    KFK.svgDraw.addClass("svgcanvas");
+    KFK.debug("svg layer initialized");
+    KFK.pageBounding = { Pages: [] };
+    let boundingLineOption = {
+        color: "#FFFFFFCC",
+        width: 4,
+        linecap: "square",
+    };
+    for (let i = 0; i < KFK.PageNumberVert; i++) {
+        for (let j = 0; j < KFK.PageNumberHori; j++) {
+            KFK.pageBounding.Pages.push({
+                left: j * KFK.PageWidth,
+                top: i * KFK.PageHeight,
+            });
+        }
+    }
+    for (let i = 0; i <= KFK.PageNumberHori; i++) {
+        let tmpLine = KFK.svgDraw.line(
+            i * KFK.PageWidth,
+            0,
+            i * KFK.PageWidth,
+            KFK._height
+        );
+        tmpLine.addClass("pageBoundingLine").stroke(boundingLineOption);
+    }
+    for (let j = 0; j <= KFK.PageNumberVert; j++) {
+        let tmpLine = KFK.svgDraw.line(
+            0,
+            j * KFK.PageHeight,
+            KFK._width,
+            j * KFK.PageHeight
+        );
+        tmpLine.addClass("pageBoundingLine").stroke(boundingLineOption);
+    }
+};
+
+KFK.restoreSvgLine = function(line_id, html) {
+    let aLine = null;
+    let selector = `.${line_id}`;
+    aLine = KFK.svgDraw.findOne(selector);
+    if (aLine === null || aLine === undefined) {
+        aLine = KFK.svgDraw.line();
+    }
+    let parent = aLine.svg(html, true);
+    aLine = parent.findOne(selector);
+    KFK.addSvgLineEventListner(aLine);
+    return aLine;
+};
+
+KFK.makePath = function(p1, p2) {
+    let rad = 10;
+    let c1 = { x: p2.x - rad, y: p1.y };
+    let c2 = { x: p2.x, y: p1.y + rad };
+
+    let pStr = `M${p1.x} ${p1.y} H${c1.x} S${c2.x} ${c1.y} ${c2.x} ${c2.y} V${p2.y}`;
+    return pStr;
+};
+
+KFK._svgDrawNodesConnect = function(
+    fid,
+    tid,
+    lineClass,
+    lineClassReverse,
+    pstr,
+    triangle
+) {
+    let theLine = null;
+    let reverseLine = KFK.svgDraw.findOne(`.${lineClassReverse}`);
+    let oldLine = KFK.svgDraw.findOne(`.${lineClass}`);
+    let reverseTriangle = KFK.svgDraw.findOne(`.${lineClassReverse}_triangle`);
+    let oldTriangle = KFK.svgDraw.findOne(`.${lineClass}_triangle`);
+    if (oldLine) {
+        oldLine.plot(pstr);
+        oldTriangle.plot(triangle);
+        theLine = oldLine;
+    } else {
+        if (reverseLine) {
+            reverseLine.removeClass(lineClassReverse);
+            reverseLine.addClass(lineClass);
+            reverseLine.plot(pstr);
+            reverseTriangle.removeClass(lineClassReverse + "_triangle");
+            reverseTriangle.addClass(lineClass + "_triangle");
+            reverseTriangle.plot(triangle);
+            theLine = reverseLine;
+        } else {
+            theLine = KFK.svgDraw.path(pstr);
+            theLine
+                .addClass(lineClass)
+                .addClass("connect")
+                .fill("none")
+                .stroke({
+                    width: KFK.APP.model.svg.connect.width,
+                    color: KFK.YIQColorAux || KFK.APP.model.svg.connect.color,
+                });
+            KFK.svgDraw
+                .polygon(triangle)
+                .addClass(lineClass + "_triangle")
+                .addClass("triangle")
+                .fill(KFK.YIQColorAux)
+                .stroke({
+                    width: KFK.APP.model.svg.connect.triangle.width,
+                    color: KFK.APP.model.svg.connect.triangle.color,
+                });
+            theLine.attr({
+                id: lineClass,
+                "origin-width": KFK.APP.model.svg.connect.width,
+            });
+        }
+    }
+    theLine.attr({
+        fid: fid,
+        tid: tid,
+    });
+    theLine.off("mouseover mouseout");
+    theLine.on("mouseover", () => {
+        theLine.attr("stroke-width", KFK.APP.model.svg.connect.width * 2);
+        KFK.hoveredConnectId = theLine.attr("id");
+        KFK.debug("hover connect id", KFK.hoveredConnectId);
+    });
+    theLine.on("mouseout", () => {
+        theLine.attr("stroke-width", KFK.APP.model.svg.connect.width);
+        KFK.hoveredConnectId = null;
+    });
+};
+KFK.lockLine = function(line, lock = true) {
+    if (lock) {
+        let arr = line.array();
+        let x1 = arr[0][0],
+            y1 = arr[0][1],
+            x2 = arr[1][0],
+            y2 = arr[1][1];
+        let r = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+        let d = 10;
+        let y3 = (d * (y2 - y1)) / r + y1;
+        let x3 = (d * (x2 - x1)) / r + x1;
+        let dot = KFK.svgDraw.circle(10);
+        dot
+            .center(x3, y3)
+            .fill("red")
+            .addClass(line.attr("id") + "_lock")
+            .addClass("locklabel");
+        dot.addTo(line.parent());
+        return dot;
+    } else {
+        try {
+            KFK.svgDraw.findOne("." + line.attr("id") + "_lock").remove();
+        } catch (err) {}
+    }
+};
+
+KFK.svgDrawLine = function(id, fx, fy, tx, ty, option) {
+    if (KFK.APP.model.cococonfig.snap) {
+        let p1 = { x: fx, y: fy };
+        let p2 = { x: tx, y: ty };
+        p1 = KFK.getNearGridPoint(p1.x, p1.y);
+        p2 = KFK.getNearGridPoint(p2.x, p2.y);
+        fx = p1.x;
+        fy = p1.y;
+        tx = p2.x;
+        ty = p2.y;
+    }
+    let lineClass = "kfkline";
+    let lineId = "line_" + id;
+    let theLine = KFK.svgDraw.findOne(`#line_${id}`);
+    if (theLine) {
+        theLine.plot(fx, fy, tx, ty).stroke(option);
+    } else {
+        theLine = KFK.svgDraw.line(fx, fy, tx, ty);
+        theLine.attr("id", lineId);
+        theLine.addClass(lineClass).addClass(lineId).stroke(option);
+        theLine.attr("origin-width", option.width);
+        theLine.attr("origin-color", option.color);
+        KFK.addSvgLineEventListner(theLine);
+    }
+    return theLine;
+};
+
+KFK.mouseNear = function(p1, p2, distance) {
+    return (
+        Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)) <= distance
+    );
+};
+
+KFK.moveDIVCenterToPos = function(jqDiv, pos) {
+    jqDiv.css("left", pos.x - KFK.unpx(jqDiv.css("width")) * 0.5);
+    jqDiv.css("top", pos.y - KFK.unpx(jqDiv.css("height")) * 0.5);
+};
+KFK.C3MousePos = function(evt) {
+    return { x: KFK.scrXToJc3X(evt.clientX), y: KFK.scrYToJc3Y(evt.clientY) };
+};
+KFK.ScreenMousePos = function(pos) {
+    return {
+        x: pos.x - KFK.scrollContainer.scrollLeft(),
+        y: pos.y - KFK.scrollContainer.scrollTop(),
+    };
+};
+KFK.hideLineTransformer = function() {
+    $("#linetransformer").css("visibility", "hidden");
+};
+KFK.showLineTransformer = function() {
+    $("#linetransformer").css("visibility", "visible");
+};
+KFK.addSvgLineEventListner = function(theLine) {
+    theLine.on("mouseover", (evt) => {
+        KFK.hoverSvgLine(theLine);
+        let originWidth = theLine.attr("origin-width");
+        let newWidth =
+            originWidth > 10 ? originWidth * 1.2 : Math.max(originWidth * 1.2, 5);
+        theLine.attr({ "stroke-width": newWidth });
+        if (KFK.lineLocked(theLine)) {
+            $("#linetransformer").css("visibility", "hidden");
+            return;
+        }
+
+        $(document.body).css("cursor", "pointer");
+        let parr = theLine.array();
+        if (
+            KFK.mouseNear(KFK.C3MousePos(evt), { x: parr[0][0], y: parr[0][1] }, 20)
+        ) {
+            $("#linetransformer").css("visibility", "visible");
+            KFK.moveLinePoint = "from";
+            KFK.lineToResize = theLine;
+            KFK.setLineToRemember(theLine);
+            KFK.moveLineMoverTo(KFK.jc3PosToJc1Pos({ x: parr[0][0], y: parr[0][1] }));
+        } else if (
+            KFK.mouseNear(KFK.C3MousePos(evt), { x: parr[1][0], y: parr[1][1] }, 20)
+        ) {
+            $("#linetransformer").css("visibility", "visible");
+            KFK.moveLinePoint = "to";
+            KFK.lineToResize = theLine;
+            KFK.setLineToRemember(theLine);
+            KFK.moveLineMoverTo(KFK.jc3PosToJc1Pos({ x: parr[1][0], y: parr[1][1] }));
+        } else {
+            $("#linetransformer").css("visibility", "hidden");
+        }
+    });
+    theLine.on("mouseout", () => {
+        if (KFK.lineDragging === false) {
+            KFK.hoverSvgLine(null);
+            $(document.body).css("cursor", "default");
+            theLine.attr({ "stroke-width": theLine.attr("origin-width") });
+        }
+    });
+    theLine.on("mousedown", (evt) => {
+        KFK.closeActionLog();
+
+        KFK.lineToDrag = theLine;
+        KFK.mousePosToRemember = {
+            x: KFK.currentMousePos.x,
+            y: KFK.currentMousePos.y,
+        };
+        KFK.setLineToRemember(theLine);
+        KFK.lineDraggingStartPoint = {
+            x: KFK.scrXToJc3X(evt.clientX),
+            y: KFK.scrYToJc3Y(evt.clientY),
+        };
+    });
+    //click line
+    theLine.on("click", (evt) => {
+        evt.stopImmediatePropagation();
+        evt.stopPropagation();
+        evt.preventDefault();
+        KFK.hoverSvgLine(theLine);
+        if (KFK.anyLocked(theLine)) return;
+        if (KFK.mode === "lock") {
+            KFK.tryToLockUnlock(evt.shiftKey);
+        }
+        KFK.lineToDrag = null;
+        KFK.focusOnNode(null);
+        KFK.APP.setData("show", "shape_property", true);
+        KFK.APP.setData("show", "customshape", false);
+        KFK.APP.setData("show", "customline", true);
+        KFK.APP.setData("show", "custombacksvg", false);
+        KFK.APP.setData("show", "customfont", false);
+        KFK.APP.setData("show", "layercontrol", false);
+
+        KFK.setLineToRemember(theLine);
+
+        KFK.pickedSvgLine = theLine;
+        // KFK.setRightTabIndex();
+        let color = theLine.attr("stroke");
+        let width = theLine.attr("origin-width");
+        let linecap = theLine.attr("stroke-linecap");
+        $("#lineColor").spectrum("set", color);
+        $("#spinner_line_width").spinner("value", width);
+        let lineSetting = KFK.APP.model.svg.connect.line;
+        lineSetting = {
+            color: color,
+            width: width,
+            linecap: linecap === "round" ? true : false,
+        };
+        KFK.setAppData("model", "line", lineSetting);
+    });
+};
+
+KFK.initLineMover = function() {
+    KFK.debug("...initLineMover");
+    $("#linetransformer").draggable({
+        // move line resize line transform line
+        start: (evt, ui) => {
+            KFK.closeActionLog();
+            KFK.lineMoverDragging = true;
+            // KFK.fromJQ = KFK.tobeTransformJqLine.clone();
+            KFK.lineMoverOldPosition = $("#linetransformer").position();
+            // KFK.setMode('line');
+            evt.stopImmediatePropagation();
+            evt.stopPropagation();
+        },
+
+        drag: (evt, ui) => {
+            if (KFK.tempSvgLine) KFK.tempSvgLine.hide();
+            if (KFK.lineToResize === null) return;
+            let parr = KFK.lineToResize.array();
+            let stopAtPos = KFK.C3MousePos(evt);
+            if (KFK.moveLinePoint === "from") {
+                KFK.lineToResize.plot([
+                    [stopAtPos.x, stopAtPos.y], parr[1]
+                ]);
+            } else {
+                KFK.lineToResize.plot([parr[0],
+                    [stopAtPos.x, stopAtPos.y]
+                ]);
+            }
+        },
+        stop: async(evt, ui) => {
+            //transform line  change line
+            KFK.lineMoverDragging = false;
+            KFK.lineMoverNewPosition = $("#linetransformer").position();
+            if (KFK.lineToResize === null) return;
+            let parr = KFK.lineToResize.array();
+            let stopAtPos = KFK.C3MousePos(evt);
+            if (KFK.APP.model.cococonfig.snap) {
+                stopAtPos = KFK.getNearGridPoint(stopAtPos);
+                let smp = KFK.ScreenMousePos(stopAtPos);
+                KFK.moveDIVCenterToPos($("#linetransformer"), smp);
+            }
+            if (KFK.moveLinePoint === "from") {
+                KFK.lineToResize.plot([
+                    [stopAtPos.x, stopAtPos.y], parr[1]
+                ]);
+            } else {
+                KFK.lineToResize.plot([parr[0],
+                    [stopAtPos.x, stopAtPos.y]
+                ]);
+            }
+            await KFK.syncLinePut(
+                "U",
+                KFK.lineToResize,
+                "resize",
+                KFK.lineToRemember,
+                false
+            );
+            KFK.setLineToRemember(KFK.lineToResize);
+            $("#linetransformer").css("visibility", "hidden");
+        },
+    }); //line transformer. draggable()
+};
+
+KFK.svgDrawTmpLine = function(fx, fy, tx, ty, option) {
+    let tmpLineClass = "line_temp";
+
+    //按着alt的话，需要画成垂直或水平线
+    if (KFK.KEYDOWN.alt) {
+        if (Math.abs(tx - fx) < Math.abs(ty - fy)) tx = fx;
+        else ty = fy;
+    }
+    KFK.tempSvgLine = KFK.svgDraw.findOne(`.${tmpLineClass}`);
+    if (KFK.tempSvgLine) {
+        console.log("find existing templine, replot");
+        KFK.tempSvgLine.show();
+        KFK.tempSvgLine.plot(fx, fy, tx, ty).stroke(option);
+    } else {
+        console.log("find existing templine, drawNew line");
+        KFK.tempSvgLine = KFK.svgDraw
+            .line(fx, fy, tx, ty)
+            .addClass(tmpLineClass)
+            .stroke(option);
+    }
+};
+
+KFK.svgConnectNode = function(fid, tid, fbp, tbp, fx, fy, tx, ty) {
+    if (!(fid && tid)) {
+        KFK.debug("svgConnectNode between, from", fid, "to", tid);
+        return;
+    }
+    let lineClass = `line_${fid}_${tid}`;
+    let lineClassReverse = `line_${tid}_${fid}`;
+    let pstr = "";
+    let triangle = [];
+    let rad = 20;
+    let tri = 20;
+    let tri_half = tri * 0.5;
+    let tri_height = 17.3;
+    let tsx = tx,
+        tsy = ty - tri_height;
+    switch (tbp) {
         case 0:
-          pstr = `M${fx} ${fy} C${fx - rad} ${fy} ${tx - rad} ${ty} ${tx} ${ty}`;
-          break;
+            tsx = tx - tri_height;
+            tsy = ty;
+            triangle = [tsx, tsy + tri_half, tx, ty, tsx, tsy - tri_half];
+            break;
         case 1:
-          pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
-          break;
+            tsx = tx;
+            tsy = ty - tri_height;
+            triangle = [tsx - tri_half, tsy, tx, ty, tsx + tri_half, tsy];
+            break;
         case 2:
-          pstr = `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`;
-          break;
+            tsx = tx + tri_height;
+            tsy = ty;
+            triangle = [tsx, tsy - tri_half, tx, ty, tsx, tsy + tri_half];
+            break;
         case 3:
-          pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
-          break;
-      }
-      break;
-    case 1:
-      switch (tbp) {
+            tsx = tx;
+            tsy = ty + tri_height;
+            triangle = [tsx - tri_half, tsy, tx, ty, tsx + tri_half, tsy];
+            break;
+    }
+    switch (fbp) {
         case 0:
-          pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
-          break;
+            switch (tbp) {
+                case 0:
+                    pstr = `M${fx} ${fy} C${fx - rad} ${fy} ${
+            tx - rad
+          } ${ty} ${tx} ${ty}`;
+                    break;
+                case 1:
+                    pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
+                    break;
+                case 2:
+                    pstr = `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`;
+                    break;
+                case 3:
+                    pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
+                    break;
+            }
+            break;
         case 1:
-          pstr = `M${fx} ${fy} C${fx} ${ty - rad} ${tx} ${ty - rad} ${tx} ${ty}`;
-          break;
+            switch (tbp) {
+                case 0:
+                    pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
+                    break;
+                case 1:
+                    pstr = `M${fx} ${fy} C${fx} ${ty - rad} ${tx} ${
+            ty - rad
+          } ${tx} ${ty}`;
+                    break;
+                case 2:
+                    pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
+                    break;
+                case 3:
+                    pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${fy} ${tx} ${ty}`;
+                    break;
+            }
+            break;
         case 2:
-          pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
-          break;
+            switch (tbp) {
+                case 0:
+                    pstr = `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`;
+                    break;
+                case 1:
+                    pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
+                    break;
+                case 2:
+                    pstr = `M${fx} ${fy} C${fx + rad} ${fy} ${
+            tx + rad
+          } ${ty} ${tx} ${ty}`;
+                    break;
+                case 3:
+                    pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
+                    break;
+            }
+            break;
         case 3:
-          pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${fy} ${tx} ${ty}`;
-          break;
-      }
-      break;
-    case 2:
-      switch (tbp) {
-        case 0:
-          pstr = `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`;
-          break;
-        case 1:
-          pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
-          break;
-        case 2:
-          pstr = `M${fx} ${fy} C${fx + rad} ${fy} ${tx + rad} ${ty} ${tx} ${ty}`;
-          break;
-        case 3:
-          pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
-          break;
-      }
-      break;
-    case 3:
-      switch (tbp) {
-        case 0:
-          pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
-          break;
-        case 1:
-          pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${fy} ${tx} ${ty}`;
-          break;
-        case 2:
-          pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
-          break;
-        case 3:
-          pstr = `M${fx} ${fy} C${fx} ${fy + rad} ${tx} ${ty + rad} ${tx} ${ty}`;
-          break;
-      }
-      break;
-  }
-  KFK._svgDrawNodesConnect(fid, tid, lineClass, lineClassReverse, pstr, triangle);
+            switch (tbp) {
+                case 0:
+                    pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
+                    break;
+                case 1:
+                    pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${fy} ${tx} ${ty}`;
+                    break;
+                case 2:
+                    pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
+                    break;
+                case 3:
+                    pstr = `M${fx} ${fy} C${fx} ${fy + rad} ${tx} ${
+            ty + rad
+          } ${tx} ${ty}`;
+                    break;
+            }
+            break;
+    }
+    KFK._svgDrawNodesConnect(
+        fid,
+        tid,
+        lineClass,
+        lineClassReverse,
+        pstr,
+        triangle
+    );
 };
 
-
-
-
-KFK.myFadeIn = function (jq, ms = 200) {
-  jq && jq.css({ visibility: "visible", opacity: 0.0 }).animate({ opacity: 1.0 }, ms);
+KFK.myFadeIn = function(jq, ms = 200) {
+    jq &&
+        jq
+        .css({ visibility: "visible", opacity: 0.0 })
+        .animate({ opacity: 1.0 }, ms);
 };
-KFK.myFadeOut = function (jq, ms = 200) {
-  jq && jq.animate({ opacity: 0.0 }, ms, function () {
-    jq.css("visibility", 'hidden');
-  });
+KFK.myFadeOut = function(jq, ms = 200) {
+    jq &&
+        jq.animate({ opacity: 0.0 }, ms, function() {
+            jq.css("visibility", "hidden");
+        });
 };
-KFK.myHide = function (jq) {
-  jq && jq.css("visibility", 'hidden');
+KFK.myHide = function(jq) {
+    jq && jq.css("visibility", "hidden");
 };
-KFK.myShow = function (jq) {
-  jq && jq.css({ "visibility": 'visible', opacity: 1.0 });
+KFK.myShow = function(jq) {
+    jq && jq.css({ visibility: "visible", opacity: 1.0 });
 };
-
 
 /* View in fullscreen */
-KFK.openFullscreen = function () {
-  if (KFK.fsElem.requestFullscreen) {
-    KFK.fsElem.requestFullscreen();
-  } else if (KFK.fsElem.mozRequestFullScreen) { /* Firefox */
-    KFK.fsElem.mozRequestFullScreen();
-  } else if (KFK.fsElem.webkitRequestFullscreen) { /* Chrome, Safari and Opera */
-    KFK.fsElem.webkitRequestFullscreen();
-  } else if (KFK.fsElem.msRequestFullscreen) { /* IE/Edge */
-    KFK.fsElem.msRequestFullscreen();
-  }
+KFK.openFullscreen = function() {
+    if (KFK.fsElem.requestFullscreen) {
+        KFK.fsElem.requestFullscreen();
+    } else if (KFK.fsElem.mozRequestFullScreen) {
+        /* Firefox */
+        KFK.fsElem.mozRequestFullScreen();
+    } else if (KFK.fsElem.webkitRequestFullscreen) {
+        /* Chrome, Safari and Opera */
+        KFK.fsElem.webkitRequestFullscreen();
+    } else if (KFK.fsElem.msRequestFullscreen) {
+        /* IE/Edge */
+        KFK.fsElem.msRequestFullscreen();
+    }
 };
 
 /* Close fullscreen */
-KFK.closeFullscreen = function () {
-  try {
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
-    } else if (document.mozCancelFullScreen) { /* Firefox */
-      document.mozCancelFullScreen();
-    } else if (document.webkitExitFullscreen) { /* Chrome, Safari and Opera */
-      document.webkitExitFullscreen();
-    } else if (document.msExitFullscreen) { /* IE/Edge */
-      document.msExitFullscreen();
-    }
-  } catch (error) {
-
-  }
+KFK.closeFullscreen = function() {
+    try {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+            /* Firefox */
+            document.mozCancelFullScreen();
+        } else if (document.webkitExitFullscreen) {
+            /* Chrome, Safari and Opera */
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+            /* IE/Edge */
+            document.msExitFullscreen();
+        }
+    } catch (error) {}
 };
 
-KFK.showIvtCodeDialog = function () {
-  KFK.showDialog({ ivtCodeDialog: true });
-}
-
-KFK.initQuillFonts = function () {
-  KFK.customQuillFonts = [
-    {
-      key: "arial",
-      family: "Arial",
-      label: "Arial"
-    },
-    {
-      key: "courier",
-      family: "Courier",
-      label: "Courier"
-    },
-    {
-      key: "impact",
-      family: "Impact",
-      label: "Impact"
-    },
-    {
-      key: "garamond",
-      family: "Garamond",
-      label: "Garamond"
-    },
-    {
-      key: "tahoma",
-      family: "Tahoma",
-      label: "Tahoma"
-    },
-    {
-      key: "times-new-roman",
-      family: "Times New Roman",
-      label: "TimesNewRoman",
-    },
-    {
-      key: "verdana",
-      family: "Verdana",
-      label: "Verdana"
-    },
-    {
-      key: "microsoft-yahei",
-      family: "Microsoft Yahei",
-      label: "微软雅黑",
-    },
-    {
-      key: "heiti",
-      family: "STHeiti",
-      label: "黑体",
-      variants: "SimHei",
-    },
-    {
-      key: "kaiti",
-      family: "STKaiti",
-      label: "楷体",
-      variants: "KaiTi",
-    },
-    {
-      key: "songti",
-      family: "STSong",
-      label: "宋体",
-      variants: "SimSun",
-    },
-    {
-      key: "fangsong",
-      family: "STFangsong",
-      label: "仿宋",
-      variants: "FangSong",
-    },
-    {
-      key: "pmingliu",
-      family: "PMingLiU",
-      label: "新细明体",
-      variants: "STXihei",
-    },
-    {
-      key: "lisu",
-      family: "LiSu",
-      label: "隶书",
-      variants: "STKaiti",
-    },
-    {
-      key: "youyuan",
-      family: "YouYuan",
-      label: "幼圆",
-      variants: "STKaiti",
-    },
-    {
-      key: "fzyaoti",
-      family: "FZYaoti",
-      label: "方正姚体",
-      variants: "STKaiti",
-    },
-    {
-      key: "stxingkai",
-      family: "STXingkai",
-      label: "华文行楷",
-      variants: "STKaiti",
-    },
-    {
-      key: "stxinwei",
-      family: "STXinwei",
-      label: "华文新魏",
-      variants: "STKaiti",  //variants中可以多个，用逗号分开，有空格的要加单引号
-    },
-  ];
-  // generate code friendly names
-  KFK.customQuillFontNames = KFK.customQuillFonts.map(fontDef => fontDef.key);
-  // add fonts to style
-  var fontStyles = "";
-  KFK.customQuillFonts.forEach(function (fontDef) {
-    var fontName = fontDef.key;
-    var fontVariants = fontDef.variants ? fontDef.variants + ", " : "";
-    fontStyles += ".ql-snow .ql-picker.ql-font .ql-picker-label[data-value=" + fontName + "]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=" + fontName + "]::before {" +
-      "content: '" + fontDef.label + "';" +
-      "font-family: '" + fontDef.family + "', " + fontVariants + "sans-serif;" +
-      "}" +
-      ".ql-font-" + fontName + "{" +
-      " font-family: '" + fontDef.family + "', " + fontVariants + "sans-serif;" +
-      "}";
-  });
-  var node = document.createElement('style');
-  node.innerHTML = fontStyles;
-  document.body.appendChild(node);
+KFK.showIvtCodeDialog = function() {
+    KFK.showDialog({ ivtCodeDialog: true });
 };
 
-KFK.checkBrowser = function () {
-  const browser = Bowser.getParser(window.navigator.userAgent);
-  const isValidBrowser = browser.satisfies({
-    // or in general
-    chrome: ">70",
-    edge: ">70"
-  });
-  KFK.setAppData('model', 'isValidBrowser', isValidBrowser);
-  KFK.debug('isValidBrowser', isValidBrowser);
-};
-
-
-KFK.exportPDF = function () {
-  try {
-    html2canvas(document.body, {
-      onrendered: function (canvas) {
-        document.body.appendChild(canvas)
-      }
+KFK.initQuillFonts = function() {
+    KFK.customQuillFonts = [{
+            key: "arial",
+            family: "Arial",
+            label: "Arial",
+        },
+        {
+            key: "courier",
+            family: "Courier",
+            label: "Courier",
+        },
+        {
+            key: "impact",
+            family: "Impact",
+            label: "Impact",
+        },
+        {
+            key: "garamond",
+            family: "Garamond",
+            label: "Garamond",
+        },
+        {
+            key: "tahoma",
+            family: "Tahoma",
+            label: "Tahoma",
+        },
+        {
+            key: "times-new-roman",
+            family: "Times New Roman",
+            label: "TimesNewRoman",
+        },
+        {
+            key: "verdana",
+            family: "Verdana",
+            label: "Verdana",
+        },
+        {
+            key: "microsoft-yahei",
+            family: "Microsoft Yahei",
+            label: "微软雅黑",
+        },
+        {
+            key: "heiti",
+            family: "STHeiti",
+            label: "黑体",
+            variants: "SimHei",
+        },
+        {
+            key: "kaiti",
+            family: "STKaiti",
+            label: "楷体",
+            variants: "KaiTi",
+        },
+        {
+            key: "songti",
+            family: "STSong",
+            label: "宋体",
+            variants: "SimSun",
+        },
+        {
+            key: "fangsong",
+            family: "STFangsong",
+            label: "仿宋",
+            variants: "FangSong",
+        },
+        {
+            key: "pmingliu",
+            family: "PMingLiU",
+            label: "新细明体",
+            variants: "STXihei",
+        },
+        {
+            key: "lisu",
+            family: "LiSu",
+            label: "隶书",
+            variants: "STKaiti",
+        },
+        {
+            key: "youyuan",
+            family: "YouYuan",
+            label: "幼圆",
+            variants: "STKaiti",
+        },
+        {
+            key: "fzyaoti",
+            family: "FZYaoti",
+            label: "方正姚体",
+            variants: "STKaiti",
+        },
+        {
+            key: "stxingkai",
+            family: "STXingkai",
+            label: "华文行楷",
+            variants: "STKaiti",
+        },
+        {
+            key: "stxinwei",
+            family: "STXinwei",
+            label: "华文新魏",
+            variants: "STKaiti", //variants中可以多个，用逗号分开，有空格的要加单引号
+        },
+    ];
+    // generate code friendly names
+    KFK.customQuillFontNames = KFK.customQuillFonts.map((fontDef) => fontDef.key);
+    // add fonts to style
+    var fontStyles = "";
+    KFK.customQuillFonts.forEach(function(fontDef) {
+        var fontName = fontDef.key;
+        var fontVariants = fontDef.variants ? fontDef.variants + ", " : "";
+        fontStyles +=
+            ".ql-snow .ql-picker.ql-font .ql-picker-label[data-value=" +
+            fontName +
+            "]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=" +
+            fontName +
+            "]::before {" +
+            "content: '" +
+            fontDef.label +
+            "';" +
+            "font-family: '" +
+            fontDef.family +
+            "', " +
+            fontVariants +
+            "sans-serif;" +
+            "}" +
+            ".ql-font-" +
+            fontName +
+            "{" +
+            " font-family: '" +
+            fontDef.family +
+            "', " +
+            fontVariants +
+            "sans-serif;" +
+            "}";
     });
-  } catch (error) {
-    console.error(error.message);
-  }
+    var node = document.createElement("style");
+    node.innerHTML = fontStyles;
+    document.body.appendChild(node);
 };
 
-KFK.exportPDF2 = function () {
-  var html = KFK.JC3.html();
-  var printWindow = window.open('', '', 'height=400,width=800');
-  printWindow.document.write('<html><head><title>DIV Contents</title>');
-  printWindow.document.write('</head><body >');
-  printWindow.document.write(html);
-  printWindow.document.write('</body></html>');
-  printWindow.document.close();
-  printWindow.print();
+KFK.checkBrowser = function() {
+    const browser = Bowser.getParser(window.navigator.userAgent);
+    const isValidBrowser = browser.satisfies({
+        // or in general
+        chrome: ">70",
+        edge: ">70",
+    });
+    KFK.setAppData("model", "isValidBrowser", isValidBrowser);
+    KFK.debug("isValidBrowser", isValidBrowser);
 };
 
-KFK.procFilesDrop = async function (files) {
-  let imageFile = files[0];
-  if (imageFile.type !== 'image/png' && imageFile.type !== 'image/jpeg') {
-    KFK.scrLog("请使用JPG或PNG格式图片");
-    return;
-  }
-  function onProgress(p) {
-    KFK.scrLog(`正在为您准备图片, 请稍候${p}%`, 2000);
-  }
-  const options = {
-    // maxSizeMB: 3,
-    maxWidthOrHeight: Math.round(Math.min(KFK.PageHeight * 0.5, KFK.PageWidth * 0.5)),
-    useWebWorker: true,
-    onProgress: onProgress
-  }
-  try {
-    const compressedFile = await imageCompression(imageFile, options);
-
-    KFK.fileToUpload = compressedFile;
-    await KFK.sendCmd('GETSTS', { stsFor: 'drop' });
-  } catch (error) {
-    console.error(error);
-  }
+KFK.exportPDF = function() {
+    try {
+        html2canvas(document.body, {
+            onrendered: function(canvas) {
+                document.body.appendChild(canvas);
+            },
+        });
+    } catch (error) {
+        console.error(error.message);
+    }
 };
 
-KFK.onGotSTS = function (response) {
-  KFK.sts = response.credential;
-  console.log("Got sts", KFK.sts);
-  // KFK.uploadToQcloudCOS();
-  if (response.stsFor === 'drop') {
-    // KFK.uploadFileToAliyunOSS(KFK.fileToUpload);
-    KFK.uploadFileToQcloudCOS(KFK.fileToUpload);
-  } else if (response.stsFor === 'paste') {
-    // KFK.uploadFileToAliyunOSS(KFK.bloblToPaste);
-    KFK.uploadFileToQcloudCOS(KFK.blobToPaste);
-  }
+KFK.exportPDF2 = function() {
+    var html = KFK.JC3.html();
+    var printWindow = window.open("", "", "height=400,width=800");
+    printWindow.document.write("<html><head><title>DIV Contents</title>");
+    printWindow.document.write("</head><body >");
+    printWindow.document.write(html);
+    printWindow.document.write("</body></html>");
+    printWindow.document.close();
+    printWindow.print();
 };
 
-KFK.procPasteBlob = async function (blob) {
-  KFK.blobToPaste = blob;
-  await KFK.sendCmd('GETSTS', { stsFor: 'paste' });
+KFK.procFilesDrop = async function(files) {
+    let imageFile = files[0];
+    if (imageFile.type !== "image/png" && imageFile.type !== "image/jpeg") {
+        KFK.scrLog("请使用JPG或PNG格式图片");
+        return;
+    }
+
+    function onProgress(p) {
+        KFK.scrLog(`正在为您准备图片, 请稍候${p}%`, 2000);
+    }
+    const options = {
+        // maxSizeMB: 3,
+        maxWidthOrHeight: Math.round(
+            Math.min(KFK.PageHeight * 0.5, KFK.PageWidth * 0.5)
+        ),
+        useWebWorker: true,
+        onProgress: onProgress,
+    };
+    try {
+        const compressedFile = await imageCompression(imageFile, options);
+
+        KFK.fileToUpload = compressedFile;
+        await KFK.sendCmd("GETSTS", { stsFor: "drop" });
+    } catch (error) {
+        console.error(error);
+    }
 };
 
-KFK.makeImageDiv = async function (fileId, posx, posy, imgUrl) {
-  let jqDIV = KFK.placeNode(
-    false, //shiftKey
-    fileId,
-    "textblock",
-    "default",
-    posx, posy,
-    100,
-    100,
-    '',
-    `<img src="${imgUrl} "/>`,
-  );
-  await KFK.syncNodePut("C", jqDIV, "create image node", null, false, 0, 1);
+KFK.onGotSTS = function(response) {
+    KFK.sts = response.credential;
+    console.log("Got sts", KFK.sts);
+    // KFK.uploadToQcloudCOS();
+    if (response.stsFor === "drop") {
+        // KFK.uploadFileToAliyunOSS(KFK.fileToUpload);
+        KFK.uploadFileToQcloudCOS(KFK.fileToUpload);
+    } else if (response.stsFor === "paste") {
+        // KFK.uploadFileToAliyunOSS(KFK.bloblToPaste);
+        KFK.uploadFileToQcloudCOS(KFK.blobToPaste);
+    }
 };
 
-KFK.uploadFileToAliyunOSS = function (file) {
-  let ossConfig = {
-    region: "oss-cn-hangzhou",
-    accessKeyId: KFK.sts.Credentials.AccessKeyId,
-    accessKeySecret: KFK.sts.Credentials.AccessKeySecret,
-    bucket: cocoConfig.oss.cocopad_bucket_name,
-    stsToken: KFK.sts.Credentials.SecurityToken,
-  };
-  KFK.OSSClient = new OSS(ossConfig);
-  let fileId = KFK.myuid();
-  let fileName = fileId + "." + file.type.substr(file.type.indexOf('/') + 1);
-  let fileKeyName = KFK.APP.model.cocouser.orgid + "/" + fileName;
-  KFK.OSSClient.multipartUpload(fileKeyName, file)
-    .then(async (res) => {
-      let imgUrl = res.res.requestUrls[0];
-      if (imgUrl.indexOf('?uploadId') > 0) {
-        imgUrl = imgUrl.substr(0, imgUrl.lastIndexOf('?'));
-      }
+KFK.procPasteBlob = async function(blob) {
+    KFK.blobToPaste = blob;
+    await KFK.sendCmd("GETSTS", { stsFor: "paste" });
+};
 
-      await KFK.makeImageDiv(
+KFK.makeImageDiv = async function(fileId, posx, posy, imgUrl) {
+    let jqDIV = await KFK.placeNode(
+        false, //shiftKey
         fileId,
-        KFK.dropAtPos.x,
-        KFK.dropAtPos.y,
-        imgUrl
-      );
-    })
-    .catch(err => { KFK.error(err); });
-  // let toFile = KFK.dataURLtoFile(evt.target.result, "");
+        "textblock",
+        "default",
+        posx,
+        posy,
+        100,
+        100,
+        "",
+        `<img src="${imgUrl} "/>`
+    );
+    await KFK.syncNodePut("C", jqDIV, "create image node", null, false, 0, 1);
 };
 
-KFK.uploadFileToQcloudCOS = function (file) {
-  let cos = new COS({
-    getAuthorization: function (options, callback) {
-      callback({
-        TmpSecretId: KFK.sts.credentials.tmpSecretId,        // 临时密钥的 tmpSecretId
-        TmpSecretKey: KFK.sts.credentials.tmpSecretKey,      // 临时密钥的 tmpSecretKey
-        XCosSecurityToken: KFK.sts.credentials.sessionToken, // 临时密钥的 sessionToken
-        StartTime: KFK.sts.startTime,
-        ExpiredTime: KFK.sts.expiredTime,
-      });
+KFK.uploadFileToAliyunOSS = function(file) {
+    let ossConfig = {
+        region: "oss-cn-hangzhou",
+        accessKeyId: KFK.sts.Credentials.AccessKeyId,
+        accessKeySecret: KFK.sts.Credentials.AccessKeySecret,
+        bucket: cocoConfig.oss.cocopad_bucket_name,
+        stsToken: KFK.sts.Credentials.SecurityToken,
+    };
+    KFK.OSSClient = new OSS(ossConfig);
+    let fileId = KFK.myuid();
+    let fileName = fileId + "." + file.type.substr(file.type.indexOf("/") + 1);
+    let fileKeyName = KFK.APP.model.cocouser.orgid + "/" + fileName;
+    KFK.OSSClient.multipartUpload(fileKeyName, file)
+        .then(async(res) => {
+            let imgUrl = res.res.requestUrls[0];
+            if (imgUrl.indexOf("?uploadId") > 0) {
+                imgUrl = imgUrl.substr(0, imgUrl.lastIndexOf("?"));
+            }
+
+            await KFK.makeImageDiv(fileId, KFK.dropAtPos.x, KFK.dropAtPos.y, imgUrl);
+        })
+        .catch((err) => {
+            KFK.error(err);
+        });
+    // let toFile = KFK.dataURLtoFile(evt.target.result, "");
+};
+
+KFK.uploadFileToQcloudCOS = function(file) {
+    let cos = new COS({
+        getAuthorization: function(options, callback) {
+            callback({
+                TmpSecretId: KFK.sts.credentials.tmpSecretId, // 临时密钥的 tmpSecretId
+                TmpSecretKey: KFK.sts.credentials.tmpSecretKey, // 临时密钥的 tmpSecretKey
+                XCosSecurityToken: KFK.sts.credentials.sessionToken, // 临时密钥的 sessionToken
+                StartTime: KFK.sts.startTime,
+                ExpiredTime: KFK.sts.expiredTime,
+            });
+        },
+    });
+    let fileId = KFK.myuid();
+    let fileName = fileId + "." + file.type.substr(file.type.indexOf("/") + 1);
+    let fileKeyName = KFK.APP.model.cocouser.orgid + "/" + fileName;
+    if (file.size > 1024 * 1024) {
+        cos.sliceUploadFile({
+                Bucket: cocoConfig.cos.bucket,
+                Region: cocoConfig.cos.region,
+                Key: fileKeyName,
+                Body: file,
+                onTaskReady: function(tid) {
+                    KFK.TaskId = tid;
+                },
+                onHashProgress: function(progressData) {
+                    console.log("onHashProgress", JSON.stringify(progressData));
+                },
+                onProgress: function(progressData) {
+                    console.log("onProgress", JSON.stringify(progressData));
+                },
+            },
+            async function(err, data) {
+                if (err) {
+                    console.log("putObject got error:", err);
+                } else {
+                    console.log("putObject success:", data);
+                    try {
+                        let imgUrl =
+                            "https://" +
+                            cocoConfig.cos.reverseproxy +
+                            data.Location.substr(data.Location.indexOf("/"));
+                        console.log(data);
+                        console.log(imgUrl);
+                        await KFK.makeImageDiv(
+                            fileId,
+                            KFK.dropAtPos.x,
+                            KFK.dropAtPos.y,
+                            imgUrl
+                        );
+                        await KFK.refreshMatLibForAll();
+                    } catch (error) {
+                        console.error(error);
+                    }
+                }
+            }
+        );
+    } else {
+        console.log(
+            "Bebegin putObject, Bucket",
+            cocoConfig.cos.bucket,
+            "region",
+            cocoConfig.cos.region,
+            "Key",
+            fileKeyName
+        );
+        cos.putObject({
+                Bucket: cocoConfig.cos.bucket, // Bucket 格式：test-1250000000
+                Region: cocoConfig.cos.region,
+                Key: fileKeyName,
+                Body: file,
+                onTaskReady: function(tid) {
+                    KFK.TaskId = tid;
+                },
+                onHashProgress: function(progressData) {
+                    console.log("onHashProgress", JSON.stringify(progressData));
+                },
+                onProgress: function(progressData) {
+                    console.log(JSON.stringify(progressData));
+                },
+            },
+            async function(err, data) {
+                if (err) {
+                    console.log("putObject got error:", err);
+                } else {
+                    console.log("putObject success:", data);
+                    try {
+                        let imgUrl =
+                            "https://" +
+                            cocoConfig.cos.reverseproxy +
+                            data.Location.substr(data.Location.indexOf("/"));
+                        console.log(data);
+                        console.log(imgUrl);
+                        await KFK.makeImageDiv(
+                            fileId,
+                            KFK.dropAtPos.x,
+                            KFK.dropAtPos.y,
+                            imgUrl
+                        );
+                        await KFK.refreshMatLibForAll();
+                    } catch (error) {
+                        console.error(error);
+                    }
+                }
+            }
+        );
     }
-  });
-  let fileId = KFK.myuid();
-  let fileName = fileId + "." + file.type.substr(file.type.indexOf('/') + 1);
-  let fileKeyName = KFK.APP.model.cocouser.orgid + "/" + fileName;
-  if (file.size > 1024 * 1024) {
-    cos.sliceUploadFile({
-      Bucket: cocoConfig.cos.bucket,
-      Region: cocoConfig.cos.region,
-      Key: fileKeyName,
-      Body: file,
-      onTaskReady: function (tid) {
-        KFK.TaskId = tid;
-      },
-      onHashProgress: function (progressData) {
-        console.log('onHashProgress', JSON.stringify(progressData));
-      },
-      onProgress: function (progressData) {
-        console.log('onProgress', JSON.stringify(progressData));
-      },
-    }, async function (err, data) {
-      if (err) {
-        console.log("putObject got error:", err);
-      } else {
-        console.log("putObject success:", data);
-        try {
-          let imgUrl = "https://" + cocoConfig.cos.reverseproxy + data.Location.substr(data.Location.indexOf('/'));
-          console.log(data);
-          console.log(imgUrl);
-          await KFK.makeImageDiv(
-            fileId,
-            KFK.dropAtPos.x,
-            KFK.dropAtPos.y,
-            imgUrl
-          );
-          await KFK.refreshMatLib();
-        } catch (error) {
-          console.error(error);
-        }
-      }
-    });
-  } else {
-    console.log("Bebegin putObject, Bucket", cocoConfig.cos.bucket, "region", cocoConfig.cos.region,
-      "Key", fileKeyName);
-    cos.putObject({
-      Bucket: cocoConfig.cos.bucket, // Bucket 格式：test-1250000000
-      Region: cocoConfig.cos.region,
-      Key: fileKeyName,
-      Body: file,
-      onTaskReady: function (tid) {
-        KFK.TaskId = tid;
-      },
-      onHashProgress: function (progressData) {
-        console.log('onHashProgress', JSON.stringify(progressData));
-      },
-      onProgress: function (progressData) {
-        console.log(JSON.stringify(progressData));
-      },
-    }, async function (err, data) {
-      if (err) {
-        console.log("putObject got error:", err);
-      } else {
-        console.log("putObject success:", data);
-        try {
-          let imgUrl = "https://" + cocoConfig.cos.reverseproxy + data.Location.substr(data.Location.indexOf('/'));
-          console.log(data);
-          console.log(imgUrl);
-          await KFK.makeImageDiv(
-            fileId,
-            KFK.dropAtPos.x,
-            KFK.dropAtPos.y,
-            imgUrl
-          );
-          await KFK.refreshMatLib();
-        } catch (error) {
-          console.error(error);
-        }
-      }
-    });
-  }
 };
-
 
 document.onpaste = KFK.onPaste;
 document.oncopy = KFK.onCopy;
 document.oncut = KFK.onCut;
 
-
 let urlFull = window.location.href;
-let host = $(location).attr('host');
-let protocol = $(location).attr('protocol');
+let host = $(location).attr("host");
+let protocol = $(location).attr("protocol");
 KFK.urlBase = protocol + "//" + host + cocoConfig.product.basedir;
 let urlSearch = window.location.search;
-if (host.indexOf('localhost') >= 0) {
-  KFK.distEnv = 'localhost';
+if (host.indexOf("localhost") >= 0) {
+    KFK.distEnv = "localhost";
 } else {
-  KFK.distEnv = 'cloud';
+    KFK.distEnv = "cloud";
 }
 WS.remoteEndpoint = cocoConfig.ws_server.endpoint;
 BossWS.remoteEndpoint = cocoConfig.ws_server.endpoint;
-if (urlSearch.startsWith('?doc=')) {
-  KFK.urlMode = "sharecode";
-  KFK.shareCode = urlSearch.substr(5);
-  KFK.debug('Sharecode in URL', KFK.shareCode);
-  window.history.replaceState({}, null, KFK.urlBase);
-} else if (urlSearch.startsWith('?r=')) {
-  KFK.debug("Ivtcode in URL");
-  KFK.urlMode = "ivtcode";
-  KFK.shareCode = urlSearch.substr(3);
-  window.history.replaceState({}, null, KFK.urlBase);
+if (urlSearch.startsWith("?doc=")) {
+    KFK.urlMode = "sharecode";
+    KFK.shareCode = urlSearch.substr(5);
+    KFK.debug("Sharecode in URL", KFK.shareCode);
+    window.history.replaceState({}, null, KFK.urlBase);
+} else if (urlSearch.startsWith("?r=")) {
+    KFK.debug("Ivtcode in URL");
+    KFK.urlMode = "ivtcode";
+    KFK.shareCode = urlSearch.substr(3);
+    window.history.replaceState({}, null, KFK.urlBase);
 } else {
-  window.history.replaceState({}, null, KFK.urlBase);
+    window.history.replaceState({}, null, KFK.urlBase);
 }
 KFK.debug("URL MODE is", KFK.urlMode);
 
