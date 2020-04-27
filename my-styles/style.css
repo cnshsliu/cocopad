@@ -13,6 +13,104 @@ body {
     background-color: #f0f0f0;
     overscroll-behavior-x: none;
 }
+#coco_todo{
+    background-image: url(https://mlib.liuzijin.com/frontend/todolist1.svg);
+    background-repeat: no-repeat;
+    background-size: 100px 30px;
+    background-position: right 0px top 0px;
+}
+#coco_inprogress{
+    background-image: url(https://mlib.liuzijin.com/frontend/todolist2.svg);
+    background-repeat: no-repeat;
+    background-size: 100px 30px;
+    background-position: right 0px top 0px;
+}
+#coco_done{
+    background-image: url(https://mlib.liuzijin.com/frontend/todolist3.svg);
+    background-repeat: no-repeat;
+    background-size: 100px 30px;
+    background-position: right 0px top 0px;
+    text-decoration: line-through wavy #FF0000CC;
+}
+#coco_todo_list, #coco_inprogress_list, #coco_done_list{
+    display:flex; flex-direction: column; width:100%; height:90%;
+    padding-left: 5%; padding-right: 5%; margin-top:10%; overflow-x: auto; overflow-y: scroll;
+}
+.todo_item{
+    padding-left: 5px;
+    height: 1.5em;
+    font-size: 1.0em;
+    display: flex;
+}
+.todo_item .current{
+    -webkit-box-shadow: 0px 1px 2px 2px #888888 !important;
+    -moz-box-shadow: 0px 1px 2px 2px #888888 !important;
+    box-shadow: 0px 1px 20px 2px #888888 !important;
+    border-radius: 10px !important;
+}
+.prg{
+    position: absolute; height:inherit; z-index: -1;
+}
+.todo_item[prg="0"] .prg{ width: 1px; }
+.todo_item[prg="1"] .prg{ width: 10px; background-color: #ff0000;}
+.todo_item[prg="10"] .prg{ width: 10%; background-color: #ff3300;}
+.todo_item[prg="20"] .prg{ width: 20%;  background-color: #ff6600;}
+.todo_item[prg="30"] .prg{ width: 30%;  background-color: #ff9900;}
+.todo_item[prg="40"] .prg{ width: 40%;  background-color: #ffcc00;}
+.todo_item[prg="50"] .prg{ width: 50%;  background-color: #ffff00;}
+.todo_item[prg="60"] .prg{ width: 60%;  background-color: #ccff00;}
+.todo_item[prg="70"] .prg{ width: 70%;  background-color: #99ff00;}
+.todo_item[prg="80"] .prg{ width: 80%;  background-color: #66ff00;}
+.todo_item[prg="90"] .prg{ width: 90%;  background-color: #33ff00;}
+.todo_item[prg="100"] .prg{ background-color: #00ff00;}
+#coco_todo_list .todo_item:hover {
+    border-radius: 10px;
+    border:1px solid #e5dbff;
+}
+#coco_inprogress_list .todo_item:hover {
+    border-radius: 10px;
+    border: 1px solid #979751;
+}
+#coco_done_list .todo_item:hover {
+    border-radius: 10px;
+    border: 1px solid #18d62f;
+}
+#todo_option{
+    background-color: aqua;
+    border: 1px solid #333333;
+    border-radius: 5px;
+    position: absolute;
+    width: 200px;
+    height: 180px;
+    overflow-x: auto;
+    display: flex;
+    flex-wrap: wrap;
+}
+#todo_option div{
+    width: 50px; 
+    height: 30px;
+    text-align: center;
+    flex-grow: 1;
+}
+#todo_option div:hover{
+    border-radius: 5px;
+    background-color: #6635e2;
+    color: white;
+}
+.progress_halfmenu{
+    width:50% !important; text-align: center !important; align-content: center !important; 
+    font-size: 18px;
+    font-weight: 400;
+}
+.progress_title{
+    width:100% !important; text-align: center !important; align-content: center !important; 
+    font-size: 18px;
+    font-weight: 700;
+    background-color: navajowhite;
+}
+.progress_title :hover{
+    background-color: aqua;
+}
 
 input::-webkit-input-placeholder {
     color: #c8c3e379 !important;
@@ -261,22 +359,27 @@ input::placeholder {
 .msgarea {
     white-space: nowrap;
     font-size: 24px;
-    z-index: 100;
+    z-index: 1000;
     color: #534f4f;
     position: absolute;
-    top: -24px;
+    right: 0px;
+    top: 50px;
     width: fit-content;
-    left: 50%;
     margin-top: 8px;
     padding: 0px 15px 0px 15px;
-    border-radius: 0px 0px 20px 20px;
+    border-radius: 20px 0px 0px 20px;
     background-color: #ffffffff;
     border: 1px solid #00000045;
-    -webkit-transform: translate(-50%, -50%);
-    -moz-transform: translate(-50%, -50%);
-    -ms-transform: translate(-50%, -50%);
-    -o-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
+}
+#sharethis{
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    -webkit-transform: translate(-50%, 0%);
+    -moz-transform: translate(-50%, 0%);
+    -ms-transform: translate(-50%, 0%);
+    -o-transform: translate(-50%, 0%);
+    transform: translate(-50%, 0%);
 }
 
 .cocopadbg {
@@ -746,13 +849,12 @@ select:focus {
 
 .docHeaderInfo {
     position: absolute;
-    top: 2px;
+    top: 5px;
     left: 84px;
     z-index: 999999;
-    margin-top: 2px;
     padding: 0px 20px 0px 20px;
     border-radius: 10px;
-    background-color: #eeeeee69;
+    background-color: #eeeeee;
     border: 1px solid #aaa;
 }
 
@@ -818,7 +920,7 @@ select:focus {
 
 #shareDialog {
     position: absolute;
-    width: 400px;
+    width: 600px;
     background-color: white;
     box-shadow: -1px 0 15px #686868, 0 1px 15px #686868, 1px 0 15px #686868, 0 -1px 15px #686868;
     top: calc(50vh - 300px);
@@ -1159,6 +1261,10 @@ select:focus {
 
 #modeIndicator {
     z-index: 4;
+}
+
+#todo_option{
+    z-index: 5;
 }
 
 #linetransformer {
@@ -1550,6 +1656,23 @@ table.quick-help-table td:first-of-type {
     height: 100px;
 }
 
+.todoInput {
+    position: absolute;
+    z-index: 10000020;
+    left: 5px;
+    bottom: 5px;
+    margin: 0px;
+    border-radius: 0px;
+    display: flex;
+    width: 100%;
+    height: 30px;
+    background-color: transparent;
+    align-items: center;
+    justify-content: center;
+}
+.round-input{
+    border-radius: 20px;
+}
 .matlib-topick {
     position: absolute;
     z-index: 10000010;

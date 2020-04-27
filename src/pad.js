@@ -11,6 +11,7 @@ const app = new Vue({
 
     data: {
         selected: 'A',
+        todo: '',
         state: {
             profile: { name: null, oldpwd: null, newpwd: null, newpwd2: null, },
             reg: { userid: null, name: null, pwd: null, pwd2: null, },
@@ -56,7 +57,7 @@ const app = new Vue({
                 svgs: ["biz001", "biz002", "biz003", "biz004", "biz005", "biz006", "biz007", "biz008", "biz009", "biz010", "biz011", "biz012", "biz013", "biz014", "biz015", "biz016", "biz017", "biz018", "biz019", "biz020", "biz021", "biz022", "biz023", "biz024", "biz025", "biz026", "biz027", "biz028", "biz029", "biz030", "biz031", "biz032", "biz033", "biz034", "biz035", "biz036", "biz037", "biz038", "biz039", "biz040", "biz041", "biz042", "biz043", "biz044", "biz045", "biz04", "biz047", "biz048", "biz049", "biz050", "biz051", "biz052", "biz053", "biz054", "biz055", "biz056", "biz057", "biz058", "biz059", "biz060"],
             }
         ],
-        toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'richtext': false, 'lock': false, 'minimap': false, 'connect': false, 'material': false, 'clean': false, 'brain': false },
+        toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'richtext': false, 'lock': false, 'minimap': false, 'connect': false, 'material': false, 'clean': false, 'brain': false, 'todo': false },
         docNavTabIndex: 0,
         show: {
             'loading': false,
