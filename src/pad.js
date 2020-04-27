@@ -11,7 +11,7 @@ const app = new Vue({
 
     data: {
         selected: 'A',
-        todo: '',
+        inputMsg: '',
         state: {
             profile: { name: null, oldpwd: null, newpwd: null, newpwd2: null, },
             reg: { userid: null, name: null, pwd: null, pwd2: null, },

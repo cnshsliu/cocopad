@@ -588,9 +588,9 @@
             </div>
 
             <div id="sharethis" class="padlayout noshow">
-            <b-button id='sharethisbutton' @click="SHARE.shareThisDoc" class="" variant="success">
-                <b-icon icon="box-arrow-up"></b-icon>分享或邀请他人一起创作
-            </b-button>
+                <b-button id='sharethisbutton' @click="SHARE.shareThisDoc" class="" variant="success">
+                    <b-icon icon="box-arrow-up"></b-icon>分享或邀请他人一起创作
+                </b-button>
             </div>
             <!-- menu rtmenu -->
             <div id="rtcontrol" class="padlayout noshow">
@@ -598,7 +598,7 @@
                     <b-button id="goto_explorer" variant="success" @click="KFK.gotoExplorer">
                         <b-icon icon="house"></b-icon>
                     </b-button>
-                    
+
                     <!-- <b-dropdown right variant="success" class="m-2">
             <template v-slot:button-content><b-icon icon="cloud-download"></b-icon>导出</template>
             <b-dropdown-item href="#" id="toggle_all" variant="success" @click="KFK.exportPDF"> 导出PDF </b-dropdown-item>
@@ -963,7 +963,7 @@
                                     </template>
                                     <template v-slot:cell(operations)="aDoc">
                                         <b-col class="d-flex justify-content-center" style="padding:0px;">
-                                            <b-button size="sm" class="m-0 p-0" variant="info"
+                                            <b-button size="sm" class="m-0 px-2 py-0" variant="info"
                                                 v-on:click="KFK.showDocOpMenu(aDoc.item, aDoc.index, $event)">
                                                 操作
                                             </b-button>
@@ -1496,12 +1496,15 @@
                                     <b-col class="m-0 p-1">
                                         <b-row>
                                             <b-col class="text-center m-0 p-1">
-                                                <b-img-lazy src="https://nanjing1-1255349658.cos.ap-nanjing.myqcloud.com/boss/customerservice.png"
-                                                    width="200px" /></b-col>
+                                                <b-img-lazy
+                                                    src="https://nanjing1-1255349658.cos.ap-nanjing.myqcloud.com/boss/customerservice.png"
+                                                    width="200px" />
+                                            </b-col>
                                             <b-col class="text-center m-0 p-1">
                                                 <b-img-lazy
                                                     src="https://nanjing1-1255349658.cos.ap-nanjing.myqcloud.com/boss/wechatgathering.png"
-                                                    width="200px" /></b-col>
+                                                    width="200px" />
+                                            </b-col>
                                         </b-row>
                                     </b-col>
                                 </b-row>
@@ -1608,39 +1611,38 @@
         <!-- explorer -->
         <!--minimap-->
         <div id="various_modals">
-            <div id="shareDialog" v-show="show.dialog.shareDialog" title="分享文档" button-size="sm" centered size="lg"
-                class="noshow">
-                <b-container>
-                    <b-form>
-                        <b-row>
-                            <b-col class="shareItTips">
-                                请将下面文档地址发送给协作者<BR>
-                                    协作者打开地址后，将与你一起在白板上协同创作<BR>
-                                需要时，你也可以在管理界面设置白板密码<BR>
-                                    或将白板设为只读模式<BR>
-                            </b-col>
-                        </b-row>
-                        <b-row class="text-center mt-3" cols=8>
-                            <b-col class="mt-3">
-                                <b-form-input id="shareItUrl" class="share-it-url" disabled trim
-                                    v-model="model.share.url">
-                                </b-form-input>
-                            </b-col>
-                            <div class="w-100"></div>
-                            <b-col class="mt-2">
-                                <b-button variant="outline-secondary" size="sm" class="mb-2"
-                                    v-on:click="SHARE.cancelShare">
-                                    <b-icon icon="x"></b-icon>取消
-                                </b-button>
-                                <b-button id="shareItBtn" variant="outline-primary" size="sm" class="mb-2">
-                                    <b-icon icon="box-arrow-up"></b-icon>复制地址
-                                    <!-- share doc -->
-                                </b-button>
-                            </b-col>
-                        </b-row>
-                    </b-form>
+            <b-modal v-model="show.dialog.shareDialog" id='shareitmodal' title="分享文档" button-size="lg" hide-footer
+                centered size="lg">
+                <!-- must keep this container, or else clipboardjs work inproperly -->
+                <b-container id="shareitcontainer">
+                    请将下面文档地址发送给协作者<BR>
+                    协作者打开地址后，将与你一起在白板上协同创作<BR><BR>
+                    <ol>
+                        请注意
+                        <li>
+                            <font color='red'>如白板限制为仅发起人，协作者无法参与协作</font>
+                        </li>
+                        <li>
+                            <font color='red'>如白板限制为当前组织，协作者需要在同一组织才能参与</font>
+                        </li>
+                        <li>
+                            <font color='red'>如白板限制为公开使用，任何协作者均可参与</font>
+                        </li>
+                        <li>如协作者打开链接时未注册未登录过，则使用临时用户身份参与，此时，协作者只能参与“公开使用”的白板</li>
+                        <li>请提醒对方尽快注册为正式用户，然后你需要把该用户添加到你的组织，对方选择进入组织后，即可参与权限为”当前组织“的白板协作</li>
+                        <li>需要时，你还可以进一步在管理界面设置白板密码, 即便协作者有权参与协作，也需要输入正确的密码才能打开白板</li>
+                        <li>你也可以将白板设为只读模式， 此时，所有人只能查看、不能修改白板</li>
+                    </ol>
+                    <center>
+                        <b-form-input id="shareItUrl" class="share-it-url" disabled trim v-model="model.share.url">
+                        </b-form-input>
+                        <b-button id="shareItBtn" variant="outline-primary" size="sm" class="mb-2">
+                            <b-icon icon="box-arrow-up"></b-icon>复制地址
+                            <!-- share doc -->
+                        </b-button>
+                    </center>
                 </b-container>
-            </div>
+            </b-modal>
             <b-modal @ok="KFK.placePastedContent" v-model="show.dialog.pasteContentDialog" title="请选择粘贴方式"
                 button-size="sm" centered size="md">
                 <b-container>
@@ -1683,24 +1685,24 @@
             <div class="docopmenu_main">
                 <b-col class="myhovered" @click="KFK.showCopyDocDialog(model.currentDoc); KFK.hideDocOpMenu();">
                     <b-button v-if="model.currentDoc" class="m-0 p-0 avatarimg" variant="outline-none">
-                        <b-icon icon="files" variant="secondary"></b-icon>复制
+                        <b-icon icon="files" variant="secondary"></b-icon>复制白板
                     </b-button>
                 </b-col>
                 <b-col class="myhovered" @click="SHARE.shareDoc(model.currentDoc); KFK.hideDocOpMenu();">
                     <b-button class="m-0 p-0  avatarimg" variant="outline-none">
-                        <b-icon icon="box-arrow-up" variant="secondary"></b-icon>分享
+                        <b-icon icon="box-arrow-up" variant="secondary"></b-icon>协作分享
                     </b-button>
                 </b-col>
                 <b-col class="myhovered" @click="KFK.deleteDocItem(model.currentDoc); KFK.hideDocOpMenu();">
                     <b-button v-if="model.currentDoc && model.currentDoc.owner===model.cocouser.userid"
                         class="m-0 p-0 avatarimg" variant="outline-none">
-                        <b-icon icon="trash" variant="secondary"></b-icon>删除
+                        <b-icon icon="trash" variant="secondary"></b-icon>删除白板
                     </b-button>
                 </b-col>
                 <b-col class="myhovered" @click="KFK.showSetAclDialog(model.currentDoc); KFK.hideDocOpMenu();">
                     <b-button v-if="model.currentDoc && model.currentDoc.owner===model.cocouser.userid"
                         class="m-0 p-0 avatarimg" variant="outline-none">
-                        <b-icon icon="shield-shaded" variant="secondary"></b-icon>权限
+                        <b-icon icon="shield-shaded" variant="secondary"></b-icon>权限范围
                     </b-button>
                 </b-col>
             </div>
@@ -2001,9 +2003,11 @@
             </div>
             <div class="matlib-title">素材库 ESC退出</div>
         </div>
-        <div class="todoInput noshow">
-            <b-input-group prepend="回车添加/ESC关闭" class="mb-2 w-100 round-input">
-                <b-input v-model="todo" placeholjjer="" v-on:keydown="KFK.inputTodo($event)"> </b-input>
+        <div class="msgInput noshow">
+            <b-input-group :prepend="KFK.inputFor?(KFK.inputFor==='chat'?'消息':'待办'):'输入'"
+                class="mb-2 w-100 round-input">
+                <b-input v-model="inputMsg" placeholder="回车送出/ESC关闭/chat切换到聊天/todo切换到待办"
+                    v-on:keydown="KFK.onMsgInput($event)"> </b-input>
             </b-input-group>
         </div>
     </div>

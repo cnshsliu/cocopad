@@ -14,25 +14,27 @@ body {
     overscroll-behavior-x: none;
 }
 #coco_todo{
-    background-image: url(https://mlib.liuzijin.com/frontend/todolist1.svg);
-    background-repeat: no-repeat;
-    background-size: 100px 30px;
-    background-position: right 0px top 0px;
+    padding: 0;
 }
 #coco_inprogress{
-    background-image: url(https://mlib.liuzijin.com/frontend/todolist2.svg);
-    background-repeat: no-repeat;
-    background-size: 100px 30px;
-    background-position: right 0px top 0px;
+    padding: 0;
 }
 #coco_done{
-    background-image: url(https://mlib.liuzijin.com/frontend/todolist3.svg);
-    background-repeat: no-repeat;
-    background-size: 100px 30px;
-    background-position: right 0px top 0px;
+    padding: 0;
     text-decoration: line-through wavy #FF0000CC;
 }
+#coco_todo_title, #coco_inprogress_title, #coco_done_title, #coco_chat_title{
+    position: absolute;
+    top: 0px; left: 0px; width:100%;
+    text-align: center;
+    font-size: 24px; color: #20201fc9;
+    background-color: antiquewhite;
+}
 #coco_todo_list, #coco_inprogress_list, #coco_done_list{
+    display:flex; flex-direction: column; width:100%; height:90%;
+    padding-left: 5%; padding-right: 5%; margin-top:10%; overflow-x: auto; overflow-y: scroll;
+}
+#coco_chat_list{
     display:flex; flex-direction: column; width:100%; height:90%;
     padding-left: 5%; padding-right: 5%; margin-top:10%; overflow-x: auto; overflow-y: scroll;
 }
@@ -360,7 +362,7 @@ input::placeholder {
     white-space: nowrap;
     font-size: 24px;
     z-index: 1000;
-    color: #534f4f;
+    color: #ffffff;
     position: absolute;
     right: 0px;
     top: 50px;
@@ -368,7 +370,7 @@ input::placeholder {
     margin-top: 8px;
     padding: 0px 15px 0px 15px;
     border-radius: 20px 0px 0px 20px;
-    background-color: #ffffffff;
+    background-color: #28a745;
     border: 1px solid #00000045;
 }
 #sharethis{
@@ -918,26 +920,6 @@ select:focus {
     box-shadow: none !important;
 }
 
-#shareDialog {
-    position: absolute;
-    width: 600px;
-    background-color: white;
-    box-shadow: -1px 0 15px #686868, 0 1px 15px #686868, 1px 0 15px #686868, 0 -1px 15px #686868;
-    top: calc(50vh - 300px);
-    left: calc(50vw - 200px);
-    border-radius: 10px;
-    padding: 20px;
-    z-index: 100;
-}
-
-#shareDialog img {
-    position: absolute;
-    top: 50px;
-    left: 5px;
-    width: 100px;
-    height: 100px;
-}
-
 .docnav {
     font-size: 14px;
 }
@@ -1377,7 +1359,7 @@ input {
     height: 130px;
     background-color: #ffffff;
     border-radius: 10px;
-    padding-left: 10px;
+    padding-left: 0px;
     padding-right: 10px;
     padding-top: 10px;
     padding-bottom: 10px;
@@ -1656,7 +1638,7 @@ table.quick-help-table td:first-of-type {
     height: 100px;
 }
 
-.todoInput {
+.msgInput {
     position: absolute;
     z-index: 10000020;
     left: 5px;

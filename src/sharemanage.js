@@ -30,21 +30,25 @@ SHARE.shareDoc = async function (item) {
 SHARE.startShare = async function (share) {
     let url = KFK.getProductUrl() + "/?doc=";
     url = url + KFK.codeToBase64(JSON.stringify(share));
+    console.log('startShare', share, url);
     KFK.APP.model.share.url = url;
     KFK.mergeAppData('model.share', {url: url});
+    console.log(KFK.APP.model.share.url);
 
-    //这个dialog使用div实现的，初始设了noshow防止启动时闪现
-    $('#shareDialog').removeClass('noshow');
     //向服务端要临时sharecode
     KFK.showDialog({ shareDialog: true });
-    if (KFK.clipboard) { delete KFK.clipboard; }
+    if (KFK.clipboard) { KFK.clipboard.destroy(); }
     //注册分享按钮，实现放入剪贴板
     //借用clipboardjs的回调方法，刚好把doEmailShare也放在这里
+    await KFK.sleep(100);
     KFK.clipboard = new ClipboardJs("#shareItBtn", {
+        //必须保留这个container， 否则，clipboardjs工作不正常
+        container: document.getElementById('shareitcontainer'),
         text: function (trigger) {
             KFK.showDialog({ shareDialog: false });
             KFK.scrLog('分享代码已复制到剪贴板');
-            return KFK.APP.model.share.url;
+            let ret = KFK.APP.model.share.url;
+            return ret;
         }
     });
 };
