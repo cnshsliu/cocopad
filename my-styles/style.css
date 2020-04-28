@@ -63,7 +63,7 @@ body {
 .todo_item[prg="60"] .prg{ width: 60%;  background-color: #ccff00;}
 .todo_item[prg="70"] .prg{ width: 70%;  background-color: #99ff00;}
 .todo_item[prg="80"] .prg{ width: 80%;  background-color: #66ff00;}
-.todo_item[prg="90"] .prg{ width: 90%;  background-color: #33ff00;}
+.todo_item[prg="90"] .prg{ width: 90%;  background-color: #00ff00;}
 .todo_item[prg="100"] .prg{ background-color: #00ff00;}
 #coco_todo_list .todo_item:hover {
     border-radius: 10px;
@@ -860,17 +860,28 @@ select:focus {
     border: 1px solid #aaa;
 }
 
+.loading.yiq-black,
 .docHeaderInfo.yiq-black .docname,
 .docHeaderInfo.yiq-black .docteam,
 .docHeaderInfo.yiq-black .userinfo button {
     color: #333333 !important;
 }
 
+.loading.yiq-white,
 .docHeaderInfo.yiq-white .docname,
 .docHeaderInfo.yiq-white .docteam,
 .docHeaderInfo.yiq-white .userinfo button {
     color: aquamarine !important;
 }
+
+.docHeaderInfo.yiq-white {
+    background-color: #333333 !important;
+}
+.docHeaderInfo.yiq-black {
+    background-color: aquamarine !important;
+}
+
+
 
 .docname {
     font-size: 24px;
@@ -1247,6 +1258,37 @@ select:focus {
 
 #todo_option{
     z-index: 5;
+}
+
+.chat_item{
+    display: flex;
+    margin-top:5px;
+}
+.chatname{
+    white-space: nowrap;
+}
+.chat_item.me{
+    align-self: flex-end;
+}
+.chat_item.me .chatmsg{
+    margin-right: 5px;
+    padding: 0px 5px 0px 5px;
+    border-radius: 5px;
+    background-color: #28a745;
+    color: black;
+}
+.chat_item.other .chatmsg{
+    margin-left:5px;
+    padding: 0px 5px 0px 5px;
+    border-radius: 5px;
+    background-color: #666666;
+    color: white;
+}
+.chatavatar{
+    width:20px !important; height:20px !important;
+}
+.chatname{
+    font-size: 8px;
 }
 
 #linetransformer {
