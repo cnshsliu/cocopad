@@ -2003,7 +2003,7 @@
             </div>
             <div class="matlib-title">素材库 ESC退出</div>
         </div>
-        <div class="msgInput noshow">
+        <div v-show="show.section.designer" class="msgInput noshow">
             <b-input-group :prepend="KFK.inputFor?(KFK.inputFor==='chat'?'消息':'待办'):'输入'"
                 class="mb-2 w-100 round-input">
                 <b-input v-model="inputMsg" placeholder="回车送出/ESC关闭/chat切换到聊天/todo切换到待办"

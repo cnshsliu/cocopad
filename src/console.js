@@ -786,7 +786,8 @@ KFK.onWsMsg = async function (response) {
             KFK.materialUpdated = true;
             break;
         case 'CHAT':
-            KFK.appendChatItem(response.msg);
+            KFK.scrLog(response.msg);
+            KFK.appendChatItem(response.msg, response.avatar, response.name, 'other');
             break;
         default:
             break;
@@ -1279,6 +1280,16 @@ KFK.undo = async () => {
                             KFK.updateNodeEvent(jqFrom, "droppable", "destroy");
                         } else {
                             KFK.debug(nodeid, "NOT hasclass lock");
+                        }
+                        //对TODO/CHAT要做如下修复
+                        if (KFK.isTodoListOrChatListDIV(jqFrom)) {
+                            jqFrom.find('.coco_list').addClass('original');
+                            if(KFK.isTodoListDIV(jqFrom)){
+                                jqFrom.addClass('todolist');
+                                KFK.setTodoItemEventHandler(jqFrom);
+                            }else if(KFK.isChatListDIV(jqFrom)){
+                                jqFrom.addClass('chatlist');
+                            }
                         }
                         await KFK.syncNodePut("C", jqFrom, "undo", null, true, 0, 1);
                     });
@@ -2344,6 +2355,17 @@ KFK.cleanNodeEventFootprint = function (jqNodeDIV) {
     );
 };
 
+/**
+ * 在复制剪切节点时，需要把original, chatlist, todolist这些类去掉
+ * 预约区别开原始列表和复制列表
+ */
+KFK.cleanTodoChatForBackup = function(jqNodeDIV){
+    jqNodeDIV.find(".original").removeClass('original');
+    jqNodeDIV.removeClass(
+        "chatlist todolist"
+    );
+};
+
 KFK.syncNodeContentPut = async function (nodeID, content) {
     if (KFK.docIsReadOnly()) return;
     try {
@@ -3262,7 +3284,8 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
             evt.stopPropagation();
             evt.preventDefault();
             //Don't edit todolist direclty, show edit dialog instead.
-            if (jqNodeDIV.hasClass('nocopy')) {
+            //double click to edit
+            if (jqNodeDIV.hasClass('noedit')) {
                 if (jqNodeDIV.attr("id") === "coco_todo") {
                     KFK.inputFor = "todo";
                     await KFK.showMsgInputDlg();
@@ -3405,10 +3428,12 @@ KFK.startInlineEditing = function (jqNodeDIV) {
             evt.preventDefault();
         } else if (evt.keyCode == 35 || evt.keyCode === 34) {
             //END  || PageDown
+            //阻止浏览器滚动窗口的缺省动作
             evt.stopPropagation();
             evt.preventDefault();
         } else if (evt.keyCode === 36 || evt.keyCode === 33) {
             //HOME
+            //阻止浏览器滚动窗口的缺省动作
             evt.stopPropagation();
             evt.preventDefault();
             // let jInner = jqNodeDIV.find('.innerobj');
@@ -4065,10 +4090,17 @@ KFK.getNodeIdsFromConnectId = function (cid) {
     tid = tid.substr(tid.lastIndexOf("_") + 1);
     return [nid, tid];
 };
+
+/**
+ * 删除hover或者selected 节点
+ * @param evt oncut事件
+ * @param cutMode， 是否是cut方式，cut方式下，删除前先复制
+ */
 KFK.deleteHoverOrSelectedDiv = async function (evt, cutMode = false) {
     //如果有多个节点被选择，则优先进行多项删除
+    KFK.copyCandidateDIVs = [];
+    KFK.copyCandidateLines = [];
     if (KFK.selectedDIVs.length > 1) {
-        KFK.copyCandidateDIVs = [];
         KFK.debug("delete, selected >1");
         let notLockedCount = 0;
         for (let i = 0; i < KFK.selectedDIVs.length; i++) {
@@ -4084,7 +4116,15 @@ KFK.deleteHoverOrSelectedDiv = async function (evt, cutMode = false) {
             let delCount = notLockedCount;
             for (let i = 0; i < KFK.selectedDIVs.length;) {
                 if (KFK.anyLocked(KFK.selectedDIVs[i]) === false) {
-                    if (cutMode === true) KFK.copyCandidateDIVs.push(KFK.selectedDIVs[i]);
+                    if (cutMode === true) {
+                        //copy时不过滤nocopy
+                        let jTemp = KFK.selectedDIVs[i].clone();
+                        let jTitle = jTemp.find('.coco_title');
+                        if (jTitle.length > 0) {
+                            jTitle.text(jTitle.text() + "的复制");
+                        }
+                        KFK.copyCandidateDIVs.push(jTemp);
+                    }
                     await KFK.syncNodePut(
                         "D",
                         KFK.selectedDIVs[i],
@@ -4097,6 +4137,7 @@ KFK.deleteHoverOrSelectedDiv = async function (evt, cutMode = false) {
                     i++;
                 }
             }
+
         }
     } else {
         //没有多项选择时，则进行单项删除
@@ -4104,7 +4145,12 @@ KFK.deleteHoverOrSelectedDiv = async function (evt, cutMode = false) {
         if (KFK.hoverJqDiv()) {
             let theDIV = KFK.hoverJqDiv();
             if (KFK.anyLocked(theDIV)) return;
-            KFK.copyCandidateDIVs = [theDIV.clone()];
+            let jTemp = theDIV.clone();
+            let jTitle = jTemp.find('.coco_title');
+            if (jTitle.length > 0) {
+                jTitle.text(jTitle.text() + "的复制");
+            }
+            KFK.copyCandidateDIVs = [jTemp];
             //这个地方加上shouldBeDeleted标志应该没有必要，不过还是加一下
             //在拖动覆盖其它节点，内容合并后删除被拖动节点时，这个标志是一定要加的，防止draggable end事件中，重新上传U指令，这样内容又会update回来
             theDIV.shouldBeDeleted = true;
@@ -4139,6 +4185,16 @@ KFK.deleteHoverOrSelectedDiv = async function (evt, cutMode = false) {
             KFK.debug(KFK.hoveredConnectId, nid, tid);
         }
     }
+    if (KFK.copyCandidateDIVs.length > 0 ||
+        KFK.copyCandidateLines.length > 0) {
+        //判断是否是cut， 而不是delete， cut有clipbaordData, delete没有
+        if (evt && evt.clipboardData) {
+            evt.clipboardData.setData("text/plain", "usediv");
+            evt.clipboardData.setData("text/html", "usediv");
+        }
+    }
+    evt.preventDefault();
+    KFK.holdEvent(evt);
 };
 
 /**
@@ -4151,21 +4207,26 @@ KFK.deleteHoverOrSelectedDiv = async function (evt, cutMode = false) {
  */
 KFK.editHoverObject = async function (evt, enterSelect = false) {
     //如果是todolist, 不允许编辑
-    if (KFK.hoverJqDiv()) {
-        if (KFK.anyLocked(KFK.hoverJqDiv())) return;
-        //Don't edit todolist directly, show edit dialog instead.
-        if (KFK.hoverJqDiv().hasClass("todolist")) {
-            if (KFK.hoverJqDiv().attr("id") === "coco_todo") {
-                await KFK.showMsgInputDlg();
-            }
-            return;
+    let jqNodeDIV = KFK.hoverJqDiv();
+    if (NotSet(jqNodeDIV)) return;
+    if (KFK.anyLocked(jqNodeDIV)) return;
+    //Don't edit todolist directly, show edit dialog instead.
+
+    if (jqNodeDIV.hasClass('noedit')) {
+        if (jqNodeDIV.attr("id") === "coco_todo") {
+            KFK.inputFor = "todo";
+            await KFK.showMsgInputDlg();
+        } else if (jqNodeDIV.attr("id") === "coco_chat") {
+            KFK.inputFor = "chat";
+            await KFK.showMsgInputDlg();
         }
-        //回车的evt要组织掉,否则,在textarea.select()时,会导致文字丢失
-        evt.preventDefault();
-        evt.stopImmediatePropagation();
-        evt.stopPropagation();
-        KFK.startNodeEditing(KFK.hoverJqDiv(), enterSelect);
+        return;
     }
+    //回车的evt要组织掉,否则,在textarea.select()时,会导致文字丢失
+    evt.preventDefault();
+    evt.stopImmediatePropagation();
+    evt.stopPropagation();
+    KFK.startNodeEditing(jqNodeDIV, enterSelect);
 };
 
 KFK.duplicateHoverObject = async function (evt, action = undefined) {
@@ -4184,7 +4245,12 @@ KFK.duplicateHoverObject = async function (evt, action = undefined) {
                 return (div.hasClass("nocopy") === false);
             });
             KFK.copyCandidateDIVs = filteredDIVs.map((div) => {
-                return div.clone();
+                let jTemp = div.clone();
+                let jTitle = jTemp.find('.coco_title');
+                if (jTitle.length > 0) {
+                    jTitle.text(jTitle.text() + "的复制");
+                }
+                return jTemp;
             });
             return true;
         } else if (KFK.getPropertyApplyToJqNode()) {
@@ -4194,7 +4260,12 @@ KFK.duplicateHoverObject = async function (evt, action = undefined) {
                 KFK.copyCandidateDIVs = [];
                 KFK.copyCandidateLines = [];
             } else {
-                KFK.copyCandidateDIVs = [KFK.getPropertyApplyToJqNode().clone()];
+                let jTemp = KFK.getPropertyApplyToJqNode().clone();
+                let jTitle = jTemp.find('.coco_title');
+                if (jTitle.length > 0) {
+                    jTitle.text(jTitle.text() + "的复制");
+                }
+                KFK.copyCandidateDIVs = [jTemp];
                 KFK.copyCandidateLines = [];
             }
             return true;
@@ -4268,6 +4339,7 @@ KFK.makeCopyOfJQs = async function (jqstocopy, shiftKey) {
             jqNewNode.removeAttr("linkto");
         }
         KFK.cleanNodeEventFootprint(jqNewNode);
+        KFK.cleanTodoChatForBackup(jqNewNode);
         jqNewNode.appendTo(KFK.C3);
         await KFK.setNodeEventHandler(jqNewNode, async function () {
             if (i === 0) KFK.focusOnNode(jqNewNode);
@@ -4724,7 +4796,7 @@ KFK.onWsGiveup = function () {
     KFK.debug("WS connect giveup");
     KFK.setAppData("show", "waiting", false);
     $(".reconnect-mask").removeClass("nodisplay");
-    $("#reconnect-warning").html("网络连接失败, 请稍后刷新重试");
+    $("#reconnect-warning").html("多次尝试后，网络依然无法连接, 请稍后刷新重试");
 };
 KFK.onWsReconnect = function () {
     $(".reconnect-mask").removeClass("nodisplay");
@@ -5905,8 +5977,14 @@ KFK.recreateNode = async function (obj, callback) {
     }
 };
 
-KFK.isTodoListDIV = function (nodeid) {
-    return (['coco_todo', 'coco_inprogress', 'coco_done'].indexOf(nodeid) >= 0);
+KFK.isTodoListDIV = function (jqDIV) {
+    return (['coco_todo', 'coco_inprogress', 'coco_done'].indexOf(jqDIV.attr("id")) >= 0);
+};
+KFK.isTodoListOrChatListDIV = function (jqDIV) {
+    return (['coco_chat', 'coco_todo', 'coco_inprogress', 'coco_done'].indexOf(jqDIV.attr("id")) >= 0);
+};
+KFK.isChatListDIV = function (jqDIV) {
+    return 'coco_chat' === jqDIV.attr("id");
 };
 
 KFK.updateQuillingContent = async function (response) {
@@ -6817,8 +6895,32 @@ KFK.size = function (w, h) {
     KFK.width(w);
     KFK.height(h);
 };
+/**
+ * 是否是一个kfknode
+ * @param a node div
+ */
 KFK.isKfkNode = function (jqdiv) {
-    return jqdiv && jqdiv.hasClass("kfknode");
+    return KFK.isA("kfknode");
+};
+/**
+ * 是否是一个有某个className的对象
+ * @param jqdiv  要检查的对象
+ * @param className 要检查的className
+ * @return true，如果有这个className， false如果没有这个className
+ */
+KFK.isA = function (jqdiv, className) {
+    return jqdiv && jqdiv.hasClass(className);
+};
+/**
+ * 是否不是一个有某个className的对象
+ * 跟 KFK.isA(jqdiv, className)相反
+ * 
+ * @param jqdiv  要检查的对象
+ * @param className 要检查的className
+ * @return true，如果没有这个className， false如果有这个className
+ */
+KFK.isNotA = function (jqdiv, className) {
+    return !KFK.isA(jqdiv, className);
 };
 KFK.inDesigner = function () {
     return KFK.APP.show.section.designer;
@@ -6835,6 +6937,7 @@ KFK.addDocumentEventHandler = function () {
         else if (evt.keyCode === 17) KFK.KEYDOWN.ctrl = true;
         else if (evt.keyCode === 18) KFK.KEYDOWN.alt = true;
         else if (evt.keyCode === 91) KFK.KEYDOWN.meta = true;
+        //如果正处于编辑状态，则不做处理
         if (KFK.inDesigner() && KFK.isEditting) {
             return;
         }
@@ -6915,18 +7018,17 @@ KFK.addDocumentEventHandler = function () {
                     return;
                 } else if (
                     KFK.keypool.endsWith('done') ||
-                    KFK.keypool.endsWith('d100') ||
-                    KFK.keypool.endsWith('d90') ||
-                    KFK.keypool.endsWith('d80') ||
-                    KFK.keypool.endsWith('d70') ||
-                    KFK.keypool.endsWith('d60') ||
-                    KFK.keypool.endsWith('d50') ||
-                    KFK.keypool.endsWith('d40') ||
-                    KFK.keypool.endsWith('d30') ||
-                    KFK.keypool.endsWith('d20') ||
-                    KFK.keypool.endsWith('d10') ||
+                    KFK.keypool.endsWith('t90') ||
+                    KFK.keypool.endsWith('t80') ||
+                    KFK.keypool.endsWith('t70') ||
+                    KFK.keypool.endsWith('t60') ||
+                    KFK.keypool.endsWith('t50') ||
+                    KFK.keypool.endsWith('t40') ||
+                    KFK.keypool.endsWith('t30') ||
+                    KFK.keypool.endsWith('t20') ||
+                    KFK.keypool.endsWith('t10') ||
                     KFK.keypool.endsWith('start') ||
-                    KFK.keypool.endsWith('d0')
+                    KFK.keypool.endsWith('t0')
                 ) {
                     let progress = 0;
                     if (KFK.keypool.endsWith('done')) {
@@ -6939,6 +7041,7 @@ KFK.addDocumentEventHandler = function () {
                     await KFK.moveTodoByProgress(progress);
                     KFK.keypool = "";
                     return;
+                } else if (KFK.keypool.endsWith("dd")) {
                 } else if (KFK.keypool.endsWith("fs")) {
                     KFK.toggleFullScreen();
                     KFK.keypool = "";
@@ -6992,6 +7095,20 @@ KFK.addDocumentEventHandler = function () {
                         KFK.presentNextPage();
                     } else {
                         KFK.gotoNextPage();
+                    }
+                    KFK.keypool = "";
+                    return;
+                } else if (KFK.keypool.match(/([0-9]+)g$/)) {
+                    let m = KFK.keypool.match(/([0-9]+)g$/);
+                    let pindex = parseInt(m[1]) - 1;
+                    pindex = Math.max(
+                        0,
+                        Math.min(pindex, KFK.pageBounding.Pages.length - 1)
+                    );
+                    if (KFK.inPresentingMode) {
+                        KFK.presentAnyPage(pindex);
+                    } else {
+                        KFK.gotoAnyPage(pindex);
                     }
                     KFK.keypool = "";
                     return;
@@ -7315,7 +7432,7 @@ KFK.modifyTodo = async function (evt) {
  * 检测TODO inut框的键盘输入
  * 
  */
-KFK.onMsgInput= async function (evt) {
+KFK.onMsgInput = async function (evt) {
     evt.stopPropagation();
     if (evt.keyCode === 27) {
         if (KFK.inputFor === 'todo')
@@ -7354,19 +7471,20 @@ KFK.onMsgInput= async function (evt) {
                         "textblock", 'default',
                         340, 340, 400, 400,
 
-                        "<div id='coco_todo_title'>待办事项</div>" +
-                        "<div id='coco_todo_list'>" +
+                        "<div id='coco_todo_title' class='coco_title'>待办事项</div>" +
+                        "<div id='coco_todo_list' class='coco_list original'>" +
                         "<div class='todo_item' prg='0' id='" + KFK.myuid() + "'><div class='todolabel'>" + KFK.APP.inputMsg + "</div><div class='prg'></div></div>" +
                         "</div>"
                         ,
 
                         '',
                     );
-                    jqCocoTodo.addClass("todolist nocopy");
+                    jqCocoTodo.addClass("todolist noedit");
                     jqCocoTodo.find('.innerobj').css({
                         "justify-content": 'flex-start',
                         "align-items": 'flex-start'
                     });
+                    KFK.APP.inputMsg = '';
                     await KFK.syncNodePut("C", jqCocoTodo, "todo", null, false, 0, 1);
                     KFK.setTodoItemEventHandler(jqCocoTodo);
                     KFK.scrollToNode('coco_todo');
@@ -7378,22 +7496,30 @@ KFK.onMsgInput= async function (evt) {
             }
         } else if (KFK.inputFor === 'chat') {
             let jqCocoChat = $('#coco_chat');
+            let x = y = w = h = 0;
+            x = KFK.jc1XToJc3X(KFK.JS1.scrollLeft() + window.innerWidth * 0.5);
+            y = KFK.jc1YToJc3Y(KFK.JS1.scrollTop() + window.innerHeight * 0.5);
+            w = h = 400;
             if (jqCocoChat.length < 1) {
                 console.log("create new chat node");
                 jqCocoChat = await KFK.placeNode(
                     false,
                     "coco_chat",
                     "textblock", 'default',
-                    540, 440, 400, 400,
-                    "<div id='coco_chat_title'>群消息</div>" +
-                    "<div id='coco_chat_list'>" +
-                    "<div class='chat_item' prg='0' id='" + KFK.myuid() + "'><div class='chatlabel'>" + KFK.APP.inputMsg + "</div></div>" +
+                    x, y, w, h,
+                    "<div id='coco_chat_title'  class='coco_title'>群消息</div>" +
+                    "<div id='coco_chat_list' class='coco_list original'>" +
+                    "<div class='chat_item other'><div class='chatmsg'>" +
+                    KFK.APP.inputMsg +
+                    "</div><img class='chatavatar' src='" +
+                    KFK.avatars[KFK.APP.model.cocouser.avatar].src +
+                    "'/></div>" +
                     "</div>"
                     ,
 
                     '',
                 );
-                jqCocoChat.addClass("chatlist nocopy");
+                jqCocoChat.addClass("chatlist noedit");
                 jqCocoChat.find('.innerobj').css({
                     "justify-content": 'flex-start',
                     "align-items": 'flex-start'
@@ -7403,7 +7529,7 @@ KFK.onMsgInput= async function (evt) {
                 KFK.APP.inputMsg = "";
             } else {
                 if (KFK.APP.inputMsg.trim().length > 0) {
-                    await KFK.newChatItem(KFK.APP.inputMsg);
+                    await KFK.ISayChatItem(KFK.APP.inputMsg);
                 }
             }
         }
@@ -7444,7 +7570,7 @@ KFK.closeTodoOption = function () {
 
 KFK.addTodoItem = async function (label) {
     console.log("append", label);
-    let todo_list = $('#coco_todo_list');
+    let todo_list = $('#coco_todo_list.original');
     let newItem = $("<div class='todo_item' prg='0' id='" + KFK.myuid() + "'><div class='todolabel'>" + label + "</div><div class='prg'></div></div>");
     newItem.prependTo(todo_list);
     KFK.setTodoItemEventHandler($('#coco_todo'));
@@ -7455,16 +7581,31 @@ KFK.addTodoItem = async function (label) {
     KFK.APP.inputMsg = "";
 };
 
-KFK.newChatItem = async function (msg) {
-    KFK.appendChatItem(msg);
+KFK.ISayChatItem = async function (msg) {
+    KFK.appendChatItem(msg, KFK.APP.model.cocouser.avatar, KFK.APP.model.cocouser.name, "me");
     //chat 节点的update不做undo/redo记录，所以，只需要传递最新节点数据
     await KFK.sendCmd("CHAT", { msg: msg });
     KFK.APP.inputMsg = "";
 };
 
-KFK.appendChatItem = async function (msg) {
-    let chat_list = $('#coco_chat_list');
-    let newItem = $("<div class='chat_item' prg='0' id='" + KFK.myuid() + "'><div class='chatlabel'>" + msg + "</div></div>");
+KFK.appendChatItem = async function (msg, avatar, name, who) {
+    let chat_list = $('#coco_chat_list.original');
+    console.log(avatar, name, msg);
+
+    let avatarSrc = KFK.avatars[avatar] ? KFK.avatars[avatar].src : KFK.avatars['avatar-0'].src;
+    console.log(avatarSrc);
+    let html = "<div class='chat_item " + who + "'>";
+    if (who !== 'me') {
+        html +=
+            "<img class='chatavatar' src='" + avatarSrc + "'/>" +
+            "<div class='chatname'>" + name + "</div>" +
+            "<div class='chatmsg'>" + msg + "</div>";
+    } else {
+        html += "<div class='chatmsg'>" + msg + "</div>" +
+            "<img class='chatavatar' src='" + avatarSrc + "'/>";
+    }
+    html += "</div>";
+    let newItem = $(html);
     newItem.appendTo(chat_list);
     chat_list.scrollTop(chat_list[0].scrollHeight);
 };
@@ -7520,20 +7661,20 @@ KFK.moveTodoItemTo = async function (todoListName, progress) {
                 KFK.divCenter(jqCocoTodo) + KFK.divWidth(jqCocoTodo) + 40,
                 KFK.divMiddle(jqCocoTodo),
                 KFK.divWidth(jqCocoTodo), KFK.divHeight(jqCocoTodo),
-                "<div id='coco_inprogress_title'>进行中</div>" +
-                "<div id='coco_inprogress_list'>" +
+                "<div id='coco_inprogress_title' class='coco_title'>进行中</div>" +
+                "<div id='coco_inprogress_list' class='coco_list original'>" +
                 "</div>"
                 ,
                 ''
             );
-            jqCocoInProgress.addClass("todolist nocopy");
+            jqCocoInProgress.addClass("todolist noedit");
             jqCocoInProgress.find('.innerobj').css({
                 "justify-content": 'flex-start',
                 "align-items": 'flex-start'
             });
             KFK.scrollToNode('coco_inprogress');
         }
-        jqMoveTo = $('#coco_inprogress_list');
+        jqMoveTo = $('#coco_inprogress_list.original');
         KFK.hoveredTodo.detach().prependTo(jqMoveTo);
     } else if (todoListName === '#coco_done') {
         console.log("move to coco_done");
@@ -7565,14 +7706,14 @@ KFK.moveTodoItemTo = async function (todoListName, progress) {
                 "coco_done",
                 "textblock", "default",
                 x, y, w, h,
-                "<div id='coco_done_title'>已完成</div>" +
-                "<div id='coco_done_list'>" +
+                "<div id='coco_done_title' class='coco_title'>已完成</div>" +
+                "<div id='coco_done_list' class='coco_list original'>" +
                 "</div>"
                 ,
                 ''
             );
             //标记为nocopy则，不会被拷贝
-            jqCocoDone.addClass("todolist nocopy");
+            jqCocoDone.addClass("todolist noedit");
             //缺省的对齐方式是居中，这里换成居左居上
             jqCocoDone.find('.innerobj').css({
                 "justify-content": 'flex-start',
@@ -7582,11 +7723,11 @@ KFK.moveTodoItemTo = async function (todoListName, progress) {
             KFK.scrollToNode('coco_done');
         }
         //找到内部的列表
-        jqMoveTo = $('#coco_done_list');
+        jqMoveTo = $('#coco_done_list.original');
         //把要运动的todoitem放到新的list中
         KFK.hoveredTodo.detach().prependTo(jqMoveTo);
     } else if (todoListName === '#coco_todo') {
-        jqMoveTo = $('#coco_todo_list');
+        jqMoveTo = $('#coco_todo_list.original');
         KFK.hoveredTodo.detach().prependTo(jqMoveTo);
     }
     //设置prg属性的值，css会根据这个值来显示进度条
@@ -8048,13 +8189,15 @@ KFK.placePastedContent = async function () {
         toAdd = `<a href="${toAdd}" target="_blank">${display}</a>`;
     }
     //paste image or paste text
-    if (KFK.hoverJqDiv()) {
-        if (KFK.anyLocked(KFK.hoverJqDiv())) return;
+    let hoveredJQ = KFK.hoverJqDiv();
+    //TODO， chat 的标志是nocopy，
+    if (hoveredJQ && hoveredJQ.hasClass('noedit') === false) {
+        if (KFK.anyLocked(hoveredJQ)) return;
         //把文字内容粘贴到hover div上
 
-        if (cocoConfig.node[KFK.hoverJqDiv().attr("nodetype")].edittable) {
-            KFK.fromJQ = KFK.hoverJqDiv().clone();
-            let innerObj = KFK.hoverJqDiv().find(".innerobj");
+        if (cocoConfig.node[hoveredJQ.attr("nodetype")].edittable) {
+            KFK.fromJQ = hoveredJQ.clone();
+            let innerObj = hoveredJQ.find(".innerobj");
             let oldHtml = innerObj.html();
             //如果同时按着shift键，则使用粘贴内容覆盖原内容，如果没有按shift键，则把粘贴内容加载原内容后面
             let newHtml = oldHtml + "<BR> " + toAdd;
@@ -8064,7 +8207,7 @@ KFK.placePastedContent = async function () {
             innerObj.html(newHtml);
             await KFK.syncNodePut(
                 "U",
-                KFK.hoverJqDiv(),
+                KFK.hoveredJQ,
                 "add text to hover div",
                 KFK.fromJQ,
                 false,
@@ -8105,6 +8248,14 @@ KFK.placePastedContent = async function () {
         await KFK.syncNodePut("C", jBox, "create text node", null, false, 0, 1);
     }
 };
+
+
+
+KFK.onCut = async function (evt) {
+    console.log('onCut');
+    KFK.deleteHoverOrSelectedDiv(evt, true);
+};
+
 KFK.onCopy = async function (evt) {
     if (KFK.inDesigner() === false) return;
     if (KFK.APP.show.dialog.ivtCodeDialog) {
@@ -8114,8 +8265,6 @@ KFK.onCopy = async function (evt) {
     if (someDIVcopyed) {
         evt.clipboardData.setData("text/plain", "usediv");
         evt.clipboardData.setData("text/html", "usediv");
-        evt.preventDefault();
-        KFK.holdEvent(evt);
     }
     evt.preventDefault();
     evt.preventDefault();
@@ -8123,8 +8272,9 @@ KFK.onCopy = async function (evt) {
 };
 
 KFK.onPaste = async function (evt) {
+    if (KFK.inDesigner() === false) return;
     if (KFK.docIsReadOnly()) return;
-    if (KFK.currentView !== "designer") return;
+    console.log('Paste in', KFK.currentView);
     let content = { html: "", text: "", image: null };
     content.html = evt.clipboardData.getData("text/html");
     content.text = evt.clipboardData.getData("Text");
@@ -8151,10 +8301,6 @@ KFK.onPaste = async function (evt) {
             }
         }
     }
-};
-
-KFK.onCut = async function (evt) {
-    KFK.deleteHoverOrSelectedDiv(evt, true);
 };
 
 KFK.addEditorToNode = function (jqNode, editor) {
