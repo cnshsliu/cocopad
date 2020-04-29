@@ -81,11 +81,11 @@
 
 .ql-snow .ql-picker.ql-font .ql-picker-label[data-value=microsoft-yahei]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=microsoft-yahei]::before {
     content: '微软雅黑';
-    font-family: 'Microsoft Yahei', , sans-serif;
+    font-family: 'Microsoft Yahei', sans-serif;
 }
 
 .ql-font-microsoft-yahei {
-    font-family: 'Microsoft Yahei', , sans-serif;
+    font-family: 'Microsoft Yahei', sans-serif;
 }
 
 .ql-snow .ql-picker.ql-font .ql-picker-label[data-value=heiti]::before, .ql-snow .ql-picker.ql-font .ql-picker-item[data-value=heiti]::before {

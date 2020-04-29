@@ -9,7 +9,6 @@ import suuid from "short-uuid";
 // import "spectrum-colorpicker2/dist/spectrum.min";
 import url from "url";
 // import uuidv4 from "uuid/v4";
-import assetIcons from "../assets/*.svg";
 import avatarIcons from "../avatar/*.svg";
 // import "./fontpicker/jquery.fontpicker";
 // import "./minimap/jquery-minimap";
@@ -25,6 +24,7 @@ import Bowser from "../lib/bowser/bowser";
 // import Quill from 'quill';
 // import { QuillDeltaToHtmlConverter } from '../lib/quill/quill2html/quill2html';
 import { gzip, ungzip } from "../lib/gzip";
+import { BIconFileEarmarkBreak } from "bootstrap-vue";
 
 Quill.prototype.getHtml = function () {
     return this.container.querySelector(".ql-editor").innerHTML;
@@ -93,7 +93,7 @@ KFK.LOGLEVEL_INFO = 3;
 KFK.LOGLEVEL_DEBUG = 4;
 KFK.LOGLEVEL_DETAIL = 5;
 KFK.LOGLEVEL_NOTHING = 0;
-KFK.loglevel = KFK.LOGLEVEL_DETAIL; //控制log的等级, 级数越小，显示信息越少
+KFK.loglevel = KFK.LOGLEVEL_INFO; //控制log的等级, 级数越小，显示信息越少
 //在designer页面输入logerror, logwarn, loginfo, lodebug...
 KFK.zoomLevel = 1; //记录当前的zoom等级
 KFK.designerConf = { scale: 1, left: 0, top: 0 }; //用于在zoom控制计算中
@@ -148,7 +148,6 @@ KFK._width = KFK.PageWidth * KFK.PageNumberHori;
 KFK._height = KFK.PageHeight * KFK.PageNumberVert;
 KFK.minimapMouseDown = false;
 
-KFK.nodes = [];
 KFK.defaultNodeWidth = 40;
 KFK.defaultNodeHeight = 40;
 KFK.links = [];
@@ -226,23 +225,23 @@ function el(jq) {
     return jq[0];
 }
 
+import assetIcons from './assetIcons';
 KFK.loadImages = function loadimg() {
     if (KFK.imagesLoaded) return;
     let loadedImages = 0;
     let numImages = 0;
-    for (var file in assetIcons) {
+    for (var imgKey in assetIcons) {
         numImages++;
     }
-    for (var file in assetIcons) {
-        KFK.images[file] = new Image();
-        KFK.images[file].onload = function () {
+    for (var imgKey in assetIcons) {
+        KFK.images[imgKey] = new Image();
+        KFK.images[imgKey].onload = function () {
             if (++loadedImages >= numImages) {
-                // if (KFK.inited === false) KFK.init();
                 KFK.imagesLoaded = true;
-                KFK.debug("[Loaded] images");
+                KFK.debug("[Loaded] images fully loaded");
             }
         };
-        KFK.images[file].src = assetIcons[file];
+        KFK.images[imgKey].src = assetIcons[imgKey];
     }
 
     KFK.images["toggle_line"].src = KFK.images["line"].src;
@@ -391,7 +390,7 @@ KFK.onWsMsg = async function (response) {
                 $("#recharge-warn").removeClass("noshow");
                 $("#recharge-warn").prop(
                     "innerHTML",
-                    "您组织的操作分已耗尽，为不影响您正常使用，请点这里尽快充值"
+                    "当前组织的操作分已耗尽，为不影响您正常使用，请点这里尽快升级"
                 );
             } else {
                 //ok
@@ -1284,10 +1283,10 @@ KFK.undo = async () => {
                         //对TODO/CHAT要做如下修复
                         if (KFK.isTodoListOrChatListDIV(jqFrom)) {
                             jqFrom.find('.coco_list').addClass('original');
-                            if(KFK.isTodoListDIV(jqFrom)){
+                            if (KFK.isTodoListDIV(jqFrom)) {
                                 jqFrom.addClass('todolist');
                                 KFK.setTodoItemEventHandler(jqFrom);
-                            }else if(KFK.isChatListDIV(jqFrom)){
+                            } else if (KFK.isChatListDIV(jqFrom)) {
                                 jqFrom.addClass('chatlist');
                             }
                         }
@@ -2193,6 +2192,88 @@ KFK.getKFKNodeNumber = function () {
     return nodes.length;
 };
 
+KFK.onImportBrKeyDown = async function (evt) {
+    console.log(evt.keyCode);
+    evt.stopPropagation();
+    //缺省情况下，textarea中输入tab时，会跳到下一个控件上，
+    //下面的代码防止缺省行为，并在正确位置插入TAB符号
+    if (evt.keyCode == 9) {
+        evt.preventDefault();
+        let txtarea = document.getElementById('textarea-importbr');
+        var start = txtarea.selectionStart;
+        var end = txtarea.selectionEnd;
+
+        // set textarea value to: text before caret + tab + text after caret
+        $(txtarea).val($(txtarea).val().substring(0, start)
+            + "\t"
+            + $(txtarea).val().substring(end));
+
+        // put caret at right position again
+        txtarea.selectionStart =
+            txtarea.selectionEnd = start + 1;
+    }
+};
+
+KFK.beginImportBr = async function () {
+    const TP = require("./textParser").TP;
+    let brainRoot = KFK.lastFocusOnJqNode;
+    if (NotSet(brainRoot)) {
+        let x = y = w = h = 0;
+        x = KFK.scrXToJc3X(KFK.currentMousePos.x);
+        y = KFK.scrYToJc3Y(KFK.currentMousePos.y);
+        w = 140; h = 100;
+        brainRoot = await KFK.placeNode(false, KFK.myuid(),
+            'textblock', 'default',
+            x, y, w, h, "脑图中心节点", '');
+    };
+    let rootX = KFK.divCenter(brainRoot);
+    let rootY = KFK.divMiddle(brainRoot);
+    let rootWidth = KFK.divWidth(brainRoot);
+    console.log('rootX', rootX, 'rootY', rootY, 'rootWidth', rootWidth);
+    TP.setDimension(100, 20, 40, 80, rootX, rootY, rootWidth);
+    TP.parse(KFK.APP.model.importbrtext, async function (arr) {
+        jlog(arr);
+        let brainRootClone = brainRoot.clone();
+        let Nodes = [];
+        for (let i = 0; i < arr.length; i++) {
+            let aJNode = await KFK.placeNode(false, arr[i].nodeid,
+                'textblock', 'default',
+                arr[i].left, arr[i].top, TP.nodeWidth, TP.nodeHeight,
+                arr[i].str, '');
+            //修改背景和边框为透明
+            aJNode.css("background-color", "transparent");
+            aJNode.css("border-color", "transparent");
+            if (arr[i].tab === 0) {
+                KFK.drawPathBetween(brainRoot, aJNode);
+                KFK.buildConnectionBetween(brainRoot, aJNode);
+            } else {
+                let parentJQ = $('#' + arr[i].parent_nodeid);
+                KFK.drawPathBetween(parentJQ, aJNode);
+                KFK.buildConnectionBetween(parentJQ, aJNode);
+            }
+            Nodes.push(aJNode);
+        }
+        for(let i=0; i<Nodes.length; i++){
+            await KFK.syncNodePut("C", Nodes[i], "importBr", null, false, i, arr.length);
+            await KFK.sleep(100);
+        }
+        await KFK.syncNodePut("U", brainRoot, "importBr", brainRootClone, false, 0, 1);
+    });
+};
+
+/**
+ * 在C3上放置一个对象
+ * @param  shfitKey，是否按着shiftkey
+ * @param  id, id of the new node,
+ * @param  type  one of text/textblock/yellowtip/richtext
+ * @param  variant  default, usefull for yellowtip only.
+ * @param   x  the x of the center point, in C3's dimension
+ * @param   y  the y of the center point, in C3's dimension
+ * @param   w  the width of the node
+ * @param   h  the height of the node
+ * @param   attach  the inner content
+ * @param   attach2  the lower inner content, which has a ossimage class which z-index is -1, normally, attach2 is suitable for place a backgrund div
+ */
 KFK.placeNode = async function (
     shiftKey,
     id,
@@ -2206,7 +2287,6 @@ KFK.placeNode = async function (
     attach2
 ) {
     let aNode = new Node(id, type, variant, x, y, w, h, attach, attach2);
-    KFK.nodes.push(aNode);
 
     let nodeDIV = await KFK._createNode(aNode);
     let jqDIV = $(nodeDIV);
@@ -2359,7 +2439,7 @@ KFK.cleanNodeEventFootprint = function (jqNodeDIV) {
  * 在复制剪切节点时，需要把original, chatlist, todolist这些类去掉
  * 预约区别开原始列表和复制列表
  */
-KFK.cleanTodoChatForBackup = function(jqNodeDIV){
+KFK.cleanTodoChatForBackup = function (jqNodeDIV) {
     jqNodeDIV.find(".original").removeClass('original');
     jqNodeDIV.removeClass(
         "chatlist todolist"
@@ -6976,6 +7056,10 @@ KFK.addDocumentEventHandler = function () {
                     KFK.keypool = "";
                     await KFK.toggleControlButtonOnly();
                     return;
+                } else if (KFK.keypool.endsWith('imp')) {
+                    KFK.keypool = "";
+                    KFK.showDialog({ importbr: true });
+                    return;
                 } else if (KFK.keypool.endsWith("mm")) {
                     KFK.keypool = "";
                     await KFK.toggleMinimap();
@@ -7362,6 +7446,7 @@ KFK.addDocumentEventHandler = function () {
 
     KFK.documentEventHandlerSet = true;
 };
+
 
 KFK.toggleTodoMode = async function () {
     KFK.jInputMsgDlg || (KFK.jInputMsgDlg = $('.msgInput'));
@@ -10000,11 +10085,3 @@ if (urlSearch.startsWith("?doc=")) {
 KFK.debug("URL MODE is", KFK.urlMode);
 
 export default KFK;
-
-//TODO: 多个演示，随机选择给Demo用户使用
-//TODO: 演示文档广告，招投资，招团队
-//TODO: 清理OSShello
-// OSS路径名使用 tenant_id/doc_id/pic_name.png
-// 一开始生成文档的ID， 然后的OSS图片的目录使用这个ID， 最后保存时，检查真正剩余的图片，并与OSS中的对应，没有用到的从OSS中删除掉
-//TODO: RichText with QuilJS
-//TODO: double click on line to add text label

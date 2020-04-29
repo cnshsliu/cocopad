@@ -46,7 +46,7 @@
             </div>
             <div class="text-center msgarea" id="MSG">
             </div>
-            <img v-show="!show.section.designer" src="../assets/cocopad.svg" class='left_top_logo_image' />
+            <img v-show="!show.section.designer" src="https://mlib.liuzijin.com/frontend/assets/cocopad.svg" class='left_top_logo_image' />
             <div class="cocoslogon" v-show="!show.section.designer" />
             <b-row class="text-center py-0">
                 <b-col class="logo-style">彩板</b-col>
@@ -59,43 +59,43 @@
             <div class='left_menu noshow' v-show="show.section.register || show.section.signin" id="left_menu">
                 <b-container>
                     <b-row class="text-center mt-5">
-                        <b-col> <img src="../assets/brainstorm.svg" class='left_top_image' /> </b-col>
+                        <b-col> <img src="https://mlib.liuzijin.com/frontend/assets/brainstorm.svg" class='left_top_image' /> </b-col>
                     </b-row>
                     <b-row class="text-center py-1">
                         <b-col style='font-size:18px;'> 头脑风暴 </b-col>
                     </b-row>
                     <b-row class="text-center mt-2">
-                        <b-col> <img src="../assets/home_office.svg" class='left_top_image' /> </b-col>
+                        <b-col> <img src="https://mlib.liuzijin.com/frontend/assets/home_office.svg" class='left_top_image' /> </b-col>
                     </b-row>
                     <b-row class="text-center py-1">
                         <b-col style='font-size:18px;'> 远程办公 </b-col>
                     </b-row>
                     <b-row class="text-center mt-2">
-                        <b-col> <img src="../assets/meetingroom.svg" class='left_top_image' /> </b-col>
+                        <b-col> <img src="https://mlib.liuzijin.com/frontend/assets/meetingroom.svg" class='left_top_image' /> </b-col>
                     </b-row>
                     <b-row class="text-center py-1">
                         <b-col style='font-size:18px;'> 在线会议 </b-col>
                     </b-row>
                     <b-row class="text-center mt-2">
-                        <b-col> <img src="../assets/design.svg" class='left_top_image' /> </b-col>
+                        <b-col> <img src="https://mlib.liuzijin.com/frontend/assets/design.svg" class='left_top_image' /> </b-col>
                     </b-row>
                     <b-row class="text-center py-1">
                         <b-col style='font-size:18px;'> 联合设计 </b-col>
                     </b-row>
                     <b-row class="text-center mt-2">
-                        <b-col> <img src="../assets/collaboration.svg" class='left_top_image' /> </b-col>
+                        <b-col> <img src="https://mlib.liuzijin.com/frontend/assets/collaboration.svg" class='left_top_image' /> </b-col>
                     </b-row>
                     <b-row class="text-center py-1">
                         <b-col style='font-size:18px;'> 在线协作 </b-col>
                     </b-row>
                     <b-row class="text-center mt-2">
-                        <b-col> <img src="../assets/classroom.svg" class='left_top_image' /> </b-col>
+                        <b-col> <img src="https://mlib.liuzijin.com/frontend/assets/classroom.svg" class='left_top_image' /> </b-col>
                     </b-row>
                     <b-row class="text-center py-1">
                         <b-col style='font-size:18px;'> 远程教学 </b-col>
                     </b-row>
                     <b-row class="text-center mt-2">
-                        <b-col> <img src="../assets/km.svg" class='left_top_image' /> </b-col>
+                        <b-col> <img src="https://mlib.liuzijin.com/frontend/assets/km.svg" class='left_top_image' /> </b-col>
                     </b-row>
                     <b-row class="text-center py-1">
                         <b-col style='font-size:18px;'> 知识管理 </b-col>
@@ -106,7 +106,7 @@
         <!-- leftbkg-->
         <div id="waiting" v-show="show.waiting" class="waitinglogo">
             <!-- connect to cloud waiting-->
-            <img src="../assets/cocopad.svg" class="logo d-inline-block align-top" alt="COLOBOD">
+            <img src="https://mlib.liuzijin.com/frontend/assets/cocopad.svg" class="logo d-inline-block align-top" alt="COLOBOD">
         </div>
         <!-- waiting-->
         <div id="registerform" class="registerform" v-show="show.section.register" style="display:none;">
@@ -269,63 +269,63 @@
                         <div v-on:click="KFK.moveTodoByProgress(100)">已完成</div>
                     </div>
                     <div id="modeIndicator" style="position:absolute; top: 0px; left: 0px; display: none; ">
-                        <img id="modeIndicatorImg" :src="getSrc('pointer')" style='width: 18px; height: 18px;' />
+                        <img id="modeIndicatorImg" :src="getImageSrc('pointer')" style='width: 18px; height: 18px;' />
                         <div id="modeIndicatorDiv" style='width: 18px; height: 18px;'></div>
                     </div>
-                    <img id="linetransformer" :src="getSrc('linetransformer')">
+                    <img id="linetransformer" :src="getImageSrc('linetransformer')">
                 </div>
             </div>
             <div id="toplogo" class="padlayout">
-                <img src="../assets/cocopad.svg" class="logo d-inline-block align-top" alt="COLOBOD">
+                <img src="https://mlib.liuzijin.com/frontend/assets/cocopad.svg" class="logo d-inline-block align-top" alt="COLOBOD">
             </div>
             <!-- left tool left menu toolbox -->
             <div id="left" class="bg-white padlayout">
                 <b-list-group>
                     <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('pointer');"
                         :active="toolActiveState['pointer']">
-                        <b-img :src="getSrc('pointer')" fluid alt="" scale="2" class="cocotool"></b-img>
+                        <b-img :src="getImageSrc('pointer')" fluid alt="" scale="2" class="cocotool"></b-img>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('text');"
                         :active="toolActiveState['text']">
-                        <b-img :src="getSrc('text')" fluid alt="" scale="2" class="cocotool"></b-img>
+                        <b-img :src="getImageSrc('text')" fluid alt="" scale="2" class="cocotool"></b-img>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('textblock');"
                         :active="toolActiveState['textblock']">
-                        <b-img :src="getSrc('textblock')" fluid alt="" scale="2" class="cocotool"></b-img>
+                        <b-img :src="getImageSrc('textblock')" fluid alt="" scale="2" class="cocotool"></b-img>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('yellowtip');"
                         :active="toolActiveState['yellowtip']">
-                        <b-img :src="getSrc('tipbtn')" fluid alt="" scale="2" class="cocotool"></b-img>
+                        <b-img :src="getImageSrc('tipbtn')" fluid alt="" scale="2" class="cocotool"></b-img>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('richtext');"
                         :active="toolActiveState['richtext']">
-                        <b-img :src="getSrc('richtext')" fluid alt="" scale="2" class="cocotool"></b-img>
+                        <b-img :src="getImageSrc('richtext')" fluid alt="" scale="2" class="cocotool"></b-img>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('material');"
                         :active="toolActiveState['material']">
-                        <b-img :src="getSrc('material')" fluid alt="" scale="2" class="cocotool" id='tool_material'>
+                        <b-img :src="getImageSrc('material')" fluid alt="" scale="2" class="cocotool" id='tool_material'>
                         </b-img>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('line');"
                         :active="toolActiveState['line']">
-                        <b-img :src="getSrc('line')" fluid alt="" scale="2" class="cocotool" id='tool_line'></b-img>
+                        <b-img :src="getImageSrc('line')" fluid alt="" scale="2" class="cocotool" id='tool_line'></b-img>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('connect');"
                         :active="toolActiveState['connect']">
-                        <b-img :src="getSrc('connect')" fluid alt="" scale="2" class="cocotool" id='tool_connect'>
+                        <b-img :src="getImageSrc('connect')" fluid alt="" scale="2" class="cocotool" id='tool_connect'>
                         </b-img>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('lock');"
                         :active="toolActiveState['lock']">
-                        <b-img :src="getSrc('lock')" fluid alt="" scale="2" class="cocotool" id='tool_lock'></b-img>
+                        <b-img :src="getImageSrc('lock')" fluid alt="" scale="2" class="cocotool" id='tool_lock'></b-img>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('brain');"
                         :active="toolActiveState['brain']">
-                        <b-img :src="getSrc('brain')" fluid alt="" scale="2" class="cocotool" id='tool_brain'></b-img>
+                        <b-img :src="getImageSrc('brain')" fluid alt="" scale="2" class="cocotool" id='tool_brain'></b-img>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('todo');"
                         :active="toolActiveState['todo']">
-                        <b-img :src="getSrc('todo')" fluid alt="" scale="2" class="cocotool" id='tool_todo'></b-img>
+                        <b-img :src="getImageSrc('todo')" fluid alt="" scale="2" class="cocotool" id='tool_todo'></b-img>
                     </b-list-group-item>
                     <b-list-group-item class="m-0 p-0">
                         <b-icon icon="blank" scale="0.3"></b-icon>
@@ -334,7 +334,7 @@
                         v-if="model.docLoaded && (KFK.APP.model.cocodoc.owner === KFK.APP.model.cocouser.userid)"
                         class="d-flex align-items-center" @click="KFK.cleanAllNodes();"
                         :active="toolActiveState['clean']">
-                        <b-img :src="getSrc('eraser')" fluid alt="" class="eraser" id='tool_clean'></b-img>
+                        <b-img :src="getImageSrc('eraser')" fluid alt="" class="eraser" id='tool_clean'></b-img>
                     </b-list-group-item>
 
                 </b-list-group>
@@ -382,15 +382,15 @@
                                     <div class="col">书写方向</div>
                                     <b-button-group class="d-flex w-100">
                                         <b-button variant="light" title="一般" class="flex-fill p-0"
-                                            @click="KFK.setWritingMode('horizontal-tb')"><img :src="getSrc('wm_tb')"
+                                            @click="KFK.setWritingMode('horizontal-tb')"><img :src="getImageSrc('wm_tb')"
                                                 class="toolbar">
                                         </b-button>
                                         <b-button variant="light" title="纵向右到左" class="flex-fill p-0"
-                                            @click="KFK.setWritingMode('vertical-rl')"><img :src="getSrc('wm_rl')"
+                                            @click="KFK.setWritingMode('vertical-rl')"><img :src="getImageSrc('wm_rl')"
                                                 class="toolbar">
                                         </b-button>
                                         <b-button variant="light" title="纵向左到右" class="flex-fill p-0"
-                                            @click="KFK.setWritingMode('vertical-lr')"><img :src="getSrc('wm_lr')"
+                                            @click="KFK.setWritingMode('vertical-lr')"><img :src="getImageSrc('wm_lr')"
                                                 class="toolbar">
                                         </b-button>
                                     </b-button-group>
@@ -473,7 +473,6 @@
                             <b-button v-b-toggle.collapse-toolgroup2 class="mb-1 p-1 w-100" variant='outline-primary'>
                                 基本形状</b-button>
                             <b-collapse visible id="collapse-toolgroup2">
-
                                 <b-container id="toolbox2" class="w-100"
                                     style="height: 300px; width:100%; overflow-y:scroll; ">
                                 </b-container>
@@ -512,22 +511,22 @@
                             <p>对齐设置</p>
                             <b-button-group class="d-flex w-100">
                                 <b-button variant="light" title="对齐左侧" class="flex-fill p-0"
-                                    @click="KFK.alignNodes('left')"><img :src="getSrc('align_left')" class="toolbar">
+                                    @click="KFK.alignNodes('left')"><img :src="getImageSrc('align_left')" class="toolbar">
                                 </b-button>
                                 <b-button variant="light" title="对齐垂直中线" class="flex-fill p-0"
-                                    @click="KFK.alignNodes('center')"><img :src="getSrc('align_center')"
+                                    @click="KFK.alignNodes('center')"><img :src="getImageSrc('align_center')"
                                         class="toolbar"></b-button>
                                 <b-button variant="light" title="对齐右侧" class="flex-fill p-0"
-                                    @click="KFK.alignNodes('right')"><img :src="getSrc('align_right')" class="toolbar">
+                                    @click="KFK.alignNodes('right')"><img :src="getImageSrc('align_right')" class="toolbar">
                                 </b-button>
                                 <b-button variant="light" title="对齐顶部" class="flex-fill p-0"
-                                    @click="KFK.alignNodes('top')"><img :src="getSrc('align_top')" class="toolbar">
+                                    @click="KFK.alignNodes('top')"><img :src="getImageSrc('align_top')" class="toolbar">
                                 </b-button>
                                 <b-button variant="light" title="对齐水平中线" class="flex-fill p-0"
-                                    @click="KFK.alignNodes('middle')"><img :src="getSrc('align_middle')"
+                                    @click="KFK.alignNodes('middle')"><img :src="getImageSrc('align_middle')"
                                         class="toolbar"></b-button>
                                 <b-button variant="light" title="对齐底部" class="flex-fill p-0"
-                                    @click="KFK.alignNodes('bottom')"><img :src="getSrc('align_bottom')"
+                                    @click="KFK.alignNodes('bottom')"><img :src="getImageSrc('align_bottom')"
                                         class="toolbar"></b-button>
                             </b-button-group>
                         </b-button-toolbar>
@@ -535,10 +534,10 @@
                             class="w-100 justify-content-md-center">
                             <b-button-group class="d-flex w-100">
                                 <b-button variant="light" class="flex-fill" title="横向均匀分布"
-                                    @click="KFK.alignNodes('hori')"><img :src="getSrc('align_hori')" class="toolbar">
+                                    @click="KFK.alignNodes('hori')"><img :src="getImageSrc('align_hori')" class="toolbar">
                                 </b-button>
                                 <b-button variant="light" class="flex-fill" title="纵向均匀分布"
-                                    @click="KFK.alignNodes('vert')"><img :src="getSrc('align_vert')" class="toolbar">
+                                    @click="KFK.alignNodes('vert')"><img :src="getImageSrc('align_vert')" class="toolbar">
                                 </b-button>
                             </b-button-group>
                         </b-button-toolbar>
@@ -606,11 +605,11 @@
                     <b-dropdown right variant="success" class="m-2" id='dropdown_help'>
                         <template v-slot:button-content>使用说明</template>
                         <b-dropdown-item href="#" id="toggle_all" variant="success" v-b-modal.modal-key-shortcut>
-                            <img :src="getSrc('keyboard')" class="toolbar"
+                            <img :src="getImageSrc('keyboard')" class="toolbar"
                                 style="width:24px; height:24px;"></img>&nbsp;快捷键
                         </b-dropdown-item>
                         <b-dropdown-item href="#" id="toggle_all" variant="success" @click="KFK.showFullHelp">
-                            <img :src="getSrc('manual')" class="toolbar"
+                            <img :src="getImageSrc('manual')" class="toolbar"
                                 style="width:24px; height:24px;"></img>&nbsp;帮助文档
                         </b-dropdown-item>
                     </b-dropdown>
@@ -1458,136 +1457,67 @@
                     title="关于操作点的获取说明">
                     <b-container class="w-100 m-0 p-1">
                         <b-row class="m-0 p-0">
-                            <b-col class="m-0 p-0">
-                                <b-row class="m-0 p-1">
-                                    <b-col class="m-0 p-1">
-                                        <b-button variant='outline-primary' @click="KFK.showPriceListDialog">
-                                            提升组织授权等级，获得更高操作分值。 点此查看不同组织等级的操作权限、升级方法及相关费用。
-                                        </b-button>
-                                    </b-col>
-                                    <div class="w-100"></div>
-                                    <b-col class="m-0 p-1">
-                                        <b-button variant='outline-success' @click="KFK.showIvtCodeDialog">
-                                            邀请他人使用彩板，对方成功注册后，邀请者所在组织可增加100个操作分。点此查看你的专属推荐码，马上开始邀请</b-button>
-                                    </b-col>
-                                    <b-col class="m-0 p-1">
-                                        <b-button variant='outline-success' @click="SHARE.shareDoc(model.currentDoc);">
-                                            每次通过彩板的分享功能分享文档给他人，分享者所在组织可增加100个操作分， 文档发起人所在组织可增加10个操作分</b-button>
-                                    </b-col>
-                                    <div class="w-100"></div>
-                                    <b-col class="m-0 p-1">
-                                        <b-button variant='outline-success'>
-                                            通过微信公众号、微博、抖音、网络论坛等形式介绍彩板或转发介绍，将内容截图发给运营小哥，对效果进行确认后获得相应操作分
-                                        </b-button>
-                                    </b-col>
-                                    <div class="w-100"></div>
-                                    <b-col class="m-0 p-1">
-                                        <b-button variant='outline-success'>成为业务运营推广合作伙伴，获得合作伙伴账号资格，同时获得运营收入分成，请联系运营微信
-                                        </b-button>
-                                    </b-col>
-                                    <b-col class="m-0 p-1">
-                                        <b-button variant='outline-success'>投资彩板，或介绍投资人，成功合作后， 投资人和介绍人均获得合作伙伴账号资格
-                                        </b-button>
-                                    </b-col>
-                                </b-row>
-                            </b-col>
-                            <b-col class="m-0 p-0">
-                                <b-row class="m-0 p-1">
-                                    <b-col class="m-0 p-1">
-                                        <b-row>
-                                            <b-col class="text-center m-0 p-1">
-                                                <b-img-lazy
-                                                    src="https://nanjing1-1255349658.cos.ap-nanjing.myqcloud.com/boss/customerservice.png"
-                                                    width="200px" />
-                                            </b-col>
-                                            <b-col class="text-center m-0 p-1">
-                                                <b-img-lazy
-                                                    src="https://nanjing1-1255349658.cos.ap-nanjing.myqcloud.com/boss/wechatgathering.png"
-                                                    width="200px" />
-                                            </b-col>
-                                        </b-row>
-                                    </b-col>
-                                </b-row>
+                            <b-col class="m-0 p-1">
+                                <b-button variant='outline-primary' @click="KFK.showPriceListDialog" class="w-100">
+                                    彩板功能使用点费说明 》 点此查看不同组织等级的操作权限、升级方法及相关费用。
+                                </b-button>
                             </b-col>
                         </b-row>
-                        <b-row>
-                            <b-col class="m-0 p-1">
-                                <b-button class="w-100" variant='outline-success'>如需企业转账，请通过右侧运营微信了解转账及发票获取方式</b-button>
+                              购买操作分
+                        <b-row class="m-0 p-0">
+                            <b-col class="text-center m-0 p-1">
+                                <b-img-lazy
+                                    src="https://mlib.liuzijin.com/boss/wechatgathering.png"
+                                    width="200px" />
+                            </b-col>
+                            <b-col class="text-center m-0 p-1">
+                                <b-img-lazy
+                                    src="https://mlib.liuzijin.com/boss/customerservice.png"
+                                    width="200px" />
                             </b-col>
                             <b-col class="m-0 p-1">
-                                <b-button class="w-100" variant='outline-success'>已有用户也可直接扫描支付码支付操作点费用</b-button>
+                                <b-button class="w-100" variant='outline-success' @click="KFK.showPriceListDialog">请扫描支付码支付操作点费用，了解价格请点这里</b-button>
+                                <b-button class="w-100" variant='outline-success'>如需企业转账，请联系左侧运营微信了解转账方式</b-button>
+                            </b-col>
+                        </b-row>
+                        <b-row class="m-0 p-0">
+                            <b-col class="m-0 p-1">
+                                <b-button variant='outline-success' @click="KFK.showIvtCodeDialog" class="w-100">
+                                    邀请他人使用彩板并成功注册后，邀请者可获得1000个操作分<BR>点此查看你的专属推荐码，马上开始邀请</b-button>
+                            </b-col>
+                            <b-col class="m-0 p-1">
+                                <b-button variant='outline-success' @click="SHARE.shareDoc(model.currentDoc);" class="w-100">
+                                    每次对当前白板邀请新人进行协作，邀请人可增加100个操作分，发起人增加10个操作分<BR>
+                                        点这里马上分享当前白板
+                                    </b-button>
+                            </b-col>
+                        </b-row>
+                        <b-row class="m-0 p-0">
+                            <b-col class="m-0 p-1">
+                              其他操作分获赠方式
+                                        <b-button variant='outline-success' class="w-100">
+                                            通过微信公众号、微博、抖音、网络论坛等形式介绍彩板或转发介绍，将内容截图发给运营小哥，对效果进行确认后获得相应操作分
+                                        </b-button>
+                                        <b-button variant='outline-success' class="w-100">成为业务运营推广合作伙伴，获得合作伙伴账号资格，同时获得运营收入分成，请联系运营微信
+                                        </b-button>
+                                        <b-button variant='outline-success' class="w-100">投资彩板，或介绍投资人，成功合作后， 投资人和介绍人均获得合作伙伴账号资格
+                                        </b-button>
                             </b-col>
                         </b-row>
                     </b-container>
                 </b-modal>
                 <b-modal v-model="show.dialog.priceListDialog" button-size="sm" centered size="xl" :hide-footer="true"
                     title="关于组织等级及操作点的说明">
-                    <b-container class="w-100 m-0 p-1">
-                        <b-row>
-                            <b-col cols="3" class="m-0 p-0">组织等级</b-col>
-                            <b-col class="m-0 p-0"> 人数 </b-col>
-                            <b-col class="m-0 p-0"> 操作流量 </b-col>
-                            <b-col class="m-0 p-0"> 素材库 </b-col>
-                            <b-col class="m-0 p-0"> 月费 </b-col>
-                            <b-col class="m-0 p-0"> 年费 </b-col>
-                        </b-row>
-                        <b-row>
-                            <b-col cols="3" class="m-0 p-0">C</b-col>
-                            <b-col class="m-0 p-0">2</b-col>
-                            <b-col class="m-0 p-0"> 20 </b-col>
-                            <b-col class="m-0 p-0"> 20 </b-col>
-                            <b-col class="m-0 p-0"> 免费 </b-col>
-                            <b-col class="m-0 p-0"> 免费 </b-col>
-                        </b-row>
-                        <b-row>
-                            <b-col cols="3" class="m-0 p-0">B</b-col>
-                            <b-col class="m-0 p-0"> 2 </b-col>
-                            <b-col class="m-0 p-0"> 20 </b-col>
-                            <b-col class="m-0 p-0"> 20 </b-col>
-                            <b-col class="m-0 p-0"> 100 </b-col>
-                            <b-col class="m-0 p-0"> 1000 </b-col>
-                        </b-row>
-                        <b-row>
-                            <b-col cols="3" class="m-0 p-0">BB</b-col>
-                            <b-col class="m-0 p-0"> 5 </b-col>
-                            <b-col class="m-0 p-0"> 50 </b-col>
-                            <b-col class="m-0 p-0"> 50 </b-col>
-                            <b-col class="m-0 p-0"> 2000 </b-col>
-                            <b-col class="m-0 p-0"> 2000 </b-col>
-                        </b-row>
-                        <b-row>
-                            <b-col cols="3" class="m-0 p-0">BBB</b-col>
-                            <b-col class="m-0 p-0"> 10 </b-col>
-                            <b-col class="m-0 p-0"> 100 </b-col>
-                            <b-col class="m-0 p-0"> 100 </b-col>
-                            <b-col class="m-0 p-0"> 500 </b-col>
-                            <b-col class="m-0 p-0"> 5000 </b-col>
-                        </b-row>
-                        <b-row>
-                            <b-col cols="3" class="m-0 p-0">A</b-col>
-                            <b-col class="m-0 p-0"> 20 </b-col>
-                            <b-col class="m-0 p-0"> 200 </b-col>
-                            <b-col class="m-0 p-0"> 200 </b-col>
-                            <b-col class="m-0 p-0"> 2000 </b-col>
-                            <b-col class="m-0 p-0"> 20000 </b-col>
-                        </b-row>
-                        <b-row>
-                            <b-col cols="3" class="m-0 p-0">AA</b-col>
-                            <b-col class="m-0 p-0"> 50 </b-col>
-                            <b-col class="m-0 p-0"> 500 </b-col>
-                            <b-col class="m-0 p-0"> 500 </b-col>
-                            <b-col class="m-0 p-0"> 3000 </b-col>
-                            <b-col class="m-0 p-0"> 30000 </b-col>
-                        </b-row>
-                        <b-row>
-                            <b-col cols="3" class="m-0 p-0">AAA</b-col>
-                            <b-col class="m-0 p-0"> 100 </b-col>
-                            <b-col class="m-0 p-0"> 1000 </b-col>
-                            <b-col class="m-0 p-0"> 1000 </b-col>
-                            <b-col class="m-0 p-0"> 5000 </b-col>
-                            <b-col class="m-0 p-0"> 50000 </b-col>
-                        </b-row>
-                    </b-container>
+                    <iframe id="iframe-price" src="https://mlib.liuzijin.com/frontend/listprice.html" frameborder="0"
+                    style="overflow:hidden;height:600px;width:100%"></iframe>
+                </b-modal>
+                <b-modal v-model="show.dialog.importbr" @ok="KFK.beginImportBr" title="导入文字为脑图" button-size="sm"
+                    centered size="md">
+                    这是一个尚在实验中的功能
+                    <div>
+                        <b-form-textarea v-model="model.importbrtext" id="textarea-importbr" placeholder="请把文本录入或粘贴到这里"
+                            rows="8" v-on:keydown="KFK.onImportBrKeyDown($event)"> ></b-form-textarea>
+                    </div>
                 </b-modal>
                 <div v-show="!model.isValidBrowser" class="browser-warning">
                     我们尚没有对您当前使用的浏览器进行兼容性测试，使用中可能会遇到不正常的情况，推荐使用<a href="https://pc.qq.com/detail/1/detail_2661.html"
@@ -1717,262 +1647,10 @@
         </div>
         <div class="present-mask nodisplay">
         </div>
-        <b-modal id="modal-key-shortcut" v-if="KFK.imagesLoaded" scrollable title="操作快捷键" body-bg-variant="light"
-            body-text-variant="dark">
-            <a href="#minihelp_presentation">幻灯片播放</a>
-            <a href="#minihelp_editting">编辑操作</a>
-            <a href="#minihelp_overview">全局概览</a>
-            <a href="#minihelp_material">使用图片</a>
-            <a href="#minihelp_presentation">幻灯片播放</a>
-            <table class="quick-help-table">
-                <tr class="title">
-                    <td colspan=2 id="minihelp_mode">模式切换</td>
-                </tr>
-                <tr>
-                    <td>输入<span class="cocohighlight-2">fs</span></td>
-                    <td>切换全屏</td>
-                </tr>
-                <tr>
-                    <td>鼠标<span class="cocohighlight-2">双击</span>空白区域</td>
-                    <td> 进入全局概览模式，再次双击返回</td>
-                </tr>
-                <tr>
-                    <td>输入<span class="cocohighlight-2">haola</span>或<span class="cocohighlight-2">hl</span>或<span
-                            class="cocohighlight-2">pr</span></td>
-                    <td>进入幻灯片模式，再次输入返回</td>
-                </tr>
-
-                <tr class="title">
-                    <td colspan=2 id="minihelp_editing">正常模式下的操作</td>
-                </tr>
-                <tr>
-                    <td>在工具栏点选<img :src="getSrc('pointer')" class="tool-in-help" />
-                    </td>
-                    <td>
-                        鼠标操作状态。
-                        <li>点击一个对象选中这个对象</li>
-                        <li>拖动一个对象到新位置</li>
-                        <li>双击对象，编辑其内容。 点白板空白处退出编辑</li>
-                        <li>按住CTRL键(Mac: META键)的同时，把一个尺寸较小的对象拖动到一个尺寸较大的对象上，将较小对象的内容合并到较大对象，
-                            如同时按住了SHIFT键，则用较小对象的内容替换较大对象的内容
-                    </td>
-                </tr>
-                <tr>
-                    <td>在工具栏点选<img :src="getSrc('text')" class="tool-in-help" />，然后在白板上点鼠标
-                    </td>
-                    <td>
-                        则在鼠标位置放置一个单行文本，双击文本可修改其内容
-                    </td>
-                </tr>
-                <tr>
-                    <td>在工具栏点选<img :src="getSrc('textblock')" class="tool-in-help" />，然后在白板上点鼠标
-                    </td>
-                    <td>
-                        则在鼠标位置放置一个复合对象，双击可修改其文本, 在右侧属性窗，可设置其属性，或添加贴纸
-                    </td>
-                </tr>
-                <tr>
-                    <td>在工具栏点选<img :src="getSrc('tipbtn')" class="tool-in-help" />，然后在白板上点鼠标
-                    </td>
-                    <td>
-                        则在鼠标位置放置一个贴纸对象，双击可修改其文本, 在右侧属性窗，可设置其属性，或修改贴纸
-                    </td>
-                </tr>
-                <tr>
-                    <td>在工具栏点选<img :src="getSrc('richtext')" class="tool-in-help" />，然后在白板上点鼠标
-                    </td>
-                    <td>
-                        则在鼠标位置放置一个富文本，双击可修改其文本
-                    </td>
-                </tr>
-                <tr>
-                    <td>在工具栏点选<img :src="getSrc('material')" class="tool-in-help" /></td>
-                    <td>
-                        弹出素材库，点选一个素材后，再在白板上点鼠标可放置素材
-                    </td>
-                </tr>
-                <tr>
-                    <td>在工具栏点选<img :src="getSrc('line')" class="tool-in-help" />，然后在白板上点鼠标
-                    </td>
-                    <td>
-                        在两点之间画线
-                    </td>
-                </tr>
-                <tr>
-                    <td>在工具栏点选<img :src="getSrc('connect')" class="tool-in-help" />，然后在白板上点鼠标
-                    </td>
-                    <td>
-                        依次点击两个对象，则在两个对象之间建立连接线
-                    </td>
-                </tr>
-                <tr>
-                    <td>在工具栏点选<img :src="getSrc('lock')" class="tool-in-help" />，然后在白板上点一个对象
-                    </td>
-                    <td>
-                        加解锁。 锁定后，对象不可修改、不可移动。 也可直接选择对象后，按CTRL-L 或 META-L 来加解锁
-                    </td>
-                </tr>
-                <tr>
-                    <td>在工具栏点选<img :src="getSrc('eraser')" class="tool-in-help" />，然后在白板上点鼠标
-                    </td>
-                    <td>
-                        用板擦，擦除掉白板上所有内容
-                    </td>
-                </tr>
-                <tr>
-                    <td>输入
-                        <span class="cocohighlight-2">gt</span>
-                        <span class="cocohighlight-2">gd</span>
-                        <span class="cocohighlight-2">gh</span>
-                        <span class="cocohighlight-2">gl</span>
-                    </td>
-                    <td> 选中对象到 <span class="cocohighlight-2">最顶层</span> <span class="cocohighlight-2">最下层</span> <span
-                            class="cocohighlight-2">上一层</span> <span class="cocohighlight-2">下一层</span></td>
-                </tr>
-                <tr>
-                    <td><span class="cocohighlight-2">回车</span>或<span class="cocohighlight-2">双击</span>对象</td>
-                    <td> 编辑选中对象文字</td>
-                </tr>
-                <tr>
-                    <td><span class="cocohighlight-2">Ctrl-回车</span>/<span class="cocohighlight-2">Meta-回车</span></td>
-                    <td> 结束文字编辑</td>
-                </tr>
-                <tr>
-                    <td><span class="cocohighlight-2">lk</span>或<span class="cocohighlight-2">lock</span></td>
-                    <td>切换选中对象的<span class="cocohighlight-2">加解锁</span>状态。加锁后对象不可修改。也可通过选择左侧工具栏的锁工具，然后点要加解锁的对象来操作</td>
-                </tr>
-                <tr>
-                    <td><span class="cocohighlight-2">Ctrl-C</span>/<span class="cocohighlight-2">Meta-C</span></td>
-                    <td><span class="cocohighlight-2">拷贝</span>当前对象。当前对象是指鼠标悬浮对象，选中对象，或刚创建的对象。</td>
-                </tr>
-                <tr>
-                    <td><span class="cocohighlight-2">Ctrl-V</span>/<span class="cocohighlight-2">Meta-V</span></td>
-                    <td><span class="cocohighlight-2">粘贴</span>当前对象、粘贴文字、图片。
-                        <li>如拷贝了对象，则在鼠标当前位置粘贴对象。</li>
-                        <li>如在其他应用中复制了文字、图片，则将从其它应用中复制的文字或图片粘贴到白板上。如粘贴时鼠标悬浮在一个对象上， 则文字图片粘贴到对象上，否则，粘贴在白板上鼠标所在位置。
-                        </li>
-                        <li>在浏览网页时，在需要复制的图片上点右键，复制图片，回到白板上，可粘贴所复制的图片到白板。</li>
-                        <li>URL地址在粘贴时，会提示地址说明，并粘贴一个地址链接到白板上。</li>
-                    </td>
-                </tr>
-                <tr>
-                    <td><span class="cocohighlight-2">Ctrl-Z</span>/<span class="cocohighlight-2">Meta-Z</span></td>
-                    <td>取消前一步操作</td>
-                </tr>
-                <tr>
-                    <td><span class="cocohighlight-2">Ctrl-Shift-Z</span>/<span
-                            class="cocohighlight-2">Meta-Shift-Z</span></td>
-                    <td>撤回取消</td>
-                </tr>
-                <tr>
-                    <td><span class="cocohighlight-2">Ctrl-X</span>/<span class="cocohighlight-2">Meta-X</span></td>
-                    <td>剪切当前对象</td>
-                </tr>
-                <tr>
-                    <td>输入<span class="cocohighlight-2">数字g</span></td>
-                    <td>输入1-36数字，然后按g，切换到相应区域。
-                        <BR>白板一共36个区域，横向6列、纵向6行。编号从左到右，从上到下，第一行编号分别是1-6， 第二行为7-12，以此类推。</td>
-                </tr>
-                <tr>
-                    <td><span class="cocohighlight-2">PageUp</span>/<span class="cocohighlight-2">PageDown</span></td>
-                    <td> 依次切换到前一区域、后一区域, 按1-36顺序</td>
-                </tr>
-                <tr>
-                    <td><span class="cocohighlight-2">Home</span>/<span class="cocohighlight-2">End</span></td>
-                    <td> 切换到1号区域、第36号区域。</td>
-                </tr>
-                <tr>
-                    <td><span class="cocohighlight-2">上下左右箭头</span></td>
-                    <td> 切换到上下左右相邻的区域。</td>
-                </tr>
-
-                <tr class="title">
-                    <td colspan=2 id="minihelp_overview">概览模式下的操作</td>
-                </tr>
-                <tr>
-                    <td>概览模式下<span class="cocohighlight-2">鼠标双击</span></td>
-                    <td> 切换会正常编辑模式，返回后居中在双击位置</td>
-                </tr>
-                <tr class="title">
-                    <td colspan=2 id="minihelp_material">使用图片</td>
-                </tr>
-                <tr>
-                    <td><span class="cocohighlight-2">拖动</span>拖动一个图片文件到白板</td>
-                    <td>可从Windows资源管理器或Mac OSX的访达中拖动图片文件，将图片放到白板上，支持JPG和PNG格式文件</td>
-                </tr>
-                <tr>
-                    <td>放置屏幕截图到白板</td>
-                    <td>先用截图工具进行屏幕截图（Windows有很多，Mac OSX按Ctrl-Shift-Command-4同时按住）, 截图后在白板上，<span
-                            class="cocohighlight-2">CTRL-V</span>/<span class="cocohighlight-2">META-V</span>
-                        即可粘贴图片放到白板上
-                    </td>
-                </tr>
-                <tr>
-                    <td>从其它网站中复制图片到白板</td>
-                    <td>在其他网站上的图片上点右键，在弹出菜单中点复制图片, 回到白板按<span class="cocohighlight-2">CTRL-V</span>/<span
-                            class="cocohighlight-2">META-V</span>, 即可将图片放到白板上.
-                        <BR> 如发现放置的图片无法显示，一般是因为那个网站做了图片保护。 此时，你可以使用上面的屏幕截图方式放置图片，先做屏幕截图，再放置到白板上
-                    </td>
-                </tr>
-                <tr>
-                    <td>在工具栏点选<img :src="getSrc('material')" class="tool-in-help" /></td>
-                    <td>弹出素材库，点选一个素材后，回到白板，继续点一下鼠标在当前位置放置图片，如按住SHIFT键可连续放置</td>
-                </tr>
-                <tr>
-                    <td>在<span class="cocohighlight-2">我的素材</span>中</td>
-                    <td>可对素材库进行管理</td>
-                </tr>
-                <tr class="title">
-                    <td colspan=2 id="minihelp_presentation">幻灯片模式下的操作</td>
-                </tr>
-                <tr>
-                    <td>输入<span class="cocohighlight-2">haola</span>或<span class="cocohighlight-2">hl</span>或<span
-                            class="cocohighlight-2">pr</span></td>
-                    <td> 进入幻灯片模式</td>
-                </tr>
-                <tr>
-                    <td>输入<span class="cocohighlight-2">haola</span>或<span class="cocohighlight-2">hl</span>或<span
-                            class="cocohighlight-2">pr</span>或<span class="cocohighlight-2">stop</span></td>
-                    <td> 退出幻灯片模式，进入正常模式</td>
-                </tr>
-                <tr>
-                    <td><span class="cocohighlight-2">PageUp</span>/<span class="cocohighlight-2">PageDown</span></td>
-                    <td> 依次切换到前一区域、后一区域。</td>
-                </tr>
-                <tr>
-                    <td><span class="cocohighlight-2">上下左右箭头</span></td>
-                    <td> 切换到上下左右相邻的区域</td>
-                </tr>
-                <tr>
-                    <td><span class="cocohighlight-2">Home</span>/<span class="cocohighlight-2">End</span></td>
-                    <td> 切换到1号区域、第36号区域。</td>
-                </tr>
-                <tr>
-                    <td>输入<span class="cocohighlight-2">last</span>或<span class="cocohighlight-2">end</span></td>
-                    <td>到最后一页</td>
-                </tr>
-                <tr>
-                    <td>输入<span class="cocohighlight-2">prev</span></td>
-                    <td>到前一页</td>
-                </tr>
-                <tr>
-                    <td>输入<span class="cocohighlight-2">next</span></td>
-                    <td>到后一页</td>
-                </tr>
-                <tr>
-                    <td>输入<span class="cocohighlight-2">数字g</span></td>
-                    <td>输入1-36数字，然后按g，切换到相应区域。 白板一共36个区域，横向6列、纵向6行。编号从左到右，从上到下，第一行编号分别是1-6， 第二行为7-12，以此类推。</td>
-                </tr>
-                <tr>
-                    <td>输入<span class="cocohighlight-2">b</span></td>
-                    <td>黑色遮罩。全屏变黑. 再按b或者其他不是w的键退出，按w则换成白色遮罩</td>
-                </tr>
-                <tr>
-                    <td>输入<span class="cocohighlight-2">w</span></td>
-                    <td>白色遮罩。全屏变白. 再按w或者其它不是b的键退出， 按b则换成黑色遮罩
-                    </td>
-                </tr>
-            </table>
+        <b-modal id="modal-key-shortcut" v-if="KFK.imagesLoaded" scrollable title="操作快捷键" size="lg">
+            <a href="https://mlib.liuzijin.com/frontend/keyshortcut.html" target="_blank">在独立窗口总打开</a>
+            <iframe id="iframe0" src="https://mlib.liuzijin.com/frontend/keyshortcut.html" frameborder="0"
+                style="overflow:hidden;height:500px;width:100%"></iframe>
         </b-modal>
         <div class="footnote">
             <b-row v-if="model.cocouser.ivtcode">
@@ -1987,7 +1665,8 @@
             </b-row>
             <b-row role="link">
                 <b-col>
-                    <b-link :target="'_blank'" class="m-0 p-0" href='http://weibo.com/cocopad'>@COLOBOD 2020</b-link>
+                    <b-link :target="'_blank'" class="m-0 p-0" href='http://weibo.com/cocopad'>@COLOBOD 2020
+                    </b-link>
                 </b-col>
             </b-row>
         </div>
