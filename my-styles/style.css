@@ -147,7 +147,7 @@ input::placeholder {
     /* background-color: red; */
     background-repeat: no-repeat;
     background-size: 100% 100%;
-    background-image: url("../assets/leftbkg.svg");
+    background-image: url("https://mlib.liuzijin.com/frontend/assets/leftbkg.svg");
 }
 
 .left_menu {
@@ -333,12 +333,12 @@ input::placeholder {
 }
 
 .grid1 {
-    background-image: url("../assets/grid1.svg");
+    background-image: url("https://mlib.liuzijin.com/frontend/assets/grid1.svg");
     background-size: 20px 20px;
 }
 
 .grid2 {
-    background-image: url("../assets/grid2.svg");
+    background-image: url("https://mlib.liuzijin.com/frontend/assets/grid2.svg");
     background-size: 20px 20px;
 }
 
@@ -657,10 +657,10 @@ svg path {
 
 
 /* .signinform input#userId{
-  background-image: url("../assets/email.svg");
+  background-image: url("https://mlib.liuzijin.com/frontend/assets/email.svg");
 }
 .signinform input#userPwd{
-  background-image: url("../assets/pwd.svg");
+  background-image: url("https://mlib.liuzijin.com/frontend/assets/pwd.svg");
 } */
 
 .signinform input::-webkit-input-placeholder {
@@ -700,16 +700,16 @@ svg path {
 
 /* 
 .registerform input#regUserId{
-  background-image: url("../assets/email.svg");
+  background-image: url("https://mlib.liuzijin.com/frontend/assets/email.svg");
 }
 .registerform input#regUserName{
-  background-image: url("../assets/name-tag.svg");
+  background-image: url("https://mlib.liuzijin.com/frontend/assets/name-tag.svg");
 }
 .registerform input#regUserPwd{
-  background-image: url("../assets/pwd.svg");
+  background-image: url("https://mlib.liuzijin.com/frontend/assets/pwd.svg");
 }
 .registerform input#regUserPwd2{
-  background-image: url("../assets/pwd.svg");
+  background-image: url("https://mlib.liuzijin.com/frontend/assets/pwd.svg");
 }  */
 
 .signinform .right-eye,
@@ -853,7 +853,6 @@ select:focus {
     position: absolute;
     top: 5px;
     left: 84px;
-    z-index: 999999;
     padding: 0px 20px 0px 20px;
     border-radius: 10px;
     background-color: #eeeeee;
@@ -1036,7 +1035,7 @@ select:focus {
     height: 10px;
     border-radius: 10px;
     border: 1px solid black;
-    background-image: url("../assets/dot.svg");
+    background-image: url("https://mlib.liuzijin.com/frontend/assets/dot.svg");
 }
 
 .avatar-in-line {
@@ -1228,7 +1227,7 @@ select:focus {
     background-position: 0px 0px;
     background-repeat: repeat-x;
     background-size: 100% 100%;
-    background-image: url("../assets/brain.svg");
+    background-image: url("https://mlib.liuzijin.com/frontend/assets/brain.svg");
     animation: jellosmall 5s;
     animation-iteration-count: infinite;
     position: absolute;
@@ -1538,11 +1537,6 @@ table.quick-help-table td:first-of-type {
         -webkit-transform: scale(1);
         transform: scale(1);
     }
-}
-
-.tool-in-help {
-    width: 20px;
-    height: 20px;
 }
 
 .color-dynamic-black {

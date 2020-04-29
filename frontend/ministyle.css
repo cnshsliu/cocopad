@@ -1,0 +1,73 @@
+.lkh {
+    font-size: 24px;
+}
+
+html {
+    overscroll-behavior-x: none;
+}
+
+body {
+    margin: 5;
+    padding: 5;
+    background-color: #f0f0f0;
+    overscroll-behavior-x: none;
+    font-family: 'Microsoft Yahei', Arial, Helvetica, sans-serif;
+}
+
+.cocohighlight-1 {
+    background-color: #00000045;
+}
+
+.cocohighlight-2 {
+    background-color: #e5dbff;
+    padding: 2px 10px 2px 10px;
+    border-radius: 20px;
+}
+
+.cocohighlight-3 {
+    background-color: #e5dbff;
+    padding: 0px 0px 0px 0px;
+}
+
+table.quick-help-table {
+    border: 0px solid #0d0d0e;
+}
+
+table.quick-help-table .title {
+    background-color: #e5dbff;
+    font-weight: bolder;
+}
+
+table.quick-help-table tr {
+    margin: 10px !important;
+    border: 1px solid rgba(27, 27, 27, 0.8);
+}
+
+table.quick-help-table td {
+    border: 1px solid #1d1d1d;
+    background-color: #f5fbff22;
+    padding: 5px; 
+}
+
+.section{
+    font-size: 36px;
+}
+
+.tool-in-help {
+    width: 40px;
+    height: 40px;
+}
+.title{
+    font-size: 24px;
+    text-decoration:none;
+    padding-left: 10px;
+}
+.title:hover{
+    background-color: #e5dbff;
+    padding: 2px 10px 2px 10px;
+    border-radius: 20px;
+}
+.backtotop img{
+    width: 24px; height: 24px;
+}
+

@@ -36,26 +36,26 @@ const app = new Vue({
         lockMode: KFK.lockMode,
         images: KFK.images,
         tip_groups: [{
-                title: 'abcd',
-                div: '#toolbox2',
-                svgs: [
-                    'tip', 'tip_cubic', 'tip_clinder',
-                    'tip_diamond', 'tip_cone', 'tip_pyramid', 'tip_hexogon', 'tip_parr',
-                    'tip_heart', 'tip_smile',
-                    'tip_thunder', 'tip_cloud',
-                    'tip_check', 'tip_cross',
-                    'tip_p5star', 'tip_p8star',
-                    'tip_circle1', 'tip_circle2', 'tip_circle3', 'tip_circle4',
-                    'tip_callout1', 'tip_callout2', 'tip_callout3', 'tip_callout4',
-                    'tip_arrow1', 'tip_arrow2', 'tip_arrow3', 'tip_arrow4', 'tip_arrow5', 'tip_arrow6', 'tip_arrow7',
-                    'tip_sig0', 'tip_sig1'
-                ]
-            },
-            {
-                title: 'OPQR',
-                div: '#toolbox3',
-                svgs: ["biz001", "biz002", "biz003", "biz004", "biz005", "biz006", "biz007", "biz008", "biz009", "biz010", "biz011", "biz012", "biz013", "biz014", "biz015", "biz016", "biz017", "biz018", "biz019", "biz020", "biz021", "biz022", "biz023", "biz024", "biz025", "biz026", "biz027", "biz028", "biz029", "biz030", "biz031", "biz032", "biz033", "biz034", "biz035", "biz036", "biz037", "biz038", "biz039", "biz040", "biz041", "biz042", "biz043", "biz044", "biz045", "biz04", "biz047", "biz048", "biz049", "biz050", "biz051", "biz052", "biz053", "biz054", "biz055", "biz056", "biz057", "biz058", "biz059", "biz060"],
-            }
+            title: 'abcd',
+            div: '#toolbox2',
+            svgs: [
+                'tip', 'tip_cubic', 'tip_clinder',
+                'tip_diamond', 'tip_cone', 'tip_pyramid', 'tip_hexogon', 'tip_parr',
+                'tip_heart', 'tip_smile',
+                'tip_thunder', 'tip_cloud',
+                'tip_check', 'tip_cross',
+                'tip_p5star', 'tip_p8star',
+                'tip_circle1', 'tip_circle2', 'tip_circle3', 'tip_circle4',
+                'tip_callout1', 'tip_callout2', 'tip_callout3', 'tip_callout4',
+                'tip_arrow1', 'tip_arrow2', 'tip_arrow3', 'tip_arrow4', 'tip_arrow5', 'tip_arrow6', 'tip_arrow7',
+                'tip_sig0', 'tip_sig1'
+            ]
+        },
+        {
+            title: 'OPQR',
+            div: '#toolbox3',
+            svgs: ["biz001", "biz002", "biz003", "biz004", "biz005", "biz006", "biz007", "biz008", "biz009", "biz010", "biz011", "biz012", "biz013", "biz014", "biz015", "biz016", "biz017", "biz018", "biz019", "biz020", "biz021", "biz022", "biz023", "biz024", "biz025", "biz026", "biz027", "biz028", "biz029", "biz030", "biz031", "biz032", "biz033", "biz034", "biz035", "biz036", "biz037", "biz038", "biz039", "biz040", "biz041", "biz042", "biz043", "biz044", "biz045", "biz04", "biz047", "biz048", "biz049", "biz050", "biz051", "biz052", "biz053", "biz054", "biz055", "biz056", "biz057", "biz058", "biz059", "biz060"],
+        }
         ],
         toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'richtext': false, 'lock': false, 'minimap': false, 'connect': false, 'material': false, 'clean': false, 'brain': false, 'todo': false },
         docNavTabIndex: 0,
@@ -83,10 +83,12 @@ const app = new Vue({
                 shareDialog: false,
                 materialDialog: false,
                 rechargeDialog: false,
-                priceListDialog: false
+                priceListDialog: false,
+                importbr: false,
             },
         },
         model: {
+            importbrtext: '',
             firstTime: true,
             isValidBrowser: true,
             readonlyDesc: '只读',
@@ -156,7 +158,7 @@ const app = new Vue({
             docLoaded: false,
             cocoprj: { prjid: 'all', name: '我最近使用过的白板' },
             lastrealproject: { prjid: '', name: '' },
-            cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', readonly: false, ownerAvatar_src: '../assets/cocopad.svg' },
+            cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', readonly: false, ownerAvatar_src: 'https://mlib.liuzijin.com/frontend/assets/cocopad.svg' },
             cocouser: { userid: '', name: '', avatar: 'avatar-0', avatar_src: null },
             cocoorg: { orgid: 'ORGID', name: 'ORGNAME', logo: 'corp-0', logo_src: '', owner: '', ownername: '张三' },
             orgusers: {},
@@ -261,7 +263,7 @@ const app = new Vue({
 
     },
     methods: {
-        getSrc(img) {
+        getImageSrc(img) {
             if (this.images && this.images[img]) {
                 return this.images[img].src;
             } else {
@@ -339,7 +341,7 @@ window.Buffer = window.Buffer || require('buffer').Buffer;
 KFK.APP = app;
 
 const dropZoneId = "C3";
-window.addEventListener("dragenter", function(e) {
+window.addEventListener("dragenter", function (e) {
     let jtarget = $(e.target);
     if (jtarget.hasClass('svgcanvas') || jtarget.hasClass("pageBoundingLine")) {
         e.preventDefault();
@@ -352,7 +354,7 @@ window.addEventListener("dragenter", function(e) {
     }
 }, false);
 
-window.addEventListener("dragover", function(e) {
+window.addEventListener("dragover", function (e) {
     let jtarget = $(e.target);
     if (jtarget.hasClass('svgcanvas') || jtarget.hasClass("pageBoundingLine")) {
         e.preventDefault();
@@ -365,7 +367,7 @@ window.addEventListener("dragover", function(e) {
     }
 });
 
-window.addEventListener("drop", async function(e) {
+window.addEventListener("drop", async function (e) {
     let jtarget = $(e.target);
     if (jtarget.hasClass('svgcanvas') || jtarget.hasClass("pageBoundingLine")) {
         KFK.dropAtPos = {
