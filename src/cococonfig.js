@@ -22,6 +22,10 @@ const config = {
     ws_server: {
         endpoint: 'wss://liuzijin.com/clbdapi/grume/wsquux',
     },
+    frontend:{
+        host: 'https://mlib.liuzijin.com',
+        url: 'https://mlib.liuzijin.com/frontend'
+    },
     cos: {
         region: 'ap-nanjing',
         bucket: 'nanjing1-1255349658',
