@@ -54,10 +54,10 @@ const app = new Vue({
         {
             title: 'OPQR',
             div: '#toolbox3',
-            svgs: ["biz001", "biz002", "biz003", "biz004", "biz005", "biz006", "biz007", "biz008", "biz009", "biz010", "biz011", "biz012", "biz013", "biz014", "biz015", "biz016", "biz017", "biz018", "biz019", "biz020", "biz021", "biz022", "biz023", "biz024", "biz025", "biz026", "biz027", "biz028", "biz029", "biz030", "biz031", "biz032", "biz033", "biz034", "biz035", "biz036", "biz037", "biz038", "biz039", "biz040", "biz041", "biz042", "biz043", "biz044", "biz045", "biz04", "biz047", "biz048", "biz049", "biz050", "biz051", "biz052", "biz053", "biz054", "biz055", "biz056", "biz057", "biz058", "biz059", "biz060"],
+            svgs: ["biz001", "biz002", "biz003", "biz004", "biz005", "biz006", "biz007", "biz008", "biz009", "biz010", "biz011", "biz012", "biz013", "biz014", "biz015", "biz016", "biz017", "biz018", "biz019", "biz020", "biz021", "biz022", "biz023", "biz024", "biz025", "biz026", "biz027", "biz028", "biz029", "biz030", "biz031", "biz032", "biz033", "biz034", "biz035", "biz036", "biz037", "biz038", "biz039", "biz040", "biz041", "biz042", "biz043", "biz044", "biz045", "biz046", "biz047", "biz048", "biz049", "biz050", "biz051", "biz052", "biz053", "biz054", "biz055", "biz056", "biz057", "biz058", "biz059", "biz060"],
         }
         ],
-        toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'richtext': false, 'lock': false, 'minimap': false, 'connect': false, 'material': false, 'clean': false, 'brain': false, 'todo': false },
+        toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'richtext': false, 'lock': false, 'minimap': false, 'connect': false, 'material': false, 'clean': false, 'brain': false, 'todo': false, 'chat':false },
         docNavTabIndex: 0,
         show: {
             'loading': false,
@@ -91,6 +91,7 @@ const app = new Vue({
             importbrtext: '',
             firstTime: true,
             isValidBrowser: true,
+            isNotValidBrowser: false,
             readonlyDesc: '只读',
             currentDoc: { acl: 'O' },
             invitor: { usrid: '', name: '' },
@@ -158,7 +159,7 @@ const app = new Vue({
             docLoaded: false,
             cocoprj: { prjid: 'all', name: '我最近使用过的白板' },
             lastrealproject: { prjid: '', name: '' },
-            cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', readonly: false, ownerAvatar_src: 'https://mlib.liuzijin.com/frontend/assets/cocopad.svg' },
+            cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', readonly: false, ownerAvatar_src: KFK.getFrontEndUrl('assets/cocopad.svg') },
             cocouser: { userid: '', name: '', avatar: 'avatar-0', avatar_src: null },
             cocoorg: { orgid: 'ORGID', name: 'ORGNAME', logo: 'corp-0', logo_src: '', owner: '', ownername: '张三' },
             orgusers: {},
@@ -185,12 +186,13 @@ const app = new Vue({
             defaultGridWidth: 20,
             gridWidth: 20,
             oldSnap: true,
-            cococonfig: {
+            viewConfig: {
                 bgcolor: '#ABABAB',
                 snap: true,
                 showgrid: true,
                 showlock: true,
                 showbounding: true,
+                enterToConfirmInput: true,
             },
             dragToCreate: true,
             lineToggleMode: false,

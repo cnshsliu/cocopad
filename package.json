@@ -6,11 +6,12 @@
   "main": "index.html",
   "scripts": {
     "start": "parcel src/index.html --port 80 ",
-    "build": "rm ./dist/*; parcel build src/index.html --detailed-report"
+    "build": "rm ./dist/*; parcel build src/index.html  --no-source-maps --detailed-report"
   },
   "dependencies": {
     "@popperjs/core": "latest",
     "any-base": "^1.1.0",
+    "bent": "^7.3.0",
     "bootstrap": "latest",
     "bootstrap-vue": "^2.11.0",
     "browser-image-compression": "^1.0.9",

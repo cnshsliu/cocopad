@@ -34,7 +34,7 @@
 </head>
 
 <body>
-    <img style="display:none;" id='defaultavatar' src='../avatar/avatar-0.svg' />
+    <img style="display:none;" id='defaultavatar' :src="KFK.getFrontEndUrl('avatars/avatar-0.svg')" />
     <div id="overallbackground" class="grid1"></div>
     <div id='app' class='fontFancyColor'>
         <div id="firstpage">
@@ -46,7 +46,8 @@
             </div>
             <div class="text-center msgarea" id="MSG">
             </div>
-            <img v-show="!show.section.designer" src="https://mlib.liuzijin.com/frontend/assets/cocopad.svg" class='left_top_logo_image' />
+            <img v-show="!show.section.designer" src="./cocopad.svg"
+                class='left_top_logo_image' />
             <div class="cocoslogon" v-show="!show.section.designer" />
             <b-row class="text-center py-0">
                 <b-col class="logo-style">彩板</b-col>
@@ -56,46 +57,53 @@
         </div>
         <!-- first page-->
         <div class="leftbkg" v-show="!show.section.designer">
-            <div class='left_menu noshow' v-show="show.section.register || show.section.signin" id="left_menu">
+            <div class='left_scenarios noshow' v-show="show.section.register || show.section.signin" id="left_scenarios">
                 <b-container>
                     <b-row class="text-center mt-5">
-                        <b-col> <img src="https://mlib.liuzijin.com/frontend/assets/brainstorm.svg" class='left_top_image' /> </b-col>
+                        <b-col> <img :src="KFK.getFrontEndUrl('assets/brainstorm.svg')"
+                                class='left_top_image' /> </b-col>
                     </b-row>
                     <b-row class="text-center py-1">
                         <b-col style='font-size:18px;'> 头脑风暴 </b-col>
                     </b-row>
                     <b-row class="text-center mt-2">
-                        <b-col> <img src="https://mlib.liuzijin.com/frontend/assets/home_office.svg" class='left_top_image' /> </b-col>
+                        <b-col> <img :src="KFK.getFrontEndUrl('assets/home_office.svg')"
+                                class='left_top_image' /> </b-col>
                     </b-row>
                     <b-row class="text-center py-1">
                         <b-col style='font-size:18px;'> 远程办公 </b-col>
                     </b-row>
                     <b-row class="text-center mt-2">
-                        <b-col> <img src="https://mlib.liuzijin.com/frontend/assets/meetingroom.svg" class='left_top_image' /> </b-col>
+                        <b-col> <img :src="KFK.getFrontEndUrl('assets/meetingroom.svg')"
+                                class='left_top_image' /> </b-col>
                     </b-row>
                     <b-row class="text-center py-1">
                         <b-col style='font-size:18px;'> 在线会议 </b-col>
                     </b-row>
                     <b-row class="text-center mt-2">
-                        <b-col> <img src="https://mlib.liuzijin.com/frontend/assets/design.svg" class='left_top_image' /> </b-col>
+                        <b-col> <img :src="KFK.getFrontEndUrl('assets/design.svg')"
+                                class='left_top_image' /> </b-col>
                     </b-row>
                     <b-row class="text-center py-1">
                         <b-col style='font-size:18px;'> 联合设计 </b-col>
                     </b-row>
                     <b-row class="text-center mt-2">
-                        <b-col> <img src="https://mlib.liuzijin.com/frontend/assets/collaboration.svg" class='left_top_image' /> </b-col>
+                        <b-col> <img :src="KFK.getFrontEndUrl('assets/collaboration.svg')"
+                                class='left_top_image' /> </b-col>
                     </b-row>
                     <b-row class="text-center py-1">
                         <b-col style='font-size:18px;'> 在线协作 </b-col>
                     </b-row>
                     <b-row class="text-center mt-2">
-                        <b-col> <img src="https://mlib.liuzijin.com/frontend/assets/classroom.svg" class='left_top_image' /> </b-col>
+                        <b-col> <img :src="KFK.getFrontEndUrl('assets/classroom.svg')"
+                                class='left_top_image' /> </b-col>
                     </b-row>
                     <b-row class="text-center py-1">
                         <b-col style='font-size:18px;'> 远程教学 </b-col>
                     </b-row>
                     <b-row class="text-center mt-2">
-                        <b-col> <img src="https://mlib.liuzijin.com/frontend/assets/km.svg" class='left_top_image' /> </b-col>
+                        <b-col> <img :src="KFK.getFrontEndUrl('assets/km.svg')" class='left_top_image' />
+                        </b-col>
                     </b-row>
                     <b-row class="text-center py-1">
                         <b-col style='font-size:18px;'> 知识管理 </b-col>
@@ -106,7 +114,8 @@
         <!-- leftbkg-->
         <div id="waiting" v-show="show.waiting" class="waitinglogo">
             <!-- connect to cloud waiting-->
-            <img src="https://mlib.liuzijin.com/frontend/assets/cocopad.svg" class="logo d-inline-block align-top" alt="COLOBOD">
+            <img src="./cocopad.svg" class="logo d-inline-block align-top"
+                alt="COLOBOD">
         </div>
         <!-- waiting-->
         <div id="registerform" class="registerform" v-show="show.section.register" style="display:none;">
@@ -181,11 +190,6 @@
                     {{model.invitor.name}} 邀请您使用彩板-多人协作网络白板
                 </div>
             </b-form>
-            <div v-show="!model.isValidBro4er" class="browser-warning">
-                我们尚没有对您当前使用的浏览兼容性测试，使用中可能会遇到不正常的情况，推荐使用<a href="https://pc.qq.com/detail/1/detail_2661.html"
-                    target="_blank">Chrome</a>或微软的新版<a href="https://www.microsoft.com/zh-cn/edge"
-                    target="_blank">Edge</a>浏览器
-            </div>
         </div>
         <!-- register form-->
         <div id="signinform" class="signinform" v-show="show.section.signin" style="display:none;">
@@ -237,11 +241,6 @@
                     </b-col>
                 </b-row>
             </b-form>
-            <div v-show="!model.isValidBrowser" class="browser-warning">
-                我们尚没有对您当前使用的浏览兼容性测试，使用中可能会遇到不正常的情况，推荐使用<a href="https://pc.qq.com/detail/1/detail_2661.html"
-                    target="_blank">Chrome</a>或微软的新版<a href="https://www.microsoft.com/zh-cn/edge"
-                    target="_blank">Edge</a>浏览器
-            </div>
         </div>
         <!-- signin form-->
         <div v-show="show.section.designer" id="designer" style="display:none;">
@@ -276,63 +275,74 @@
                 </div>
             </div>
             <div id="toplogo" class="padlayout">
-                <img src="https://mlib.liuzijin.com/frontend/assets/cocopad.svg" class="logo d-inline-block align-top" alt="COLOBOD">
+                <img src="./cocopad.svg" class="logo d-inline-block align-top"
+                    alt="COLOBOD">
             </div>
             <!-- left tool left menu toolbox -->
             <div id="left" class="bg-white padlayout">
                 <b-list-group>
-                    <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('pointer');"
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('pointer');"
                         :active="toolActiveState['pointer']">
                         <b-img :src="getImageSrc('pointer')" fluid alt="" scale="2" class="cocotool"></b-img>
                     </b-list-group-item>
-                    <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('text');"
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('text');"
                         :active="toolActiveState['text']">
                         <b-img :src="getImageSrc('text')" fluid alt="" scale="2" class="cocotool"></b-img>
                     </b-list-group-item>
-                    <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('textblock');"
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('textblock');"
                         :active="toolActiveState['textblock']">
                         <b-img :src="getImageSrc('textblock')" fluid alt="" scale="2" class="cocotool"></b-img>
                     </b-list-group-item>
-                    <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('yellowtip');"
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('yellowtip');"
                         :active="toolActiveState['yellowtip']">
                         <b-img :src="getImageSrc('tipbtn')" fluid alt="" scale="2" class="cocotool"></b-img>
                     </b-list-group-item>
-                    <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('richtext');"
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('richtext');"
                         :active="toolActiveState['richtext']">
                         <b-img :src="getImageSrc('richtext')" fluid alt="" scale="2" class="cocotool"></b-img>
                     </b-list-group-item>
-                    <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('material');"
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('material');"
                         :active="toolActiveState['material']">
-                        <b-img :src="getImageSrc('material')" fluid alt="" scale="2" class="cocotool" id='tool_material'>
+                        <b-img :src="getImageSrc('material')" fluid alt="" scale="2" class="cocotool"
+                            id='tool_material'>
                         </b-img>
                     </b-list-group-item>
-                    <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('line');"
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('line');"
                         :active="toolActiveState['line']">
-                        <b-img :src="getImageSrc('line')" fluid alt="" scale="2" class="cocotool" id='tool_line'></b-img>
+                        <b-img :src="getImageSrc('line')" fluid alt="" scale="2" class="cocotool" id='tool_line'>
+                        </b-img>
                     </b-list-group-item>
-                    <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('connect');"
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('connect');"
                         :active="toolActiveState['connect']">
                         <b-img :src="getImageSrc('connect')" fluid alt="" scale="2" class="cocotool" id='tool_connect'>
                         </b-img>
                     </b-list-group-item>
-                    <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('lock');"
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('lock');"
                         :active="toolActiveState['lock']">
-                        <b-img :src="getImageSrc('lock')" fluid alt="" scale="2" class="cocotool" id='tool_lock'></b-img>
+                        <b-img :src="getImageSrc('lock')" fluid alt="" scale="2" class="cocotool" id='tool_lock'>
+                        </b-img>
                     </b-list-group-item>
-                    <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('brain');"
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('brain');"
                         :active="toolActiveState['brain']">
-                        <b-img :src="getImageSrc('brain')" fluid alt="" scale="2" class="cocotool" id='tool_brain'></b-img>
+                        <b-img :src="getImageSrc('brain')" fluid alt="" scale="2" class="cocotool" id='tool_brain'>
+                        </b-img>
                     </b-list-group-item>
-                    <b-list-group-item href="#" class="d-flex align-items-center" @click="setMode('todo');"
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('todo');"
                         :active="toolActiveState['todo']">
-                        <b-img :src="getImageSrc('todo')" fluid alt="" scale="2" class="cocotool" id='tool_todo'></b-img>
+                        <b-img :src="getImageSrc('todo')" fluid alt="" scale="2" class="cocotool" id='tool_todo'>
+                        </b-img>
+                    </b-list-group-item>
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('chat');"
+                        :active="toolActiveState['chat']">
+                        <b-img :src="getImageSrc('chat')" fluid alt="" scale="2" class="cocotool" id='tool_chat'>
+                        </b-img>
                     </b-list-group-item>
                     <b-list-group-item class="m-0 p-0">
                         <b-icon icon="blank" scale="0.3"></b-icon>
                     </b-list-group-item>
                     <b-list-group-item href="#"
                         v-if="model.docLoaded && (KFK.APP.model.cocodoc.owner === KFK.APP.model.cocouser.userid)"
-                        class="d-flex align-items-center" @click="KFK.cleanAllNodes();"
+                        class="d-flex align-items-center toolbox" @click="KFK.cleanAllNodes();"
                         :active="toolActiveState['clean']">
                         <b-img :src="getImageSrc('eraser')" fluid alt="" class="eraser" id='tool_clean'></b-img>
                     </b-list-group-item>
@@ -382,8 +392,8 @@
                                     <div class="col">书写方向</div>
                                     <b-button-group class="d-flex w-100">
                                         <b-button variant="light" title="一般" class="flex-fill p-0"
-                                            @click="KFK.setWritingMode('horizontal-tb')"><img :src="getImageSrc('wm_tb')"
-                                                class="toolbar">
+                                            @click="KFK.setWritingMode('horizontal-tb')"><img
+                                                :src="getImageSrc('wm_tb')" class="toolbar">
                                         </b-button>
                                         <b-button variant="light" title="纵向右到左" class="flex-fill p-0"
                                             @click="KFK.setWritingMode('vertical-rl')"><img :src="getImageSrc('wm_rl')"
@@ -511,13 +521,15 @@
                             <p>对齐设置</p>
                             <b-button-group class="d-flex w-100">
                                 <b-button variant="light" title="对齐左侧" class="flex-fill p-0"
-                                    @click="KFK.alignNodes('left')"><img :src="getImageSrc('align_left')" class="toolbar">
+                                    @click="KFK.alignNodes('left')"><img :src="getImageSrc('align_left')"
+                                        class="toolbar">
                                 </b-button>
                                 <b-button variant="light" title="对齐垂直中线" class="flex-fill p-0"
                                     @click="KFK.alignNodes('center')"><img :src="getImageSrc('align_center')"
                                         class="toolbar"></b-button>
                                 <b-button variant="light" title="对齐右侧" class="flex-fill p-0"
-                                    @click="KFK.alignNodes('right')"><img :src="getImageSrc('align_right')" class="toolbar">
+                                    @click="KFK.alignNodes('right')"><img :src="getImageSrc('align_right')"
+                                        class="toolbar">
                                 </b-button>
                                 <b-button variant="light" title="对齐顶部" class="flex-fill p-0"
                                     @click="KFK.alignNodes('top')"><img :src="getImageSrc('align_top')" class="toolbar">
@@ -534,36 +546,41 @@
                             class="w-100 justify-content-md-center">
                             <b-button-group class="d-flex w-100">
                                 <b-button variant="light" class="flex-fill" title="横向均匀分布"
-                                    @click="KFK.alignNodes('hori')"><img :src="getImageSrc('align_hori')" class="toolbar">
+                                    @click="KFK.alignNodes('hori')"><img :src="getImageSrc('align_hori')"
+                                        class="toolbar">
                                 </b-button>
                                 <b-button variant="light" class="flex-fill" title="纵向均匀分布"
-                                    @click="KFK.alignNodes('vert')"><img :src="getImageSrc('align_vert')" class="toolbar">
+                                    @click="KFK.alignNodes('vert')"><img :src="getImageSrc('align_vert')"
+                                        class="toolbar">
                                 </b-button>
                             </b-button-group>
                         </b-button-toolbar>
                     </b-tab>
                     <b-tab title="COCO" active class='cocoproperty'>
                         <p>彩板</p>
-                        <b-checkbox id="cb-showgrid" v-model="model.cococonfig.showgrid" name="cb-showgrid" switch
-                            @change="KFK.showGridChanged">
+                        <b-checkbox id="cb-showgrid" v-model="model.viewConfig.showgrid" name="cb-showgrid" switch
+                            @input="KFK.toggleShowGrid">
                             显示网格线
                         </b-checkbox>
-                        <b-checkbox id="cb-showbounding" v-model="model.cococonfig.showbounding" name="cb-showbounding"
-                            switch @change="KFK.showBoundingChanged">
+                        <b-checkbox id="cb-showbounding" v-model="model.viewConfig.showbounding" name="cb-showbounding"
+                            switch @input="KFK.toggleShowBounding">
                             显示分页线
                         </b-checkbox>
-                        <b-checkbox v-model="model.cococonfig.snap" switch @change="KFK.snapChanged">
+                        <b-checkbox v-model="model.viewConfig.snap" switch @input="KFK.toggleSnap">
                             对齐到网格
                         </b-checkbox>
-                        <b-checkbox v-model="model.cococonfig.showlock" switch @change="KFK.toggleShowLock">
+                        <b-checkbox v-model="model.viewConfig.showlock" switch @input="KFK.toggleShowLock">
                             显示锁定标志
+                        </b-checkbox>
+                        <b-checkbox v-model="model.viewConfig.enterToConfirmInput" switch @input="KFK.toggleEnterToConfirmInput">
+                           回车确认输入
                         </b-checkbox>
                         <p> </p>
                         <b-container class="coco">
                             <b-row class="mx-auto my-1">
                                 <b-col>背景颜色</b-col>
                                 <b-col class="coco">
-                                    <b-form-input v-model="model.cococonfig.bgcolor" name="cocoBkgColor"
+                                    <b-form-input v-model="model.viewConfig.bgcolor" name="cocoBkgColor"
                                         id="cocoBkgColor" type="color" />
                                 </b-col>
                             </b-row>
@@ -1463,20 +1480,17 @@
                                 </b-button>
                             </b-col>
                         </b-row>
-                              购买操作分
+                        购买操作分
                         <b-row class="m-0 p-0">
                             <b-col class="text-center m-0 p-1">
-                                <b-img-lazy
-                                    src="https://mlib.liuzijin.com/boss/wechatgathering.png"
-                                    width="200px" />
+                                <b-img-lazy :src="KFK.getBossImageUrl('wechatgathering.png')" width="200px" />
                             </b-col>
                             <b-col class="text-center m-0 p-1">
-                                <b-img-lazy
-                                    src="https://mlib.liuzijin.com/boss/customerservice.png"
-                                    width="200px" />
+                                <b-img-lazy :src="KFK.getBossImageUrl('customerservice.png')" width="200px" />
                             </b-col>
                             <b-col class="m-0 p-1">
-                                <b-button class="w-100" variant='outline-success' @click="KFK.showPriceListDialog">请扫描支付码支付操作点费用，了解价格请点这里</b-button>
+                                <b-button class="w-100" variant='outline-success' @click="KFK.showPriceListDialog">
+                                    请扫描支付码支付操作点费用，了解价格请点这里</b-button>
                                 <b-button class="w-100" variant='outline-success'>如需企业转账，请联系左侧运营微信了解转账方式</b-button>
                             </b-col>
                         </b-row>
@@ -1486,30 +1500,32 @@
                                     邀请他人使用彩板并成功注册后，邀请者可获得1000个操作分<BR>点此查看你的专属推荐码，马上开始邀请</b-button>
                             </b-col>
                             <b-col class="m-0 p-1">
-                                <b-button variant='outline-success' @click="SHARE.shareDoc(model.currentDoc);" class="w-100">
+                                <b-button variant='outline-success' @click="SHARE.shareDoc(model.currentDoc);"
+                                    class="w-100">
                                     每次对当前白板邀请新人进行协作，邀请人可增加100个操作分，发起人增加10个操作分<BR>
-                                        点这里马上分享当前白板
-                                    </b-button>
+                                    点这里马上分享当前白板
+                                </b-button>
                             </b-col>
                         </b-row>
                         <b-row class="m-0 p-0">
                             <b-col class="m-0 p-1">
-                              其他操作分获赠方式
-                                        <b-button variant='outline-success' class="w-100">
-                                            通过微信公众号、微博、抖音、网络论坛等形式介绍彩板或转发介绍，将内容截图发给运营小哥，对效果进行确认后获得相应操作分
-                                        </b-button>
-                                        <b-button variant='outline-success' class="w-100">成为业务运营推广合作伙伴，获得合作伙伴账号资格，同时获得运营收入分成，请联系运营微信
-                                        </b-button>
-                                        <b-button variant='outline-success' class="w-100">投资彩板，或介绍投资人，成功合作后， 投资人和介绍人均获得合作伙伴账号资格
-                                        </b-button>
+                                其他操作分获赠方式
+                                <b-button variant='outline-success' class="w-100">
+                                    通过微信公众号、微博、抖音、网络论坛等形式介绍彩板或转发介绍，将内容截图发给运营小哥，对效果进行确认后获得相应操作分
+                                </b-button>
+                                <b-button variant='outline-success' class="w-100">
+                                    成为业务运营推广合作伙伴，获得合作伙伴账号资格，同时获得运营收入分成，请联系运营微信
+                                </b-button>
+                                <b-button variant='outline-success' class="w-100">投资彩板，或介绍投资人，成功合作后， 投资人和介绍人均获得合作伙伴账号资格
+                                </b-button>
                             </b-col>
                         </b-row>
                     </b-container>
                 </b-modal>
                 <b-modal v-model="show.dialog.priceListDialog" button-size="sm" centered size="xl" :hide-footer="true"
                     title="关于组织等级及操作点的说明">
-                    <iframe id="iframe-price" src="https://mlib.liuzijin.com/frontend/listprice.html" frameborder="0"
-                    style="overflow:hidden;height:600px;width:100%"></iframe>
+                    <iframe id="iframe-price" :src="KFK.getFrontEndUrl('listprice.html')" frameborder="0"
+                        style="overflow:hidden;height:600px;width:100%"></iframe>
                 </b-modal>
                 <b-modal v-model="show.dialog.importbr" @ok="KFK.beginImportBr" title="导入文字为脑图" button-size="sm"
                     centered size="md">
@@ -1519,11 +1535,24 @@
                             rows="8" v-on:keydown="KFK.onImportBrKeyDown($event)"> ></b-form-textarea>
                     </div>
                 </b-modal>
-                <div v-show="!model.isValidBrowser" class="browser-warning">
-                    我们尚没有对您当前使用的浏览器进行兼容性测试，使用中可能会遇到不正常的情况，推荐使用<a href="https://pc.qq.com/detail/1/detail_2661.html"
-                        target="_blank">Chrome</a>或微软的新版<a href="https://www.microsoft.com/zh-cn/edge"
-                        target="_blank">Edge</a>浏览器
-                </div>
+                <b-modal v-model="model.isNotValidBrowser" title="友情提醒" centered>
+                    我们尚没有对您当前使用的浏览进行完整的兼容性匹配，<BR>
+                    使用中可能会遇到不正常的情况，<BR>
+                    推荐您使用 <BR>
+                    谷歌公司的Chrome浏览器<BR>
+                    ( <a href="https://www.google.cn/chrome/index.html" target="_blank">谷歌官方下载</a>
+                     / <a href="https://pc.qq.com/search.html#!keyword=chrome" target="_blank">
+                        腾讯软件中心下载</a>)
+                    <BR>
+                    或微软公司的新版Edge浏览器<BR>
+                    (
+                    <a href="https://www.microsoft.com/zh-cn/edge" target="_blank">微软官方下载</a>
+                     / <a href="https://pc.qq.com/search.html#!keyword=edge" target="_blank">
+                    腾讯软件中心下载</a>
+                    )
+                    <BR>
+                    相信彩板带给您的精彩和高效，值得您为它使用新版浏览器
+                </b-modal>
             </div>
             <!-- explorer inner -->
             <div id="gotodesignercontrol" v-show="model.docLoaded" class="padlayout noshow">
@@ -1546,9 +1575,10 @@
                 <!-- must keep this container, or else clipboardjs work inproperly -->
                 <b-container id="shareitcontainer">
                     请将下面文档地址发送给协作者<BR>
-                    协作者打开地址后，将与你一起在白板上协同创作<BR><BR>
+                    协作者打开地址后，将与你一起在白板上协同创作<BR>
+                    <img class="opqrcode_in_share" :src="KFK.getBossImageUrl('customerservice.png')"/>
                     <ol>
-                        请注意
+                        请注意, 白板列表中的白板访问范围限制会影响参与者是否能访问白板：
                         <li>
                             <font color='red'>如白板限制为仅发起人，协作者无法参与协作</font>
                         </li>
@@ -1570,6 +1600,8 @@
                             <b-icon icon="box-arrow-up"></b-icon>复制地址
                             <!-- share doc -->
                         </b-button>
+                        <BR>
+                        彩板的权限控制稍显复杂但绝对必要，如您感到少许困惑，请联系上方运营微信，我们为您解答
                     </center>
                 </b-container>
             </b-modal>
@@ -1648,8 +1680,8 @@
         <div class="present-mask nodisplay">
         </div>
         <b-modal id="modal-key-shortcut" v-if="KFK.imagesLoaded" scrollable title="操作快捷键" size="lg">
-            <a href="https://mlib.liuzijin.com/frontend/keyshortcut.html" target="_blank">在独立窗口总打开</a>
-            <iframe id="iframe0" src="https://mlib.liuzijin.com/frontend/keyshortcut.html" frameborder="0"
+            <a :href="KFK.getFrontEndUrl('keyshortcut.html')" target="_blank">在独立窗口总打开</a>
+            <iframe id="iframe0" :src="KFK.getFrontEndUrl('keyshortcut.html')" frameborder="0"
                 style="overflow:hidden;height:500px;width:100%"></iframe>
         </b-modal>
         <div class="footnote">
