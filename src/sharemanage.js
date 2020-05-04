@@ -5,7 +5,7 @@ import RegHelper from './reghelper';
 import ClipboardJs from "clipboard";
 
 SHARE.cancelShare = async function () {
-    KFK.showDialog({ shareDialog: false });
+    KFK.showDialog({ shareItDialog: false });
 };
 
 // 这个是designer界面上的分享按钮调用的
@@ -36,16 +36,17 @@ SHARE.startShare = async function (share) {
     console.log(KFK.APP.model.share.url);
 
     //向服务端要临时sharecode
-    KFK.showDialog({ shareDialog: true });
+    KFK.showDialog({ shareItDialog: true });
     if (KFK.clipboard) { KFK.clipboard.destroy(); }
     //注册分享按钮，实现放入剪贴板
     //借用clipboardjs的回调方法，刚好把doEmailShare也放在这里
     await KFK.sleep(100);
+    $('.showAfterInit').removeClass('showAfterInit');
     KFK.clipboard = new ClipboardJs("#shareItBtn", {
         //必须保留这个container， 否则，clipboardjs工作不正常
         container: document.getElementById('shareitcontainer'),
         text: function (trigger) {
-            KFK.showDialog({ shareDialog: false });
+            KFK.showDialog({ shareItDialog: false });
             KFK.scrLog('分享代码已复制到剪贴板');
             let ret = KFK.APP.model.share.url;
             return ret;

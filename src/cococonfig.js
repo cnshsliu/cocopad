@@ -20,10 +20,10 @@ const config = {
         basedir: '',
     },
     ws_server: {
-        endpoint: 'wss://liuzijin.com/clbdapi/grume/wsquux',
+        // endpoint: 'wss://liuzijin.com/clbdapi/grume/wsquux',
+        endpoint: 'ws://localhost:5008/grume/wsquux',
     },
     frontend:{
-        host: 'https://mlib.liuzijin.com',
         url: 'https://mlib.liuzijin.com/frontend'
     },
     cos: {
@@ -180,6 +180,15 @@ const config = {
             'default': { width: 400, height: 200 },
         }
     },
+    layout: {
+        spacing: {
+            vert: 20,
+            hori: 20,
+        }
+    },
+    quickglance:{
+        timer: 10,
+    }
 };
 
 export default config;

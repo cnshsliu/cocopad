@@ -10,6 +10,9 @@ import { DocController } from './docController';
 const app = new Vue({
 
     data: {
+        goodsSearchQ: '',
+        goodsToBuy:{name:'', price1:0, price2:0},
+        inputMsgIcon: 'arrow-return-left',
         selected: 'A',
         inputMsg: '',
         state: {
@@ -57,7 +60,7 @@ const app = new Vue({
             svgs: ["biz001", "biz002", "biz003", "biz004", "biz005", "biz006", "biz007", "biz008", "biz009", "biz010", "biz011", "biz012", "biz013", "biz014", "biz015", "biz016", "biz017", "biz018", "biz019", "biz020", "biz021", "biz022", "biz023", "biz024", "biz025", "biz026", "biz027", "biz028", "biz029", "biz030", "biz031", "biz032", "biz033", "biz034", "biz035", "biz036", "biz037", "biz038", "biz039", "biz040", "biz041", "biz042", "biz043", "biz044", "biz045", "biz046", "biz047", "biz048", "biz049", "biz050", "biz051", "biz052", "biz053", "biz054", "biz055", "biz056", "biz057", "biz058", "biz059", "biz060"],
         }
         ],
-        toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'richtext': false, 'lock': false, 'minimap': false, 'connect': false, 'material': false, 'clean': false, 'brain': false, 'todo': false, 'chat':false },
+        toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'richtext': false, 'lock': false, 'minimap': false, 'connect': false, 'material': false, 'clean': false, 'brain': false, 'todo': false, 'chat': false },
         docNavTabIndex: 0,
         show: {
             'loading': false,
@@ -78,16 +81,26 @@ const app = new Vue({
                 userPasswordDialog: false,
                 copyDocDialog: false,
                 setAclDialog: false,
+                publishDialog: false,
                 pasteContentDialog: false,
                 MsgBox: false,
-                shareDialog: false,
+                shareItDialog: false,
                 materialDialog: false,
                 rechargeDialog: false,
                 priceListDialog: false,
                 importbr: false,
+                buy1Dialog: false,
+                buy2Dialog: false,
             },
         },
         model: {
+            publish: {
+                name: '',
+                tags: '',
+                allowCopy: false,
+                priceForRead: 5,
+                priceForCopy: 100,
+            },
             importbrtext: '',
             firstTime: true,
             isValidBrowser: true,
@@ -170,6 +183,9 @@ const app = new Vue({
             register: { userid: '', pwd: '', pwd2: '', name: '', step: 'reg', code: '' },
             signin: { userid: '', pwd: '' },
             docfields: [{ key: 'name', label: '文档名称' }, { key: 'owner', label: '发起人' }, { key: 'readonly_icon', label: '只读' }, { key: 'protect_icon', label: '密保' }, { key: 'acl', label: '权限范围' }, { key: 'operations', label: '其它', variant: 'danger' }],
+            pubfields: [{ key: 'name', label: '文档名称' }, { key: 'tags_display', label: '标签' }, { key: 'price1', label: '阅读价格' }, { key: 'price2', label: '拷贝价格' }, { key: 'stop_pub', label: '下架' }],
+            goodsfields: [{ key: 'name', label: '文档名称' }, { key: 'price1', label: '阅读价格' }, { key: 'price2', label: '拷贝价格' }, {key: 'preview', label:'预览'}, { key: 'buy1', label: '购买阅读版' },{ key: 'buy2', label: '购买拷贝版' } ],
+            subsfields: [{ key: 'name', label: '文档名称' }, { key: 'show_details', label: '详情' }],
             vorgfields: [{ key: 'name', label: '名称' }, { key: 'owner', label: '发起人' }, { key: 'operations', label: '相关操作' }],
             myorgfields: [{ key: 'name', label: '名称' }, { key: 'grade', label: '等级' }, { key: 'operations', label: '相关操作' }],
             useridfields: [{ key: 'userid', label: '用户ID' }, { key: 'operations', label: '操作', variant: 'danger' }],
@@ -177,12 +193,17 @@ const app = new Vue({
             matfields: [{ key: 'thumbnail', label: '缩略图' }, { key: 'operations', label: '相关操作' }],
             prjwarning: '',
             docs: [],
+            pubs: [],
+            goods: [],
+            subs: [],
             prjs: [],
             mats: [],
             perPage: 15,
             currentPrjPage: 1,
-            currentDocPage: 1,
             rightTabIndex: 2,
+            currentPubPage: 1,
+            currentGoodsPage: 1,
+            currentSubsPage: 1,
             defaultGridWidth: 20,
             gridWidth: 20,
             oldSnap: true,
@@ -192,6 +213,7 @@ const app = new Vue({
                 showgrid: true,
                 showlock: true,
                 showbounding: true,
+                enterWithChat: true,
                 enterToConfirmInput: true,
             },
             dragToCreate: true,
@@ -255,6 +277,15 @@ const app = new Vue({
 
         doccount() {
             return this.model.docs.length;
+        },
+        pubcount() {
+            return this.model.pubs.length;
+        },
+        goodscount() {
+            return this.model.goods.length;
+        },
+        subscount() {
+            return this.model.subs.length;
         },
         prjcount() {
             return this.model.prjs.length;

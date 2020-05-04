@@ -15,28 +15,44 @@ body {
 }
 #coco_todo{
     padding: 0;
+    border-radius: 15px !important;
 }
 #coco_inprogress{
     padding: 0;
+    border-radius: 15px !important;
 }
 #coco_done{
     padding: 0;
     text-decoration: line-through wavy #FF0000CC;
+    border-radius: 15px !important;
 }
 #coco_todo_title, #coco_inprogress_title, #coco_done_title, #coco_chat_title{
     position: absolute;
-    top: 0px; left: 0px; width:100%;
+    top: 0px; left: 0px; width:100%; height: 36px;
     text-align: center;
     font-size: 24px; color: #20201fc9;
     background-color: antiquewhite;
+    border-radius: 15px 15px 0px 0px;
+}
+#coco_chat_title{
+    position: absolute;
+    top: 0px; left: 0px; width:100%; height: 36px;
+    text-align: center;
+    font-size: 24px; color: #20201fc9;
+    background-color: aqua;
+    border-radius: 15px 15px 0px 0px;
 }
 #coco_todo_list, #coco_inprogress_list, #coco_done_list{
-    display:flex; flex-direction: column; width:100%; height:90%;
-    padding-left: 5%; padding-right: 5%; margin-top:10%; overflow-x: auto; overflow-y: scroll;
+    display:flex; flex-direction: column; width:100%; height:calc( 100% - 36px);
+    padding-left: 5%; padding-right: 5%; margin-top:36px; overflow-x: auto; overflow-y: scroll;
+}
+#coco_chat{
+    z-index: 1000000 !important;
+    border-radius: 15px !important;
 }
 #coco_chat_list{
-    display:flex; flex-direction: column; width:100%; height:90%;
-    padding-left: 5%; padding-right: 5%; margin-top:10%; overflow-x: auto; overflow-y: scroll;
+    display:flex; flex-direction: column; width:100%; height:calc( 100% - 36px);
+    padding-left: 5%; padding-right: 5%; margin-top:36px; overflow-x: auto; overflow-y: scroll;
 }
 .todo_item{
     padding-left: 5px;
@@ -77,6 +93,22 @@ body {
     border-radius: 10px;
     border: 1px solid #18d62f;
 }
+#chatitem_option{
+    z-index: 5;
+    background-color: aqua;
+    border: 1px solid #333333;
+    border-radius: 5px;
+    position: absolute;
+    width: 200px;
+    height: 30px;
+    overflow-x: auto;
+    display: flex;
+    flex-wrap: wrap;
+}
+#chatitem_option:hover{
+    background-color: #6635e2;
+    color: white;
+}
 #todo_option{
     background-color: aqua;
     border: 1px solid #333333;
@@ -87,7 +119,9 @@ body {
     overflow-x: auto;
     display: flex;
     flex-wrap: wrap;
+    z-index: 5;
 }
+
 #todo_option div{
     width: 50px; 
     height: 30px;
@@ -180,6 +214,9 @@ input::placeholder {
     height: 80px;
     border-radius: 10px;
     z-index: 10;
+    background-image: url('../src/caiban.png');
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
 }
 
 .left_top_image {
@@ -212,6 +249,7 @@ input::placeholder {
     top: 5px;
     left: 10px;
     padding-right: 10px;
+    cursor: pointer;
 }
 
 #top {
@@ -632,6 +670,10 @@ svg path {
     visibility: hidden;
 }
 
+.showAfterInit {
+    visibility: hidden;
+}
+
 .signinform,
 .registerform {
     position: absolute;
@@ -866,21 +908,18 @@ select:focus {
     position: absolute;
     top: 5px;
     left: 84px;
-    padding: 0px 20px 0px 20px;
     border-radius: 10px;
     background-color: #eeeeee;
     border: 1px solid #aaa;
 }
 
 .loading.yiq-black,
-.docHeaderInfo.yiq-black .docname,
 .docHeaderInfo.yiq-black .docteam,
 .docHeaderInfo.yiq-black .userinfo button {
     color: #333333 !important;
 }
 
 .loading.yiq-white,
-.docHeaderInfo.yiq-white .docname,
 .docHeaderInfo.yiq-white .docteam,
 .docHeaderInfo.yiq-white .userinfo button {
     color: aquamarine !important;
@@ -897,7 +936,11 @@ select:focus {
 
 .docname {
     font-size: 24px;
-    color: #777777;
+    color: white;
+    padding-left:5px;
+    background-color: #28a745;
+    border-radius: 10px 10px 0px 0px;
+    cursor: pointer;
 }
 
 .docpeople {
@@ -1264,10 +1307,6 @@ select:focus {
     z-index: 4;
 }
 
-#todo_option{
-    z-index: 5;
-}
-
 .chat_item{
     display: flex;
     margin-top:5px;
@@ -1404,7 +1443,7 @@ input {
     left: 0px;
     border: 1px solid #aaa;
     width: 120px;
-    height: 130px;
+    height: 150px;
     background-color: #ffffff;
     border-radius: 10px;
     padding-left: 0px;
