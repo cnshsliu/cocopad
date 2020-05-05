@@ -381,27 +381,41 @@ KFK.onWsMsg = async function (response) {
             KFK.pct = response.pct;
             KFK.scrLog(response.name + " 进入协作", 1000);
             break;
+        case 'DOCLIMIT':
+            $("#recharge-warn").removeClass("noshow");
+            $("#recharge-warn").prop(
+                "innerHTML",
+                "文档数量超限了，为不影响您正常使用，请点这里尽快升级"
+            );
+            break;
+        case "UPLDLIMIT":
+            $("#recharge-warn").removeClass("noshow");
+            $("#recharge-warn").prop(
+                "innerHTML",
+                "您文件上传次数超限了，为不影响您正常使用，请点这里尽快升级"
+            );
+            break;
         case "QUOTA":
             KFK.pct = response.pct;
-            if (response.tag === "almost") {
-                KFK.debug("Quota left", response.quota);
-                $("#recharge-warn").removeClass("noshow");
-                $("#recharge-warn").prop(
-                    "innerHTML",
-                    "您组织的操作分已接近耗光， 建议尽早充值"
-                );
-            } else if (response.tag === "useup") {
-                KFK.debug("Quota left", response.quota);
-                $("#recharge-warn").removeClass("noshow");
-                $("#recharge-warn").prop(
-                    "innerHTML",
-                    "当前组织的操作分已耗尽，为不影响您正常使用，请点这里尽快升级"
-                );
-            } else {
-                //ok
-                KFK.debug("Quota left", response.quota);
-                $("#recharge-warn").addClass("noshow");
-            }
+            // if (response.tag === "almost") {
+            //     KFK.debug("Quota left", response.quota);
+            //     $("#recharge-warn").removeClass("noshow");
+            //     $("#recharge-warn").prop(
+            //         "innerHTML",
+            //         "您组织的操作分已接近耗光， 建议尽早充值"
+            //     );
+            // } else if (response.tag === "useup") {
+            //     KFK.debug("Quota left", response.quota);
+            //     $("#recharge-warn").removeClass("noshow");
+            //     $("#recharge-warn").prop(
+            //         "innerHTML",
+            //         "当前组织的操作分已耗尽，为不影响您正常使用，请点这里尽快升级"
+            //     );
+            // } else {
+            //     //ok
+            //     KFK.debug("Quota left", response.quota);
+            //     $("#recharge-warn").addClass("noshow");
+            // }
             break;
         case "PCT":
             KFK.pct = response.pct;
@@ -779,9 +793,6 @@ KFK.onWsMsg = async function (response) {
             break;
         case "STS":
             KFK.onGotSTS(response);
-            break;
-        case "UPLDLIMIT":
-            KFK.scrLog("您文件上传次数已超过当前组织设置，请升级组织", 10000);
             break;
         case "LISTMAT":
             console.log(response.mats);
@@ -5329,11 +5340,11 @@ KFK.openSharedDoc = async function (shareCode) {
 };
 
 KFK.quickGlance = async (doc) => {
-    if(NotSet(doc.qgTimes)){
+    if (NotSet(doc.qgTimes)) {
         doc.qgTimes = 0;
     }
-    doc.qgTimes ++;
-    if(doc.qgTimes > 3) return;
+    doc.qgTimes++;
+    if (doc.qgTimes > 3) return;
     KFK.refreshDesignerWithDoc(doc._id, '', true);
 };
 
@@ -7934,6 +7945,7 @@ KFK.addDocumentEventHandler = function () {
                             }
                             KFK.redrawLinkLines(newNode, 'shiftreturn', true, [[0, 2], [0, 2], [0, 1, 2, 3], [0, 2]]);
                             await KFK.syncNodePut("C", newNode, "new node", null, false, 0, 1);
+                            KFK.jumpToNode(newNode);
                         } //parents.lenth > 0
                     } //IsSet (theDIV)
                     //evt.shiftKey === true;
@@ -8131,7 +8143,12 @@ KFK.modifyTodo = async function (evt) {
     await KFK.showMsgInputDlg();
     KFK.APP.inputMsg = KFK.selectedTodo.find('.todolabel').text();
     KFK.modifyTodoText = true;
-}
+};
+
+KFK.onNormalInput = async function (evt) {
+    evt.stopPropagation();
+};
+
 /**
  * 检测TODO inut框的键盘输入
  * 
@@ -10933,6 +10950,9 @@ KFK.nodeNotExist = (jqdiv) => {
     return !KFK.nodeExist(jqdiv);
 };
 
+/**
+ * 跳到当前脑图中心节点上
+ */
 KFK.jumpToBrain = async () => {
     await KFK.flushJumpStack();
     if (NotSet(KFK.brainstormFocusNode)) {
@@ -11003,6 +11023,9 @@ KFK.flushJumpStack = async () => {
 };
 
 
+/**
+ * 跳到jumpStack中的下一个上，jumpStack由点选的节点组成
+ */
 KFK.jumpToNext = async (takeBrain) => {
     await KFK.flushJumpStack();
     if (KFK.jumpStack.length === 0) return;
@@ -11015,6 +11038,9 @@ KFK.jumpToNext = async (takeBrain) => {
     }
     KFK.jumpToNode(KFK.jumpStack[KFK.jumpStackPointer], takeBrain);
 };
+/**
+ * 跳到jumpStack中的上一个上，jumpStack由点选的节点组成
+ */
 KFK.jumpToPrevious = async (takeBrain) => {
     await KFK.flushJumpStack();
     if (KFK.jumpStack.length === 0) return;

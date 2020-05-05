@@ -31,6 +31,7 @@
     <script type="text/javascript" src="https://liuzijin.com/jslib/quill2html.js"></script>
     <script type="text/javascript"
         src="https://cdn.jsdelivr.net/npm/browser-image-compression@1.0.9/dist/browser-image-compression.js"></script>
+
 </head>
 
 <body>
@@ -1826,9 +1827,9 @@
         <!-- explorer -->
         <!--minimap-->
         <div id="various_modals">
+            <!-- must keep this container, or else clipboardjs work inproperly -->
             <b-modal v-model="show.dialog.shareItDialog" id='shareitmodal' title="分享文档" button-size="lg" hide-footer
                 centered size="lg">
-                <!-- must keep this container, or else clipboardjs work inproperly -->
                 <b-container id="shareitcontainer">
                     请将下面文档地址发送给协作者<BR>
                     协作者打开地址后，将与你一起在白板上协同创作<BR>
@@ -1871,7 +1872,7 @@
                     </b-row>
                     <b-row v-show="model.paste.showdisplay">
                         <b-col cols="12">显示文字
-                            <b-form-input trim type="text" v-model="model.paste.display"> </b-form-input>
+                            <b-form-input trim type="text" v-model="model.paste.display" v-on:keydown="KFK.onNormalInput($event)"> </b-form-input>
                         </b-col>
                     </b-row>
                     <b-row v-show="model.paste.showbox">
