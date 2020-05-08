@@ -20,8 +20,8 @@ const config = {
         basedir: '',
     },
     ws_server: {
-        // endpoint: 'wss://liuzijin.com/clbdapi/grume/wsquux',
-        endpoint: 'ws://localhost:5008/grume/wsquux',
+        endpoint: 'wss://liuzijin.com/clbdapi/grume/wsquux',
+        // endpoint: 'ws://localhost:5008/grume/wsquux',
     },
     frontend:{
         url: 'https://mlib.liuzijin.com/frontend'

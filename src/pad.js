@@ -4,6 +4,7 @@ import KFK from './console';
 import ACM from './accountmanage';
 import EXP from './explorermanage';
 import SHARE from './sharemanage';
+import Validator from "./validator";
 import { NodeController } from './nodeController';
 import { DocController } from './docController';
 
@@ -94,6 +95,7 @@ const app = new Vue({
             },
         },
         model: {
+            copyToDocName: '',
             publish: {
                 name: '',
                 tags: '',
@@ -293,6 +295,9 @@ const app = new Vue({
         matcount() {
             return this.model.mats.length;
         },
+        copyToDocNameState(){
+            return Validator.validateDocName(this.model.copyToDocName);
+        },
 
     },
     methods: {
@@ -316,19 +321,21 @@ const app = new Vue({
         focusOnPwdInput() {
             this.setData('model', 'passwordinputok', "show");
             this.$refs.focusThis.focus();
+            KFK.modalShown();
         },
         focusOnOldPwdInput() {
             this.$refs.focusOldPwd.focus();
         },
         focusOnUserPwdInput() {
             this.$refs.focusUserPwd.focus();
+            KFK.modalShown();
         },
         async setData(data, key, value) {
             await this.$set(this[data], key, value);
         },
 
-        setMode(mode) {
-            KFK.setMode(mode);
+        setMode(mode, event) {
+            KFK.setMode(mode, event);
         },
         KfkAlign(direction) {
             KFK.alignNodes(direction);
@@ -410,7 +417,8 @@ window.addEventListener("drop", async function (e) {
         e.preventDefault();
         e.dataTransfer.effectAllowed = "copy";
         e.dataTransfer.dropEffect = "copy";
-        await KFK.procFilesDrop(e.dataTransfer.files);
+        await KFK.onD
+        KFK.onDropFiles(e.dataTransfer.files);
     } else {
         e.preventDefault();
         e.dataTransfer.effectAllowed = "none";
