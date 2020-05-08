@@ -49,6 +49,12 @@ body {
 #coco_chat{
     z-index: 1000000 !important;
     border-radius: 15px !important;
+    display: flex; padding: 2px; margin: 0px; 
+    background-color: rgb(255, 255, 255); 
+    border-width: 1px; border-style: solid;
+    position: absolute; top: 88px; left: 86px;
+    width: 256px; height: 175px; 
+    background-color: aquamarine !important;
 }
 #coco_chat_list{
     display:flex; flex-direction: column; width:100%; height:calc( 100% - 36px);
@@ -947,6 +953,38 @@ select:focus {
     font-size: 16px;
     color: #777777;
     padding-top: 4px;
+    width:100%;
+    display: flex;
+    flex-direction: row;
+}
+.chat_reddot{
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+    background-color: red;
+    position: relative;
+    left: -10px;
+}
+.jelloOnce{
+    animation: jellosmall 1s;
+    animation-iteration-count: 3;
+}
+.chat_todo{
+    display: flex;
+    width: 100%;
+}
+.chat_todo .chat-button{
+    justify-self: flex-start;
+    width: 100%;
+    align-self: center;
+    align-content: center;
+    text-align: center;
+}
+.chat_todo .todo-button{
+    justify-self: flex-end;
+    width: 100%;
+    align-content: center;
+    text-align: center;
 }
 
 .docpeople img {
@@ -1778,6 +1816,16 @@ table.quick-help-table td:first-of-type {
 }
 .opqrcode_in_share{
     width: 150px; height: 150px;
-    position: absolute;
-    top: 0px; right: 40px;
 }
+/* begin: Weibo.com paste css fix */
+.pastedHtml img{
+    max-width: 40px;
+    max-height: 40px;
+}
+.pastedHtml .face{
+    width: 18px; height:18px;
+}
+.s-color-red {
+    color: red;
+}
+/* end: Weibo.com paste css fix */

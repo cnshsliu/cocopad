@@ -2,12 +2,11 @@
 <html>
 
 <head>
-    <title>彩板</title>
+    <title>彩板-即时协作：交互白板 脑图 演示</title>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="../my-styles/style.css">
     <link rel="shortcut icon" href="./favicon.png" />
-    <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bowser/1.9.4/bowser.min.js"></script> -->
     <link type="text/css" rel="stylesheet"
         href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
     <link type="text/css" rel="stylesheet"
@@ -242,7 +241,7 @@
             <div id="S1">
                 <div id="C1">
                     <div id="containerbkg" class="grid1"></div>
-                    <div id="C3">
+                    <div id="C3" v-on:focus="KFK.C3GotFocus" v-on:blur="KFK.C3Blur" v-on:mouseover="KFK.focusOnC3">
                     </div>
                     <div id="selectingrect" class="selectingrect"></div>
                     <div id="chatitem_option" class="noshow clickOuterToHide">
@@ -279,59 +278,71 @@
             <!-- left tool left menu toolbox -->
             <div id="left" class="bg-white padlayout">
                 <b-list-group>
-                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('pointer');"
-                        v-b-popover.hover.right title="点选" :active="toolActiveState['pointer']">
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                        v-on:click="setMode('pointer', $event);" v-b-popover.hover.right title="点选"
+                        :active="toolActiveState['pointer']">
                         <b-img :src="getImageSrc('pointer')" fluid alt="" scale="2" class="cocotool"></b-img>
                     </b-list-group-item>
-                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('text');"
-                        v-b-popover.hover.right title="单行文本" :active="toolActiveState['text']">
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                        v-on:click="setMode('text', $event);" v-b-popover.hover.right title="单行文本"
+                        :active="toolActiveState['text']">
                         <b-img :src="getImageSrc('text')" fluid alt="" scale="2" class="cocotool"></b-img>
                     </b-list-group-item>
-                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('textblock');"
-                        v-b-popover.hover.right title="复合文本" :active="toolActiveState['textblock']">
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                        v-on:click="setMode('textblock', $event);" v-b-popover.hover.right title="复合文本"
+                        :active="toolActiveState['textblock']">
                         <b-img :src="getImageSrc('textblock')" fluid alt="" scale="2" class="cocotool"></b-img>
                     </b-list-group-item>
-                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('yellowtip');"
-                        v-b-popover.hover.right title="小黄贴" :active="toolActiveState['yellowtip']">
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                        v-on:click="setMode('yellowtip', $event);" v-b-popover.hover.right title="小黄贴"
+                        :active="toolActiveState['yellowtip']">
                         <b-img :src="getImageSrc('tipbtn')" fluid alt="" scale="2" class="cocotool"></b-img>
                     </b-list-group-item>
-                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('richtext');"
-                        v-b-popover.hover.right title="格式文本" :active="toolActiveState['richtext']">
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                        v-on:click="setMode('richtext', $event);" v-b-popover.hover.right title="格式文本"
+                        :active="toolActiveState['richtext']">
                         <b-img :src="getImageSrc('richtext')" fluid alt="" scale="2" class="cocotool"></b-img>
                     </b-list-group-item>
-                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('material');"
-                        v-b-popover.hover.right title="图片库" :active="toolActiveState['material']">
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                        v-on:click="setMode('material', $event);" v-b-popover.hover.right title="图片库"
+                        :active="toolActiveState['material']">
                         <b-img :src="getImageSrc('material')" fluid alt="" scale="2" class="cocotool"
                             id='tool_material'>
                         </b-img>
                     </b-list-group-item>
-                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('line');"
-                        v-b-popover.hover.right title="画线" :active="toolActiveState['line']">
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                        v-on:click="setMode('line', $event);" v-b-popover.hover.right title="画线"
+                        :active="toolActiveState['line']">
                         <b-img :src="getImageSrc('line')" fluid alt="" scale="2" class="cocotool" id='tool_line'>
                         </b-img>
                     </b-list-group-item>
-                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('connect');"
-                        v-b-popover.hover.right title="连接" :active="toolActiveState['connect']">
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                        v-on:click="setMode('connect', $event);" v-b-popover.hover.right title="连接"
+                        :active="toolActiveState['connect']">
                         <b-img :src="getImageSrc('connect')" fluid alt="" scale="2" class="cocotool" id='tool_connect'>
                         </b-img>
                     </b-list-group-item>
-                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('lock');"
-                        v-b-popover.hover.right title="锁定" :active="toolActiveState['lock']">
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                        v-on:click="setMode('lock', $event);" v-b-popover.hover.right title="锁定"
+                        :active="toolActiveState['lock']">
                         <b-img :src="getImageSrc('lock')" fluid alt="" scale="2" class="cocotool" id='tool_lock'>
                         </b-img>
                     </b-list-group-item>
-                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('brain');"
-                        v-b-popover.hover.right title="脑图" :active="toolActiveState['brain']">
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                        v-on:click="setMode('brain', $event);" v-b-popover.hover.right title="脑图"
+                        :active="toolActiveState['brain']">
                         <b-img :src="getImageSrc('brain')" fluid alt="" scale="2" class="cocotool" id='tool_brain'>
                         </b-img>
                     </b-list-group-item>
-                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('todo');"
-                        v-b-popover.hover.right title="待办事项" :active="toolActiveState['todo']">
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                        v-on:click="setMode('todo', $event);" v-b-popover.hover.right title="待办事项"
+                        :active="toolActiveState['todo']">
                         <b-img :src="getImageSrc('todo')" fluid alt="" scale="2" class="cocotool" id='tool_todo'>
                         </b-img>
                     </b-list-group-item>
-                    <b-list-group-item href="#" class="d-flex align-items-center toolbox" @click="setMode('chat');"
-                        v-b-popover.hover.right title="对话" :active="toolActiveState['chat']">
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                        v-on:click="setMode('chat', $event);" v-b-popover.hover.right title="对话"
+                        :active="toolActiveState['chat']">
                         <b-img :src="getImageSrc('chat')" fluid alt="" scale="2" class="cocotool" id='tool_chat'>
                         </b-img>
                     </b-list-group-item>
@@ -576,10 +587,6 @@
                         <b-checkbox v-model="model.viewConfig.enterWithChat" switch @input="KFK.toggleEnterWithChat">
                             自动显示对话框
                         </b-checkbox>
-                        <b-checkbox v-model="model.viewConfig.chatWindowFollow" switch
-                            @input="KFK.toggleChatWindowFollow">
-                            对话窗口跟随
-                        </b-checkbox>
                         <p> </p>
                         <b-container class="coco">
                             <b-row class="mx-auto my-1">
@@ -642,7 +649,7 @@
                             @click="KFK.toggleFullScreen">
                             <b-icon icon="arrows-fullscreen"></b-icon>&nbsp;全屏(fs)
                         </b-dropdown-item>
-                        <b-dropdown-item id="onepage" variant="success" @click="KFK.toggleOnePage">
+                        <b-dropdown-item id="onepage" variant="success" @click="KFK.toggleOverview">
                             <b-icon icon="grid3x2" shift-h="-1.2" shift-v="1.1"></b-icon>&nbsp;全局概览
                         </b-dropdown-item>
                         <b-dropdown-item href="#" id="toggle_cbonly" variant="success"
@@ -717,36 +724,49 @@
                     {{model.cocodoc.name}}
                 </div>
                 <div class="docpeople padlayout" v-if="show.section.designer">
-                    <div>
-                        <b-img v-if="model.cocodoc.owner !== model.cocouser.userid" rounded="circle"
-                            :src="model.cocodoc.ownerAvatar_src" title="共创发起人"></b-img>
-                        <span
-                            v-if="model.cocodoc.owner !== model.cocouser.userid">发起人:{{model.cocodoc.ownerName}}</span>
-                        <b-img v-if="model.cocouser.avatar_src" :src="model.cocouser.avatar_src" title="当前用户">
-                        </b-img>
-                        <b-dropdown :text="model.cocouser.name" right size="sm" variant="link" class="m-0 p-0 userinfo">
-                            <b-dropdown-item-button>{{model.cocouser.name}}</b-dropdown-item-button>
-                            <b-dropdown-item-button v-if="!model.isDemoEnv" @click="KFK.showIvtCodeDialog">邀请获奖励
-                            </b-dropdown-item-button>
-                            <b-dropdown-item-button v-if="!model.isDemoEnv" @click="KFK.showSetProfileDialog()">修改账户信息
-                            </b-dropdown-item-button>
-                            <b-dropdown-divider></b-dropdown-divider>
-                            <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.upgradeToStartAccount">注册为正式用户
-                            </b-dropdown-item-button>
-                            <b-dropdown-item-button v-else @click="KFK.signout">退出登录状态</b-dropdown-item-button>
-                            <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.gotoSignin">登录已有账号
-                            </b-dropdown-item-button>
-                        </b-dropdown>
-                        <b-button title='hello' class="m-0 p-0 docteam" variant='link' @click="KFK.showActionLog">
-                            <b-icon icon="people"></b-icon>{{model.actionlog.length}}
-                        </b-button>
-                    </div>
+                    <b-img v-if="model.cocodoc.owner !== model.cocouser.userid"
+                        :src="model.cocodoc.ownerAvatar_src" title="共创发起人"></b-img>
+                    <span v-if="model.cocodoc.owner !== model.cocouser.userid">发起人:{{model.cocodoc.ownerName}}</span>
+                    <b-img v-if="model.cocouser.avatar_src" :src="model.cocouser.avatar_src" title="当前用户">
+                    </b-img>
+                    <b-dropdown :text="model.cocouser.name" right size="sm" variant="link" class="m-0 p-0 userinfo">
+                        <b-dropdown-item-button>{{model.cocouser.name}}</b-dropdown-item-button>
+                        <b-dropdown-item-button v-if="!model.isDemoEnv" @click="KFK.showIvtCodeDialog">邀请获奖励
+                        </b-dropdown-item-button>
+                        <b-dropdown-item-button v-if="!model.isDemoEnv" @click="KFK.showSetProfileDialog()">修改账户信息
+                        </b-dropdown-item-button>
+                        <b-dropdown-divider></b-dropdown-divider>
+                        <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.upgradeToStartAccount">注册为正式用户
+                        </b-dropdown-item-button>
+                        <b-dropdown-item-button v-else @click="KFK.signout">退出登录状态</b-dropdown-item-button>
+                        <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.gotoSignin">登录已有账号
+                        </b-dropdown-item-button>
+                    </b-dropdown>
+                    <b-button title='hello' class="m-0 p-0 docteam" variant='link' @click="KFK.showActionLog">
+                        <b-icon icon="people"></b-icon>{{model.actionlog.length}}
+                    </b-button>
+                    <b-button class="m-0 p-0 docteam" variant='link' @click="KFK.showChat">
+                        <b-img class='chat_icon' :src="getImageSrc('chat')"> </b-img>
+                    </b-button>
+                    <div class='chat_reddot'></div>
+                    <b-button class="m-0 p-0 docteam" variant='link' @click="KFK.showTodo">
+                        <b-img :src="getImageSrc('todo')"> </b-img>
+                    </b-button>
                 </div>
             </div>
             <div id="readonlyDesc" v-show="show.section.designer" class="padlayout">
                 {{model.readonlyDesc}}
             </div>
             <div id="minimap" v-show="show.section.designer && show.section.minimap" class="padlayout">
+            </div>
+            <div id="coco_chat" class="chatlist noedit spaceToHide noshow">
+                <div style="position:absolute; right:5px; top:0px; z-index:100;">
+                    <b-button class="m-0 p-0" variant="link" @click="KFK.hideChat">
+                        <b-icon icon="X"></b-icon>
+                    </b-button>
+                </div>
+                <div id="coco_chat_title" class="coco_title">群消息</div>
+                <div id="coco_chat_list" class="coco_list original"> </div>
             </div>
         </div>
         <!-- designer-->
@@ -960,7 +980,8 @@
                                                 variant="outline-none"
                                                 @click="KFK.setDocReadonly(aDoc.item, aDoc.index, $event.target)">
                                                 <b-icon :icon="aDoc.item.readonly_icon" variant="secondary"
-                                                    class="opicon"></b-icon>
+                                                    class="opicon">
+                                                </b-icon>
                                             </b-button>
                                             <b-icon v-else :icon="aDoc.item.readonly_icon" variant="secondary"></b-icon>
                                         </b-col>
@@ -1124,11 +1145,12 @@
                         </b-tab>
 
 
-                        <b-tab title="交易市场" @click="KFK.gotoMarket">
+                        <b-tab title="白板市场" @click="KFK.gotoMarket">
                             <div style="overflow-y:scroll">
                                 <div class="w-100 d-flex justify-content-center cocohighlight-3">
                                     <b-input-group prepend="搜索">
-                                        <b-form-input trim v-model="goodsSearchQ">
+                                        <b-form-input trim v-model="goodsSearchQ"
+                                            v-on:keydown="KFK.onNormalInput($event)">
                                         </b-form-input>
                                         <b-input-group-append>
                                             <b-button href="#" tabindex="-1" @click="KFK.gotoMarketSearch">
@@ -1173,7 +1195,8 @@
                                         <b-col class="d-flex align-items-center">
                                             <b-button size="sm" class="m-0 p-0 myhovered" variant="outline-none"
                                                 @click="KFK.buy1(aGoods.item, aGoods.index, $event.target)">
-                                                <b-img :src="KFK.getFrontEndUrl('assets/wechatpay.svg')" style="height:18px;" class="opicon"> </b-img>
+                                                <b-img :src="KFK.getFrontEndUrl('assets/wechatpay.svg')"
+                                                    style="height:18px;" class="opicon"> </b-img>
                                             </b-button>
                                         </b-col>
                                     </template>
@@ -1182,7 +1205,8 @@
                                         <b-col class="d-flex align-items-center">
                                             <b-button size="sm" class="m-0 p-0 myhovered" variant="outline-none"
                                                 @click="KFK.buy2(aGoods.item, aGoods.index, $event.target)">
-                                                <b-img :src="KFK.getFrontEndUrl('assets/wechatpay.svg')" style="height:18px;" class="opicon"> </b-img>
+                                                <b-img :src="KFK.getFrontEndUrl('assets/wechatpay.svg')"
+                                                    style="height:18px;" class="opicon"> </b-img>
                                             </b-button>
                                         </b-col>
                                     </template>
@@ -1270,7 +1294,8 @@
                                                     <b-form inline>
                                                         <b-input-group prepend="@" class="mb-2 w-100">
                                                             <b-input :id="'inline-form-input-newuserid-' + aOrg.index"
-                                                                placeholder="userId email">
+                                                                placeholder="userId email"
+                                                                v-on:keydown="KFK.onNormalInput($event)">
                                                             </b-input>
                                                             <b-button @click="KFK.addOrgUser(aOrg.item._id, aOrg.index)"
                                                                 size="sm" variant="primary">
@@ -1283,7 +1308,8 @@
                                                         <b-input-group prepend="改名" class="mb-2 w-100">
                                                             <b-input
                                                                 :id="'inline-form-input-changeorgname-'+ aOrg.index"
-                                                                placeholder="新名字, 4-20个英文字母或汉字" :value="aOrg.item.name">
+                                                                placeholder="新名字, 4-20个英文字母或汉字" :value="aOrg.item.name"
+                                                                v-on:keydown="KFK.onNormalInput($event)">
                                                             </b-input>
                                                             <b-button @click="KFK.changeOrgName(aOrg.item, aOrg.index)"
                                                                 size="sm" variant="primary">
@@ -1356,7 +1382,8 @@
                                             <b-form>
                                                 <b-input-group prepend="组织名称">
                                                     <b-form-input class="coco-input" id="neworgname" trim
-                                                        placeholer="4-20个英文字母或汉字" v-model="model.org.neworg.name">
+                                                        placeholer="4-20个英文字母或汉字" v-model="model.org.neworg.name"
+                                                        v-on:keydown="KFK.onNormalInput($event)">
                                                     </b-form-input>
                                                     <b-button @click="KFK.createNewOrg">创建</b-button>
                                                 </b-input-group>
@@ -1406,13 +1433,13 @@
                     </b-row>
 
                 </div>
-                <b-modal @shown="KFK.notImplemented" @ok="KFK.notImplemented" @hide="KFK.notImplemented"
-                    @close="KFK.notImplemented" @cancel="KFK.notImplemented" v-model="show.dialog.docOpDialog"
-                    title="白板设置" button-size="sm" centered size="md">
+                <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" @ok="KFK.notImplemented"
+                    @cancel="KFK.notImplemented" v-model="show.dialog.docOpDialog" title="白板设置" button-size="sm"
+                    centered size="md">
                     <b-container>
                         <b-input-group prepend="协作码">
                             <b-form-input trim :type="model.hidepassword?'password':'text'" v-model="model.opendocpwd"
-                                ref="focusThis">
+                                ref="focusThis" v-on:keydown="KFK.onNormalInput($event)">
                             </b-form-input>
                             <b-input-group-append>
                                 <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword">
@@ -1422,13 +1449,13 @@
                         </b-input-group>
                     </b-container>
                 </b-modal>
-                <b-modal @shown="focusOnPwdInput" @ok="KFK.getDocPwd" @hide="KFK.onDocPwdHidden"
-                    @close="KFK.cancelDocPwd" @cancel="KFK.cancelDocPwd" v-model="show.dialog.inputDocPasswordDialog"
-                    title="请输入协作码" button-size="sm" centered size="md">
+                <b-modal @hidden="KFK.modalHidden" @shown="focusOnPwdInput();" @ok="KFK.getDocPwd"
+                    @hide="KFK.onDocPwdHide" @close="KFK.cancelDocPwd" @cancel="KFK.cancelDocPwd"
+                    v-model="show.dialog.inputDocPasswordDialog" title="请输入协作码" button-size="sm" centered size="md">
                     <b-container>
                         <b-input-group prepend="协作码">
                             <b-form-input trim :type="model.hidepassword?'password':'text'" v-model="model.opendocpwd"
-                                ref="focusThis">
+                                ref="focusThis" v-on:keydown="KFK.onNormalInput($event)">
                             </b-form-input>
                             <b-input-group-append>
                                 <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword">
@@ -1438,12 +1465,12 @@
                         </b-input-group>
                     </b-container>
                 </b-modal>
-                <b-modal @ok="KFK.resetDocPwd" v-model="show.dialog.resetDocPasswordDialog" title="设置协作密码"
-                    button-size="sm" centered size="md">
+                <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" @ok="KFK.resetDocPwd"
+                    v-model="show.dialog.resetDocPasswordDialog" title="设置协作密码" button-size="sm" centered size="md">
                     <b-form class="office-form">
                         <b-input-group prepend="原协作码" class="px-5 pt-2">
                             <b-form-input tabindex="1" trim :type="model.hidepassword?'password':'text'"
-                                v-model="model.docOldPwd">
+                                v-model="model.docOldPwd" v-on:keydown="KFK.onNormalInput($event)">
                             </b-form-input>
                             <span class="right-eye">
                                 <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword"
@@ -1454,7 +1481,7 @@
                         </b-input-group>
                         <b-input-group prepend="新协作码" class="px-5 pt-2">
                             <b-form-input tabindex="2" trim :type="model.hidepassword?'password':'text'"
-                                v-model="model.docNewPwd">
+                                v-model="model.docNewPwd" v-on:keydown="KFK.onNormalInput($event)">
                             </b-form-input>
                             <span class="right-eye">
                                 <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword"
@@ -1481,22 +1508,22 @@
                         </div>
                     </div>
                 </b-modal>
-                <b-modal @shown="focusOnUserPwdInput" @ok="KFK.removeDocPwd" v-model="show.dialog.userPasswordDialog"
-                    title="请输入你的用户密码" button-size="sm" centered size="md">
+                <b-modal @shown="focusOnUserPwdInput" @hidden="KFK.modalHidden" @ok="KFK.removeDocPwd"
+                    v-model="show.dialog.userPasswordDialog" title="请输入你的用户密码" button-size="sm" centered size="md">
                     <b-input-group prepend="用户密码" class="pt-2 px-5">
                         <b-form-input trim :type="model.hidepassword?'password':'text'" v-model="model.inputUserPwd"
-                            ref="focusUserPwd">
+                            ref="focusUserPwd" v-on:keydown="KFK.onNormalInput($event)">
                         </b-form-input>
                         <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword">
                             <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
                         </b-button>
                     </b-input-group>
                 </b-modal>
-                <b-modal @ok="KFK.copyDoc" v-model="show.dialog.copyDocDialog" title="复制白板" button-size="sm" centered
-                    size="md">
+                <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" @ok="KFK.copyDoc"
+                    v-model="show.dialog.copyDocDialog" title="复制白板" button-size="sm" centered size="md">
                     <b-form>
                         <b-input-group prepend="新白板名" class="pt-2 px-5">
-                            <b-form-input id="docName" trim v-model="model.copyToDocName" :state="state.copydoc.name"
+                            <b-form-input id="docName" trim v-model="model.copyToDocName" :state="copyToDocNameState"
                                 class="mb-2 mr-sm-2 mb-sm-0" placeholder=""></b-form-input>
                             <b-form-invalid-feedback id="docName-feedback">
                                 名称为3个以上英文或中文字符，不超过20个
@@ -1543,8 +1570,8 @@
                         </ul>
                     </div>
                 </b-modal>
-                <b-modal @ok="KFK.setAcl" v-model="show.dialog.setAclDialog" title="设置访问范围" button-size="sm" centered
-                    size="md">
+                <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" @ok="KFK.setAcl"
+                    v-model="show.dialog.setAclDialog" title="设置访问范围" button-size="sm" centered size="md">
                     <b-form>
                         <b-form-group label="请选择访问范围">
                             <b-form-radio v-model="model.currentDoc.acl" name="aclRadios" value="S">仅发起人: 只有发起人自己可以使用
@@ -1577,47 +1604,55 @@
                         </ul>
                     </div>
                 </b-modal>
-                <b-modal @ok="KFK.publishDoc" v-model="show.dialog.publishDialog" title="设置访问范围" button-size="sm"
-                    centered size="md">
+                <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" @ok="KFK.publishDoc"
+                    v-model="show.dialog.publishDialog" title="设置访问范围" button-size="sm" centered size="md">
                     <b-form>
                         <b-checkbox v-model="model.publish.allowCopy"> 是否允许复制 </b-checkbox>
                         如果不允许复制，表示只允许读; 如果允许复制，则复制后客户可以自由使用，包括重新发布
                         <b-input-group prepend="发布后名称">
-                            <b-form-input trim v-model="model.publish.name" placeholder=""></b-form-input>
+                            <b-form-input trim v-model="model.publish.name" placeholder=""
+                                v-on:keydown="KFK.onNormalInput($event)"></b-form-input>
                         </b-input-group>
                         <b-form-textarea id="textarea-desc" v-model="model.publish.desc"
                             placeholder="请输入介绍性文字，便于读者了解..." rows="3" max-rows="6"></b-form-textarea>
                         <b-input-group prepend="发布后名称">
-                            <b-form-input trim v-model="model.publish.name" placeholder=""></b-form-input>
+                            <b-form-input trim v-model="model.publish.name" placeholder=""
+                                v-on:keydown="KFK.onNormalInput($event)"></b-form-input>
                         </b-input-group>
                         <b-input-group prepend="标签">
-                            <b-form-input trim v-model="model.publish.tags" placeholder="标签间用空格分割"></b-form-input>
+                            <b-form-input trim v-model="model.publish.tags" placeholder="标签间用空格分割"
+                                v-on:keydown="KFK.onNormalInput($event)"></b-form-input>
                         </b-input-group>
                         <b-input-group prepend="只读价格">
-                            <b-form-input trim v-model="model.publish.priceForRead"></b-form-input>
+                            <b-form-input trim v-model="model.publish.priceForRead"
+                                v-on:keydown="KFK.onNormalInput($event)"></b-form-input>
                             <b-text slot="append">圆</b-text>
                         </b-input-group>
                         <b-input-group prepend="复制价格" v-if="model.publish.allowCopy">
-                            <b-form-input trim v-model="model.publish.priceForCopy" placeholer="至少是只读价格的2倍">
+                            <b-form-input trim v-model="model.publish.priceForCopy" placeholer="至少是只读价格的2倍"
+                                v-on:keydown="KFK.onNormalInput($event)">
                             </b-form-input>
                             <b-text slot="append">圆</b-text>
                         </b-input-group>
                     </b-form>
                 </b-modal>
-                <b-modal id="modal-setuserprofile" @ok="KFK.setUserProfile" v-model="show.dialog.setProfileDialog"
+                <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" id="modal-setuserprofile"
+                    @ok="KFK.setUserProfile" v-model="show.dialog.setProfileDialog"
                     :title="'当前用户: ' + model.cocouser.userid" button-size="sm" centered class="profileform">
                     <div class="profileform">
                         <b-form autocomplete="off" class="w-100 px-2" @submit.stop.prevent="KFK.handleProfileSubmit">
                             <b-input-group prepend="显示名" class="mb-1">
                                 <b-form-input id="profile_name" trim v-model="model.profileToSet.name"
-                                    :state="state.profile.name" required placeholder="新显示名"></b-form-input>
+                                    :state="state.profile.name" required placeholder="新显示名"
+                                    v-on:keydown="KFK.onNormalInput($event)"></b-form-input>
                                 <b-form-invalid-feedback id="profile_name-feedback">
                                     2-10个英文/数字/汉字
                                 </b-form-invalid-feedback>
                             </b-input-group>
                             <b-input-group prepend="原密码" class="mb-1">
                                 <b-form-input id="profile_oldpwd" trim :type="model.hidepassword?'password':'text'"
-                                    v-model="model.profileToSet.oldpwd" :state="state.profile.oldpwd" required>
+                                    v-model="model.profileToSet.oldpwd" :state="state.profile.oldpwd" required
+                                    v-on:keydown="KFK.onNormalInput($event)">
                                 </b-form-input>
                                 <b-form-invalid-feedback id="profile_oldpwd-feedback">
                                     密码至少8字符，
@@ -1627,7 +1662,8 @@
                             <b-input-group prepend="新密码" class="mb-1">
                                 <b-form-input :type="model.hidepassword?'password':'text'" class="no-right-border"
                                     required trim id="profile_newpwd" tabindex="3" v-model="model.profileToSet.newpwd"
-                                    :state="state.profile.newpwd" placeholder="8个以上字母数字特殊字符">
+                                    :state="state.profile.newpwd" placeholder="8个以上字母数字特殊字符"
+                                    v-on:keydown="KFK.onNormalInput($event)">
                                 </b-form-input>
                                 <span class="right-eye">
                                     <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword"
@@ -1643,7 +1679,8 @@
                             <b-input-group prepend="新密码" class="mb-1">
                                 <b-form-input id="profile_newpwd2" trim :type="model.hidepassword?'password':'text'"
                                     v-model="model.profileToSet.newpwd2" :state="state.profile.newpwd2"
-                                    class="no-right-border" required placeholder="密码二次输入确认"></b-form-input>
+                                    class="no-right-border" required placeholder="密码二次输入确认"
+                                    v-on:keydown="KFK.onNormalInput($event)"></b-form-input>
                                 <span class="right-eye">
                                     <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword"
                                         variant="outline-none">
@@ -1674,13 +1711,15 @@
                         </b-form>
                     </div>
                 </b-modal>
-                <b-modal v-model="show.dialog.ivtCodeDialog" title="邀请使用可获得操作积分奖励" button-size="sm" centered size="md">
+                <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" v-model="show.dialog.ivtCodeDialog"
+                    title="邀请使用可获得操作积分奖励" button-size="sm" centered size="md">
                     请复制一下地址,分享给你的同事或朋友, 他们成功注册后,你将获增100个操作积分!
-                    <b-form-input :value="KFK.APP&&KFK.APP.model&&KFK.APP.model.cocouser&& KFK.getInvitationUrl()">
+                    <b-form-input :value="KFK.APP&&KFK.APP.model&&KFK.APP.model.cocouser&& KFK.getInvitationUrl()"
+                        v-on:keydown="KFK.onNormalInput($event)">
                     </b-form-input>
                 </b-modal>
-                <b-modal v-model="show.dialog.buy1Dialog" button-size="sm" centered size="md" :hide-footer="true"
-                    title="扫码付费">
+                <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" v-model="show.dialog.buy1Dialog"
+                    button-size="sm" centered size="md" :hide-footer="true" title="扫码付费">
                     <b-container class="w-100 m-0 p-1">
                         <b-row class="m-0 p-0">
                             <b-col class="text-center m-0 p-1">
@@ -1703,8 +1742,8 @@
                         </b-row>
                     </b-container>
                 </b-modal>
-                <b-modal v-model="show.dialog.buy2Dialog" button-size="sm" centered size="md" :hide-footer="true"
-                    title="扫码付费">
+                <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" v-model="show.dialog.buy2Dialog"
+                    button-size="sm" centered size="md" :hide-footer="true" title="扫码付费">
                     <b-container class="w-100 m-0 p-1">
                         <b-row class="m-0 p-0">
                             <b-col class="text-center m-0 p-1">
@@ -1727,8 +1766,8 @@
                         </b-row>
                     </b-container>
                 </b-modal>
-                <b-modal v-model="show.dialog.rechargeDialog" button-size="sm" centered size="xl" :hide-footer="true"
-                    title="关于操作点的获取说明">
+                <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" v-model="show.dialog.rechargeDialog"
+                    button-size="sm" centered size="xl" :hide-footer="true" title="关于操作点的获取说明">
                     <b-container class="w-100 m-0 p-1">
                         <b-row class="m-0 p-0">
                             <b-col class="m-0 p-1">
@@ -1779,20 +1818,21 @@
                         </b-row>
                     </b-container>
                 </b-modal>
-                <b-modal v-model="show.dialog.priceListDialog" button-size="sm" centered size="xl" :hide-footer="true"
-                    title="关于组织等级及操作点的说明">
+                <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" v-model="show.dialog.priceListDialog"
+                    button-size="sm" centered size="xl" :hide-footer="true" title="关于组织等级及操作点的说明">
                     <iframe id="iframe-price" :src="KFK.getFrontEndUrl('listprice.html')" frameborder="0"
                         style="overflow:hidden;height:600px;width:100%"></iframe>
                 </b-modal>
-                <b-modal v-model="show.dialog.importbr" @ok="KFK.beginImportBr" title="导入文字为脑图" button-size="sm"
-                    centered size="md">
+                <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" v-model="show.dialog.importbr"
+                    @ok="KFK.beginImportBr" title="导入文字为脑图" button-size="sm" centered size="md">
                     这是一个尚在实验中的功能
                     <div>
                         <b-form-textarea v-model="model.importbrtext" id="textarea-importbr" placeholder="请把文本录入或粘贴到这里"
                             rows="8" v-on:keydown="KFK.onImportBrKeyDown($event)"> ></b-form-textarea>
                     </div>
                 </b-modal>
-                <b-modal v-model="model.isNotValidBrowser" title="友情提醒" centered>
+                <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" v-model="model.isNotValidBrowser"
+                    title="友情提醒" centered>
                     我们尚没有对您当前使用的浏览进行完整的兼容性匹配，<BR>
                     使用中可能会遇到不正常的情况，<BR>
                     推荐您使用 <BR>
@@ -1828,12 +1868,23 @@
         <!--minimap-->
         <div id="various_modals">
             <!-- must keep this container, or else clipboardjs work inproperly -->
-            <b-modal v-model="show.dialog.shareItDialog" id='shareitmodal' title="分享文档" button-size="lg" hide-footer
-                centered size="lg">
+            <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" v-model="show.dialog.shareItDialog"
+                id='shareitmodal' title="分享文档" button-size="lg" hide-footer centered size="lg">
                 <b-container id="shareitcontainer">
                     请将下面文档地址发送给协作者<BR>
                     协作者打开地址后，将与你一起在白板上协同创作<BR>
-                    <img class="opqrcode_in_share showAfterInit" :src="KFK.getBossImageUrl('customerservice.png')" />
+                    <center>
+                        <b-form-input id="shareItUrl" class="share-it-url" disabled trim v-model="model.share.url">
+                        </b-form-input>
+                        <b-button id="shareItBtn" variant="outline-primary" size="sm" class="mb-2">
+                            <b-icon icon="box-arrow-up"></b-icon>复制地址
+                            <!-- share doc -->
+                        </b-button>
+                        <BR>
+                        彩板的权限控制稍显复杂但绝对必要，如您感到少许困惑，请联系下方运营微信，我们为您解答
+                        <img class="opqrcode_in_share showAfterInit"
+                            :src="KFK.getBossImageUrl('customerservice.png')" />
+                    </center>
                     <ol>
                         请注意, 白板列表中的白板访问范围限制会影响参与者是否能访问白板：
                         <li>
@@ -1850,20 +1901,10 @@
                         <li>需要时，你还可以进一步在管理界面设置白板密码, 即便协作者有权参与协作，也需要输入正确的密码才能打开白板</li>
                         <li>你也可以将白板设为只读模式， 此时，所有人只能查看、不能修改白板</li>
                     </ol>
-                    <center>
-                        <b-form-input id="shareItUrl" class="share-it-url" disabled trim v-model="model.share.url">
-                        </b-form-input>
-                        <b-button id="shareItBtn" variant="outline-primary" size="sm" class="mb-2">
-                            <b-icon icon="box-arrow-up"></b-icon>复制地址
-                            <!-- share doc -->
-                        </b-button>
-                        <BR>
-                        彩板的权限控制稍显复杂但绝对必要，如您感到少许困惑，请联系上方运营微信，我们为您解答
-                    </center>
                 </b-container>
             </b-modal>
-            <b-modal @ok="KFK.placePastedContent" v-model="show.dialog.pasteContentDialog" title="请选择粘贴方式"
-                button-size="sm" centered size="md">
+            <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" @ok="KFK.placePastedContent"
+                v-model="show.dialog.pasteContentDialog" title="请选择粘贴方式" button-size="sm" centered size="md">
                 <b-container>
                     <b-row v-show="model.paste.showcontent">
                         <b-col cols="12">粘贴内容
@@ -1872,7 +1913,8 @@
                     </b-row>
                     <b-row v-show="model.paste.showdisplay">
                         <b-col cols="12">显示文字
-                            <b-form-input trim type="text" v-model="model.paste.display" v-on:keydown="KFK.onNormalInput($event)"> </b-form-input>
+                            <b-form-input trim type="text" v-model="model.paste.display"
+                                v-on:keydown="KFK.onNormalInput($event)"> </b-form-input>
                         </b-col>
                     </b-row>
                     <b-row v-show="model.paste.showbox">
@@ -1884,8 +1926,8 @@
                     </b-row>
                 </b-container>
             </b-modal>
-            <b-modal @ok="KFK.msgOK" v-model="show.dialog.MsgBox" :title="model.msgbox.title" button-size="sm" centered
-                size="md" class="noshow">
+            <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" @ok="KFK.msgOK" v-model="show.dialog.MsgBox"
+                :title="model.msgbox.title" button-size="sm" centered size="md" class="noshow">
                 <b-container>
                     <b-row>
                         <b-col cols="12">
@@ -1934,7 +1976,8 @@
             <div class="docopmenu_pointer"></div>
         </div>
         <div id="copydiv" style="display: none; z-index: -99999"></div>
-        <div id="centerpoint" class="centerpoint noshow"></div>
+        <!-- screen center indicator center dot  -->
+        <div id="centerpoint" class="centerpoint noshow"></div> 
         <div class="reconnect-mask nodisplay">
             <div class="reconnect-msg">
                 <p id='reconnect-warning'>Reconnecting...</p>
@@ -1942,7 +1985,8 @@
         </div>
         <div class="present-mask nodisplay">
         </div>
-        <b-modal id="modal-key-shortcut" v-if="KFK.imagesLoaded" scrollable title="操作快捷键" size="lg">
+        <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" id="modal-key-shortcut" v-if="KFK.imagesLoaded"
+            scrollable title="操作快捷键" size="lg">
             <a :href="KFK.getFrontEndUrl('keyshortcut.html')" target="_blank">在独立窗口总打开</a>
             <iframe id="iframe0" :src="KFK.getFrontEndUrl('keyshortcut.html')" frameborder="0"
                 style="overflow:hidden;height:500px;width:100%"></iframe>

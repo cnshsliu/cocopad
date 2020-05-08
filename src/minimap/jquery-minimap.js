@@ -68,8 +68,8 @@
       l += dx;
       t += dy;
 
-      var coefX = minimapWidth / (JC3.width() * KFK.zoomLevel);
-      var coefY = minimapHeight / (JC3.height() * KFK.zoomLevel);
+      var coefX = minimapWidth / (JC3.width() * KFK.scaleRatio);
+      var coefY = minimapHeight / (JC3.height() * KFK.scaleRatio);
       var left = Math.round(l / coefX + KFK.PageWidth);
       var top = Math.round(t / coefY + KFK.PageHeight);
 
@@ -87,8 +87,8 @@
     function synchronize() {
       var dims = [scroller.width(), scroller.height()];
       var scroll = [scroller.scrollLeft(), scroller.scrollTop()];
-      var scaleX = minimapWidth / (JC3.width() * KFK.zoomLevel);
-      var scaleY = minimapHeight / (JC3.height() * KFK.zoomLevel);
+      var scaleX = minimapWidth / (JC3.width() * KFK.scaleRatio);
+      var scaleY = minimapHeight / (JC3.height() * KFK.scaleRatio);
 
       var lW = dims[0] * scaleX;
       var lH = dims[1] * scaleY;
@@ -124,8 +124,10 @@
         if ($child.hasClass("kfknode")) {
           var mini = $("<div></div>").addClass("minimap-node");
           $minimap.append(mini);
-          var ratioX = minimapWidth / (JC3.width() * KFK.zoomLevel);
-          var ratioY = minimapHeight / (JC3.height() * KFK.zoomLevel);
+          var ratioX = minimapWidth / JC3.width();
+          var ratioY = minimapHeight / JC3.height();
+          // var ratioX = minimapWidth / (JC3.width() * KFK.scaleRatio);
+          // var ratioY = minimapHeight / (JC3.height() * KFK.scaleRatio);
 
           var wM = $child.width() * ratioX;
           var hM = $child.height() * ratioY;
