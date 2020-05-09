@@ -4,12 +4,13 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
+  
     
     {
       "type": "chrome",
       "request": "launch",
       "name": "Chrome",
-      "url": "http://dev_server:1234",
+      "url": "http://localhost:80",
       "runtimeArgs": ["--auto-open-devtools-for-tabs"],
       "sourceMaps": true,
       "webRoot": "${workspaceFolder}",

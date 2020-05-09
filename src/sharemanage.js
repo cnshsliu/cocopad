@@ -28,9 +28,8 @@ SHARE.shareDoc = async function (item) {
 };
 //上面两个函数一起调用过来
 SHARE.startShare = async function (share) {
-    let url = KFK.getProductUrl() + "/?doc=";
-    url = url + KFK.codeToBase64(JSON.stringify(share));
-    console.log('startShare', share, url);
+    let url = "请稍候，正在为您准备分享链接...";
+    await KFK.sendCmd('SHARECODE2', share);
     KFK.APP.model.share.url = url;
     KFK.mergeAppData('model.share', {url: url});
     console.log(KFK.APP.model.share.url);
