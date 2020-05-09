@@ -1766,7 +1766,7 @@ KFK.initC3 = function () {
     KFK.JC3.mouseup(async (evt) => {
         if (KFK.inDesigner() === false) return;
         KFK.ignoreClick = false;
-       
+
     });
 
     KFK.JC3.on("mousemove", function (evt) {
@@ -1994,6 +1994,14 @@ KFK.showOtherUserMovingBadge = function (mouse) {
         jqBadgeDIV.css("display", "none");
         delete KFK.badgeTimers[bgid];
     }, cocoConfig.badge.lastSeconds);
+};
+
+KFK.getImageSrc = (img) => {
+    if (KFK.APP && KFK.APP.images && KFK.APP.images[img]) {
+        return KFK.APP.images[img].src;
+    } else {
+        return undefined;
+    }
 };
 
 KFK.resetNodeZIndex = function (data) {
@@ -6727,6 +6735,25 @@ KFK.initViewByLocalConfig = async function () {
     }
 };
 
+KFK.changeLineStyle = () => {
+    /*
+    let theLine = KFK.getPropertyApplyToSvgLine();
+    if (theLine === null || KFK.anyLocked(theLine)) return;
+    theLine.attr({
+        "stroke-width": ui.value,
+        "origin-width": ui.value,
+    });
+    await KFK.syncLinePut(
+        "U",
+        theLine,
+        "set line color",
+        KFK.lineToRemember,
+        false
+    );
+    KFK.setLineToRemember(theLine);
+    */
+};
+
 KFK.initPropertyForm = function () {
     KFK.debug("...initPropertyForm");
     let spinnerFontSize = $("#spinner_font_size").spinner({
@@ -8208,7 +8235,7 @@ KFK.addDocumentEventHandler = function () {
         //线条点下去以后，lineToDrag就设置好了
         //移动距离大于5时，才会设置lineDragging=true
         //如果在距离小于5内，抬起鼠标，此时，lineDragging还是false,此时，应该把lineToDrag置为null
-        if( KFK.lineDragging === false && KFK.lineToDrag) { KFK.lineToDrag = null; }
+        if (KFK.lineDragging === false && KFK.lineToDrag) { KFK.lineToDrag = null; }
         if (KFK.lineDragging && KFK.docIsReadOnly() === false) {
             console.log("Entering lineDragging end");
             let parr = KFK.lineToDrag.array();
