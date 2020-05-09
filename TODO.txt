@@ -1,3 +1,8 @@
+//TODO: HUD
+//TODO: startup tempalte
+//TODO: tempaltes many templates
+//TODO: direct arrow
+//TODO: line with arrow
 //TODO: add hopper
 //TODO: 文档保护码加密
 //TODO: 备份加密secretkey到U盘

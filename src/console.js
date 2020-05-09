@@ -85,6 +85,7 @@ KFK.scaleRatio = 1;
 KFK.currentPage = 0;
 KFK.loadedProjectId = null;
 KFK.keypool = "";
+KFK.showStatus = {};
 KFK.QUICKGLANCE = false;
 KFK.svgDraw = null; //画svg的画布
 KFK.jumpStack = [];
@@ -126,7 +127,7 @@ KFK.inOverviewMode = false;
 KFK.controlButtonsOnly = false;
 KFK.showRightTools = true;
 KFK.zoomFactor = 0;
-KFK.lineMoverDragging = false;
+KFK.lineTransfomerDragging = false;
 KFK.scaleBy = 1.01;
 KFK.centerPos = { x: 0, y: 0 };
 KFK.centerPos = { x: 0, y: 0 };
@@ -754,6 +755,9 @@ KFK.onWsMsg = async function (response) {
         case "EMAILSHARE":
         case "SHARECODE":
             SHARE.onWsMsg(response);
+            break;
+        case "SHARECODE2":
+            KFK.APP.model.share.url = KFK.getProductUrl() + '/?dou=' + response.id;
             break;
         case "UPDUSRORG":
             KFK.updateCocouser(response.data);
@@ -1762,33 +1766,7 @@ KFK.initC3 = function () {
     KFK.JC3.mouseup(async (evt) => {
         if (KFK.inDesigner() === false) return;
         KFK.ignoreClick = false;
-        if (KFK.lineDragging && KFK.docIsReadOnly() === false) {
-            let parr = KFK.lineToDrag.array();
-            if (KFK.APP.model.viewConfig.snap) {
-                let p1 = { x: parr[0][0], y: parr[0][1] };
-                let p2 = { x: parr[1][0], y: parr[1][1] };
-                p1 = KFK.getNearGridPoint(p1.x, p1.y);
-                p2 = KFK.getNearGridPoint(p2.x, p2.y);
-                KFK.lineToDrag.dmove(p1.x - parr[0][0], p1.y - parr[0][1]);
-                KFK.lineToDrag.attr({
-                    "stroke-width": KFK.lineToDrag.attr("origin-width"),
-                });
-                KFK.lineToRemember.attr({
-                    "stroke-width": KFK.lineToRemember.attr("origin-width"),
-                });
-                await KFK.syncLinePut(
-                    "U",
-                    KFK.lineToDrag,
-                    "move",
-                    KFK.lineToRemember,
-                    false
-                );
-                KFK.setLineToRemember(KFK.lineToDrag);
-            }
-            KFK.lineDragging = false;
-            KFK.lineToDrag = null;
-            $(document.body).css("cursor", "default");
-        }
+       
     });
 
     KFK.JC3.on("mousemove", function (evt) {
@@ -1822,7 +1800,7 @@ KFK.initC3 = function () {
         } else {
             KFK.lineToDrag = null;
         }
-        if (KFK.lineDragging || KFK.lineMoverDragging || KFK.minimapMouseDown) {
+        if (KFK.lineDragging || KFK.lineTransfomerDragging || KFK.minimapMouseDown) {
             KFK.duringKuangXuan = false;
         }
 
@@ -1874,6 +1852,7 @@ KFK.initC3 = function () {
             KFK.docIsReadOnly() === false &&
             KFK.lineLocked(KFK.lineToDrag) === false
         ) {
+            console.log("line dragging", KFK.lineDragging);
             let realX = KFK.scalePoint(KFK.scrXToJc3X(evt.clientX));
             let realY = KFK.scalePoint(KFK.scrYToJc3Y(evt.clientY));
             let deltaX = realX - KFK.lineDraggingStartPoint.x;
@@ -1923,7 +1902,7 @@ KFK.isDuringKuangXuan = function () {
         KFK.mode === "pointer" &&
         KFK.kuangXuanMouseIsDown &&
         KFK.lineDragging === false &&
-        KFK.lineMoverDragging === false &&
+        KFK.lineTransfomerDragging === false &&
         KFK.minimapMouseDown === false &&
         KFK.touchChatTodo === false
     )
@@ -5041,7 +5020,7 @@ KFK.initDesigner = async function () {
         KFK.initQuillFonts();
         KFK.initC3();
         KFK.initPropertyForm();
-        KFK.initLineMover();
+        KFK.initLineTransformer();
         KFK.initColorPicker();
         KFK.showCenterIndicator();
         KFK.initPropertySvgGroup();
@@ -6022,7 +6001,8 @@ KFK.signout = async function () {
 };
 
 KFK.getProductUrl = function () {
-    return cocoConfig.product.url;
+    // return cocoConfig.product.url;
+    return KFK.urlBase;
 };
 KFK.getInvitationUrl = function () {
     return KFK.getProductUrl() + "/?r=" + KFK.APP.model.cocouser.ivtcode;
@@ -7065,13 +7045,7 @@ KFK.setGridColor = function (bgcolor) {
 KFK.initColorPicker = function () {
     KFK.debug("...initColorPicker");
     $("#cocoBkgColor").spectrum({
-        color: "#f00",
-        togglePaletteOnly: "true",
-        hideAfterPaletteSelect: "false",
-        showButtons: "true",
-        showAlpha: "true",
-        chooseText: "选定",
-        cancelText: "放弃",
+        color: "#f00", type: "color", hideAfterPaletteSelect: "true", chooseText: "选定", cancelText: "放弃",
         change: function (color) {
             //发起人可以设置所有人的bgcolor
             try {
@@ -7091,13 +7065,7 @@ KFK.initColorPicker = function () {
         },
     });
     $("#shapeBkgColor").spectrum({
-        color: "#f00",
-        togglePaletteOnly: "true",
-        hideAfterPaletteSelect: "false",
-        showButtons: "true",
-        showAlpha: "true",
-        chooseText: "选定",
-        cancelText: "放弃",
+        color: "#f00", type: "color", hideAfterPaletteSelect: "true", chooseText: "选定", cancelText: "放弃",
         change: async function (color) {
             var hex = color.toHexString();
             KFK.APP.setData("model", "shapeBkgColor", hex);
@@ -7118,13 +7086,7 @@ KFK.initColorPicker = function () {
         },
     });
     $("#shapeBorderColor").spectrum({
-        color: "#f00",
-        togglePaletteOnly: "true",
-        hideAfterPaletteSelect: "false",
-        showButtons: "true",
-        showAlpha: "true",
-        chooseText: "选定",
-        cancelText: "放弃",
+        color: "#f00", type: "color", hideAfterPaletteSelect: "true", chooseText: "选定", cancelText: "放弃",
         change: async function (color) {
             var hex = color.toHexString();
             let jqNode = KFK.getPropertyApplyToJqNode();
@@ -7144,13 +7106,7 @@ KFK.initColorPicker = function () {
         },
     });
     $("#lineColor").spectrum({
-        color: "#f00",
-        togglePaletteOnly: "true",
-        hideAfterPaletteSelect: "false",
-        showButtons: "true",
-        showAlpha: "true",
-        chooseText: "选定",
-        cancelText: "放弃",
+        color: "#f00", type: "color", hideAfterPaletteSelect: "true", chooseText: "选定", cancelText: "放弃",
         change: async function (color) {
             var hex = color.toHexString();
             let theLine = KFK.getPropertyApplyToSvgLine();
@@ -7169,13 +7125,7 @@ KFK.initColorPicker = function () {
         },
     });
     $("#fontColor").spectrum({
-        color: "#f00",
-        togglePaletteOnly: "true",
-        hideAfterPaletteSelect: "false",
-        showButtons: "true",
-        showAlpha: "true",
-        chooseText: "选定",
-        cancelText: "放弃",
+        color: "#f00", type: "color", hideAfterPaletteSelect: "true", chooseText: "选定", cancelText: "放弃",
         change: async function (color) {
             var hex = color.toHexString();
             let jqNode = KFK.getPropertyApplyToJqNode();
@@ -7195,13 +7145,7 @@ KFK.initColorPicker = function () {
         },
     });
     $("#tipBkgColor").spectrum({
-        color: "#f00",
-        togglePaletteOnly: "true",
-        hideAfterPaletteSelect: "false",
-        showButtons: "true",
-        showAlpha: "true",
-        chooseText: "选定",
-        cancelText: "放弃",
+        color: "#f00", type: "color", hideAfterPaletteSelect: "true", chooseText: "选定", cancelText: "放弃",
         change: async function (color) {
             var hex = color.toHexString();
             KFK.APP.setData("model", "tipBkgColor", hex);
@@ -8246,7 +8190,7 @@ KFK.addDocumentEventHandler = function () {
             };
         }
     });
-    $(document).on("mouseup", function (evt) {
+    $(document).on("mouseup", async function (evt) {
         if (KFK.inDesigner() === false) return;
         if (KFK.mode === "pointer" && KFK.docIsReadOnly() === false) {
             KFK.kuangXuanMouseIsDown = false;
@@ -8259,6 +8203,39 @@ KFK.addDocumentEventHandler = function () {
                 KFK.endKuangXuan(KFK.kuangXuanStartPoint, KFK.kuangXuanEndPoint, evt.shfitKey);
                 KFK.duringKuangXuan = false;
             }
+        }
+        console.log('lineDragging', KFK.lineDragging);
+        //线条点下去以后，lineToDrag就设置好了
+        //移动距离大于5时，才会设置lineDragging=true
+        //如果在距离小于5内，抬起鼠标，此时，lineDragging还是false,此时，应该把lineToDrag置为null
+        if( KFK.lineDragging === false && KFK.lineToDrag) { KFK.lineToDrag = null; }
+        if (KFK.lineDragging && KFK.docIsReadOnly() === false) {
+            console.log("Entering lineDragging end");
+            let parr = KFK.lineToDrag.array();
+            if (KFK.APP.model.viewConfig.snap) {
+                let p1 = { x: parr[0][0], y: parr[0][1] };
+                let p2 = { x: parr[1][0], y: parr[1][1] };
+                p1 = KFK.getNearGridPoint(p1.x, p1.y);
+                p2 = KFK.getNearGridPoint(p2.x, p2.y);
+                KFK.lineToDrag.dmove(p1.x - parr[0][0], p1.y - parr[0][1]);
+                KFK.lineToDrag.attr({
+                    "stroke-width": KFK.lineToDrag.attr("origin-width"),
+                });
+                KFK.lineToRemember.attr({
+                    "stroke-width": KFK.lineToRemember.attr("origin-width"),
+                });
+                await KFK.syncLinePut(
+                    "U",
+                    KFK.lineToDrag,
+                    "move",
+                    KFK.lineToRemember,
+                    false
+                );
+                KFK.setLineToRemember(KFK.lineToDrag);
+            }
+            KFK.lineDragging = false;
+            KFK.lineToDrag = null;
+            $(document.body).css("cursor", "default");
         }
     });
 
@@ -8324,6 +8301,57 @@ KFK.closeInput = () => {
     KFK.toggleInputFor(undefined);
     KFK.hideMsgInputDlg();
 };
+/**
+ * Hide the input dlg, and record its status
+ */
+KFK.hideDIVsWithStatus = (jqs) => {
+    if (Array.isArray(jqs) === false) jqs = [jqs];
+    for (let i = 0; i < jqs.length; i++) {
+        let jq = jqs[i];
+        let divId = '';
+        if (typeof jq === 'string') { divId = jq; jq = $(jq); }
+        else { divId = jq.attr("id"); }
+        if (KFK.isShowing(jq)) {
+            KFK.hide(jq);
+            KFK.showStatus[divId] = 'show';
+        } else {
+            KFK.showStatus[divId] = 'hide';
+        }
+    }
+};
+/**
+ * Restore input dlg show status, show only when it was shown before
+ */
+KFK.restoreDIVsWithStatus = (jqs) => {
+    if (Array.isArray(jqs) === false) jqs = [jqs];
+    for (let i = 0; i < jqs.length; i++) {
+        let jq = jqs[i];
+        let divId = '';
+        if (typeof jq === 'string') { divId = jq; jq = $(jq); }
+        else { divId = jq.attr("id"); }
+        if (KFK.showStatus[divId] !== undefined) {
+            if (KFK.showStatus[divId] === 'show') {
+                KFK.show(jq);
+            }
+            delete KFK.showStatus[divId];
+        }
+    }
+};
+/**
+ * Toggle msg input dlg status
+ * If not show, show it; or hide it otherwise
+ */
+KFK.toggleInputMsgDlg = () => {
+    KFK.jInputMsgDlg || (KFK.jInputMsgDlg = $('.msgInput'));
+    if (KFK.isShowing(KFK.jInputMsgDlg)) {
+        KFK.hide(KFK.jInputMsgDlg);
+    } else {
+        KFK.show(KFK.jInputMsgDlg);
+    }
+};
+/**
+ * Just hide the msg input dialog, nothing else
+ */
 KFK.hideMsgInputDlg = function () {
     KFK.jInputMsgDlg || (KFK.jInputMsgDlg = $('.msgInput'));
     KFK.hide(KFK.jInputMsgDlg);
@@ -8351,7 +8379,11 @@ KFK.deleteTodo = async function () {
     await KFK.syncNodePut("U", fromDIV, "todo", undefined, false, 0, 1);
 };
 
-KFK.showMsgInputDlg = async function () {
+/**
+ * Show the message input dialog
+ * @param autofocus Focus in the text input, default is true
+ */
+KFK.showMsgInputDlg = async function (autofocus = true) {
     KFK.jInputMsgDlg || (KFK.jInputMsgDlg = $('.msgInput'));
     KFK.show(KFK.jInputMsgDlg);
     await KFK.jInputMsgDlg.find('input').focus();
@@ -9499,6 +9531,7 @@ KFK.___gotoPage = function (pageIndex) {
 
 KFK.startPresentation = async function () {
     if (KFK.inOverviewMode) return;
+    KFK.hideDIVsWithStatus(['.msgInput', '#coco_chat']);
     KFK.maskScreen();
     KFK.openFullscreen();
     await KFK.sleep(500);
@@ -9528,6 +9561,7 @@ KFK.startPresentation = async function () {
 };
 KFK.endPresentation = function () {
     if (KFK.inOverviewMode) return;
+    KFK.restoreDIVsWithStatus(['.msgInput', '#coco_chat']);
     KFK.unmaskScreen();
     KFK.closeFullscreen();
     KFK.restoreLayoutDisplay();
@@ -9801,6 +9835,7 @@ KFK.toggleOverview = function (jc3MousePos) {
     KFK.APP.setData("show", "actionlog", false);
     if (KFK.inOverviewMode === true) {
         KFK.scrLog("");
+        KFK.restoreDIVsWithStatus(['.msgInput', '#coco_chat']);
 
         let cbkg = $("#containerbkg");
         if (KFK.rememberGrid !== "") cbkg.addClass(KFK.rememberGrid);
@@ -9833,6 +9868,7 @@ KFK.toggleOverview = function (jc3MousePos) {
                 right: "none",
             });
         }
+        KFK.hideDIVsWithStatus(['.msgInput', '#coco_chat']);
         let cbkg = $("#containerbkg");
         KFK.rememberGrid = cbkg.hasClass("grid1") ?
             "grid1" :
@@ -10479,15 +10515,14 @@ KFK.addSvgLineEventListner = function (theLine) {
     });
 };
 
-KFK.initLineMover = function () {
-    KFK.debug("...initLineMover");
+KFK.initLineTransformer = function () {
+    KFK.debug("...initLineTransformer");
     $("#linetransformer").draggable({
         // move line resize line transform line
         start: (evt, ui) => {
             KFK.closeActionLog();
-            KFK.lineMoverDragging = true;
+            KFK.lineTransfomerDragging = true;
             // KFK.fromJQ = KFK.tobeTransformJqLine.clone();
-            KFK.lineMoverOldPosition = $("#linetransformer").position();
             // KFK.setMode('line');
             evt.stopImmediatePropagation();
             evt.stopPropagation();
@@ -10510,8 +10545,7 @@ KFK.initLineMover = function () {
         },
         stop: async (evt, ui) => {
             //transform line  change line
-            KFK.lineMoverDragging = false;
-            KFK.lineMoverNewPosition = $("#linetransformer").position();
+            KFK.lineTransfomerDragging = false;
             if (KFK.lineToResize === null) return;
             let parr = KFK.lineToResize.array();
             let stopAtPos = KFK.C3MousePos(evt);
@@ -10711,12 +10745,20 @@ KFK.hide = function (jq) {
     if (typeof jq === 'string')
         jq = $(jq);
     jq.addClass('noshow');
-}
+};
 KFK.show = function (jq) {
     if (typeof jq === 'string')
         jq = $(jq);
     jq.removeClass('noshow');
-}
+};
+/**
+ * Is a div visible, visible means it has not 'noshow' class
+ */
+KFK.isShowing = function (jq) {
+    if (typeof jq === 'string')
+        jq = $(jq);
+    return jq.hasClass('noshow') === false;
+};
 
 /* View in fullscreen */
 KFK.openFullscreen = function () {
@@ -11402,7 +11444,7 @@ if (host.indexOf("localhost") >= 0) {
 }
 WS.remoteEndpoint = cocoConfig.ws_server.endpoint;
 BossWS.remoteEndpoint = cocoConfig.ws_server.endpoint;
-if (urlSearch.startsWith("?doc=")) {
+if (urlSearch.startsWith("?dou=")) {
     KFK.urlMode = "sharecode";
     KFK.shareCode = urlSearch.substr(5);
     KFK.debug("Sharecode in URL", KFK.shareCode);
@@ -11413,7 +11455,7 @@ if (urlSearch.startsWith("?doc=")) {
     KFK.shareCode = urlSearch.substr(3);
     window.history.replaceState({}, null, KFK.urlBase);
 } else {
-    window.history.replaceState({}, null, KFK.urlBase);
+    // window.history.replaceState({}, null, KFK.urlBase);
 }
 KFK.debug("URL MODE is", KFK.urlMode);
 

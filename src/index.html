@@ -19,8 +19,10 @@
     <script src="https://cdn.staticfile.org/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <script src="https://liuzijin.com/jslib/jquery-minimap.js"></script>
     <script src="https://liuzijin.com/jslib/jquery.fontpicker.js"></script>
-    <link type="text/css" rel="stylesheet" href="https://cdn.staticfile.org/spectrum/1.8.0/spectrum.min.css" />
-    <script src="https://cdn.staticfile.org/spectrum/1.8.0/spectrum.min.js"></script>
+    <!-- spectrum.min.js was patched. -->
+    <!-- see: https://github.com/nguyenj/spectrum/commit/01fe88bc03355f854f5ba5ff711745ca235539b9 -->
+    <script src="https://liuzijin.com/jslib/spectrum.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://liuzijin.com/jslib/spectrum.min.css">
     <script src="https://liuzijin.com/jslib/cos-js-sdk-v5.min.js"></script>
     <!-- <script type="text/javascript" src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.js"></script> -->
     <link rel="stylesheet" href="../my-styles/qlviewer.css">
@@ -724,8 +726,8 @@
                     {{model.cocodoc.name}}
                 </div>
                 <div class="docpeople padlayout" v-if="show.section.designer">
-                    <b-img v-if="model.cocodoc.owner !== model.cocouser.userid"
-                        :src="model.cocodoc.ownerAvatar_src" title="共创发起人"></b-img>
+                    <b-img v-if="model.cocodoc.owner !== model.cocouser.userid" :src="model.cocodoc.ownerAvatar_src"
+                        title="共创发起人"></b-img>
                     <span v-if="model.cocodoc.owner !== model.cocouser.userid">发起人:{{model.cocodoc.ownerName}}</span>
                     <b-img v-if="model.cocouser.avatar_src" :src="model.cocouser.avatar_src" title="当前用户">
                     </b-img>
@@ -1977,7 +1979,7 @@
         </div>
         <div id="copydiv" style="display: none; z-index: -99999"></div>
         <!-- screen center indicator center dot  -->
-        <div id="centerpoint" class="centerpoint noshow"></div> 
+        <div id="centerpoint" class="centerpoint noshow"></div>
         <div class="reconnect-mask nodisplay">
             <div class="reconnect-msg">
                 <p id='reconnect-warning'>Reconnecting...</p>
