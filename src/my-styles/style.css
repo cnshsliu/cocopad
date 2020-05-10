@@ -47,7 +47,7 @@ body {
     padding-left: 5%; padding-right: 5%; margin-top:36px; overflow-x: auto; overflow-y: scroll;
 }
 #coco_chat{
-    z-index: 1000000 !important;
+    z-index: 10 !important;
     border-radius: 15px !important;
     display: flex; padding: 2px; margin: 0px; 
     background-color: rgb(255, 255, 255); 
@@ -220,7 +220,7 @@ input::placeholder {
     height: 80px;
     border-radius: 10px;
     z-index: 10;
-    background-image: url('../src/caiban.png');
+    /* background-image: url('../src/caiban.png'); */
     background-repeat: no-repeat;
     background-size: 100% 100%;
 }
@@ -287,8 +287,8 @@ input::placeholder {
 }
 
 #right {
-    padding: 5px;
-    background: #ffffff;
+    padding: 0px;
+    background: #ffffffe0;
     box-shadow: 0 4px 8px 0 #000000CC, 0 6px 20px 0 #000000CC;
     position: absolute;
     top: 100px;
@@ -296,7 +296,6 @@ input::placeholder {
     width: 240px;
     height: calc(100vh - 200px);
     border: 1px solid #0000004C;
-    border-radius: 15px;
 }
 
 #right .tab-content {
@@ -430,16 +429,6 @@ input::placeholder {
     background-color: #28a745;
     border: 1px solid #00000045;
 }
-#sharethis{
-    position: absolute;
-    top: 5px;
-    left: 50%;
-    -webkit-transform: translate(-50%, 0%);
-    -moz-transform: translate(-50%, 0%);
-    -ms-transform: translate(-50%, 0%);
-    -o-transform: translate(-50%, 0%);
-    transform: translate(-50%, 0%);
-}
 
 .cocopadbg {
     background: red;
@@ -469,6 +458,10 @@ input::placeholder {
     font-size: 14px;
     background-color: "#333333";
     padding-left: 0px;
+}
+.property-content{
+    padding-left:5px;
+    padding-right:5px;
 }
 
 .coco select {
@@ -786,6 +779,9 @@ svg path {
 .no-right-border {
     border-right-width: 0px !important;
 }
+.no-padding{
+    padding:0px !important;
+}
 
 .profileform .right-eye {
     border: 1px solid #ced4da;
@@ -910,7 +906,7 @@ select:focus {
     outline: none !important;
 }
 
-.docHeaderInfo {
+#docHeaderInfo {
     position: absolute;
     top: 5px;
     left: 84px;
@@ -920,21 +916,21 @@ select:focus {
 }
 
 .loading.yiq-black,
-.docHeaderInfo.yiq-black .docteam,
-.docHeaderInfo.yiq-black .userinfo button {
+#docHeaderInfo.yiq-black .docteam,
+#docHeaderInfo.yiq-black .userinfo button {
     color: #333333 !important;
 }
 
 .loading.yiq-white,
-.docHeaderInfo.yiq-white .docteam,
-.docHeaderInfo.yiq-white .userinfo button {
+#docHeaderInfo.yiq-white .docteam,
+#docHeaderInfo.yiq-white .userinfo button {
     color: aquamarine !important;
 }
 
-.docHeaderInfo.yiq-white {
+#docHeaderInfo.yiq-white {
     background-color: #333333 !important;
 }
-.docHeaderInfo.yiq-black {
+#docHeaderInfo.yiq-black {
     background-color: aquamarine !important;
 }
 
@@ -1176,15 +1172,13 @@ select:focus {
     z-index: 100;
 }
 
-#recharge-warn {
+#system_message {
     position: absolute;
     display: flex;
     width: 100%;
     bottom: 0px;
     left: 0px;
-    margin: 5px;
     background-color: #eeeeee69;
-    border: 1px solid #aaa;
     z-index: 102;
     align-items: center;
     justify-content: center;
@@ -1758,22 +1752,31 @@ table.quick-help-table td:first-of-type {
     height: 100px;
 }
 
-.msgInput {
+.msgInputWindow{
     position: absolute;
     z-index: 10000020;
-    left: 5px;
-    bottom: 5px;
+    width: 50%; height: 30px; left: 50%; bottom: 30px;
     margin: 0px;
     border-radius: 0px;
     display: flex;
-    width: 100%;
-    height: 30px;
     background-color: transparent;
     align-items: center;
     justify-content: center;
+    -webkit-transform: translate(-50%, 0%);
+    -moz-transform: translate(-50%, 0%);
+    -ms-transform: translate(-50%, 0%);
+    -o-transform: translate(-50%, 0%);
+    transform: translate(-50%, 0%);
 }
 .round-input{
     border-radius: 20px;
+}
+.msgInputInner{
+    border-radius: 5px;
+    background-color: white;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 .matlib-topick {
     position: absolute;

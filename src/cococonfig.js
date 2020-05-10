@@ -108,7 +108,7 @@ const config = {
                 'border-color': '#333333',
                 'border-width': '1px',
                 'border-style': 'solid',
-                'border-radius': '5px',
+                'border-radius': '0px',
                 'position': 'absolute',
             },
             inner: {

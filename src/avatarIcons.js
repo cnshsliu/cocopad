@@ -50,5 +50,6 @@ const avatarIcons = [
 'avatar-7',
 'avatar-8',
 'avatar-9',
+'avatar-ai',
 ];
 export default avatarIcons;

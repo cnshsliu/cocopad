@@ -30,9 +30,6 @@ SHARE.shareDoc = async function (item) {
 SHARE.startShare = async function (share) {
     let url = "请稍候，正在为您准备分享链接...";
     await KFK.sendCmd('SHARECODE2', share);
-    KFK.APP.model.share.url = url;
-    KFK.mergeAppData('model.share', {url: url});
-    console.log(KFK.APP.model.share.url);
 
     //向服务端要临时sharecode
     KFK.showDialog({ shareItDialog: true });
@@ -46,8 +43,18 @@ SHARE.startShare = async function (share) {
         container: document.getElementById('shareitcontainer'),
         text: function (trigger) {
             KFK.showDialog({ shareItDialog: false });
-            KFK.scrLog('分享代码已复制到剪贴板');
+            KFK.scrLog('分享地址已复制到剪贴板');
             let ret = KFK.APP.model.share.url;
+            return ret;
+        }
+    });
+    KFK.clipboard = new ClipboardJs("#shareItBtn2", {
+        //必须保留这个container， 否则，clipboardjs工作不正常
+        container: document.getElementById('shareitcontainer'),
+        text: function (trigger) {
+            KFK.showDialog({ shareItDialog: false });
+            KFK.scrLog('邀请信息已复制到剪贴板');
+            let ret = `你好，${KFK.APP.model.cocouser.name} 邀请你一起即时协作，请点击后面链接开始，如链接无法直接点击，请把地址复制到浏览器地址栏中打开 ${KFK.APP.model.share.url}`;
             return ret;
         }
     });

@@ -8,6 +8,13 @@ import Validator from "./validator";
 import { NodeController } from './nodeController';
 import { DocController } from './docController';
 
+if (module.hot) {
+    module.hot.dispose(() => {
+        window.location.reload();
+        throw 'whatever'
+    })
+}
+
 const app = new Vue({
 
     data: {
@@ -95,6 +102,7 @@ const app = new Vue({
             },
         },
         model: {
+            osName: '',
             copyToDocName: '',
             publish: {
                 name: '',
@@ -119,7 +127,7 @@ const app = new Vue({
                 newuserid: '',
                 changeorgname: '',
             },
-            share: { code: '', email: '', lifeshare: false, msg: '临时分享, 48小时后过期', url: '' },
+            share: { code: '', email: '', lifeshare: false, msg: '临时分享, 48小时后过期', url: '', acl:'P', warning:'',doc_id:'', okToShare:false, okToSetACL:false },
             signInButWaitVerify: false,
             regForShared: false, //是否是接受到分享链接的用户来注册？
             loading_value: 0,
@@ -185,7 +193,7 @@ const app = new Vue({
             docLoaded: false,
             cocoprj: { prjid: 'all', name: '我最近使用过的白板' },
             lastrealproject: { prjid: '', name: '' },
-            cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', readonly: false, ownerAvatar_src: KFK.getFrontEndUrl('assets/cocopad.svg') },
+            cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', readonly: false, ownerAvatar_src:undefined },
             cocouser: { userid: '', name: '', avatar: 'avatar-0', avatar_src: null },
             cocoorg: { orgid: 'ORGID', name: 'ORGNAME', logo: 'corp-0', logo_src: '', owner: '', ownername: '张三' },
             orgusers: {},
@@ -228,6 +236,7 @@ const app = new Vue({
                 showbounding: true,
                 enterWithChat: true,
                 enterToConfirmInput: true,
+                useAI:true,
             },
             dragToCreate: true,
             lineToggleMode: false,
