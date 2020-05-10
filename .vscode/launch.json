@@ -4,17 +4,13 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
-  
-    
     {
       "type": "chrome",
       "request": "launch",
-      "name": "Chrome",
-      "url": "http://localhost:80",
-      "runtimeArgs": ["--auto-open-devtools-for-tabs"],
-      "sourceMaps": true,
+      "name": "Launch Chrome against localhost",
+      "url": "http://localhost",
       "webRoot": "${workspaceFolder}",
-      "breakOnLoad": false,
+      "breakOnLoad": true,
       "sourceMapPathOverrides": {
         "../*": "${webRoot}/*"
       }

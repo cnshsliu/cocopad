@@ -14,6 +14,7 @@ import { gzip, ungzip } from "../lib/gzip";
 import assetIcons from './assetIcons';
 import avatarIcons from './avatarIcons';
 import BossWS from "./bossws";
+import AIXJ from "./aixj";
 // import uuidv4 from "uuid/v4";
 // import "./fontpicker/jquery.fontpicker";
 // import "./minimap/jquery-minimap";
@@ -147,6 +148,7 @@ KFK.actionLogToViewIndex = 0;
 KFK.explorerRefreshed = false;
 KFK.numberOfNodeToCreate = 0;
 KFK.numberOfNodeCreated = 0;
+KFK.rightFirstShown = false;
 KFK.badgeIdMap = {};
 
 // A4
@@ -201,6 +203,7 @@ KFK.duringKuangXuan = false;
 
 KFK.currentMousePos = { x: -1, y: -1 };
 KFK.JCBKG = $("#containerbkg");
+KFK.SYSMSG = $("#system_message");
 
 KFK.urlMode = "";
 KFK.shareCode = null;
@@ -413,15 +416,15 @@ KFK.onWsMsg = async function (response) {
             KFK.scrLog(response.name + " 进入协作", 1000);
             break;
         case 'DOCLIMIT':
-            $("#recharge-warn").removeClass("noshow");
-            $("#recharge-warn").prop(
+            $("#system_message").removeClass("noshow");
+            $("#system_message").prop(
                 "innerHTML",
                 "文档数量超限了，为不影响您正常使用，请点这里尽快升级"
             );
             break;
         case "UPLDLIMIT":
-            $("#recharge-warn").removeClass("noshow");
-            $("#recharge-warn").prop(
+            $("#system_message").removeClass("noshow");
+            $("#system_message").prop(
                 "innerHTML",
                 "您文件上传次数超限了，为不影响您正常使用，请点这里尽快升级"
             );
@@ -430,22 +433,22 @@ KFK.onWsMsg = async function (response) {
             KFK.pct = response.pct;
             // if (response.tag === "almost") {
             //     KFK.debug("Quota left", response.quota);
-            //     $("#recharge-warn").removeClass("noshow");
-            //     $("#recharge-warn").prop(
+            //     $("#system_message").removeClass("noshow");
+            //     $("#system_message").prop(
             //         "innerHTML",
             //         "您组织的操作分已接近耗光， 建议尽早充值"
             //     );
             // } else if (response.tag === "useup") {
             //     KFK.debug("Quota left", response.quota);
-            //     $("#recharge-warn").removeClass("noshow");
-            //     $("#recharge-warn").prop(
+            //     $("#system_message").removeClass("noshow");
+            //     $("#system_message").prop(
             //         "innerHTML",
             //         "当前组织的操作分已耗尽，为不影响您正常使用，请点这里尽快升级"
             //     );
             // } else {
             //     //ok
             //     KFK.debug("Quota left", response.quota);
-            //     $("#recharge-warn").addClass("noshow");
+            //     $("#system_message").addClass("noshow");
             // }
             break;
         case "PCT":
@@ -534,6 +537,13 @@ KFK.onWsMsg = async function (response) {
         case "ASKUSERPWD":
             KFK.APP.setData("model", "inputUserPwd", "");
             KFK.showDialog({ userPasswordDialog: true });
+            break;
+        case "SHARECODE_NOT_EXIST":
+            KFK.setAppData("model", "msgbox", {
+                title: "邀请码不存在",
+                content: "邀请码不存在，返回协作管理",
+            });
+            KFK.showDialog({ MsgBox: true });
             break;
         case "NONEXIST":
             KFK.info("Server says document does not exist");
@@ -756,8 +766,25 @@ KFK.onWsMsg = async function (response) {
         case "SHARECODE":
             SHARE.onWsMsg(response);
             break;
+        case "SETACL":
+            KFK.APP.model.share.acl = response.acl;
+            KFK.APP.model.share.warning = KFK.getShareWarningByDocACL(response.acl);
+            break;
         case "SHARECODE2":
-            KFK.APP.model.share.url = KFK.getProductUrl() + '/?dou=' + response.id;
+            if (response.code === 'DOC_NOT_EXIST') {
+                KFK.APP.model.share.okToShare = true;
+                KFK.APP.model.share.okToSetACL = false;
+                KFK.APP.model.share.url = KFK.getProductUrl() + '/?dou=welcome_new_user';
+                KFK.APP.model.share.warning = '您要分享的文档不存在，以设为分享新用户欢迎';
+            } else {
+                KFK.APP.model.share.okToShare = true;
+                KFK.APP.model.share.okToSetACL = true;
+                KFK.APP.model.share.url = KFK.getProductUrl() + '/?dou=' + response.code;
+                KFK.APP.model.share.doc_id = response.doc_id;
+                KFK.APP.model.share.docname = response.name;
+                KFK.APP.model.share.acl = response.acl;
+                KFK.APP.model.share.warning = KFK.getShareWarningByDocACL(response.acl);
+            }
             break;
         case "UPDUSRORG":
             KFK.updateCocouser(response.data);
@@ -815,9 +842,9 @@ KFK.onWsMsg = async function (response) {
             $(".kfknode").draggable("disabled");
             $(".kfknode").resizable("disabled");
             $(".kfknode").droppable("disabled");
-            $("#right").css("display", "none");
-            $("#left").css("display", "none");
-            $("#top").toggle("display", "none");
+            KFK.hide('#right');
+            KFK.hide('#left');
+            KFK.hide('#top');
             break;
         case "SCRLOG":
             KFK.scrLog(response.msg);
@@ -997,7 +1024,27 @@ KFK.keepLog = function (msg = "", staytime = 30000) {
         KFK.keepTimer = undefined;
     }, staytime);
 };
-
+KFK.setAclInShare = async (acl) => {
+    await KFK.sendCmd("SETACL", {
+        doc_id: KFK.APP.model.share.doc_id,
+        acl: acl
+    });
+};
+KFK.getShareWarningByDocACL = (acl) => {
+    let ret = '';
+    switch (acl) {
+        case 'S':
+            ret = '白板当前权限为仅发起人可用, 会导致协作者无法正常参与，请注意调整白板权限';
+            break;
+        case 'O':
+            ret = '白板当前权限为仅当前组织可用，非当前组织用户无法正常参与，请检查受邀者是否在当前组织';
+            break;
+        case 'P':
+            ret = '白板当前权限为公开使用，任何接收到分享码的人都可以参与协作';
+            break;
+    }
+    return ret;
+};
 KFK.scrLog = function (msg, staytime = 5000) {
     let parent = $("#MSG").parent();
     let msgDIV = $("#MSG");
@@ -1181,7 +1228,6 @@ KFK.procLinkNode = function (shiftKey, text) {
 };
 
 KFK.setLineToRemember = function (theLine) {
-    console.log(theLine);
     KFK.lineToRemember = theLine.clone();
     KFK.lineToRemember.attr("id", theLine.attr("id"));
     KFK.lineToRemember.attr("stroke-width", theLine.attr("origin-width"));
@@ -1636,6 +1682,8 @@ KFK.initC3 = function () {
     });
     // KFK.JC3.focus((evt) => { KFK.debug("JC3 got focus"); })
     KFK.JCBKG = $("#containerbkg");
+    KFK.SYSMSG = $("#system_message");
+    KFK.SYSMSG.removeClass("noshow");
     KFK.JCBKG.css({
         width: KFK.px(KFK.PageWidth * KFK.PageNumberHori),
         height: KFK.px(KFK.PageHeight * KFK.PageNumberVert),
@@ -1668,6 +1716,12 @@ KFK.initC3 = function () {
         evt.stopPropagation();
     });
     //click c3
+    KFK.JC1.on("click", async function (evt) {
+        if (IsSet(KFK.selectedTodo)) {
+            KFK.selectedTodo.removeClass('current');
+        }
+        KFK.hide($('.clickOuterToHide'));
+    });
     KFK.JC3.on("click", async function (evt) {
         if (KFK.inDesigner() === false) return;
         if (KFK.isEditting && KFK.quillEdittingNode) {
@@ -1699,7 +1753,7 @@ KFK.initC3 = function () {
         if (KFK.docIsReadOnly()) return;
 
         if (KFK.tobeTransformJqLine) KFK.tobeTransformJqLine.removeClass("shadow2");
-        $("#linetransformer").css("visibility", "hidden");
+        KFK.hide("#linetransformer");
         KFK.tobeTransformJqLine = null;
 
         if (KFK.afterDragging === true) {
@@ -1904,6 +1958,7 @@ KFK.isDuringKuangXuan = function () {
         KFK.lineDragging === false &&
         KFK.lineTransfomerDragging === false &&
         KFK.minimapMouseDown === false &&
+        KFK.isShowingModal === false &&
         KFK.touchChatTodo === false
     )
         return true;
@@ -2110,6 +2165,7 @@ KFK.endKuangXuan = function (pt1, pt2, shiftKey) {
         }
     });
     if (KFK.selectedDIVs.length > 1) {
+        KFK.AI('multi_select');
         KFK.resetPropertyOnMultipleNodesSelected();
     }
 };
@@ -2477,6 +2533,10 @@ KFK.placeNode = async function (
 
     //如果在脑图模式下，则自动建立脑图链接
     await KFK.LinkFromBrainCenter(KFK.justCreatedJqNode);
+    if (KFK.rightFirstShown === false && KFK.docIsNotReadOnly()) {
+        KFK.show('#right');
+        KFK.rightFirstShown = true;
+    }
 
     return jqDIV;
 };
@@ -3520,7 +3580,9 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
                 $(document.body).css("cursor", "pointer");
                 KFK.hoverJqDiv(jqNodeDIV);
                 jqNodeDIV.addClass("shadow1");
-                KFK.focusOnC3();
+                KFK.AI('hover_div');
+                KFK.onC3 = true;
+                console.log('hover div');
                 // jqNodeDIV.resizable('enable');
             },
             () => {
@@ -3528,7 +3590,7 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
                 jqNodeDIV.removeClass("shadow1");
                 // jqNodeDIV.resizable('disable');
                 KFK.hoverJqDiv(null);
-                KFK.focusOnC3();
+                KFK.onC3 = true;
             }
         );
     } catch (error) {
@@ -3559,6 +3621,12 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
                 evt.preventDefault();
                 return;
             }
+            if (KFK.rightFirstShown === false && KFK.docIsNotReadOnly() && jqNodeDIV.hasClass('todolist') === false) {
+                KFK.show('#right');
+                KFK.rightFirstShown = true;
+            }
+
+
             KFK.pickedSvgLine = null;
             KFK.afterDragging = false;
             KFK.afterResizing = false;
@@ -4967,6 +5035,14 @@ KFK.toggleEnterWithChat = function (checked) {
         KFK.beginChatMode();
     }
 };
+KFK.toggleUseAI = function (checked) {
+    KFK.saveLocalViewConfig();
+    if (KFK.APP.model.viewConfig.useAI === false) {
+        KFK.scrLog('如果您初次使用，强烈建议打开自动提示');
+    } else {
+        KFK.scrLog('自动提示已打开，请稍候');
+    }
+};
 
 KFK.lineCapChanged = function (checked) {
     let theLine = KFK.getPropertyApplyToSvgLine();
@@ -5002,6 +5078,9 @@ KFK.init = async function () {
 
     KFK.scrLog("彩板-多人协作网络白板", 1000);
     await KFK.checkSession();
+    setInterval(() => {
+        KFK.AI('hover_c3');
+    }, 10000);
 };
 
 KFK.initExplorer = function () {
@@ -5044,7 +5123,7 @@ KFK.initDesigner = async function () {
 KFK.initCocoChat = async function () {
     let jqCocoChat = $('#coco_chat');
     await this.loadCocoChatPositon();
-    jqCocoChat.removeClass('noshow');
+    // jqCocoChat.removeClass('noshow');
     jqCocoChat.draggable({
         start: (evt, ui) => { KFK.touchChatTodo = true; }, drag: (evt, ui) => { },
         stop: async (evt, ui) => {
@@ -5139,6 +5218,21 @@ KFK.initPropertySvgGroup = function () {
     });
 };
 
+KFK.connectToWS = async () => {
+    console.log('2>urlMode', KFK.urlMode);
+    await WS.start(
+        KFK.onWsConnected,
+        KFK.onWsMsg,
+        KFK.onWsClosed,
+        KFK.onWsReconnect,
+        KFK.onWsGiveup,
+        100,
+        "checkSession",
+        "KEEP",
+        KFK.wsTryTimesBeforeGiveup
+    );
+};
+
 //checkSesion有两个地方被调用,一个是在第一次进入, init 方法中, 一个是在OPENANN后
 //OPENANN后调用,会发生WS连接被第二次打开的情况,ws.js中使用了重用,杜绝发生连接两个websocket的情况
 KFK.checkSession = async function () {
@@ -5162,17 +5256,7 @@ KFK.checkSession = async function () {
         //这时,WS.ws已经是处于连接状态的,再次调用WS.start时, ws.js中会重用之前的连接,
         //但是会充值WS.connectTimes为0
         KFK.debug("checksession: LU yes, connect server");
-        await WS.start(
-            KFK.onWsConnected,
-            KFK.onWsMsg,
-            KFK.onWsClosed,
-            KFK.onWsReconnect,
-            KFK.onWsGiveup,
-            100,
-            "checkSession",
-            "KEEP",
-            KFK.wsTryTimesBeforeGiveup
-        );
+        await KFK.connectToWS();
     } else if (KFK.shareCode) {
         //没有localUser, but URL中有shareCode
         //两种URL形式都连接WS
@@ -5181,17 +5265,7 @@ KFK.checkSession = async function () {
         } else {
             KFK.debug("checksession: LU no, scURL yes, connect server");
         }
-        await WS.start(
-            KFK.onWsConnected,
-            KFK.onWsMsg,
-            KFK.onWsClosed,
-            KFK.onWsReconnect,
-            KFK.onWsGiveup,
-            100,
-            "checkSession",
-            "KEEP",
-            KFK.wsTryTimesBeforeGiveup
-        );
+        await KFK.connectToWS();
     } else {
         //no local user, URL中无shareCode
         //读本地存储shareCode
@@ -5199,8 +5273,12 @@ KFK.checkSession = async function () {
         if (localShareCode === null) {
             //no local user nor local sharecode
             KFK.debug("checksession: LU no, SCURL no, LSC no, goto fresh register");
-            KFK.gotoRegister();
-            KFK.setAppData("show", "waiting", false);
+            // KFK.gotoRegister();
+            // KFK.setAppData("show", "waiting", false);
+            KFK.urlMode = 'sharecode';
+            KFK.shareCode = 'welcome_new_user';
+            console.log('1>urlMode', KFK.urlMode);
+            await KFK.connectToWS();
         } else {
             //no local user but has local sharecode
             if (localShareCode.length === 8) {
@@ -5217,17 +5295,7 @@ KFK.checkSession = async function () {
                 KFK.urlMode = "sharecode";
                 KFK.shareCode = localShareCode;
                 KFK.debug("checksession: LU no, SCURL no, LSC yes, connect server");
-                await WS.start(
-                    KFK.onWsConnected,
-                    KFK.onWsMsg,
-                    KFK.onWsClosed,
-                    KFK.onWsReconnect,
-                    KFK.onWsGiveup,
-                    100,
-                    "checkSession",
-                    "KEEP",
-                    KFK.wsTryTimesBeforeGiveup
-                );
+                await KFK.connectToWS();
             }
         }
     }
@@ -5251,6 +5319,7 @@ KFK.onWsReconnect = function () {
 };
 KFK.onWsConnected = function () {
     KFK.WS = WS;
+    console.log('3>urlMode', KFK.urlMode);
     KFK.debug("Connect Times", KFK.WS.connectTimes);
     KFK.setAppData("show", "waiting", false);
     $(".reconnect-mask").addClass("nodisplay");
@@ -5331,11 +5400,10 @@ KFK.rememberLayoutDisplay = function () {
         showgrid: KFK.APP.model.viewConfig.showgrid,
         minimap: KFK.APP.show.section.minimap,
         toplogo: $("#toplogo").css("visibility"),
-        docHeaderInfo: $(".docHeaderInfo").css("visibility"),
+        docHeaderInfo: $("#docHeaderInfo").css("visibility"),
         rtcontrol: $("#rtcontrol").css("visibility"),
-        sharethis: $("#sharethis").css("visibility"),
-        left: $("#left").css("display"),
-        right: $("#right").css("display"),
+        left: $("#left").css("visibilityj"),
+        right: $("#right").css("visibility"),
     };
 };
 KFK.restoreLayoutDisplay = async function () {
@@ -5349,11 +5417,10 @@ KFK.restoreLayoutDisplay = async function () {
 
     await KFK.showSection({ minimap: KFK.layoutRemembered.minimap });
     $("#toplogo").css("visibility", KFK.layoutRemembered.toplogo);
-    $(".docHeaderInfo").css("visibility", KFK.layoutRemembered.docHeaderInfo);
+    $("#docHeaderInfo").css("visibility", KFK.layoutRemembered.docHeaderInfo);
     $("#rtcontrol").css("visibility", KFK.layoutRemembered.rtcontrol);
-    $("#sharethis").css("visibility", KFK.layoutRemembered.sharethis);
-    $("#left").css("display", KFK.layoutRemembered.left);
-    $("#right").css("display", KFK.layoutRemembered.right);
+    $("#left").css("visibility", KFK.layoutRemembered.left);
+    $("#right").css("visibility", KFK.layoutRemembered.right);
 };
 KFK.setLayoutDisplay = async function (config) {
     KFK.debug("setlayoutdisplay", JSON.stringify(config));
@@ -5375,11 +5442,10 @@ KFK.setLayoutDisplay = async function (config) {
 
     await KFK.showSection({ minimap: config.minimap });
     $("#toplogo").css("visibility", config.toplogo);
-    $(".docHeaderInfo").css("visibility", config.docHeaderInfo);
+    $("#docHeaderInfo").css("visibility", config.docHeaderInfo);
     $("#rtcontrol").css("visibility", config.rtcontrol);
-    $("#sharethis").css("visibility", config.sharethis);
-    $("#left").css("display", config.left);
-    $("#right").css("display", config.right);
+    $("#left").css("visibility", config.left);
+    $("#right").css("visibility", config.right);
 };
 
 KFK.showSection = async function (options) {
@@ -5451,8 +5517,8 @@ KFK.refreshDesignerWithDoc = async function (doc_id, docpwd, quickGlance = false
     }
     await KFK.initDesigner();
     await KFK.readLocalCocoUser();
-    KFK.myHide($(".docHeaderInfo"));
-    KFK.myHide(KFK.JC3);
+    KFK.hide($("#docHeaderInfo"));
+    KFK.hide(KFK.JC3);
 
     await KFK.initViewByLocalConfig();
     if (KFK.APP.model.viewConfig.enterWithChat) {
@@ -5492,6 +5558,7 @@ KFK.refreshDesignerWithDoc = async function (doc_id, docpwd, quickGlance = false
     //需要在explorer状态下隐藏的，都可以加上noshow, 在进入Designer时，noshow会被去掉
     //并以动画形式显示出来
     $(".padlayout").removeClass("noshow");
+    KFK.hide('#right');
     $(".padlayout").fadeIn(1000, function () {
         // Animation complete
     });
@@ -5517,7 +5584,7 @@ KFK.loadDoc = async function (doc_id, pwd, quickGlance = false, forceReadonly = 
                 KFK.JC3.empty();
             }
             KFK.docDuringLoading = doc_id;
-            KFK.myHide(KFK.JC3);
+            KFK.hide(KFK.JC3);
             KFK.debug("Open doc normally");
             KFK.sendCmd("OPENDOC", payload);
         } else {
@@ -6232,9 +6299,11 @@ KFK.openSubs = async function (sub) {
 
 KFK.modalShown = () => {
     KFK.isShowingModal = true;
+    KFK.hideDIVsWithStatus(['.msgInputWindow', '#system_message', '#right', '#minimap']);
 };
 KFK.modalHidden = () => {
     KFK.isShowingModal = false;
+    KFK.restoreDIVsWithStatus(['.msgInputWindow', '#system_message', '#right', '#minimap']);
 };
 
 //这个时候,在服务端
@@ -6320,7 +6389,7 @@ KFK._onDocFullyLoaded = async function () {
     } else if (KFK.FORCEREADONLY) {
         KFK.APP.model.cocodoc.readonly = true;
     }
-    KFK.myFadeIn($(".docHeaderInfo"));
+    KFK.show($("#docHeaderInfo"));
     KFK.docDuringLoading = null;
     // KFK.JC3.removeClass("noshow");
     KFK.APP.setData("model", "docLoaded", true);
@@ -6381,20 +6450,20 @@ KFK.cleanupJC3 = async function () {
 
 KFK.recreateFullDoc = async function (objects, callback) {
     KFK.cancelLoading = false;
-    KFK.myShow($(".loading"));
+    KFK.show($(".loading"));
     KFK.cleanupJC3();
     KFK.stopBrainstorm();
     for (let i = 0; i < objects.length; i++) {
         if (KFK.cancelLoading) {
             //也就是把之前正在loading的中断掉
-            KFK.myHide($(".loading"));
+            KFK.hide($(".loading"));
             KFK.cancelLoading = false;
             break;
         } else {
             if (KFK.currentView === "designer") {
-                KFK.myShow($(".loading"));
+                KFK.show($(".loading"));
             } else {
-                KFK.myHide($(".loading"));
+                KFK.hide($(".loading"));
             }
             await KFK.recreateObject(objects[i], callback);
 
@@ -6436,6 +6505,7 @@ KFK.recreateObject = async function (obj, callback) {
 
 KFK.recreateDoc = function (obj, callback) {
     try {
+        KFK.rightFirstShown = false;
         KFK.jumpStack = [];
         KFK.jumpStackPointer = -1;
         let docRet = obj.content;
@@ -6735,14 +6805,18 @@ KFK.initViewByLocalConfig = async function () {
     }
 };
 
-KFK.changeLineStyle = () => {
-    /*
+KFK.changeLineStyle = async () => {
     let theLine = KFK.getPropertyApplyToSvgLine();
     if (theLine === null || KFK.anyLocked(theLine)) return;
-    theLine.attr({
-        "stroke-width": ui.value,
-        "origin-width": ui.value,
-    });
+    KFK.setLineToRemember(theLine);
+    console.log(KFK.APP.model.svg.line.style);
+    let lineWidth = theLine.attr('stroke-width');
+    if (KFK.APP.model.svg.line.style === 'solid')
+        theLine.removeAttr('style');
+    else {
+        theLine.css('stroke-dasharray', `${lineWidth * 3} ${lineWidth}`);
+    }
+
     await KFK.syncLinePut(
         "U",
         theLine,
@@ -6750,8 +6824,6 @@ KFK.changeLineStyle = () => {
         KFK.lineToRemember,
         false
     );
-    KFK.setLineToRemember(theLine);
-    */
 };
 
 KFK.initPropertyForm = function () {
@@ -6839,6 +6911,7 @@ KFK.initPropertyForm = function () {
         spin: async function (evt, ui) {
             let theLine = KFK.getPropertyApplyToSvgLine();
             if (theLine === null || KFK.anyLocked(theLine)) return;
+            KFK.setLineToRemember(theLine);
             KFK.setLineModel({ width: ui.value });
             theLine.attr({
                 "stroke-width": ui.value,
@@ -6851,7 +6924,6 @@ KFK.initPropertyForm = function () {
                 KFK.lineToRemember,
                 false
             );
-            KFK.setLineToRemember(theLine);
         },
     });
     spinnerLineWidth.spinner("value", 1);
@@ -7038,11 +7110,11 @@ KFK.setBGColorTo = function (bgcolor) {
     //YIQColorAux是black或者white的近似色，用在连接线等元素上，因为纯色黑白太刺眼了
     KFK.YIQColorAux = KFK.YIQColor === "black" ? "#6666F6" : "#CCCCCC";
 
-    $(".docHeaderInfo").removeClass("yiq-black");
-    $(".docHeaderInfo").removeClass("yiq-white");
+    $("#docHeaderInfo").removeClass("yiq-black");
+    $("#docHeaderInfo").removeClass("yiq-white");
     $(".loading").removeClass("yiq-black");
     $(".loading").removeClass("yiq-white");
-    $(".docHeaderInfo").addClass(`yiq-${KFK.YIQColor}`);
+    $("#docHeaderInfo").addClass(`yiq-${KFK.YIQColor}`);
     $(".loading").addClass(`yiq-${KFK.YIQColor}`);
     $(".connect").attr("stroke", KFK.YIQColorAux);
     $(".triangle").attr("fill", KFK.YIQColorAux);
@@ -7138,6 +7210,7 @@ KFK.initColorPicker = function () {
             var hex = color.toHexString();
             let theLine = KFK.getPropertyApplyToSvgLine();
             if (theLine === null || KFK.anyLocked(theLine)) return;
+            KFK.setLineToRemember(theLine);
             theLine.attr("stroke", hex);
             KFK.setLineModel({ color: hex });
             await KFK.syncLinePut(
@@ -7148,7 +7221,6 @@ KFK.initColorPicker = function () {
                 false
             );
             console.log("setLTR on lineColor change");
-            KFK.setLineToRemember(theLine);
         },
     });
     $("#fontColor").spectrum({
@@ -7619,6 +7691,10 @@ KFK.addDocumentEventHandler = function () {
                     KFK.keypool = "";
                     await KFK.toggleTopAndLeftOnly();
                     return;
+                } else if (KFK.keypool.endsWith("tr")) {
+                    KFK.keypool = "";
+                    await KFK.toggleRightPanel();
+                    return;
                 } else if (KFK.keypool.endsWith("jl")) { //jump to last created
                     await KFK.jumpToLastCreated(false);
                     KFK.keypool = "";
@@ -7732,21 +7808,16 @@ KFK.addDocumentEventHandler = function () {
                     await KFK.moveTodoByProgress(progress);
                     KFK.keypool = "";
                     return;
-                } else if (KFK.keypool.endsWith("dd")) {
                 } else if (KFK.keypool.endsWith("fs")) {
                     KFK.toggleFullScreen();
                     KFK.keypool = "";
                     return;
-                    // } else if(KFK.keypool.endsWith("ov")){
-                    //    // bug here, 切换回去的时候无法像双击一样获得准确的鼠标位置
-                    //     if (KFK.inOverviewMode === true) {
-                    //         console.log(KFK.currentMousePos);
-                    //         let jc1Pos = KFK.jc3PosToJc1Pos(KFK.currentMousePos);
-                    //         console.log(jc1Pos);
-                    //         KFK.toggleOverview(jc1Pos);
-                    //     } else {
-                    //         KFK.toggleOverview();
-                    //     }
+                } else if (KFK.keypool.endsWith("ov")) {
+                    if (KFK.inOverviewMode === true) {
+                        KFK.toggleOverview(KFK.currentMousePos);
+                    } else {
+                        KFK.toggleOverview();
+                    }
                 } else if (KFK.inPresentingMode && KFK.keypool.endsWith("stop")) {
                     KFK.endPresentation();
                     KFK.keypool = "";
@@ -7974,12 +8045,7 @@ KFK.addDocumentEventHandler = function () {
             //程序中， KFK.currentView的初始值为unknown, 当第一次显示designer后，
             //KFK.currentView的值变为designer, 切换回到explorer时，KFK.currentView的值是explorer
             //这时，用KFK.currentView === 'explorer'进行判断是可以的
-            return;
-        } else if (evt.keyCode === 81 && (evt.ctrlKey || evt.metaKey)) {
-            KFK.logKey("CTRL-R");
-            // KFK.toggleRight();
-            KFK.holdEvent(evt);
-            return;
+            return
         }
 
         if (KFK.inDesigner() === false) return;
@@ -8299,7 +8365,7 @@ KFK.addDocumentEventHandler = function () {
 
 
 KFK.toggleTodoMode = async function () {
-    KFK.jInputMsgDlg || (KFK.jInputMsgDlg = $('.msgInput'));
+    KFK.jInputMsgDlg || (KFK.jInputMsgDlg = $('.msgInputWindow'));
     if (KFK.jInputMsgDlg.hasClass('noshow')) {
         KFK.beginTodoMode();
     } else {
@@ -8369,7 +8435,7 @@ KFK.restoreDIVsWithStatus = (jqs) => {
  * If not show, show it; or hide it otherwise
  */
 KFK.toggleInputMsgDlg = () => {
-    KFK.jInputMsgDlg || (KFK.jInputMsgDlg = $('.msgInput'));
+    KFK.jInputMsgDlg || (KFK.jInputMsgDlg = $('.msgInputWindow'));
     if (KFK.isShowing(KFK.jInputMsgDlg)) {
         KFK.hide(KFK.jInputMsgDlg);
     } else {
@@ -8380,7 +8446,7 @@ KFK.toggleInputMsgDlg = () => {
  * Just hide the msg input dialog, nothing else
  */
 KFK.hideMsgInputDlg = function () {
-    KFK.jInputMsgDlg || (KFK.jInputMsgDlg = $('.msgInput'));
+    KFK.jInputMsgDlg || (KFK.jInputMsgDlg = $('.msgInputWindow'));
     KFK.hide(KFK.jInputMsgDlg);
 };
 
@@ -8411,7 +8477,7 @@ KFK.deleteTodo = async function () {
  * @param autofocus Focus in the text input, default is true
  */
 KFK.showMsgInputDlg = async function (autofocus = true) {
-    KFK.jInputMsgDlg || (KFK.jInputMsgDlg = $('.msgInput'));
+    KFK.jInputMsgDlg || (KFK.jInputMsgDlg = $('.msgInputWindow'));
     KFK.show(KFK.jInputMsgDlg);
     await KFK.jInputMsgDlg.find('input').focus();
 };
@@ -8561,6 +8627,7 @@ KFK.setTodoItemEventHandler = function (jqDIV = undefined) {
     });
     theItem.on("mouseover", function () {
         KFK.hoveredTodo = $(this);
+        KFK.AI('hover_todoitem');
     })
 };
 
@@ -8644,7 +8711,6 @@ KFK.appendChatItem = async function (msg, avatar, name, who) {
     let chat_list = $('#coco_chat_list.original');
 
     let avatarSrc = KFK.avatars[avatar] ? KFK.avatars[avatar].src : KFK.avatars['avatar-0'].src;
-    console.log(avatarSrc);
     let html = "<div class='chat_item " + who + "'>";
     if (who !== 'me') {
         html +=
@@ -8687,11 +8753,11 @@ KFK.moveTodoByProgress = async function (progress) {
     } else {
         if (fromDIVId !== "coco_inprogress") {
             await KFK.moveTodoItemTo('#coco_inprogress', progress);
-            // await KFK.syncNodePut("U", $('#coco_inprogress'), "todo", undefined, false, 0, 1);
-            // await KFK.syncNodePut("U", fromDIV, "todo", undefined, false, 0, 1);
+            await KFK.syncNodePut("U", $('#coco_inprogress'), "todo", undefined, false, 0, 1);
+            await KFK.syncNodePut("U", fromDIV, "todo", undefined, false, 0, 1);
         } else {
             KFK.hoveredTodo.attr("prg", progress);
-            // await KFK.syncNodePut("U", $('#coco_inprogress'), "todo", undefined, false, 0, 1);
+            await KFK.syncNodePut("U", $('#coco_inprogress'), "todo", undefined, false, 0, 1);
         }
     }
 }
@@ -8949,14 +9015,16 @@ KFK.tryToLockUnlock = function (shiftKey) {
         KFK.setMode("pointer");
     }
 };
-KFK.toggleRight = function (flag) {
+KFK.toggleRightPanel = function (flag) {
     if (KFK.APP.model.cocodoc.readonly) {
         return;
     }
     if (KFK.inFullScreenMode === true || KFK.controlButtonsOnly === true) return;
-    KFK.showRightTools = !KFK.showRightTools;
-    let display = KFK.showRightTools ? "block" : "none";
-    $("#right").css("display", display);
+    if ($('#right').hasClass('noshow')){
+        KFK.show($('#right'));
+    } else {
+        KFK.hide($('#right'));
+    }
 };
 KFK.toggleFullScreen = function (evt) {
     if (KFK.inPresentingMode) return;
@@ -8995,18 +9063,14 @@ KFK.toggleTopAndLeftOnly = async function (evt) {
     KFK.topAndLeftOnly = !KFK.topAndLeftOnly;
     await KFK.showSection({ minimap: !KFK.topAndLeftOnly });
     //左侧和右侧的工具栏，可进行切换
-    let display = KFK.topAndLeftOnly ? "none" : "block";
-    $("#left").css("display", "block");
-    $("#right").css("display", display); //actionlog总是关闭
+    if (KFK.topAndLeftOnly) {
+        KFK.hide('#left');
+        KFK.hide('#right');
+    } else {
+        KFK.show('#left');
+        KFK.show('#right');
+    }
     KFK.APP.setData("show", "actionlog", false);
-    //    $(".docHeaderInfo").css(
-    //        "visibility",
-    //        KFK.topAndLeftOnly ? "hidden" : "visible"
-    //    );
-    //    $("#toplogo").css(
-    //        "visibility",
-    //        KFK.topAndLeftOnly ? "hidden" : "visible"
-    //    );
     KFK.keypool = "";
 };
 
@@ -9017,21 +9081,22 @@ KFK.toggleControlButtonOnly = async function (evt) {
         await KFK.showSection({ minimap: !KFK.controlButtonsOnly });
         return;
     }
-    //左侧和右侧的工具栏，可进行切换
-    let display = KFK.controlButtonsOnly ? "none" : "block";
-    $("#left").css("display", display);
-    $("#right").css("display", display); //actionlog总是关闭
     KFK.APP.setData("show", "actionlog", false);
     //切换minimap
     await KFK.showSection({ minimap: !KFK.controlButtonsOnly });
-    $(".docHeaderInfo").css(
-        "visibility",
-        KFK.controlButtonsOnly ? "hidden" : "visible"
-    );
-    $("#toplogo").css(
-        "visibility",
-        KFK.controlButtonsOnly ? "hidden" : "visible"
-    );
+    if (KFK.controlButtonsOnly) {
+        KFK.hide("#left");
+        KFK.hide("#right");
+        KFK.hide("#docHeaderInfo");
+        KFK.hide("#toplogo");
+        KFK.hideDIVsWithStatus(['.msgInputWindow', '#coco_chat']);
+    } else {
+        KFK.show("#left");
+        KFK.show("#right");
+        KFK.show("#docHeaderInfo");
+        KFK.show("#toplogo");
+        KFK.restoreDIVsWithStatus(['.msgInputWindow', '#coco_chat']);
+    }
     KFK.keypool = "";
     //add a mask layer
 };
@@ -9041,11 +9106,11 @@ KFK.showHidePanel = function (flag) {
         KFK.inFullScreenMode === false &&
         KFK.controlButtonsOnly === false
     ) {
-        $("#left").css("display", "block");
-        $("#right").css("display", "block");
+        KFK.show('#left');
+        KFK.show('#right');
     } else {
-        $("#left").css("display", "none");
-        $("#right").css("display", "none");
+        KFK.hide('#left');
+        KFK.hide('#right');
     }
 };
 
@@ -9558,7 +9623,7 @@ KFK.___gotoPage = function (pageIndex) {
 
 KFK.startPresentation = async function () {
     if (KFK.inOverviewMode) return;
-    KFK.hideDIVsWithStatus(['.msgInput', '#coco_chat']);
+    KFK.hideDIVsWithStatus(['.msgInputWindow', '#coco_chat', '#system_message']);
     KFK.maskScreen();
     KFK.openFullscreen();
     await KFK.sleep(500);
@@ -9567,7 +9632,6 @@ KFK.startPresentation = async function () {
         showgrid: false,
         minimap: false,
         toplogo: "hidden",
-        sharethis: "hidden",
         docHeaderInfo: "hidden",
         rtcontrol: "hidden",
         left: "none",
@@ -9588,7 +9652,7 @@ KFK.startPresentation = async function () {
 };
 KFK.endPresentation = function () {
     if (KFK.inOverviewMode) return;
-    KFK.restoreDIVsWithStatus(['.msgInput', '#coco_chat']);
+    KFK.restoreDIVsWithStatus(['.msgInputWindow', '#coco_chat', '#system_message']);
     KFK.unmaskScreen();
     KFK.closeFullscreen();
     KFK.restoreLayoutDisplay();
@@ -9862,7 +9926,7 @@ KFK.toggleOverview = function (jc3MousePos) {
     KFK.APP.setData("show", "actionlog", false);
     if (KFK.inOverviewMode === true) {
         KFK.scrLog("");
-        KFK.restoreDIVsWithStatus(['.msgInput', '#coco_chat']);
+        KFK.restoreDIVsWithStatus(['.msgInputWindow', '#coco_chat', '#system_message']);
 
         let cbkg = $("#containerbkg");
         if (KFK.rememberGrid !== "") cbkg.addClass(KFK.rememberGrid);
@@ -9889,13 +9953,12 @@ KFK.toggleOverview = function (jc3MousePos) {
                 minimap: false,
                 toplogo: "hidden",
                 docHeaderInfo: "hidden",
-                sharethis: "hidden",
                 rtcontrol: "hidden",
                 left: "none",
                 right: "none",
             });
         }
-        KFK.hideDIVsWithStatus(['.msgInput', '#coco_chat']);
+        KFK.hideDIVsWithStatus(['.msgInputWindow', '#coco_chat', '#system_message']);
         let cbkg = $("#containerbkg");
         KFK.rememberGrid = cbkg.hasClass("grid1") ?
             "grid1" :
@@ -9951,6 +10014,11 @@ KFK.scale = (ratio) => {
         "-webkit-transform-origin": "0px 0px",
     });
     KFK.JC3.css("transform", `scale(${ratio}, ${ratio})`);
+    KFK.JCBKG.css({
+        "transform-origin": "0px 0px",
+        "-webkit-transform-origin": "0px 0px",
+    });
+    KFK.JCBKG.css("transform", `scale(${ratio}, ${ratio})`);
     KFK.scaleRatio = ratio;
 
     let tmpx = jC3CenterOn.x * KFK.scaleRatio + KFK.LeftB - scrCenterPoint.x;
@@ -10357,8 +10425,9 @@ KFK._svgDrawNodesConnect = function (
     theLine.on("mouseover", () => {
         theLine.attr("stroke-width", KFK.APP.model.svg.connect.width * 2);
         KFK.hoveredConnectId = theLine.attr("id");
+        KFK.AI('hover_connect');
         KFK.debug("hover connect id", KFK.hoveredConnectId);
-        KFK.focusOnC3();
+        KFK.onC3 = true;
     });
     theLine.on("mouseout", () => {
         theLine.attr("stroke-width", KFK.APP.model.svg.connect.width);
@@ -10438,21 +10507,22 @@ KFK.ScreenMousePos = function (pos) {
     };
 };
 KFK.hideLineTransformer = function () {
-    $("#linetransformer").css("visibility", "hidden");
+    KFK.hide($("#linetransformer"));
 };
 KFK.showLineTransformer = function () {
-    $("#linetransformer").css("visibility", "visible");
+    KFK.show($("#linetransformer"));
 };
 KFK.addSvgLineEventListner = function (theLine) {
     theLine.on("mouseover", (evt) => {
         KFK.hoverSvgLine(theLine);
-        KFK.focusOnC3();
+        KFK.onC3 = true;
+        KFK.AI('hover_line');
         let originWidth = theLine.attr("origin-width");
         let newWidth =
             originWidth > 10 ? originWidth * 1.2 : Math.max(originWidth * 1.2, 5);
         theLine.attr({ "stroke-width": newWidth });
         if (KFK.lineLocked(theLine)) {
-            $("#linetransformer").css("visibility", "hidden");
+            KFK.hide($("#linetransformer"));
             return;
         }
 
@@ -10461,23 +10531,25 @@ KFK.addSvgLineEventListner = function (theLine) {
         if (
             KFK.mouseNear(KFK.C3MousePos(evt), { x: parr[0][0], y: parr[0][1] }, 20)
         ) {
-            $("#linetransformer").css("visibility", "visible");
+            KFK.show("#linetransformer");
             KFK.moveLinePoint = "from";
             KFK.lineToResize = theLine;
             console.log("setLTR on mouseover line, and near start pont");
+            KFK.AI('line_transformer');
             KFK.setLineToRemember(theLine);
             KFK.moveLineMoverTo(KFK.jc3PosToJc1Pos({ x: parr[0][0], y: parr[0][1] }));
         } else if (
             KFK.mouseNear(KFK.C3MousePos(evt), { x: parr[1][0], y: parr[1][1] }, 20)
         ) {
-            $("#linetransformer").css("visibility", "visible");
+            KFK.show("#linetransformer");
             KFK.moveLinePoint = "to";
             KFK.lineToResize = theLine;
             console.log("setLTR on mouseover line, and near end pont");
+            KFK.AI('line_transformer');
             KFK.setLineToRemember(theLine);
             KFK.moveLineMoverTo(KFK.jc3PosToJc1Pos({ x: parr[1][0], y: parr[1][1] }));
         } else {
-            $("#linetransformer").css("visibility", "hidden");
+            KFK.hide("#linetransformer");
         }
     });
     theLine.on("mouseout", () => {
@@ -10509,6 +10581,11 @@ KFK.addSvgLineEventListner = function (theLine) {
         evt.preventDefault();
         KFK.hoverSvgLine(theLine);
         if (KFK.anyLocked(theLine)) return;
+        if (KFK.rightFirstShown === false && KFK.docIsNotReadOnly()) {
+            KFK.show('#right');
+            KFK.rightFirstShown = true;
+        }
+
         if (KFK.mode === "lock") {
             KFK.tryToLockUnlock(evt.shiftKey);
         }
@@ -10574,6 +10651,7 @@ KFK.initLineTransformer = function () {
             //transform line  change line
             KFK.lineTransfomerDragging = false;
             if (KFK.lineToResize === null) return;
+            KFK.setLineToRemember(KFK.lineToResize);
             let parr = KFK.lineToResize.array();
             let stopAtPos = KFK.C3MousePos(evt);
             if (KFK.APP.model.viewConfig.snap) {
@@ -10597,8 +10675,7 @@ KFK.initLineTransformer = function () {
                 KFK.lineToRemember,
                 false
             );
-            KFK.setLineToRemember(KFK.lineToResize);
-            $("#linetransformer").css("visibility", "hidden");
+            KFK.hide("#linetransformer");
         },
     }); //line transformer. draggable()
 };
@@ -10757,16 +10834,6 @@ KFK.myFadeOut = function (jq, ms = 200) {
         jq.animate({ opacity: 0.0 }, ms, function () {
             jq.css("visibility", "hidden");
         });
-};
-KFK.myHide = function (jq) {
-    if (typeof jq === 'string')
-        jq = $(jq);
-    jq && jq.css("visibility", "hidden");
-};
-KFK.myShow = function (jq) {
-    if (typeof jq === 'string')
-        jq = $(jq);
-    jq && jq.css({ visibility: "visible", opacity: 1.0 });
 };
 KFK.hide = function (jq) {
     if (typeof jq === 'string')
@@ -10973,6 +11040,7 @@ KFK.checkBrowser = function () {
     });
     KFK.setAppData("model", "isValidBrowser", isValidBrowser);
     KFK.setAppData("model", "isNotValidBrowser", !isValidBrowser);
+    KFK.APP.model.osName = browser.getOSName(true);
     KFK.debug("isValidBrowser", isValidBrowser);
 };
 
@@ -11455,6 +11523,14 @@ KFK.__childrenToMySide = async (theDIV, side) => {
     }
 };
 
+KFK.AI = (idx) => {
+    if (KFK.APP.model.viewConfig.useAI === false) return;
+    let msg = AIXJ.getMsg(idx, KFK.APP.model.osName);
+    if (IsSet(msg)) {
+        KFK.SYSMSG.prop("innerHTML", msg);
+    }
+};
+
 document.onpaste = KFK.onPaste;
 document.oncopy = KFK.onCopy;
 document.oncut = KFK.onCut;
@@ -11464,25 +11540,20 @@ let host = $(location).attr("host");
 let protocol = $(location).attr("protocol");
 KFK.urlBase = protocol + "//" + host + cocoConfig.product.basedir;
 let urlSearch = window.location.search;
-if (host.indexOf("localhost") >= 0) {
-    KFK.distEnv = "localhost";
-} else {
-    KFK.distEnv = "cloud";
-}
 WS.remoteEndpoint = cocoConfig.ws_server.endpoint;
 BossWS.remoteEndpoint = cocoConfig.ws_server.endpoint;
 if (urlSearch.startsWith("?dou=")) {
     KFK.urlMode = "sharecode";
     KFK.shareCode = urlSearch.substr(5);
     KFK.debug("Sharecode in URL", KFK.shareCode);
-    window.history.replaceState({}, null, KFK.urlBase);
+    // window.history.replaceState({}, null, KFK.urlBase);
 } else if (urlSearch.startsWith("?r=")) {
     KFK.debug("Ivtcode in URL");
     KFK.urlMode = "ivtcode";
     KFK.shareCode = urlSearch.substr(3);
     window.history.replaceState({}, null, KFK.urlBase);
 } else {
-    // window.history.replaceState({}, null, KFK.urlBase);
+    window.history.replaceState({}, null, KFK.urlBase);
 }
 KFK.debug("URL MODE is", KFK.urlMode);
 

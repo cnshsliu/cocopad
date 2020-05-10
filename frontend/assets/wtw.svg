@@ -5,14 +5,17 @@
 <style type="text/css">
 	.st0{fill:#2A9DF4;stroke:#FFFFFF;stroke-miterlimit:10;}
 	.st1{fill:#FFFFFF;stroke:#000000;stroke-miterlimit:10;}
-	.st2{fill:#2A9DF4;stroke:#FFFFFF;stroke-width:3;stroke-miterlimit:10;}
+	.st2{fill:#FFFFFF;}
+	.st3{font-family:'ArialRoundedMTBold';}
+	.st4{font-size:46.7053px;}
 </style>
 <rect y="0" class="st0" width="160" height="162"/>
 <path class="st1" d="M140.5,144.8l-12-42c-0.5-1.8-2.3-2.7-4.1-2.2l-1.8,0.4c-1.7,0.4-2.8,2.2-2.3,4l12,42c0.5,1.8,2.3,2.7,4.1,2.2
 	l1.8-0.4C140,148.4,141,146.6,140.5,144.8z"/>
 <path class="st1" d="M41.4,105.1l-12,42c-0.5,1.8-2.3,2.7-4.1,2.2l-1.8-0.4c-1.7-0.4-2.8-2.2-2.3-4l12-42c0.5-1.8,2.3-2.7,4.1-2.2
 	l1.8,0.4C40.9,101.6,41.9,103.4,41.4,105.1z"/>
-<rect x="24.1" y="38.9" class="st2" width="110.2" height="63.9"/>
+<rect x="24.1" y="37.8" class="st0" width="110.2" height="63.9"/>
 <path class="st1" d="M143.8,115.6H13.6c-2.4,0-4.4-2-4.4-4.4v-5.1c0-2.4,2-4.4,4.4-4.4h130.2c2.4,0,4.4,2,4.4,4.4v5.1
 	C148.2,113.6,146.2,115.6,143.8,115.6z"/>
+<text transform="matrix(0.6445 0 0 1 35.2891 87.8595)" class="st2 st3 st4">CLBD</text>
 </svg>
