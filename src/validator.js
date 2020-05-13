@@ -14,6 +14,11 @@ Validator.validateUserId = function (str) {
         /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
     return str.match(regex) !== null;
 };
+Validator.validateMobile = function (str) {
+    let regex =
+    /^1[3-9]\d{9}$/;
+    return str.match(regex) !== null;
+};
 
 Validator.validateUserPassword = function (str) {
     let regex =

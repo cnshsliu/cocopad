@@ -8,3 +8,6 @@
 //TODO: 备份加密secretkey到U盘
 //TODO: GROUP unGROUP解决解决jjjj解决解决解决?
 //TODO: 上传任意文件
+//TODO: variant大小与前面调整过的一样大小
+//TODO：tab-shifttab-360， 所建立的新节点的style与参考节点一致
+//TODO：tab， shfit-tab跳到兄弟节点/子节点？ ESC跳到父节点？

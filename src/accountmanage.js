@@ -11,7 +11,9 @@ ACM.registerUser = function () {
     let pwd2 = tmpRegData.pwd2.trim();
     let foundError = false;
     if(!Validator.validateUserId(userid)){
-        KFK.scrLog("注册账号需要是一个正确的邮箱地址");  return;
+        if(!Validator.validateMobile(userid)){
+            KFK.scrLog("账号格式不正确");  return;
+        }
     }
     if(!Validator.validateUserName(name)){
         KFK.scrLog("全称需要是2个以上汉字或4个以上英文，最多10个");  return;

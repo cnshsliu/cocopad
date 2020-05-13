@@ -65,7 +65,12 @@ const app = new Vue({
         {
             title: 'OPQR',
             div: '#toolbox3',
-            svgs: ["biz001", "biz002", "biz003", "biz004", "biz005", "biz006", "biz007", "biz008", "biz009", "biz010", "biz011", "biz012", "biz013", "biz014", "biz015", "biz016", "biz017", "biz018", "biz019", "biz020", "biz021", "biz022", "biz023", "biz024", "biz025", "biz026", "biz027", "biz028", "biz029", "biz030", "biz031", "biz032", "biz033", "biz034", "biz035", "biz036", "biz037", "biz038", "biz039", "biz040", "biz041", "biz042", "biz043", "biz044", "biz045", "biz046", "biz047", "biz048", "biz049", "biz050", "biz051", "biz052", "biz053", "biz054", "biz055", "biz056", "biz057", "biz058", "biz059", "biz060"],
+            svgs: [
+                "biz001", "biz002", "biz003", "biz004", "biz005", "biz006", "biz007", "biz008", "biz009", "biz010", "biz011", "biz012", "biz013", "biz014", "biz015", "biz016", "biz017", "biz018", "biz019", "biz020",
+                "biz021", "biz022", "biz023", "biz024", "biz025", "biz026", "biz027", "biz028", "biz029", "biz030", "biz031", "biz032", "biz033", "biz034", "biz035", "biz036", "biz037", "biz038", "biz039", "biz040", 
+                "biz041", "biz042", "biz043", "biz044", "biz045", "biz046", "biz047", "biz048", "biz049", "biz050", "biz051", "biz052", "biz053", "biz054", "biz055", "biz056", "biz057", "biz058", "biz059", "biz060", 
+                "biz061", "biz062", "biz063", "biz064", "biz065", "biz066", "biz067", "biz068", "biz069", "biz070", "biz071", "biz072"
+            ],
         }
         ],
         toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'richtext': false, 'lock': false, 'minimap': false, 'connect': false, 'material': false, 'clean': false, 'brain': false, 'todo': false, 'chat': false },
@@ -103,6 +108,7 @@ const app = new Vue({
         },
         model: {
             osName: '',
+            endpoint: '',
             copyToDocName: '',
             publish: {
                 name: '',
@@ -127,7 +133,7 @@ const app = new Vue({
                 newuserid: '',
                 changeorgname: '',
             },
-            share: { code: '', email: '', lifeshare: false, msg: '临时分享, 48小时后过期', url: '', acl:'P', warning:'',doc_id:'', okToShare:false, okToSetACL:false },
+            share: { code: '', email: '', lifeshare: false, msg: '临时分享, 48小时后过期', url: '', acl: 'P', warning: '', doc_id: '', okToShare: false, okToSetACL: false },
             signInButWaitVerify: false,
             regForShared: false, //是否是接受到分享链接的用户来注册？
             loading_value: 0,
@@ -152,7 +158,7 @@ const app = new Vue({
                         { value: 'dash', text: '虚线' }
                     ],
                     arrow: 'arrow0',
-                    arrows:[
+                    arrows: [
                         { value: 'arrow0', text: '无箭头' },
                         { value: 'arrow1', text: '形状一' },
                         { value: 'arrow2', text: '形状二' }
@@ -193,7 +199,7 @@ const app = new Vue({
             docLoaded: false,
             cocoprj: { prjid: 'all', name: '我最近使用过的白板' },
             lastrealproject: { prjid: '', name: '' },
-            cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', readonly: false, ownerAvatar_src:undefined },
+            cocodoc: { doc_id: 'dummydocnotallowed', name: '', prjid: 'dummydocnotallowed', owner: 'dummydocnotallowed', readonly: false, ownerAvatar_src: undefined },
             cocouser: { userid: '', name: '', avatar: 'avatar-0', avatar_src: null },
             cocoorg: { orgid: 'ORGID', name: 'ORGNAME', logo: 'corp-0', logo_src: '', owner: '', ownername: '张三' },
             orgusers: {},
@@ -235,8 +241,8 @@ const app = new Vue({
                 showlock: true,
                 showbounding: true,
                 enterWithChat: true,
-                enterToConfirmInput: true,
-                useAI:true,
+                enterToConfirmInput: false,
+                useAI: true,
             },
             dragToCreate: true,
             lineToggleMode: false,
@@ -399,6 +405,7 @@ KFK.DocController = DocController;
 KFK.NodeController = NodeController;
 window.Buffer = window.Buffer || require('buffer').Buffer;
 KFK.APP = app;
+app.model.endpoint = KFK.config.ws_server.endpoint.label;
 
 const dropZoneId = "C3";
 window.addEventListener("dragenter", function (e) {

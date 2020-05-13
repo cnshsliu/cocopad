@@ -53,7 +53,7 @@ body {
     background-color: rgb(255, 255, 255); 
     border-width: 1px; border-style: solid;
     position: absolute; top: 88px; left: 86px;
-    width: 256px; height: 175px; 
+    width: 256px; height: 512px; 
     background-color: aquamarine !important;
 }
 #coco_chat_list{
@@ -288,7 +288,7 @@ input::placeholder {
 
 #right {
     padding: 0px;
-    background: #ffffffe0;
+    background: #ffffff;
     box-shadow: 0 4px 8px 0 #000000CC, 0 6px 20px 0 #000000CC;
     position: absolute;
     top: 100px;
@@ -1165,7 +1165,7 @@ select:focus {
 
 #readonlyDesc {
     position: absolute;
-    bottom: 5px;
+    bottom: 25px;
     left: 5px;
     background-color: #eeeeee69;
     border: 1px solid #aaa;
@@ -1178,7 +1178,7 @@ select:focus {
     width: 100%;
     bottom: 0px;
     left: 0px;
-    background-color: #eeeeee69;
+    background-color: #eeeeee39;
     z-index: 102;
     align-items: center;
     justify-content: center;
@@ -1780,7 +1780,7 @@ table.quick-help-table td:first-of-type {
 }
 .matlib-topick {
     position: absolute;
-    z-index: 10000010;
+    z-index: 10000030;
     /*higher than minimap */
     left: 0px;
     bottom: 0px;
