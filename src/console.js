@@ -25,6 +25,11 @@ import SVGs from "./svgs";
 import Validator from "./validator";
 import WS from "./ws";
 // import { BIconFileEarmarkBreak } from "bootstrap-vue";
+import RtcCommon from './Web/js/common';
+import RtcClient from './Web/js/rtc-client';
+import ShareClient from './Web/js/share-client';
+const TRTC = require('./Web/js/trtc');
+
 
 
 Quill.prototype.getHtml = function () {
@@ -76,8 +81,11 @@ const IsFalse = function (val) {
 };
 
 const KFK = {};
+KFK.config = cocoConfig;
+KFK.duringVideo = false;
 KFK.pct = 1; //Peers count;
 KFK.accordion = {};
+KFK.rtcUsers = {};
 KFK.noCopyPaste = false;
 KFK.touchChatTodo = false;
 KFK.todoShown = true;
@@ -148,7 +156,10 @@ KFK.actionLogToViewIndex = 0;
 KFK.explorerRefreshed = false;
 KFK.numberOfNodeToCreate = 0;
 KFK.numberOfNodeCreated = 0;
-KFK.rightFirstShown = false;
+KFK.firstShown = {
+    'right': false,
+    'chat': false,
+};
 KFK.badgeIdMap = {};
 
 // A4
@@ -234,6 +245,8 @@ KFK.getScrollPos = function () {
 //     preventScroll: true
 //   });
 KFK.focusOnC3 = () => {
+    if (KFK.isEditting || KFK.resizing || KFK.dragging)
+        return;
     if (KFK.JC3) {
         let pos = KFK.getScrollPos();
         KFK.JC3.attr("tabIndex", "0");
@@ -388,7 +401,6 @@ KFK.onWsMsg = async function (response) {
     if (response.cmd === "PING") {
         KFK.WS.put("PONG", {});
     }
-    response.cmd !== "PCT" && KFK.debug("recieved", response.cmd, response);
     switch (response.cmd) {
         case "ONLY":
             KFK.scrLog(response.msg);
@@ -850,7 +862,7 @@ KFK.onWsMsg = async function (response) {
             KFK.scrLog(response.msg);
             break;
         case "ERROR":
-            KFK.error(response.msg);
+            KFK.error('SERVER ERROR:', response.msg);
             break;
         case "STS":
             KFK.onGotSTS(response);
@@ -869,8 +881,6 @@ KFK.onWsMsg = async function (response) {
             KFK.materialUpdated = true;
             break;
         case "REFRESHMAT":
-            console.log("received REFRESHMAT");
-            console.log(response.mats);
             mats = response.mats.map((mat) => {
                 let matUrl = `https://${cocoConfig.cos.reverseproxy}/${mat.Key}`;
                 return {
@@ -892,8 +902,44 @@ KFK.onWsMsg = async function (response) {
         case 'BUY2':
             KFK.scrLog('购买成功，已放入“购买的彩板”项目');
             break;
+        case 'GENSIG':
+            console.log(response);
+            KFK.startVideoCall(response.config, response.shareConfig);
+            break;
+        case 'RTCSIGREQ':
+            KFK.regRtcUser(response);
+            break;
         default:
             break;
+    }
+};
+
+KFK.regRtcUser = (res)=>{
+    KFK.rtcUsers[res.user_ser] = {
+        userid: res.userid,
+        name: res.name,
+        avatar: res.avatar
+    };
+};
+
+
+KFK.QC_RTC_login = (share, callback) => {
+    let userId = KFK.prepareUserIdForRTC(KFK.APP.model.cocouser.userid);
+    if (share) {
+        userId = 'share_' + userId;
+        callback({
+            sdkAppId: KFK.rtcConfig.sdkAppId,
+            userId: userId,
+            userSig: KFK.rtcShareConfig.userSig,
+            roomId: KFK.APP.model.cocodoc.doc_id,
+        });
+    } else {
+        callback({
+            sdkAppId: KFK.rtcConfig.sdkAppId,
+            userId: userId,
+            userSig: KFK.rtcConfig.userSig,
+            roomId: KFK.APP.model.cocodoc.doc_id,
+        });
     }
 };
 
@@ -1854,7 +1900,7 @@ KFK.initC3 = function () {
         } else {
             KFK.lineToDrag = null;
         }
-        if (KFK.lineDragging || KFK.lineTransfomerDragging || KFK.minimapMouseDown) {
+        if (KFK.isEditting || KFK.lineDragging || KFK.lineTransfomerDragging || KFK.minimapMouseDown) {
             KFK.duringKuangXuan = false;
         }
 
@@ -1959,7 +2005,8 @@ KFK.isDuringKuangXuan = function () {
         KFK.lineTransfomerDragging === false &&
         KFK.minimapMouseDown === false &&
         KFK.isShowingModal === false &&
-        KFK.touchChatTodo === false
+        KFK.touchChatTodo === false &&
+        KFK.isEditting === false
     )
         return true;
     else return false;
@@ -2533,9 +2580,9 @@ KFK.placeNode = async function (
 
     //如果在脑图模式下，则自动建立脑图链接
     await KFK.LinkFromBrainCenter(KFK.justCreatedJqNode);
-    if (KFK.rightFirstShown === false && KFK.docIsNotReadOnly()) {
+    if (KFK.firstShown['right'] === false && KFK.docIsNotReadOnly()) {
         KFK.show('#right');
-        KFK.rightFirstShown = true;
+        KFK.firstShown['right'] = true;
     }
 
     return jqDIV;
@@ -3019,18 +3066,21 @@ KFK.setModeIndicatorForYellowTip = function (tipvariant) {
     svg.appendTo($("#modeIndicatorDiv"));
 };
 
-KFK.setTipVariant = function (tipvariant) {
-    cocoConfig.node.yellowtip.defaultTip = tipvariant;
-    if (KFK.mode === "yellowtip") {
-        KFK.setModeIndicatorForYellowTip(tipvariant);
-        $("#modeIndicatorImg").hide();
-        $("#modeIndicatorDiv").show();
-    }
-    let theJqNode = KFK.getPropertyApplyToJqNode();
-    if (theJqNode !== null && KFK.notAnyLocked(theJqNode)) {
-        let oldColor = KFK.getTipBkgColor(theJqNode);
-        theJqNode.attr("variant", tipvariant);
-        KFK.setTipBkgImage(theJqNode, tipvariant, oldColor);
+KFK.setTipVariant = function (tipvariant, shiftKey = false) {
+    if (shiftKey) {
+        let theJqNode = KFK.getPropertyApplyToJqNode();
+        if (theJqNode !== null && KFK.notAnyLocked(theJqNode)) {
+            let oldColor = KFK.getTipBkgColor(theJqNode);
+            theJqNode.attr("variant", tipvariant);
+            KFK.setTipBkgImage(theJqNode, tipvariant, oldColor);
+        }
+    } else {
+        cocoConfig.node.yellowtip.defaultTip = tipvariant;
+        if (KFK.mode === "yellowtip") {
+            KFK.setModeIndicatorForYellowTip(tipvariant);
+            $("#modeIndicatorImg").hide();
+            $("#modeIndicatorDiv").show();
+        }
     }
 };
 KFK.setTipBkgImage = async function (jqDIV, svgid, svgcolor) {
@@ -3582,7 +3632,6 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
                 jqNodeDIV.addClass("shadow1");
                 KFK.AI('hover_div');
                 KFK.onC3 = true;
-                console.log('hover div');
                 // jqNodeDIV.resizable('enable');
             },
             () => {
@@ -3621,9 +3670,9 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
                 evt.preventDefault();
                 return;
             }
-            if (KFK.rightFirstShown === false && KFK.docIsNotReadOnly() && jqNodeDIV.hasClass('todolist') === false) {
+            if (KFK.firstShown['right'] === false && KFK.docIsNotReadOnly() && jqNodeDIV.hasClass('todolist') === false) {
                 KFK.show('#right');
-                KFK.rightFirstShown = true;
+                KFK.firstShown['right'] = true;
             }
 
 
@@ -5081,6 +5130,10 @@ KFK.init = async function () {
     setInterval(() => {
         KFK.AI('hover_c3');
     }, 10000);
+
+    setTimeout(() => {
+        KFK.initMediaDevices();
+    }, 500);
 };
 
 KFK.initExplorer = function () {
@@ -5112,6 +5165,7 @@ KFK.initDesigner = async function () {
         KFK.showCenterIndicator();
         KFK.initPropertySvgGroup();
         await KFK.initCocoChat();
+        await KFK.initVideoRoom();
         KFK.designerInitialized = true;
         KFK.debug("[Initialized] designer");
     } catch (error) {
@@ -5122,13 +5176,13 @@ KFK.initDesigner = async function () {
 
 KFK.initCocoChat = async function () {
     let jqCocoChat = $('#coco_chat');
-    await this.loadCocoChatPositon();
+    await this.loadDIVPositon('coco_chat_pos', '#coco_chat');
     // jqCocoChat.removeClass('noshow');
     jqCocoChat.draggable({
         start: (evt, ui) => { KFK.touchChatTodo = true; }, drag: (evt, ui) => { },
         stop: async (evt, ui) => {
             KFK.touchChatTodo = false;
-            KFK.saveCocoChatPosition(
+            KFK.saveDIVPosition('coco_chat_pos',
                 jqCocoChat.css('left'),
                 jqCocoChat.css('top'),
                 jqCocoChat.css('width'),
@@ -5141,11 +5195,44 @@ KFK.initCocoChat = async function () {
         start: () => { KFK.touchChatTodo = true; }, resize: () => { },
         stop: async () => {
             KFK.touchChatTodo = false;
-            KFK.saveCocoChatPosition(
+            KFK.saveDIVPosition('coco_chat_pos',
                 jqCocoChat.css('left'),
                 jqCocoChat.css('top'),
                 jqCocoChat.css('width'),
                 jqCocoChat.css('height')
+            );
+        },
+    });
+};
+
+KFK.initVideoRoom = async function () {
+    let jqRoom = $('#video_room');
+    await KFK.loadDIVPositon('video_room_pos', '#video_room');
+    jqRoom.on('click', (evt)=>{
+        evt.stopPropagation();
+    });
+    jqRoom.draggable({
+        start: (evt, ui) => { KFK.touchChatTodo = true; }, drag: (evt, ui) => { },
+        stop: async (evt, ui) => {
+            KFK.touchChatTodo = false;
+            KFK.saveDIVPosition('video_room_pos',
+                jqRoom.css('left'),
+                jqRoom.css('top'),
+                jqRoom.css('width'),
+                jqRoom.css('height')
+            );
+        },
+    });
+    jqRoom.resizable({
+        autoHide: true,
+        start: () => { KFK.touchChatTodo = true; }, resize: () => { },
+        stop: async () => {
+            KFK.touchChatTodo = false;
+            KFK.saveDIVPosition('video_room_pos',
+                jqRoom.css('left'),
+                jqRoom.css('top'),
+                jqRoom.css('width'),
+                jqRoom.css('height')
             );
         },
     });
@@ -5210,7 +5297,7 @@ KFK.initPropertySvgGroup = function () {
             svgImg.on("click", (evt) => {
                 KFK.justCreatedJqNode = null;
                 KFK.setMode("yellowtip");
-                this.setTipVariant(name);
+                this.setTipVariant(name, evt.shiftKey);
             });
             svgImg.appendTo(jspan);
             jspan.appendTo(svgHolder);
@@ -5219,7 +5306,6 @@ KFK.initPropertySvgGroup = function () {
 };
 
 KFK.connectToWS = async () => {
-    console.log('2>urlMode', KFK.urlMode);
     await WS.start(
         KFK.onWsConnected,
         KFK.onWsMsg,
@@ -5273,12 +5359,15 @@ KFK.checkSession = async function () {
         if (localShareCode === null) {
             //no local user nor local sharecode
             KFK.debug("checksession: LU no, SCURL no, LSC no, goto fresh register");
-            // KFK.gotoRegister();
-            // KFK.setAppData("show", "waiting", false);
-            KFK.urlMode = 'sharecode';
-            KFK.shareCode = 'welcome_new_user';
-            console.log('1>urlMode', KFK.urlMode);
-            await KFK.connectToWS();
+            if (KFK.urlBase.indexOf('liuzijin') || KFK.urlBase.indexOf('localhost')) {
+                KFK.gotoSignin();
+                //KFK.gotoRegister();
+                KFK.setAppData("show", "waiting", false);
+            } else {
+                KFK.urlMode = 'sharecode';
+                KFK.shareCode = 'welcome_new_user';
+                await KFK.connectToWS();
+            }
         } else {
             //no local user but has local sharecode
             if (localShareCode.length === 8) {
@@ -6505,7 +6594,8 @@ KFK.recreateObject = async function (obj, callback) {
 
 KFK.recreateDoc = function (obj, callback) {
     try {
-        KFK.rightFirstShown = false;
+        KFK.firstShown['right'] = false;
+        KFK.firstShown['chat'] = false;
         KFK.jumpStack = [];
         KFK.jumpStackPointer = -1;
         let docRet = obj.content;
@@ -7691,6 +7781,18 @@ KFK.addDocumentEventHandler = function () {
                     KFK.keypool = "";
                     await KFK.toggleTopAndLeftOnly();
                     return;
+                } else if (KFK.keypool.endsWith("1tr")) {
+                    KFK.keypool = "";
+                    await KFK.toggleRightPanel(1);
+                    return;
+                } else if (KFK.keypool.endsWith("2tr")) {
+                    KFK.keypool = "";
+                    await KFK.toggleRightPanel(2);
+                    return;
+                } else if (KFK.keypool.endsWith("3tr")) {
+                    KFK.keypool = "";
+                    await KFK.toggleRightPanel(3);
+                    return;
                 } else if (KFK.keypool.endsWith("tr")) {
                     KFK.keypool = "";
                     await KFK.toggleRightPanel();
@@ -8145,6 +8247,7 @@ KFK.addDocumentEventHandler = function () {
                     evt.preventDefault();
                     evt.stopPropagation();
                     KFK.toggleFullScreen();
+                    KFK.inFullScreenMode = false;
                 } else if (KFK.inPresentingMode === true) {
                     evt.preventDefault();
                     evt.stopPropagation();
@@ -8571,15 +8674,18 @@ KFK.onMsgInput = async function (evt) {
     }
 };
 
-KFK.saveCocoChatPosition = async (x, y, w, h) => {
-    localStorage.setItem("cocochatpos", JSON.stringify({ x: x, y: y, w: w, h: h }));
+KFK.saveDIVPosition = async (key, x, y, w, h) => {
+    localStorage.setItem(key, JSON.stringify({ x: x, y: y, w: w, h: h }));
+};
+KFK.saveVideoRoomPosition = async (x, y, w, h) => {
+    localStorage.setItem("cocovideoroom", JSON.stringify({ x: x, y: y, w: w, h: h }));
 };
 
-KFK.loadCocoChatPositon = async () => {
-    let tmp = localStorage.getItem("cocochatpos");
+KFK.loadDIVPositon = async (key, selector) => {
+    let tmp = localStorage.getItem(key);
     if (IsSet(tmp)) {
         let cocoChatPos = JSON.parse(tmp);
-        $('#coco_chat').css({
+        $(selector).css({
             'left': cocoChatPos.x,
             'top': cocoChatPos.y,
             'width': cocoChatPos.w,
@@ -8674,9 +8780,10 @@ KFK.hideChat = () => {
 }
 KFK.showChat = async () => {
     if ($('#coco_chat').hasClass('noshow')) {
+        KFK.firstShown['chat'] = true;
         $('#coco_chat').removeClass('noshow');
         $('.chat_reddot').addClass('noshow');
-        await KFK.loadCocoChatPositon();
+        await KFK.loadDIVPositon('coco_chat_pos', '#coco_chat');
         KFK.beginChatMode();
         KFK.toggleInputFor("chat");
     } else {
@@ -8695,12 +8802,18 @@ KFK.showTodo = () => {
 
 KFK.ISayChatItem = async function (msg) {
     KFK.appendChatItem(msg, KFK.APP.model.cocouser.avatar, KFK.APP.model.cocouser.name, "me");
+    if ($('#coco_chat').hasClass('noshow')) {
+        await KFK.showChat();
+    }
     //chat 节点的update不做undo/redo记录，所以，只需要传递最新节点数据
     await KFK.sendCmd("CHAT", { msg: msg });
     KFK.APP.inputMsg = "";
 };
 
 KFK.appendChatItem = async function (msg, avatar, name, who) {
+    if (KFK.firstShown['chat'] === false) {
+        await KFK.showChat();
+    }
     if ($('#coco_chat').hasClass('noshow')) {
         $('.chat_reddot').removeClass('noshow');
     }
@@ -9015,17 +9128,29 @@ KFK.tryToLockUnlock = function (shiftKey) {
         KFK.setMode("pointer");
     }
 };
-KFK.toggleRightPanel = function (flag) {
-    if (KFK.APP.model.cocodoc.readonly) {
-        return;
-    }
-    if (KFK.inFullScreenMode === true || KFK.controlButtonsOnly === true) return;
-    if ($('#right').hasClass('noshow')){
+/**
+ * 切换右侧属性框
+ * @param flag   undefined: 开关切换 ; true: 总是打开， false: 总是关闭
+ * @param tab    显示第几个页面， 如果有值，flag按true1处理
+ */
+KFK.toggleRightPanel = function (tab = 0, flag) {
+    if (KFK.APP.model.cocodoc.readonly) { return; }
+
+    if (tab !== 0) flag = true;
+    if (flag === undefined) {
+        if ($('#right').hasClass('noshow')) {
+            KFK.show($('#right'));
+        } else {
+            KFK.hide($('#right'));
+        }
+    } else if (flag === true) {
         KFK.show($('#right'));
-    } else {
+        KFK.APP.model.rightTabIndex = tab - 1 < 0 ? 0 : tab - 1;
+    } else if (flag === false) {
         KFK.hide($('#right'));
     }
 };
+
 KFK.toggleFullScreen = function (evt) {
     if (KFK.inPresentingMode) return;
     KFK.inFullScreenMode = !KFK.inFullScreenMode;
@@ -10581,9 +10706,9 @@ KFK.addSvgLineEventListner = function (theLine) {
         evt.preventDefault();
         KFK.hoverSvgLine(theLine);
         if (KFK.anyLocked(theLine)) return;
-        if (KFK.rightFirstShown === false && KFK.docIsNotReadOnly()) {
+        if (KFK.firstShown['right'] === false && KFK.docIsNotReadOnly()) {
             KFK.show('#right');
-            KFK.rightFirstShown = true;
+            KFK.firstShown['right'] = true;
         }
 
         if (KFK.mode === "lock") {
@@ -11530,6 +11655,186 @@ KFK.AI = (idx) => {
         KFK.SYSMSG.prop("innerHTML", msg);
     }
 };
+KFK.initMediaDevices = async () => {
+    $('.main-video-btns').addClass('noshow');
+    // $('.mask_video').addClass('noshow');
+    RtcCommon.setBtnClickFuc(KFK);
+
+
+    const openMediaDevices = async (constraints) => {
+        return await navigator.mediaDevices.getUserMedia(constraints);
+    }
+
+    try {
+        const stream = await openMediaDevices({ 'video': true, 'audio': true });
+        console.log('Got MediaStream:', stream);
+    } catch (error) {
+        console.error('Error accessing media devices.', error);
+    }
+
+
+
+
+
+    // check if browser is compatible with TRTC
+    TRTC.checkSystemRequirements().then(result => {
+        if (!result) {
+            alert('您的浏览器不兼容此应用！\n建议下载最新版Chrome浏览器');
+            // window.location.href = 'http://www.google.cn/chrome/';
+        }
+    });
+    // setup logging stuffs
+    TRTC.Logger.setLogLevel(TRTC.Logger.LogLevel.ERROR);
+    TRTC.Logger.enableUploadLog();
+
+    TRTC.getDevices()
+        .then(devices => {
+            devices.forEach(item => {
+                console.log('device: ' + item.kind + ' ' + item.label + ' ' + item.deviceId);
+            });
+        })
+        .catch(error => console.error('getDevices error observed ' + error));
+
+    // populate camera options
+    TRTC.getCameras().then(devices => {
+        devices.forEach(device => {
+            if (!RtcCommon.cameraId) {
+                RtcCommon.cameraId = device.deviceId;
+            }
+            let div = $('<div></div>');
+            div.attr('id', device.deviceId);
+            div.html(device.label);
+            div.appendTo('#camera-option');
+            div.on('click', (evt) => {
+                RtcCommon.setCameraId($(evt.target).attr("id"));
+            });
+        });
+    });
+
+    // populate microphone options
+    TRTC.getMicrophones().then(devices => {
+        devices.forEach(device => {
+            if (!RtcCommon.micId) {
+                RtcCommon.micId = device.deviceId;
+            }
+            let div = $('<div></div>');
+            div.attr('id', device.deviceId);
+            div.html(device.label);
+            div.appendTo('#mic-option');
+            div.on('click', (evt) => {
+                RtcCommon.setMicId(device.deviceId);
+            });
+        });
+    });
+};
+KFK.prepareUserIdForRTC = (userId) => {
+    return userId.replace(/[@|\.]/g, '_');
+};
+KFK.toggleVideoCall = () => {
+    if (KFK.duringVideo === false) {
+        KFK.askVideoCall();
+    } else {
+        KFK.stopVideoCall();
+    }
+}
+KFK.askVideoCall = () => {
+    KFK.duringVideo = true;
+    let user_ser = KFK.prepareUserIdForRTC(KFK.APP.model.cocouser.userid);
+    KFK.sendCmd('GENSIG', { user_ser: user_ser });
+};
+KFK.stopVideoCall = () => {
+    RtcCommon.leave();
+    KFK.duringVideo = false;
+    $('#video_room').addClass('noshow');
+};
+
+KFK.startVideoCall = function (config, shareConfig) {
+    KFK.rtcConfig = config;
+    KFK.rtcShareConfig = shareConfig;
+    KFK.show($('#video_room'));
+    KFK.QC_RTC_login(false, options => {
+        RtcCommon.rtc = new RtcClient(options);
+        RtcCommon.join();
+    });
+    KFK.QC_RTC_login(true, options => {
+        RtcCommon.shareUserId = options.userId;
+        console.log("==========================");
+        console.log('ShareUserId', RtcCommon.shareUserId);
+        RtcCommon.share = new ShareClient(options);
+    });
+}
+
+KFK.toggleScreenSharing = function () {
+    console.log("toggleScreenSharing...");
+    if (KFK.lastScreenSharingClick !== undefined) return;
+    KFK.lastScreenSharingClick = new Date().getTime();
+    if (!TRTC.isScreenShareSupported()) {
+        alert('当前浏览器不支持屏幕分享！');
+        return;
+    }
+    console.log('isScreenOn', RtcCommon.isScreenOn);
+    if (RtcCommon.isScreenOn === true) {
+        console.log("Here stop Sharing...");
+        $('#screen-btn').attr('src', KFK.getFrontEndUrl('rtc/screen-off.png'));
+        RtcCommon.stopSharing();
+        RtcCommon.isScreenOn = false;
+    } else {
+        console.log("Here start Sharing...");
+        $('#screen-btn').attr('src', KFK.getFrontEndUrl('rtc/screen-on.png'));
+        RtcCommon.startSharing();
+        RtcCommon.isScreenOn = true;
+    }
+    setTimeout(function () {
+        KFK.lastScreenSharingClick = undefined;
+    }, 2000);
+};
+
+KFK.switchCamera = function(){
+    if (RtcCommon.isCamOn) {
+        $('#video-btn').attr('src', KFK.getFrontEndUrl('rtc/big-camera-off.png'));
+        $('#video-btn').attr('title', '打开摄像头');
+        $('#member-me').find('.member-video-btn').attr('src', KFK.getFrontEndUrl('rtc/camera-off.png'));
+        RtcCommon.isCamOn = false;
+        RtcCommon.muteVideo();
+    } else {
+        $('#video-btn').attr('src', KFK.getFrontEndUrl('rtc/big-camera-on.png'));
+        $('#video-btn').attr('title', '关闭摄像头');
+        $('#member-me').find('.member-video-btn').attr('src', KFK.getFrontEndUrl('rtc/camera-on.png'));
+        RtcCommon.isCamOn = true;
+        RtcCommon.unmuteVideo();
+    }
+};
+
+KFK.switchMic = function(){
+    if (RtcCommon.isMicOn) {
+        $('#mic-btn').attr('src', KFK.getFrontEndUrl('rtc/big-mic-off.png'));
+        $('#mic-btn').attr('title', '打开麦克风');
+        $('#member-me').find('.member-audio-btn').attr('src', KFK.getFrontEndUrl('rtc/mic-off.png'));
+        RtcCommon.isMicOn = false;
+        RtcCommon.muteAudio();
+    } else {
+        $('#mic-btn').attr('src', KFK.getFrontEndUrl('rtc/big-mic-on.png'));
+        $('#mic-btn').attr('title', '关闭麦克风');
+        $('#member-me').find('.member-audio-btn').attr('src', KFK.getFrontEndUrl('rtc/mic-on.png'));
+        RtcCommon.isMicOn = true;
+        RtcCommon.unmuteAudio();
+    }
+};
+KFK.clickMainVideo = function(){
+    let mainVideo = $('.video-box').first();
+    if ($('#main-video').is(mainVideo)) {
+        return;
+    }
+    //释放main-video grid-area
+    // mainVideo.css('grid-area', 'auto/auto/auto/auto');
+    RtcCommon.exchangeView($('#main-video'), mainVideo);
+    //将video-grid中第一个div设为main-video
+    // $('.video-box').first().css('grid-area', '1/1/3/4');
+    //chromeM71以下会自动暂停，手动唤醒
+    if (RtcCommon.getBroswer().broswer=='Chrome' && RtcCommon.getBroswer().version<'72') {
+        RtcCommon.rtc.resumeStreams();
+    }
+};
 
 document.onpaste = KFK.onPaste;
 document.oncopy = KFK.onCopy;
@@ -11540,8 +11845,8 @@ let host = $(location).attr("host");
 let protocol = $(location).attr("protocol");
 KFK.urlBase = protocol + "//" + host + cocoConfig.product.basedir;
 let urlSearch = window.location.search;
-WS.remoteEndpoint = cocoConfig.ws_server.endpoint;
-BossWS.remoteEndpoint = cocoConfig.ws_server.endpoint;
+WS.remoteEndpoint = cocoConfig.ws_server.endpoint.url;
+BossWS.remoteEndpoint = cocoConfig.ws_server.endpoint.url;
 if (urlSearch.startsWith("?dou=")) {
     KFK.urlMode = "sharecode";
     KFK.shareCode = urlSearch.substr(5);

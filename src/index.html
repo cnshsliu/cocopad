@@ -5,6 +5,8 @@
     <title>彩板-即时协作：交互白板 脑图 演示</title>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="./Web/css/index.css">
+    <link rel="stylesheet" href="./Web/css/room.css">
     <link rel="stylesheet" href="/my-styles/style.css">
     <link rel="shortcut icon" href="./favicon.png" />
     <link type="text/css" rel="stylesheet"
@@ -12,6 +14,7 @@
     <link type="text/css" rel="stylesheet"
         href="https://cdn.staticfile.org/bootstrap-vue/2.12.0/bootstrap-vue.min.css" />
     <!-- Load Vue followed by BootstrapVue, and BootstrapVueIcons -->
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
     <script src="https://cdn.staticfile.org/vue/2.6.11/vue.min.js"></script>
     <script src="https://cdn.staticfile.org/bootstrap-vue/2.12.0/bootstrap-vue.min.js"></script>
     <script src="https://cdn.staticfile.org/bootstrap-vue/2.12.0/bootstrap-vue-icons.min.js"></script>
@@ -49,7 +52,7 @@
             </div>
             <div class="text-center msgarea  noshow spaceToHide" id="MSG">
             </div>
-            <img v-show="!show.section.designer && show.wsready " src="./cocopad.svg" class='left_top_logo_image showAfterInit' />
+            <img v-show="!show.section.designer" src="./cocopad.svg" class='left_top_logo_image showAfterInit' />
             <div class="cocoslogon" v-show="!show.section.designer" />
         </div>
         <!-- first page-->
@@ -124,8 +127,10 @@
                     </b-row>
                     <b-input-group prepend="注册账号" class="mb-1">
                         <b-form-input id="regUserId" tabindex="1" trim v-model="model.register.userid"
-                            :state="state.reg.userid" required placeholder="请使用正确的邮箱地址"></b-form-input>
+                            :state="state.reg.userid" required placeholder="手机号或邮箱地址"></b-form-input>
                     </b-input-group>
+                    虽然可以用邮箱注册，但如果你未来需要组织三人以上的团队协作时，还是需要用到手机号码<BR>
+                    所以，请尽量使用手机号码来注册
                     <b-input-group prepend="您的全称" class="mb-1">
                         <b-form-input id="regUserName" tabindex="2" trim v-model="model.register.name"
                             :state="state.reg.name" required placeholder="2个以上汉字或4个以上英文"></b-form-input>
@@ -277,7 +282,7 @@
             <div id="toplogo" class="padlayout" @click="KFK.gotoExplorer">
                 <img src="./cocopad.svg" class="logo d-inline-block align-top" alt="COLOBOD">
             </div>
-            <!-- left tool left menu toolbox -->
+            <!-- left tool left menu toolbox left panel-->
             <div id="left" class="bg-white padlayout spaceToHide">
                 <b-list-group>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
@@ -348,6 +353,7 @@
 
                 </b-list-group>
             </div>
+            <!-- right panel -->
             <div id="right" class="padlayout noshow spaceToHide">
                 <b-tabs v-model="model.rightTabIndex" content-class="mt-1 w-100" justified>
                     <b-tab title="样式" class='cocoproperty'>
@@ -624,6 +630,22 @@
                                 <b-form-radio v-model="model.showEditor" name="some-radios" value="all"
                                     @change="showEditorChanged('all')">全部</b-form-radio>
                             </b-row>
+                            <b-row class="mx-auto my-1">
+                                <b-col>摄像头选择</b-col>
+                            </b-row>
+                            <b-row class="mx-auto my-1">
+                                <b-col>
+                                    <div id='camera-option'></div>
+                                </b-col>
+                            </b-row>
+                            <b-row class="mx-auto my-1">
+                                <b-col>麦克风选择</b-col>
+                            </b-row>
+                            <b-row class="mx-auto my-1">
+                                <b-col>
+                                    <div id='mic-option'></div>
+                                </b-col>
+                            </b-row>
                         </b-container>
                     </b-tab>
                     </b-tab>
@@ -757,11 +779,17 @@
                     <b-button title='hello' class="m-0 p-0 docteam" variant='link' @click="KFK.showActionLog">
                         <b-icon icon="people"></b-icon>{{model.actionlog.length}}
                     </b-button>
-                    <b-button class="m-0 p-0 docteam" variant='link' @click="KFK.showChat" v-b-popover.hover.top title="聊天消息">
+                    <b-button class="m-0 p-0 docteam" variant='link' @click="KFK.showChat" v-b-popover.hover.top
+                        title="聊天消息">
                         <b-img class='chat_icon' :src="getImageSrc('chat')"> </b-img>
                     </b-button>
                     <div class='chat_reddot noshow'></div>
-                    <b-button class="m-0 p-0 docteam" variant='link' @click="KFK.showTodo" v-b-popover.hover.top title="待办事项">
+                    <b-button class="m-0 p-0 docteam" variant='link' @click="KFK.toggleVideoCall" v-b-popover.hover.top
+                        title="视频通话">
+                        <b-img class='chat_icon' :src="getImageSrc('chat')"> </b-img>
+                    </b-button>
+                    <b-button class="m-0 p-0 docteam" variant='link' @click="KFK.showTodo" v-b-popover.hover.top
+                        title="待办事项">
                         <b-img :src="getImageSrc('todo')"> </b-img>
                     </b-button>
                 </div>
@@ -769,6 +797,7 @@
             <div id="readonlyDesc" v-show="show.section.designer" class="padlayout spaceToHide">
                 {{model.readonlyDesc}}
             </div>
+
             <div id="minimap" v-show="show.section.designer && show.section.minimap" class="padlayout spaceToHide">
             </div>
             <div id="coco_chat" class="chatlist noedit spaceToHide noshow">
@@ -1883,47 +1912,67 @@
             <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" v-model="show.dialog.shareItDialog"
                 id='shareitmodal' title="分享文档" button-size="lg" hide-footer centered size="lg">
                 <b-container id="shareitcontainer" fluid>
-                    <b-row class="text-center"><b-col>
-                    请将下面文档地址发送给协作者 协作者打开地址后，将与你一起协作
-                    </b-col></b-row>
-                    <b-row class="text-center"><b-col>
-                        <b-form-input id="shareItUrl" class="share-it-url" disabled trim v-model="model.share.url">
-                        </b-form-input>
-                    </b-col></b-row>
-                    <b-row class="text-center"><b-col>
-                        <font color=red>{{model.share.warning}}</font>
-                    </b-col></b-row>
-                    <b-row class="text-center"><b-col>
-                        <div v-show='model.share.okToSetACL'>
-                            <b-button @click='KFK.setAclInShare("S")'>设为仅自己可用</b-button>
-                            <b-button @click='KFK.setAclInShare("O")'>设为仅当前组织可参与</b-button>
-                            <b-button @click='KFK.setAclInShare("P")'>设为公开可参与</b-button>
-                        </div>
-                    </b-col></b-row>
-                    <b-row class="text-center mt-2"><b-col>
-                        <b-button id="shareItBtn" variant="primary" size="xl" class="mb-2">
-                            <b-icon icon="box-arrow-up"></b-icon><BR>点这里复制分享/邀请地址
-                        </b-button>
-                        <b-button id="shareItBtn2" variant="primary" size="xl" class="mb-2">
-                            <b-icon icon="box-arrow-up"></b-icon><BR>点这里复制缺省邀请函
-                        </b-button>
-                    </b-col></b-row>
-                    <b-row class="text-center"><b-col>
-                        复制后，可通过微信/邮件等形式，将邀请信息发送给受邀者
-                    </b-col></b-row>
-                    <b-row class="text-center"><b-col>
-                        如果你希望你的白板全网公开，也可以贴在论坛等公网上进行分享
-                    </b-col></b-row>
-                    <b-row class="text-center"><b-col>
-                        你可以通过设置权限控制和访问密码，来阻止非授权访问
-                    </b-col></b-row>
-                    <b-row class="text-center"><b-col>
-                        彩板的权限控制稍显复杂但绝对必要，如您感到少许困惑，请联系下方运营微信，我们为您解答
-                    </b-col></b-row>
-                    <b-row class="text-center"><b-col>
-                        <img class="opqrcode_in_share showAfterInit"
-                            :src="KFK.getBossImageUrl('customerservice.png')"></img>
-                    </b-col></b-row>
+                    <b-row class="text-center">
+                        <b-col>
+                            请将下面文档地址发送给协作者 协作者打开地址后，将与你一起协作
+                        </b-col>
+                    </b-row>
+                    <b-row class="text-center">
+                        <b-col>
+                            <b-form-input id="shareItUrl" class="share-it-url" disabled trim v-model="model.share.url">
+                            </b-form-input>
+                        </b-col>
+                    </b-row>
+                    <b-row class="text-center">
+                        <b-col>
+                            <font color=red>{{model.share.warning}}</font>
+                        </b-col>
+                    </b-row>
+                    <b-row class="text-center">
+                        <b-col>
+                            <div v-show='model.share.okToSetACL'>
+                                <b-button @click='KFK.setAclInShare("S")'>设为仅自己可用</b-button>
+                                <b-button @click='KFK.setAclInShare("O")'>设为仅当前组织可参与</b-button>
+                                <b-button @click='KFK.setAclInShare("P")'>设为公开可参与</b-button>
+                            </div>
+                        </b-col>
+                    </b-row>
+                    <b-row class="text-center mt-2">
+                        <b-col>
+                            <b-button id="shareItBtn" variant="primary" size="xl" class="mb-2">
+                                <b-icon icon="box-arrow-up"></b-icon><BR>点这里复制分享/邀请地址
+                            </b-button>
+                            <b-button id="shareItBtn2" variant="primary" size="xl" class="mb-2">
+                                <b-icon icon="box-arrow-up"></b-icon><BR>点这里复制缺省邀请函
+                            </b-button>
+                        </b-col>
+                    </b-row>
+                    <b-row class="text-center">
+                        <b-col>
+                            复制后，可通过微信/邮件等形式，将邀请信息发送给受邀者
+                        </b-col>
+                    </b-row>
+                    <b-row class="text-center">
+                        <b-col>
+                            如果你希望你的白板全网公开，也可以贴在论坛等公网上进行分享
+                        </b-col>
+                    </b-row>
+                    <b-row class="text-center">
+                        <b-col>
+                            你可以通过设置权限控制和访问密码，来阻止非授权访问
+                        </b-col>
+                    </b-row>
+                    <b-row class="text-center">
+                        <b-col>
+                            彩板的权限控制稍显复杂但绝对必要，如您感到少许困惑，请联系下方运营微信，我们为您解答
+                        </b-col>
+                    </b-row>
+                    <b-row class="text-center">
+                        <b-col>
+                            <img class="opqrcode_in_share showAfterInit"
+                                :src="KFK.getBossImageUrl('customerservice.png')"></img>
+                        </b-col>
+                    </b-row>
                 </b-container>
                 <b-container>
                     <ol>
@@ -2045,8 +2094,10 @@
             </b-row>
             <b-row role="link">
                 <b-col>
-                    <b-link :target="'_blank'" class="m-0 p-0" href='http://weibo.com/cocopad'>@COLOBOD 2020
+                    <b-link :target="'_blank'" class="m-0 p-0" href='http://weibo.com/cocopad'>深圳市昆伦博德互联网科技有限公司 2020
+                        {{model.endpoint}}
                     </b-link>
+                    <BR> <a href="http://beian.miit.gov.cn" taget="_blank">粤ICP备17154503号</a>
                 </b-col>
             </b-row>
         </div>
@@ -2073,6 +2124,49 @@
                     <b-button variant="info" @click="KFK.closeInput">关闭</b-button>
                 </b-input-group-append>
             </b-input-group>
+        </div>
+        <div id="video_room" class="noshow">
+            <!-- header -->
+            <div class="header">
+                <img id="screen-btn" :src="KFK.getFrontEndUrl('rtc/screen-off.png')" alt=""
+                    v-on:click="KFK.toggleScreenSharing">
+                <img id="logout-btn" :src="KFK.getFrontEndUrl('rtc/logout.png')" alt="" v-on:click="KFK.stopVideoCall">
+                <img id="video-btn" class="main-video-btns" :src="KFK.getFrontEndUrl('rtc/big-camera-on.png')" alt=""
+                    title="关闭摄像头" v-on:click="KFK.switchCamera">
+                <img id="mic-btn" class="main-video-btns" :src="KFK.getFrontEndUrl('rtc/big-mic-on.png')" alt=""
+                    title="关闭麦克风" v-on:click="KFK.switchMic">
+                <div style='width:100px'></div>
+            </div>
+            <!-- content -->
+            <div class="videos">
+                <!-- 视频网格 -->
+                    <!-- 主视频 -->
+                    <div id="main-video" class="video-box"
+                        v-on:click="KFK.clickMainVideo">
+                        <div id="member-me" style="width: 100%; padding-left: 20px">
+                            <div class="row-div member"
+                                style="width: 100%; height: 50px; justify-content: space-between">
+                                <div class="member-id">(我)</div>
+                                <div class="row-div" style="width:100px; height: 27px; justify-content: center">
+                                    <img class="member-video-btn" style="height: 100%" :src="KFK.getFrontEndUrl('rtc/camera-on.png')"
+                                        alt="">
+                                    <div style="width: 18px"></div>
+                                    <img class="member-audio-btn" style="height: 100%" :src="KFK.getFrontEndUrl('rtc/mic-on.png')"
+                                        alt="">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- <div id="mask_main" class="mask_video col-div noshow">
+                            <div style="height: 100%; width: 100%; position: absolute; background-color: #D8D8D8"></div>
+                            <img style="width: 63px; height: 69px; z-index: 10;" :src="KFK.getFrontEndUrl('rtc/camera-max.png')" alt="">
+                            <div style="height: 10px"></div>
+                            <div style="z-index: 9">摄像头未打开</div>
+                        </div> -->
+                    </div>
+                    <!-- 小视频 -->
+                    <div id="video-table" class="video-table">
+                    </div>
+            </div>
         </div>
     </div>
     <!--app-->
