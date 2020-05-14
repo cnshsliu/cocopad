@@ -128,8 +128,9 @@
                         <b-form-input id="regUserId" tabindex="1" trim v-model="model.register.userid"
                             :state="state.reg.userid" required placeholder="手机号或邮箱地址"></b-form-input>
                     </b-input-group>
-                    虽然可以用邮箱注册，但如果你未来需要组织三人以上的团队协作时，还是需要用到手机号码<BR>
-                    所以，请尽量使用手机号码来注册
+                    请使用邮箱地址注册，谢谢<BR>手机号码注册暂未上线
+                    <!-- 虽然可以用邮箱注册，但如果你未来需要组织三人以上的团队协作时，还是需要用到手机号码<BR>
+                    所以，请尽量使用手机号码来注册 -->
                     <b-input-group prepend="您的全称" class="mb-1">
                         <b-form-input id="regUserName" tabindex="2" trim v-model="model.register.name"
                             :state="state.reg.name" required placeholder="2个以上汉字或4个以上英文"></b-form-input>
@@ -219,8 +220,11 @@
             </b-form>
             <b-form v-else autocomplete="off" class="w-100 px-2 text-center">
                 <b-row>
-                    <b-col class="pb-4" style="font-size:28px">
+                    <b-col v-if="model.isMobile===false" class="pb-4" style="font-size:28px">
                         你的邮箱地址尚未验证
+                    </b-col>
+                    <b-col v-else class="pb-4" style="font-size:28px">
+                        你的手机号码尚未验证
                     </b-col>
                 </b-row>
                 <b-form-group>

@@ -33,7 +33,10 @@ ACM.registerUser = function () {
             try {
                 switch (response.cmd) {
                     case "REGUSER-CODE":
-                        KFK.scrLog("请检查邮箱，输入验证码");
+                        if(response.isMobile)
+                            KFK.scrLog("请检查短信，输入验证码");
+                        else
+                            KFK.scrLog("请检查邮箱，输入验证码");
                         await KFK.mergeAppData('model', 'register', { step: 'code' });
                         console.log('regtoken', response.sessionToken);
                         sessionStorage.setItem('regtoken', response.sessionToken);
@@ -49,6 +52,9 @@ ACM.registerUser = function () {
                         break;
                     case "REGUSER-DUP":
                         KFK.scrLog(`账号已被占用`);
+                        break;
+                    case "SCRLOG":
+                        KFK.scrLog(response.msg);
                         break;
 
                 }
@@ -73,7 +79,10 @@ ACM.resendVerifyCode = async function () {
             try {
                 switch (response.cmd) {
                     case "REGUSER-CODE":
-                        KFK.scrLog("请检查邮箱，输入验证码");
+                        if(response.isMobile)
+                            KFK.scrLog("请检查短信，输入验证码");
+                        else
+                            KFK.scrLog("请检查邮箱，输入验证码");
                         await KFK.mergeAppData('model', 'register', { step: 'code' });
                         sessionStorage.setItem('regtoken', response.sessionToken);
                         break;
@@ -95,7 +104,7 @@ ACM.resendVerifyCode = async function () {
 ACM.signin = function () {
     let userid = KFK.APP.model.signin.userid;
     let pwd = KFK.APP.model.signin.pwd;
-    let useridOkay = Validator.validateUserId(userid);
+    let useridOkay = Validator.validateUserId(userid) || Validator.validateMobile(userid);
     let pwdOkay = Validator.validateUserPassword(pwd);
     if(!useridOkay){
         KFK.scrLog("登录名录入不符合要求");
@@ -126,11 +135,15 @@ ACM.signin = function () {
                         KFK.removeCocouser();
                         KFK.gotoSignin();
                         break;
-                    case "REGUSER-CODE":
+                    case "TMPSIGNIN":
                         retuser = response.user;
                         KFK.setAppData('model', 'signInButWaitVerify', true);
+                        KFK.setAppData('model', 'isMobile', response.isMobile);
                         KFK.updateCocouser(retuser);
-                        KFK.scrLog("尚未验证邮箱地址，你可以继续使用，请在一周内完成邮箱验证");
+                        if(response.isMobile)
+                            KFK.scrLog("尚未验证手机号码，你可以继续使用，请在一周内完成手机验证");
+                        else
+                            KFK.scrLog("尚未验证邮箱地址，你可以继续使用，请在一周内完成邮箱验证");
                         sessionStorage.setItem('regtoken', response.user.sessionToken);
                         break;
                 }
