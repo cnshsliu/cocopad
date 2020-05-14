@@ -7589,6 +7589,10 @@ KFK.pickMaterial = function (matid, url) {
 };
 
 KFK.cleanAllNodes = function () {
+   if(KFK.APP.model.cocodoc.owner !== KFK.APP.model.cocouser.userid){
+       KFK.scrLog('只有协作发起人可以使用白板擦');
+       return;
+   }
     KFK.APP.$bvModal
         .msgBoxConfirm(
             "请确认要清空白板, 其他协作用户的白板也会一起清除, 且本操作无法回退.", {
