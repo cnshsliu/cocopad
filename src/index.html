@@ -5,8 +5,7 @@
     <title>彩板-即时协作：交互白板 脑图 演示</title>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="./Web/css/index.css">
-    <link rel="stylesheet" href="./Web/css/room.css">
+    <link rel="stylesheet" href="/my-styles/room.css">
     <link rel="stylesheet" href="/my-styles/style.css">
     <link rel="shortcut icon" href="./favicon.png" />
     <link type="text/css" rel="stylesheet"
@@ -779,17 +778,14 @@
                     <b-button title='hello' class="m-0 p-0 docteam" variant='link' @click="KFK.showActionLog">
                         <b-icon icon="people"></b-icon>{{model.actionlog.length}}
                     </b-button>
-                    <b-button class="m-0 p-0 docteam" variant='link' @click="KFK.showChat" v-b-popover.hover.top
-                        title="聊天消息">
+                    <b-button class="m-0 p-0 docteam" variant='link' @click="KFK.showChat">
                         <b-img class='chat_icon' :src="getImageSrc('chat')"> </b-img>
                     </b-button>
                     <div class='chat_reddot noshow'></div>
-                    <b-button class="m-0 p-0 docteam" variant='link' @click="KFK.toggleVideoCall" v-b-popover.hover.top
-                        title="视频通话">
-                        <b-img class='chat_icon' :src="getImageSrc('chat')"> </b-img>
+                    <b-button class="m-0 p-0 docteam" variant='link' @click="KFK.toggleVideoCall">
+                        <b-img class='chat_icon' :src="KFK.getFrontEndUrl('rtc/camera.svg')"> </b-img>
                     </b-button>
-                    <b-button class="m-0 p-0 docteam" variant='link' @click="KFK.showTodo" v-b-popover.hover.top
-                        title="待办事项">
+                    <b-button class="m-0 p-0 docteam" variant='link' @click="KFK.showTodo">
                         <b-img :src="getImageSrc('todo')"> </b-img>
                     </b-button>
                 </div>
@@ -2131,41 +2127,32 @@
                 <img id="screen-btn" :src="KFK.getFrontEndUrl('rtc/screen-off.png')" alt=""
                     v-on:click="KFK.toggleScreenSharing">
                 <img id="logout-btn" :src="KFK.getFrontEndUrl('rtc/logout.png')" alt="" v-on:click="KFK.stopVideoCall">
-                <img id="video-btn" class="main-video-btns" :src="KFK.getFrontEndUrl('rtc/big-camera-on.png')" alt=""
+                <img id="video-btn" class="main-video-btns noshow" :src="KFK.getFrontEndUrl('rtc/big-camera-on.png')" alt=""
                     title="关闭摄像头" v-on:click="KFK.switchCamera">
-                <img id="mic-btn" class="main-video-btns" :src="KFK.getFrontEndUrl('rtc/big-mic-on.png')" alt=""
+                <img id="mic-btn" class="main-video-btns noshow" :src="KFK.getFrontEndUrl('rtc/big-mic-on.png')" alt=""
                     title="关闭麦克风" v-on:click="KFK.switchMic">
                 <div style='width:100px'></div>
             </div>
             <!-- content -->
             <div class="videos">
                 <!-- 视频网格 -->
-                    <!-- 主视频 -->
-                    <div id="main-video" class="video-box"
-                        v-on:click="KFK.clickMainVideo">
-                        <div id="member-me" style="width: 100%; padding-left: 20px">
-                            <div class="row-div member"
-                                style="width: 100%; height: 50px; justify-content: space-between">
-                                <div class="member-id">(我)</div>
-                                <div class="row-div" style="width:100px; height: 27px; justify-content: center">
-                                    <img class="member-video-btn" style="height: 100%" :src="KFK.getFrontEndUrl('rtc/camera-on.png')"
-                                        alt="">
-                                    <div style="width: 18px"></div>
-                                    <img class="member-audio-btn" style="height: 100%" :src="KFK.getFrontEndUrl('rtc/mic-on.png')"
-                                        alt="">
-                                </div>
-                            </div>
-                        </div>
-                        <!-- <div id="mask_main" class="mask_video col-div noshow">
+                <!-- 主视频 -->
+                <div id="main-video" class="video-box" v-on:click="KFK.clickMainVideo">
+                    <div id="member-me" class="rtc_user_info">
+                        <div class="member-id">(我)</div>
+                        <img class="member-video-btn" :src="KFK.getFrontEndUrl('rtc/camera-on.png')" alt="">
+                        <img class="member-audio-btn" :src="KFK.getFrontEndUrl('rtc/mic-on.png')" alt="">
+                    </div>
+                    <!-- <div id="mask_main" class="mask_video col-div noshow">
                             <div style="height: 100%; width: 100%; position: absolute; background-color: #D8D8D8"></div>
                             <img style="width: 63px; height: 69px; z-index: 10;" :src="KFK.getFrontEndUrl('rtc/camera-max.png')" alt="">
                             <div style="height: 10px"></div>
                             <div style="z-index: 9">摄像头未打开</div>
                         </div> -->
-                    </div>
-                    <!-- 小视频 -->
-                    <div id="video-table" class="video-table">
-                    </div>
+                </div>
+                <!-- 小视频 -->
+                <div id="video-table" class="video-table">
+                </div>
             </div>
         </div>
     </div>

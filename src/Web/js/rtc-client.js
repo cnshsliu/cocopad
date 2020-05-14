@@ -190,9 +190,9 @@ export default class RtcClient {
     this.client_.on('peer-join', evt => {
       const userId = evt.userId;
       console.log('peer-join ' + userId);
-      if (userId !== RtcCommon.shareUserId) {
-        RtcCommon.addMemberView(userId);
-      }
+      // if (userId !== RtcCommon.shareUserId) {
+      //   RtcCommon.addMemberView(userId);
+      // }
     });
     // fired when a remote peer is leaving the room
     this.client_.on('peer-leave', evt => {
@@ -217,9 +217,9 @@ export default class RtcClient {
     });
     // fired when a remote stream has been subscribed
     this.client_.on('stream-subscribed', evt => {
-      const uid = evt.userId;
       const remoteStream = evt.stream;
       const id = remoteStream.getId();
+      const userId = remoteStream.getUserId();
       this.remoteStreams_.push(remoteStream);
       remoteStream.on('player-state-changed', event => {
         console.log(`${event.type} player is ${event.state}`);
@@ -236,10 +236,10 @@ export default class RtcClient {
             .attr('src', KFK.getFrontEndUrl('rtc/camera-on.png'));
         }
       });
-      console.log("Add Video View", id);
-      RtcCommon.addVideoView(id, uid);
+      console.log("Add Video View", id, 'uid=', userId);
+      RtcCommon.addVideoView(id, userId);
       // objectFit 为播放的填充模式，详细参考：https://trtc-1252463788.file.myqcloud.com/web/docs/Stream.html#play
-      remoteStream.play(id, { objectFit: 'contain' });
+      remoteStream.play(id, { objectFit: 'cover' });
       //添加“摄像头未打开”遮罩
       // let mask = $('#mask_main').clone();
       // mask.attr('id', 'mask_' + id);

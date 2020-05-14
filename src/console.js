@@ -914,7 +914,7 @@ KFK.onWsMsg = async function (response) {
     }
 };
 
-KFK.regRtcUser = (res)=>{
+KFK.regRtcUser = (res) => {
     KFK.rtcUsers[res.user_ser] = {
         userid: res.userid,
         name: res.name,
@@ -3246,6 +3246,8 @@ KFK.setShapeDynamicDefaultSize = function (nodeType, variant, width, height) {
         cocoConfig.defaultSize[nodeType][variant] = {};
     cocoConfig.defaultSize[nodeType][variant].width = width;
     cocoConfig.defaultSize[nodeType][variant].height = height;
+    cocoConfig.defaultSize[nodeType].width = width;
+    cocoConfig.defaultSize[nodeType].height = height;
 };
 
 KFK.getShapeDynamicDefaultSize = function (nodeType, variant) {
@@ -4814,26 +4816,24 @@ KFK.makeCopyOfJQs = async function (jqstocopy, shiftKey) {
         };
         let deltaX = oldJqPos.x - startPoint.x;
         let deltaY = oldJqPos.y - startPoint.y;
-        let jqNewNode = jqstocopy[i].clone(false);
-        jqNewNode.attr("id", KFK.myuid());
-        jqNewNode.css(
-            "left",
-            KFK.scalePoint(KFK.scrXToJc3X(KFK.currentMousePos.x)) -
-            parseInt(jqstocopy[0].css("width")) * 0.5 +
-            deltaX
-        );
-        jqNewNode.css(
-            "top",
-            KFK.scalePoint(KFK.scrYToJc3Y(KFK.currentMousePos.y)) -
-            parseInt(jqstocopy[0].css("height")) * 0.5 +
-            deltaY
-        );
+        let jqNewNode = KFK.makeCloneDIV(
+            jqstocopy[i], KFK.myuid(),
+            {
+                "left":
+                    KFK.scalePoint(KFK.scrXToJc3X(KFK.currentMousePos.x)) -
+                    parseInt(jqstocopy[0].css("width")) * 0.5 +
+                    deltaX,
+
+                "top":
+                    KFK.scalePoint(KFK.scrYToJc3Y(KFK.currentMousePos.y)) -
+                    parseInt(jqstocopy[0].css("height")) * 0.5 +
+                    deltaY
+            },
+        )
         //按住shift 复制时，也就是META-SHIFT-D, 则保留linkto
         if (!shiftKey) {
             jqNewNode.removeAttr("linkto");
         }
-        KFK.cleanNodeEventFootprint(jqNewNode);
-        KFK.cleanTodoChatForBackup(jqNewNode);
         KFK.justCreatedJqNode = jqNewNode;
         KFK.lastCreatedJqNode = jqNewNode;
 
@@ -4853,6 +4853,16 @@ KFK.makeCopyOfJQs = async function (jqstocopy, shiftKey) {
         });
     }
     return;
+};
+
+KFK.makeCloneDIV = function(orig, newid, newcss){
+    let ret = orig.clone(false);
+    ret.attr("id", newid);
+    if(newcss) ret.css(newcss);
+    KFK.cleanNodeEventFootprint(ret);
+    KFK.cleanTodoChatForBackup(ret);
+
+    return ret;
 };
 KFK.makeCopyOfLines = async function (linestocopy) {
     let startPoint = { x: linestocopy[0].cx(), y: linestocopy[0].cy() };
@@ -5131,9 +5141,6 @@ KFK.init = async function () {
         KFK.AI('hover_c3');
     }, 10000);
 
-    setTimeout(() => {
-        KFK.initMediaDevices();
-    }, 500);
 };
 
 KFK.initExplorer = function () {
@@ -5208,7 +5215,7 @@ KFK.initCocoChat = async function () {
 KFK.initVideoRoom = async function () {
     let jqRoom = $('#video_room');
     await KFK.loadDIVPositon('video_room_pos', '#video_room');
-    jqRoom.on('click', (evt)=>{
+    jqRoom.on('click', (evt) => {
         evt.stopPropagation();
     });
     jqRoom.draggable({
@@ -6161,6 +6168,7 @@ KFK.toggleAccordionMyOrg = async function () {
 };
 
 KFK.signout = async function () {
+    KFK.stopVideoCall();
     await KFK.sendCmd("SIGNOUT", { userid: KFK.APP.model.cocouser.userid });
 };
 
@@ -11411,38 +11419,43 @@ KFK.placeFollowerNode = async (jdiv, direction) => {
     let cy = KFK.divMiddle(jdiv);
     let width = KFK.divWidth(jdiv);
     let height = KFK.divHeight(jdiv);
+    let distance = width * 0.5;
     if (direction === 'f') {
-        flwCx = cx + width + 80;
+        flwCx = cx + width + distance;
         flwCy = cy;
     } else if (direction === 'v') {
-        flwCx = cx + width + 80;
-        flwCy = cy + height + 80;
+        flwCx = cx + width + distance;
+        flwCy = cy + height + distance;
     } else if (direction === 'c') {
         flwCx = cx;
-        flwCy = cy + height + 80;
+        flwCy = cy + height + distance;
     } else if (direction === 'x') {
-        flwCx = cx - width - 80;
-        flwCy = cy + height + 80;
+        flwCx = cx - width - distance;
+        flwCy = cy + height + distance;
     } else if (direction === 's') {
-        flwCx = cx - width - 80;
+        flwCx = cx - width - distance;
         flwCy = cy;
     } else if (direction === 'w') {
-        flwCx = cx - width - 80;
-        flwCy = cy - height - 80;
+        flwCx = cx - width - distance;
+        flwCy = cy - height - distance;
     } else if (direction === 'e') {
         flwCx = cx;
-        flwCy = cy - height - 80;
+        flwCy = cy - height - distance;
     } else if (direction === 'r') {
-        flwCx = cx + width + 80;
-        flwCy = cy - height - 80;
+        flwCx = cx + width + distance;
+        flwCy = cy - height - distance;
     }
-    let newDiv = await KFK.placeNode(
-        false, KFK.myuid(),
-        jdiv.attr('nodetype'),
-        jdiv.attr('variant'),
-        flwCx, flwCy, width, height, "", "");
-    await KFK.syncNodePut("C", newDiv, "new node", null, false, 0, 1);
-    return newDiv;
+    let newDIV = KFK.makeCloneDIV( 
+        jdiv, KFK.myuid(),{
+            "left": flwCx - width * 0.5,
+            "top": flwCy - height * 0.5
+    });
+    newDIV.appendTo(KFK.C3);
+    await KFK.setNodeEventHandler(newDIV, async function(){
+        await KFK.syncNodePut("C", newDIV, "new node", null, false, 0, 1);
+        await KFK.LinkFromBrainCenter(newDIV);
+    });
+    return newDIV;
 };
 
 KFK.getFrontEndUrl = (obj) => {
@@ -11656,11 +11669,6 @@ KFK.AI = (idx) => {
     }
 };
 KFK.initMediaDevices = async () => {
-    $('.main-video-btns').addClass('noshow');
-    // $('.mask_video').addClass('noshow');
-    RtcCommon.setBtnClickFuc(KFK);
-
-
     const openMediaDevices = async (constraints) => {
         return await navigator.mediaDevices.getUserMedia(constraints);
     }
@@ -11673,9 +11681,6 @@ KFK.initMediaDevices = async () => {
     }
 
 
-
-
-
     // check if browser is compatible with TRTC
     TRTC.checkSystemRequirements().then(result => {
         if (!result) {
@@ -11684,7 +11689,7 @@ KFK.initMediaDevices = async () => {
         }
     });
     // setup logging stuffs
-    TRTC.Logger.setLogLevel(TRTC.Logger.LogLevel.ERROR);
+    TRTC.Logger.setLogLevel(TRTC.Logger.LogLevel.DEBUG);
     TRTC.Logger.enableUploadLog();
 
     TRTC.getDevices()
@@ -11730,22 +11735,25 @@ KFK.initMediaDevices = async () => {
 KFK.prepareUserIdForRTC = (userId) => {
     return userId.replace(/[@|\.]/g, '_');
 };
-KFK.toggleVideoCall = () => {
+KFK.toggleVideoCall = async () => {
     if (KFK.duringVideo === false) {
-        KFK.askVideoCall();
+        await KFK.askVideoCall();
     } else {
-        KFK.stopVideoCall();
+        await KFK.stopVideoCall();
     }
 }
-KFK.askVideoCall = () => {
+KFK.askVideoCall = async () => {
+    await KFK.initMediaDevices();
     KFK.duringVideo = true;
     let user_ser = KFK.prepareUserIdForRTC(KFK.APP.model.cocouser.userid);
-    KFK.sendCmd('GENSIG', { user_ser: user_ser });
+    await KFK.sendCmd('GENSIG', { user_ser: user_ser });
 };
-KFK.stopVideoCall = () => {
-    RtcCommon.leave();
-    KFK.duringVideo = false;
-    $('#video_room').addClass('noshow');
+KFK.stopVideoCall = async () => {
+    if (KFK.duringVideo === true) {
+        RtcCommon.leave();
+        KFK.duringVideo = false;
+        $('#video_room').addClass('noshow');
+    }
 };
 
 KFK.startVideoCall = function (config, shareConfig) {
@@ -11789,7 +11797,7 @@ KFK.toggleScreenSharing = function () {
     }, 2000);
 };
 
-KFK.switchCamera = function(){
+KFK.switchCamera = function () {
     if (RtcCommon.isCamOn) {
         $('#video-btn').attr('src', KFK.getFrontEndUrl('rtc/big-camera-off.png'));
         $('#video-btn').attr('title', '打开摄像头');
@@ -11805,7 +11813,7 @@ KFK.switchCamera = function(){
     }
 };
 
-KFK.switchMic = function(){
+KFK.switchMic = function () {
     if (RtcCommon.isMicOn) {
         $('#mic-btn').attr('src', KFK.getFrontEndUrl('rtc/big-mic-off.png'));
         $('#mic-btn').attr('title', '打开麦克风');
@@ -11820,7 +11828,7 @@ KFK.switchMic = function(){
         RtcCommon.unmuteAudio();
     }
 };
-KFK.clickMainVideo = function(){
+KFK.clickMainVideo = function () {
     let mainVideo = $('.video-box').first();
     if ($('#main-video').is(mainVideo)) {
         return;
@@ -11831,7 +11839,7 @@ KFK.clickMainVideo = function(){
     //将video-grid中第一个div设为main-video
     // $('.video-box').first().css('grid-area', '1/1/3/4');
     //chromeM71以下会自动暂停，手动唤醒
-    if (RtcCommon.getBroswer().broswer=='Chrome' && RtcCommon.getBroswer().version<'72') {
+    if (RtcCommon.getBroswer().broswer == 'Chrome' && RtcCommon.getBroswer().version < '72') {
         RtcCommon.rtc.resumeStreams();
     }
 };
