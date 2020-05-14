@@ -1092,6 +1092,7 @@ KFK.getShareWarningByDocACL = (acl) => {
     return ret;
 };
 KFK.scrLog = function (msg, staytime = 5000) {
+    console.log('scrLog', msg);
     let parent = $("#MSG").parent();
     let msgDIV = $("#MSG");
     let cloneDIV = $("#fadeoutmsg");
@@ -11708,6 +11709,7 @@ KFK.initMediaDevices = async () => {
             }
             let div = $('<div></div>');
             div.attr('id', device.deviceId);
+            div.addClass('simplehover');
             div.html(device.label);
             div.appendTo('#camera-option');
             div.on('click', (evt) => {
@@ -11724,6 +11726,7 @@ KFK.initMediaDevices = async () => {
             }
             let div = $('<div></div>');
             div.attr('id', device.deviceId);
+            div.addClass('simplehover');
             div.html(device.label);
             div.appendTo('#mic-option');
             div.on('click', (evt) => {

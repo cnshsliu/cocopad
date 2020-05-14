@@ -1509,6 +1509,17 @@ input {
     white-space: nowrap;
 }
 
+#mic-option div{
+    font-size: 10px;
+}
+#camera-option div{
+    font-size: 10px;
+}
+
+.simplehover:hover{
+    background-color: #e5dbff;
+}
+
 .opicon:hover {
     transform-origin: center;
     transform: scale(1.5);

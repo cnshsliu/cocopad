@@ -135,6 +135,7 @@ const app = new Vue({
             },
             share: { code: '', email: '', lifeshare: false, msg: '临时分享, 48小时后过期', url: '', acl: 'P', warning: '', doc_id: '', okToShare: false, okToSetACL: false },
             signInButWaitVerify: false,
+            isMobile: false,
             regForShared: false, //是否是接受到分享链接的用户来注册？
             loading_value: 0,
             msgbox: { title: '', content: '' },

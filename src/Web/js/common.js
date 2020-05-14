@@ -193,7 +193,7 @@ RtcCommon.resetView = () => {
     $('#screen-btn').attr('src', KFK.getFrontEndUrl('rtc/screen-off.png'));
     $('#member-me').find('.member-video-btn').attr('src', KFK.getFrontEndUrl('rtc/camera-on.png'));
     $('#member-me').find('.member-audio-btn').attr('src', KFK.getFrontEndUrl('rtc/mic-on.png'));
-    // $('.mask_video').addClass('noshow');
+    console.log(">>>Done: resetView");
 }
 
 RtcCommon.getBroswer = () => {
