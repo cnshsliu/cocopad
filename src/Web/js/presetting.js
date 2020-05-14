@@ -16,7 +16,6 @@ PreSetting.init = () =>{
 
     $('.main-video-btns').addClass('noshow');
     $('.mask_video').addClass('noshow');
-    rtcCommon.setBtnClickFuc();
   };
 
 PreSetting.query = (name)=> {

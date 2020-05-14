@@ -1,4 +1,4 @@
-import presetting  from './presetting';
+import presetting from './presetting';
 import KFK from '../../console';
 const RtcCommon = {};
 RtcCommon.isCamOn = true;
@@ -17,9 +17,12 @@ RtcCommon.join = () => {
 }
 
 RtcCommon.leave = () => {
-    // $('#mask_main').appendTo($('#main-video'));
+    console.log("Leave", RtcCommon.rtc.userId_);
     RtcCommon.rtc.leave();
-    // RtcCommon.share.leave();
+    if (RtcCommon.share.isJoined_) {
+        console.log("Leave", RtcCommon.share.userId_);
+        RtcCommon.share.leave();
+    }
 }
 
 RtcCommon.publish = () => {
@@ -56,12 +59,6 @@ RtcCommon.stopSharing = () => {
     RtcCommon.share.leave();
 }
 
-RtcCommon.setBtnClickFuc = () => {
-    //chrome60以下不支持popover，防止error
-    if (RtcCommon.getBroswer().broswer=='Chrome' && RtcCommon.getBroswer().version<'60')
-        return;
-}
-
 RtcCommon.setCameraId = (cameraId) => {
     RtcCommon.cameraId = cameraId;
     console.log('setCameraId: ' + RtcCommon.cameraId);
@@ -96,37 +93,39 @@ RtcCommon.addVideoView = (id, uid, isLocal = false) => {
         //将video-grid中第一个div设为main-video
         // $('.video-box').first().css('grid-area', '1/1/3/4');
         //chromeM71以下会自动暂停，手动唤醒
-        if (RtcCommon.getBroswer().broswer=='Chrome' && RtcCommon.getBroswer().version<'72') {
+        if (RtcCommon.getBroswer().broswer == 'Chrome' && RtcCommon.getBroswer().version < '72') {
             RtcCommon.rtc.resumeStreams();
         }
     });
+    if (uid !== RtcCommon.shareUserId) {
+        RtcCommon.addMemberView(id, uid);
+    }
 }
 
-RtcCommon.addMemberView = (id) => {
-    console.log(">>>KFK ignored. Add memberView", id);
-    return;
+RtcCommon.addMemberView = (vid, uid) => {
+    console.log(">>>KFK ignored. Add memberView", uid);
     let memberElm = $('#member-me').clone();
-    memberElm.attr('id', id);
-    memberElm.find('div.member-id').html(id);
-    memberElm.css('display', 'flex');
-    memberElm.appendTo($('#member-list'));
-}
+    memberElm.attr('id', uid);
+    let userName = KFK.rtcUsers[uid] ? KFK.rtcUsers[uid].name : uid;
+    memberElm.find('div.member-id').html(userName);
+    memberElm.appendTo($('#' + vid));
+};
 
 RtcCommon.removeView = (id) => {
     console.log(">>>RemoveView", id);
-   let mainVideo = $('.video-box').first();
-   let firstInTable = $('.video-table .video-box').first();
-   let div = $('#' + id);
-   if(div[0]){
-    if (div.is(mainVideo)) {
-        RtcCommon.exchangeView(div, firstInTable);
-        return;
+    let mainVideo = $('.video-box').first();
+    let firstInTable = $('.video-table .video-box').first();
+    let div = $('#' + id);
+    if (div[0]) {
+        if (div.is(mainVideo)) {
+            RtcCommon.exchangeView(div, firstInTable);
+            return;
+        }
+        div.remove();
     }
-    div.remove();
-   }
 }
 
-RtcCommon.exchangeView = (a,b) => {
+RtcCommon.exchangeView = (a, b) => {
     console.log(">>>Exchange view", a, b);
     var $div1 = $(a);
     var $div3 = $(b);
@@ -197,30 +196,30 @@ RtcCommon.resetView = () => {
     // $('.mask_video').addClass('noshow');
 }
 
-RtcCommon.getBroswer = () =>{
+RtcCommon.getBroswer = () => {
     var sys = {};
     var ua = navigator.userAgent.toLowerCase();
     var s;
     (s = ua.match(/edge\/([\d.]+)/)) ? sys.edge = s[1] :
-    (s = ua.match(/rv:([\d.]+)\) like gecko/)) ? sys.ie = s[1] :
-    (s = ua.match(/msie ([\d.]+)/)) ? sys.ie = s[1] :
-    (s = ua.match(/firefox\/([\d.]+)/)) ? sys.firefox = s[1] :
-    (s = ua.match(/chrome\/([\d.]+)/)) ? sys.chrome = s[1] :
-    (s = ua.match(/opera.([\d.]+)/)) ? sys.opera = s[1] :
-    (s = ua.match(/version\/([\d.]+).*safari/)) ? sys.safari = s[1] : 0;
+        (s = ua.match(/rv:([\d.]+)\) like gecko/)) ? sys.ie = s[1] :
+            (s = ua.match(/msie ([\d.]+)/)) ? sys.ie = s[1] :
+                (s = ua.match(/firefox\/([\d.]+)/)) ? sys.firefox = s[1] :
+                    (s = ua.match(/chrome\/([\d.]+)/)) ? sys.chrome = s[1] :
+                        (s = ua.match(/opera.([\d.]+)/)) ? sys.opera = s[1] :
+                            (s = ua.match(/version\/([\d.]+).*safari/)) ? sys.safari = s[1] : 0;
 
-    if (sys.edge) return { broswer : "Edge", version : sys.edge };
-    if (sys.ie) return { broswer : "IE", version : sys.ie };
-    if (sys.firefox) return { broswer : "Firefox", version : sys.firefox };
-    if (sys.chrome) return { broswer : "Chrome", version : sys.chrome };
-    if (sys.opera) return { broswer : "Opera", version : sys.opera };
-    if (sys.safari) return { broswer : "Safari", version : sys.safari };
-    
-    return { broswer : "", version : "0" };
+    if (sys.edge) return { broswer: "Edge", version: sys.edge };
+    if (sys.ie) return { broswer: "IE", version: sys.ie };
+    if (sys.firefox) return { broswer: "Firefox", version: sys.firefox };
+    if (sys.chrome) return { broswer: "Chrome", version: sys.chrome };
+    if (sys.opera) return { broswer: "Opera", version: sys.opera };
+    if (sys.safari) return { broswer: "Safari", version: sys.safari };
+
+    return { broswer: "", version: "0" };
 }
 
 RtcCommon.isHidden = () => {
-    var hidden, visibilityChange; 
+    var hidden, visibilityChange;
     if (typeof document.hidden !== "undefined") {
         hidden = "hidden";
         visibilityChange = "visibilitychange";
