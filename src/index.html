@@ -348,7 +348,7 @@
                         <b-icon icon="blank" scale="0.3"></b-icon>
                     </b-list-group-item>
                     <b-list-group-item href="#" v-on:mouseover="KFK.AI('tb_eraser')"
-                        v-if="model.docLoaded && (KFK.APP.model.cocodoc.owner === KFK.APP.model.cocouser.userid)"
+                        v-if="model.docLoaded"
                         class="d-flex align-items-center toolbox" @click="KFK.cleanAllNodes();" v-b-popover.hover.right
                         title="白板擦" :active="toolActiveState['clean']">
                         <b-img :src="getImageSrc('eraser')" fluid alt="" class="eraser" id='tool_clean'></b-img>
