@@ -20,11 +20,11 @@ const config = {
         basedir: '',
     },
     ws_server: {
-		endpoint: {label:'LZJ', url: 'wss://liuzijin.com/clbdapi/grume/wsquux'},
-        endpoint_lzj: {label:'LZJ', url: 'wss://liuzijin.com/clbdapi/grume/wsquux'},
-        endpoint_local: {label: 'LOCAL', url:'ws://localhost:5008/grume/wsquux'},
+        endpoint: { label: 'LOCAL', url: 'ws://localhost:5008/grume/wsquux' },
+        endpoint_lzj: { label: 'LZJ', url: 'wss://liuzijin.com/clbdapi/grume/wsquux' },
+        endpoint_local: { label: 'LOCAL', url: 'ws://localhost:5008/grume/wsquux' },
     },
-    frontend:{
+    frontend: {
         url: 'https://mlib.liuzijin.com/frontend'
     },
     cos: {
@@ -187,7 +187,7 @@ const config = {
             hori: 20,
         }
     },
-    quickglance:{
+    quickglance: {
         timer: 10,
     }
 };

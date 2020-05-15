@@ -4856,10 +4856,10 @@ KFK.makeCopyOfJQs = async function (jqstocopy, shiftKey) {
     return;
 };
 
-KFK.makeCloneDIV = function(orig, newid, newcss){
+KFK.makeCloneDIV = function (orig, newid, newcss) {
     let ret = orig.clone(false);
     ret.attr("id", newid);
-    if(newcss) ret.css(newcss);
+    if (newcss) ret.css(newcss);
     KFK.cleanNodeEventFootprint(ret);
     KFK.cleanTodoChatForBackup(ret);
 
@@ -5484,8 +5484,8 @@ KFK.onWsConnected = function () {
         KFK.info(`There are ${count} offline nodes `);
         if (count === 0) {
             let cocodcoInStorage = JSON.parse(localStorage.getItem("cocodoc"))
-            if (cocodcoInStorage.doc_id) {
-                KFK.sendCmd("DOC_ID", { doc_id: cocodcoInStorage.doc_id });
+            if (cocodcoInStorage && cocodcoInStorage.doc_id) {
+                    KFK.sendCmd("DOC_ID", { doc_id: cocodcoInStorage.doc_id });
             }
         }
         KFK.isTryingToReconnect = undefined;
@@ -7589,10 +7589,10 @@ KFK.pickMaterial = function (matid, url) {
 };
 
 KFK.cleanAllNodes = function () {
-   if(KFK.APP.model.cocodoc.owner !== KFK.APP.model.cocouser.userid){
-       KFK.scrLog('只有协作发起人可以使用白板擦');
-       return;
-   }
+    if (KFK.APP.model.cocodoc.owner !== KFK.APP.model.cocouser.userid) {
+        KFK.scrLog('只有协作发起人可以使用白板擦');
+        return;
+    }
     KFK.APP.$bvModal
         .msgBoxConfirm(
             "请确认要清空白板, 其他协作用户的白板也会一起清除, 且本操作无法回退.", {
@@ -11450,13 +11450,13 @@ KFK.placeFollowerNode = async (jdiv, direction) => {
         flwCx = cx + width + distance;
         flwCy = cy - height - distance;
     }
-    let newDIV = KFK.makeCloneDIV( 
-        jdiv, KFK.myuid(),{
-            "left": flwCx - width * 0.5,
-            "top": flwCy - height * 0.5
+    let newDIV = KFK.makeCloneDIV(
+        jdiv, KFK.myuid(), {
+        "left": flwCx - width * 0.5,
+        "top": flwCy - height * 0.5
     });
     newDIV.appendTo(KFK.C3);
-    await KFK.setNodeEventHandler(newDIV, async function(){
+    await KFK.setNodeEventHandler(newDIV, async function () {
         await KFK.syncNodePut("C", newDIV, "new node", null, false, 0, 1);
         await KFK.LinkFromBrainCenter(newDIV);
     });
