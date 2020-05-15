@@ -10,19 +10,19 @@ ACM.registerUser = function () {
     let name = tmpRegData.name.trim();
     let pwd2 = tmpRegData.pwd2.trim();
     let foundError = false;
-    if(!Validator.validateUserId(userid)){
-        if(!Validator.validateMobile(userid)){
-            KFK.scrLog("账号格式不正确");  return;
+    if (!Validator.validateUserId(userid)) {
+        if (!Validator.validateMobile(userid)) {
+            KFK.scrLog("账号格式不正确"); return;
         }
     }
-    if(!Validator.validateUserName(name)){
-        KFK.scrLog("全称需要是2个以上汉字或4个以上英文，最多10个");  return;
+    if (!Validator.validateUserName(name)) {
+        KFK.scrLog("全称需要是2个以上汉字或4个以上英文，最多10个"); return;
     }
-    if(!Validator.validateUserPassword(pwd)){
-        KFK.scrLog("密码至少8字符，必须含大小写字母数字和特殊字符");  return;
+    if (!Validator.validateUserPassword(pwd)) {
+        KFK.scrLog("密码至少8字符，必须含大小写字母数字和特殊字符"); return;
     }
-    if(pwd !== pwd2){
-        KFK.scrLog("两次密码输入不一致");  return;
+    if (pwd !== pwd2) {
+        KFK.scrLog("两次密码输入不一致"); return;
     }
     BossWS.start(
         function () {
@@ -33,7 +33,7 @@ ACM.registerUser = function () {
             try {
                 switch (response.cmd) {
                     case "REGUSER-CODE":
-                        if(response.isMobile)
+                        if (response.isMobile)
                             KFK.scrLog("请检查短信，输入验证码");
                         else
                             KFK.scrLog("请检查邮箱，输入验证码");
@@ -55,6 +55,13 @@ ACM.registerUser = function () {
                         break;
                     case "SCRLOG":
                         KFK.scrLog(response.msg);
+                        break;
+                    case "SIGNIN":
+                        let retuser = response.user;
+                        KFK.updateCocouser(retuser);
+                        KFK.resetAllLocalData();
+                        KFK.APP.setData('model', 'isDemoEnv', false);
+                        setTimeout(() => { KFK.checkSession(); }, 400);
                         break;
 
                 }
@@ -79,7 +86,7 @@ ACM.resendVerifyCode = async function () {
             try {
                 switch (response.cmd) {
                     case "REGUSER-CODE":
-                        if(response.isMobile)
+                        if (response.isMobile)
                             KFK.scrLog("请检查短信，输入验证码");
                         else
                             KFK.scrLog("请检查邮箱，输入验证码");
@@ -89,6 +96,13 @@ ACM.resendVerifyCode = async function () {
                     case "REGUSER-FALSE":
                         KFK.scrLog(response.msg);
                         await KFK.mergeAppData('model', 'register', { step: 'code' });
+                        break;
+                    case "SIGNIN":
+                        let retuser = response.user;
+                        KFK.updateCocouser(retuser);
+                        KFK.resetAllLocalData();
+                        KFK.APP.setData('model', 'isDemoEnv', false);
+                        setTimeout(() => { KFK.checkSession(); }, 400);
                         break;
                 }
             } catch (error) { console.log(error); }
@@ -106,11 +120,11 @@ ACM.signin = function () {
     let pwd = KFK.APP.model.signin.pwd;
     let useridOkay = Validator.validateUserId(userid) || Validator.validateMobile(userid);
     let pwdOkay = Validator.validateUserPassword(pwd);
-    if(!useridOkay){
+    if (!useridOkay) {
         KFK.scrLog("登录名录入不符合要求");
         return;
     }
-    if(!pwdOkay){
+    if (!pwdOkay) {
         KFK.scrLog("录入密码不符合要求");
         return;
     }
@@ -140,7 +154,7 @@ ACM.signin = function () {
                         KFK.setAppData('model', 'signInButWaitVerify', true);
                         KFK.setAppData('model', 'isMobile', response.isMobile);
                         KFK.updateCocouser(retuser);
-                        if(response.isMobile)
+                        if (response.isMobile)
                             KFK.scrLog("尚未验证手机号码，你可以继续使用，请在一周内完成手机验证");
                         else
                             KFK.scrLog("尚未验证邮箱地址，你可以继续使用，请在一周内完成邮箱验证");
@@ -177,10 +191,15 @@ ACM.verifyRegCode = async function () {
                         KFK.scrLog("验证码错误，请重新输入");
                         break;
                     case "VERIFY-SUCCESS":
-                        KFK.scrLog("验证成功，请登录");
+                        KFK.scrLog("验证成功");
                         sessionStorage.removeItem('regtoken');
                         localStorage.removeItem("shareCode");
-                        KFK.gotoSignin();
+                        // KFK.gotoSignin();
+                        let retuser = response.user;
+                        KFK.updateCocouser(retuser);
+                        KFK.resetAllLocalData();
+                        KFK.APP.setData('model', 'isDemoEnv', false);
+                        setTimeout(() => { KFK.checkSession(); }, 400);
                         break;
                     case "VERIFY-ALREAY":
                         KFK.scrLog("已验证过，请直接登录");

@@ -234,14 +234,11 @@
                 <b-row>
                     <b-col class="bg-none">
                         <b-button @click="ACM.verifyRegCode" variant="primary">现在验证 &gt;&gt;</b-button>
+                        <b-button @click="KFK.checkSession" variant="primary">先不验证，直接进入使用 &gt;&gt;</b-button>
                     </b-col>
                     <div class="w-100"></div>
                     <b-col class="bg-none mt-3">
                         <a href="#" class="card-link" @click="ACM.resendVerifyCode">没有收到验证码？点这里重新发送</a>
-                    </b-col>
-                    <div class="w-100"></div>
-                    <b-col class="bg-none  mt-3">
-                        <a href="#" class="card-link" @click="KFK.checkSession">先不验证，直接使用</a>
                     </b-col>
                 </b-row>
             </b-form>
