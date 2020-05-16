@@ -2087,10 +2087,10 @@ KFK.initC3 = function () {
     KFK.autoScroll.step = 10;
 
     KFK.autoScroll.clearInetervals = function () {
-        clearInterval(intRightHandler);
-        clearInterval(intLeftHandler);
-        clearInterval(intTopHandler);
-        clearInterval(intBottomHandler);
+        clearInterval(KFK.autoScroll.intRightHandler);
+        clearInterval(KFK.autoScroll.intLeftHandler);
+        clearInterval(KFK.autoScroll.intTopHandler);
+        clearInterval(KFK.autoScroll.intBottomHandler);
     }
 
 };
@@ -3584,47 +3584,49 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
                     top: (evt.clientY - click.y + original.top) / KFK.scaleRatio
                 };
 
+                //BEGIN auto drag scroll
                 var isMoving = false;        
                 //Left
-                if((evt.pageX - KFK.autoScroll.offset.left) <= KFK.autoScroll.distance)
+                if(evt.pageX <= KFK.autoScroll.distance)
                 {
                     isMoving = true;
                     KFK.autoScroll.clearInetervals();            
                     KFK.autoScroll.intLeftHandler= setInterval(function(){
-                        KFK.autoScroll.yellow.scrollLeft(KFK.autoScroll.yellow.scrollLeft() - KFK.autoScroll.step)
+                        KFK.JS1.scrollLeft(KFK.JS1.scrollLeft() - KFK.autoScroll.step);
                     },KFK.autoScroll.timer);
                     console.log('left')
                 }
         
                 //Right
-                if(evt.pageX >= (KFK.autoScroll.offsetWidth - KFK.autoScroll.distance))
+                if(evt.pageX >= (window.innerWidth - KFK.autoScroll.distance))
                 {
                     isMoving = true;
                     KFK.autoScroll.clearInetervals();            
                     KFK.autoScroll.intRightHandler = setInterval(function(){
-                        KFK.autoScroll.yellow.scrollLeft(KFK.autoScroll.yellow.scrollLeft() + KFK.autoScroll.step)
+                        KFK.JS1.scrollLeft(KFK.JS1.scrollLeft() + KFK.autoScroll.step);
+                        jqNodeDIV.css('left', jqNodeDIV.css('left') + KFK.autoScroll.step );
                     },KFK.autoScroll.timer);
                     console.log('right')
                 }
         
                 //Top
-                if((evt.pageY - KFK.autoScroll.offset.top) <= KFK.autoScroll.distance)
+                if(evt.pageY  <= KFK.autoScroll.distance)
                 {
                     isMoving = true;
                     KFK.autoScroll.clearInetervals();            
                     KFK.autoScroll.intTopHandler= setInterval(function(){
-                        KFK.autoScroll.yellow.scrollTop(KFK.autoScroll.yellow.scrollTop() - KFK.autoScroll.step)
+                        KFK.JS1.scrollTop(KFK.JS1.scrollTop() - KFK.autoScroll.step);
                     },KFK.autoScroll.timer);
                     console.log('top')
                 }                          
         
                 //Bottom
-                if(evt.pageY >= (KFK.autoScroll.offsetHeight - KFK.autoScroll.distance))
+                if(evt.pageY >= (window.innerHeight - KFK.autoScroll.distance))
                 {
                     isMoving = true;
                     KFK.autoScroll.clearInetervals();            
                     KFK.autoScroll.intBottomHandler= setInterval(function(){
-                        KFK.autoScroll.yellow.scrollTop(KFK.autoScroll.yellow.scrollTop() + KFK.autoScroll.step)
+                        KFK.JS1.scrollTop(KFK.JS1.scrollTop() + KFK.autoScroll.step);
                     },KFK.autoScroll.timer);
                     console.log('bottom')
                 }     
