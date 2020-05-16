@@ -1,0 +1,2 @@
+#!/bin/bash
+ssh ubuntu@liuzijin.com -t pm2 logs --lines 100
