@@ -24,29 +24,11 @@ fi
 echo  "Begin build"
 npm run-script build
 echo  "Begin distribution to liuzijin.com"
-ssh ubuntu@liuzijin.com -t rm -f /home/ubuntu/www/liuzijin.com/*.svg
-ssh ubuntu@liuzijin.com -t rm -f /home/ubuntu/www/liuzijin.com/*.png
-ssh ubuntu@liuzijin.com -t rm -f /home/ubuntu/www/liuzijin.com/*.css
-ssh ubuntu@liuzijin.com -t rm -f /home/ubuntu/www/liuzijin.com/*.js
-scp ./dist/* ubuntu@liuzijin.com:/home/ubuntu/www/liuzijin.com/
-
+./bin/distlzj.sh
 echo  "Begin distribution to colobod.com"
-ssh colobod@shatian -t rm -f /home/colobod/www/colobod.com/*.html
-ssh colobod@shatian -t rm -f /home/colobod/www/colobod.com/*.svg
-ssh colobod@shatian -t rm -f /home/colobod/www/colobod.com/*.png
-ssh colobod@shatian -t rm -f /home/colobod/www/colobod.com/*.css
-ssh colobod@shatian -t rm -f /home/colobod/www/colobod.com/*.js
-ssh colobod@shatian -t rm -f /home/colobod/www/colobod.com/*.ico
-scp ./dist/* colobod@shatian:/home/colobod/www/colobod.com/
-
+./bin/distshatian.sh
 echo  "Begin distribution to weteam.work"
-ssh colobod@shatian -t rm -f /home/colobod/www/weteam.work/*.html
-ssh colobod@shatian -t rm -f /home/colobod/www/weteam.work/*.svg
-ssh colobod@shatian -t rm -f /home/colobod/www/weteam.work/*.png
-ssh colobod@shatian -t rm -f /home/colobod/www/weteam.work/*.css
-ssh colobod@shatian -t rm -f /home/colobod/www/weteam.work/*.js
-ssh colobod@shatian -t rm -f /home/colobod/www/weteam.work/*.ico
-scp ./dist/* colobod@shatian:/home/colobod/www/weteam.work/
+./bin/distwtw.sh
 
 echo "Done."
 echo "Check cococonfig.js, is endpoint okay or not"
