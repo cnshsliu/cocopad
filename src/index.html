@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>彩板-即时协作：交互白板 脑图 演示</title>
+    <title>彩板-即时协作：多人交互 白板 脑图 演示 音视频通话</title>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="/my-styles/room.css">
@@ -283,7 +283,7 @@
                 <img src="./cocopad.svg" class="logo d-inline-block align-top" alt="COLOBOD">
             </div>
             <!-- left tool left menu toolbox left panel-->
-            <div id="left" class="bg-white padlayout spaceToHide">
+            <div id="left" class="bg-white padlayout spaceToHide" v-on:click="KFK.clickOnLeftPanel">
                 <b-list-group>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
                         v-on:mouseover="KFK.AI('tb_arrow')" v-on:click="setMode('pointer', $event);"
@@ -318,8 +318,8 @@
                         </b-img>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
-                        v-on:mouseover="KFK.AI('tb_line')" v-on:click="setMode('line', $event);" v-b-popover.hover.right
-                        title="画线" :active="toolActiveState['line']">
+                        v-on:mouseover="KFK.AI('tb_line')" v-on:click="setMode('line', $event);"
+                        @mouseover.native ="KFK.expandTool($event, 'line');" :active="toolActiveState['line']">
                         <b-img :src="getImageSrc('line')" fluid alt="" scale="2" class="cocotool" id='tool_line'>
                         </b-img>
                     </b-list-group-item>
@@ -354,7 +354,7 @@
                 </b-list-group>
             </div>
             <!-- right panel -->
-            <div id="right" class="padlayout noshow spaceToHide">
+            <div id="right" class="padlayout noshow spaceToHide" v-on:click="KFK.clickOnRightPanel">
                 <b-tabs v-model="model.rightTabIndex" content-class="mt-1 w-100" justified>
                     <b-tab title="样式" class='cocoproperty'>
                         <b-container v-show="show.customfont" class='border-top no-padding'>
@@ -470,7 +470,7 @@
                                     <b-col>线条样式</b-col>
                                     <b-col class='coco'>
                                         <b-form-select v-model="model.svg.line.style" :options="model.svg.line.styles"
-                                            @input="KFK.changeLineStyle">
+                                            @input="KFK.changeShapeStyle">
                                         </b-form-select>
                                     </b-col>
                                 </b-row>
@@ -693,7 +693,7 @@
                             <b-icon v-else icon="layout-sidebar-inset-reverse" rotate="270"></b-icon>&nbsp;切换工具栏
                         </b-dropdown-item>
                         <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle-right" variant="success"
-                            @click="KFK.toggleRightPanel">
+                            @click="KFK.toggleRightPanel(-1, false)">
                             <b-icon v-if="KFK.showRightTools===false" icon="layout-sidebar-reverse"></b-icon>
                             <b-icon v-else icon="layout-sidebar-inset-reverse"></b-icon>&nbsp;切换属性栏
                         </b-dropdown-item>
@@ -763,7 +763,7 @@
                     <span v-if="model.cocodoc.owner !== model.cocouser.userid">发起人:{{model.cocodoc.ownerName}}</span>
                     <b-img v-if="model.cocouser.avatar_src" :src="model.cocouser.avatar_src" title="当前用户">
                     </b-img>
-                    <b-dropdown :text="model.cocouser.name" right size="sm" variant="link" class="m-0 p-0 userinfo">
+                    <b-dropdown :text="model.cocouser.name" right size="sm" variant="link" class="m-0 p-0 userinfo simplehover">
                         <b-dropdown-item-button>{{model.cocouser.name}}</b-dropdown-item-button>
                         <b-dropdown-item-button v-if="!model.isDemoEnv" @click="KFK.showIvtCodeDialog">邀请获奖励
                         </b-dropdown-item-button>
@@ -776,17 +776,17 @@
                         <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.gotoSignin">登录已有账号
                         </b-dropdown-item-button>
                     </b-dropdown>
-                    <b-button title='hello' class="m-0 p-0 docteam" variant='link' @click="KFK.showActionLog">
+                    <b-button title='hello' class="m-0 p-0 docteam simplehover" variant='link' @click="KFK.showActionLog">
                         <b-icon icon="people"></b-icon>{{model.actionlog.length}}
                     </b-button>
-                    <b-button class="m-0 p-0 docteam" variant='link' @click="KFK.showChat">
+                    <b-button class="m-0 p-0 docteam simplehover" variant='link' @click="KFK.showChat">
                         <b-img class='chat_icon' :src="getImageSrc('chat')"> </b-img>
                     </b-button>
                     <div class='chat_reddot noshow'></div>
-                    <b-button class="m-0 p-0 docteam" variant='link' @click="KFK.toggleVideoCall">
-                        <b-img class='chat_icon' :src="KFK.getFrontEndUrl('rtc/camera.svg')"> </b-img>
+                    <b-button class="m-0 p-0 docteam simplehover" variant='link' @click="KFK.toggleVideoCall">
+                        <b-img class='camera_icon' :src="KFK.getFrontEndUrl('rtc/camera.svg')"> </b-img>
                     </b-button>
-                    <b-button class="m-0 p-0 docteam" variant='link' @click="KFK.showTodo">
+                    <b-button class="m-0 p-0 docteam simplehover" variant='link' @click="KFK.showTodo">
                         <b-img :src="getImageSrc('todo')"> </b-img>
                     </b-button>
                 </div>
@@ -1928,9 +1928,9 @@
                     <b-row class="text-center">
                         <b-col>
                             <div v-show='model.share.okToSetACL'>
-                                <b-button @click='KFK.setAclInShare("S")'>设为仅自己可用</b-button>
-                                <b-button @click='KFK.setAclInShare("O")'>设为仅当前组织可参与</b-button>
-                                <b-button @click='KFK.setAclInShare("P")'>设为公开可参与</b-button>
+                                <b-button class="mt-1" @click='KFK.setAclInShare("S")'>设为仅自己可用</b-button>
+                                <b-button class="mt-1" @click='KFK.setAclInShare("O")'>设为仅当前组织可参与</b-button>
+                                <b-button class="mt-1" @click='KFK.setAclInShare("P")'>设为公开可参与</b-button>
                             </div>
                         </b-col>
                     </b-row>
@@ -2155,6 +2155,14 @@
                 <div id="video-table" class="video-table">
                 </div>
             </div>
+        </div>
+        <div id="lineExpand" class="noshow">
+            <div id='shape_line' @click="KFK.setDrawMode('line')"></div>
+            <div id='shape_rectangle' @click="KFK.setDrawMode('rectangle')"></div>
+            <div id='shape_ellipse' @click="KFK.setDrawMode('ellipse')"></div>
+            <div id='shape_polyline' @click="KFK.setDrawMode('polyline')"></div>
+            <div id='shape_polygon' @click="KFK.setDrawMode('polygon')"></div>
+            <div id='shape_freehand' @click="KFK.setDrawMode('freehand')"></div>
         </div>
     </div>
     <!--app-->

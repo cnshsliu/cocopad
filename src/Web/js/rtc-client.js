@@ -36,10 +36,11 @@ export default class RtcClient {
       await this.client_.join({
         roomId: this.roomId_
       });
-      console.log('join room success');
+      console.log('join room success', this.roomId_);
       this.isJoined_ = true;
 
       console.log('Camera Id:',  RtcCommon.getCameraId());
+      console.log('Mic Id:',  RtcCommon.getMicrophoneId());
 
       // create a local stream with audio/video from microphone/camera
       this.localStream_ = TRTC.createStream({
@@ -99,10 +100,14 @@ export default class RtcClient {
     // leave the room
     await this.client_.leave();
 
+    console.log("RTC CLient leav now...");
+    console.log("stop localstream...");
     this.localStream_.stop();
+    console.log("close localstream...");
     this.localStream_.close();
     this.localStream_ = null;
     this.isJoined_ = false;
+    console.log("ResetView ...");
     RtcCommon.resetView();
   }
 

@@ -121,7 +121,7 @@
       //creating mini version of the supplied children
       JC3.children().each(function (index, anode) {
 		var $child = $(this);
-        if ($child.hasClass("kfknode")) {
+        if ($child.hasClass("kfknode") || $child.hasClass("kfkshape")) {
           var mini = $("<div></div>").addClass("minimap-node");
           $minimap.append(mini);
           var ratioX = minimapWidth / JC3.width();

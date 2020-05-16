@@ -948,10 +948,11 @@ select:focus {
 .docpeople {
     font-size: 16px;
     color: #777777;
-    padding-top: 4px;
+    padding-top: 0px;
     width:100%;
     display: flex;
     flex-direction: row;
+    align-items: center;
 }
 .chat_reddot{
     width: 10px;
@@ -998,11 +999,7 @@ select:focus {
 }
 
 .docpeople .userinfo {
-    -webkit-transform: translate(-5px, -5px);
-    -moz-transform: translate(-5px, -5px);
-    -ms-transform: translate(-5px, -5px);
-    -o-transform: translate(-5px, -5px);
-    transform: translate(-5px, -5px);
+    transform: translate(0px, 0px);
 }
 
 .docpeople .btn-link {
@@ -1517,7 +1514,7 @@ input {
 }
 
 .simplehover:hover{
-    background-color: #e5dbff;
+    background-color: aqua;
 }
 
 .opicon:hover {
@@ -1843,3 +1840,40 @@ table.quick-help-table td:first-of-type {
     color: red;
 }
 /* end: Weibo.com paste css fix */
+
+#lineExpand{
+    position: absolute;
+    top: 100px; left: 65px;
+    display: flex;   flex-direction: column;
+    background-color: white;
+    border-radius: 5px;;
+    box-shadow: 0 0 0 0.125em rgba(255, 255, 255, 0.9);
+    z-index: 100000;
+}
+#lineExpand div{
+    padding: bottom 5px;
+    width:20px; height:20px;
+    overflow: hidden;
+    border-radius: 5px;
+}
+#lineExpand div:hover{
+    background-color: aqua;
+}
+#shape_line{
+    background-image: url("https://mlib.liuzijin.com/frontend/assets/line.svg");
+}
+#shape_rectangle{
+    background-image: url("https://mlib.liuzijin.com/frontend/assets/rectangle.svg");
+}
+#shape_ellipse{
+    background-image: url("https://mlib.liuzijin.com/frontend/assets/ellipse.svg");
+}
+#shape_polyline{
+    background-image: url("https://mlib.liuzijin.com/frontend/assets/polyline.svg");
+}
+#shape_polygon{
+    background-image: url("https://mlib.liuzijin.com/frontend/assets/polygon.svg");
+}
+#shape_freehand{
+    background-image: url("https://mlib.liuzijin.com/frontend/assets/freehand.svg");
+}

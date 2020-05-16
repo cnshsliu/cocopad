@@ -103,7 +103,6 @@ RtcCommon.addVideoView = (id, uid, isLocal = false) => {
 }
 
 RtcCommon.addMemberView = (vid, uid) => {
-    console.log(">>>KFK ignored. Add memberView", uid);
     let memberElm = $('#member-me').clone();
     memberElm.attr('id', uid);
     let userName = KFK.rtcUsers[uid] ? KFK.rtcUsers[uid].name : uid;
