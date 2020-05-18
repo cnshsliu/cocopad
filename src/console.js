@@ -901,7 +901,7 @@ KFK.onWsMsg = async function (response) {
             KFK.scrLog('购买成功，已放入“购买的彩板”项目');
             break;
         case 'GENSIG':
-            KFK.RtcManager.startVideoCall(response.config, response.shareConfig);
+            KFK.startVideoCall(response.config, response.shareConfig);
             break;
         case 'RTCSIGREQ':
             KFK.regRtcUser(response);
@@ -3806,10 +3806,10 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
                 evt.preventDefault();
                 return;
             }
-            if (KFK.firstShown['right'] === false && KFK.docIsNotReadOnly() && jqNodeDIV.hasClass('todolist') === false) {
-                KFK.show('#right');
-                KFK.firstShown['right'] = true;
-            }
+            // if (KFK.firstShown['right'] === false && KFK.docIsNotReadOnly() && jqNodeDIV.hasClass('todolist') === false) {
+            //     KFK.show('#right');
+            //     KFK.firstShown['right'] = true;
+            // }
 
 
             KFK.pickedShape = null;
@@ -11965,10 +11965,10 @@ KFK.toggleVideoCall = async () => {
     }
 }
 KFK.askVideoCall = async () => {
-    KFK.RtcManager ? await KFK.RtcManager.initMediaDevices() :
+    KFK.RtcManager ? await KFK.RtcManager.initRtc() :
     import('./rtcManager').then(async (pack) => {
         KFK.RtcManager = pack.RtcManager;
-        await KFK.RtcManager.initMediaDevices();
+        await KFK.RtcManager.initRtc();
     });
     KFK.duringVideo = true;
     let user_ser = KFK.prepareUserIdForRTC(KFK.APP.model.cocouser.userid);

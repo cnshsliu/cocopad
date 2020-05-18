@@ -5,7 +5,7 @@ const RtcManager = {};
 const TRTC = require('./Web/js/trtc');
 import KFK from './console';
 
-RtcManager.initMediaDevices = async () => {
+RtcManager.initRtc = async () => {
     // check if browser is compatible with TRTC
     TRTC.checkSystemRequirements().then(result => {
         if (!result) {
