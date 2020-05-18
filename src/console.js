@@ -24,11 +24,7 @@ import SHARE from "./sharemanage";
 import SVGs from "./svgs";
 import Validator from "./validator";
 // import { BIconFileEarmarkBreak } from "bootstrap-vue";
-import RtcCommon from './Web/js/common';
-import RtcClient from './Web/js/rtc-client';
-import ShareClient from './Web/js/share-client';
 import WS from "./ws";
-const TRTC = require('./Web/js/trtc');
 
 
 
@@ -905,7 +901,7 @@ KFK.onWsMsg = async function (response) {
             KFK.scrLog('购买成功，已放入“购买的彩板”项目');
             break;
         case 'GENSIG':
-            KFK.startVideoCall(response.config, response.shareConfig);
+            KFK.RtcManager.startVideoCall(response.config, response.shareConfig);
             break;
         case 'RTCSIGREQ':
             KFK.regRtcUser(response);
@@ -923,26 +919,6 @@ KFK.regRtcUser = (res) => {
     };
 };
 
-
-KFK.QC_RTC_login = (share, callback) => {
-    let userId = KFK.prepareUserIdForRTC(KFK.APP.model.cocouser.userid);
-    if (share) {
-        userId = 'share_' + userId;
-        callback({
-            sdkAppId: KFK.rtcConfig.sdkAppId,
-            userId: userId,
-            userSig: KFK.rtcShareConfig.userSig,
-            roomId: KFK.APP.model.cocodoc.doc_id,
-        });
-    } else {
-        callback({
-            sdkAppId: KFK.rtcConfig.sdkAppId,
-            userId: userId,
-            userSig: KFK.rtcConfig.userSig,
-            roomId: KFK.APP.model.cocodoc.doc_id,
-        });
-    }
-};
 
 KFK.focusOnNode = function (jqNodeDIV) {
     KFK.lastFocusOnJqNode = jqNodeDIV;
@@ -8299,7 +8275,7 @@ KFK.addDocumentEventHandler = function () {
                     //Left
                     if (evt.shiftKey) {
                         KFK.DivStyler ? KFK.DivStyler.horiSizeSmaller() :
-                            import('./DivStyler').then((pack) => {
+                            import('./divStyler').then((pack) => {
                                 KFK.DivStyler = pack.DivStyler;
                                 KFK.DivStyler.horiSizeSmaller();
                             });
@@ -8310,7 +8286,7 @@ KFK.addDocumentEventHandler = function () {
                     //UP
                     if (evt.shiftKey) {
                         KFK.DivStyler ? KFK.DivStyler.vertSizeBigger() :
-                            import('./DivStyler').then((pack) => {
+                            import('./divStyler').then((pack) => {
                                 KFK.DivStyler = pack.DivStyler;
                                 KFK.DivStyler.vertSizeBigger();
                             });
@@ -8321,7 +8297,7 @@ KFK.addDocumentEventHandler = function () {
                     //Right
                     if (evt.shiftKey) {
                         KFK.DivStyler ? KFK.DivStyler.horiSizeBigger() :
-                            import('./DivStyler').then((pack) => {
+                            import('./divStyler').then((pack) => {
                                 KFK.DivStyler = pack.DivStyler;
                                 KFK.DivStyler.horiSizeBigger();
                             });
@@ -8332,7 +8308,7 @@ KFK.addDocumentEventHandler = function () {
                     //Down
                     if (evt.shiftKey) {
                         KFK.DivStyler ? KFK.DivStyler.vertSizeSmaller() :
-                            import('./DivStyler').then((pack) => {
+                            import('./divStyler').then((pack) => {
                                 KFK.DivStyler = pack.DivStyler;
                                 KFK.DivStyler.vertSizeSmaller();
                             });
@@ -8560,7 +8536,7 @@ KFK.addDocumentEventHandler = function () {
                 if (evt.ctrlKey && evt.shiftKey) {
                     KFK.holdEvent(evt);
                     KFK.DivStyler ? KFK.DivStyler.copyStyle() :
-                        import('./DivStyler').then((pack) => {
+                        import('./divStyler').then((pack) => {
                             KFK.DivStyler = pack.DivStyler;
                             KFK.DivStyler.copyStyle();
                         });
@@ -8570,7 +8546,7 @@ KFK.addDocumentEventHandler = function () {
                 if (evt.ctrlKey && evt.shiftKey) {
                     KFK.holdEvent(evt);
                     KFK.DivStyler ? KFK.DivStyler.pasteStyle() :
-                        import('./DivStyler').then((pack) => {
+                        import('./divStyler').then((pack) => {
                             KFK.DivStyler = pack.DivStyler;
                             KFK.DivStyler.pasteStyle();
                         });
@@ -8580,7 +8556,7 @@ KFK.addDocumentEventHandler = function () {
                 if (evt.ctrlKey) {
                     KFK.holdEvent(evt);
                     KFK.DivStyler ? KFK.DivStyler.fontSmaller() :
-                        import('./DivStyler').then((pack) => {
+                        import('./divStyler').then((pack) => {
                             KFK.DivStyler = pack.DivStyler;
                             KFK.DivStyler.fontSmaller();
                         });
@@ -8590,7 +8566,7 @@ KFK.addDocumentEventHandler = function () {
                 if (evt.ctrlKey) {
                     KFK.holdEvent(evt);
                     KFK.DivStyler ? KFK.DivStyler.fontBigger() :
-                        import('./DivStyler').then((pack) => {
+                        import('./divStyler').then((pack) => {
                             KFK.DivStyler = pack.DivStyler;
                             KFK.DivStyler.fontBigger();
                         });
@@ -11978,74 +11954,6 @@ KFK.clickOnRightPanel = function (evt) {
     evt.stopPropagation();
 };
 
-KFK.initMediaDevices = async () => {
-    // const openMediaDevices = async (constraints) => {
-    //     return await navigator.mediaDevices.getUserMedia(constraints);
-    // }
-
-    // try {
-    //     const stream = await openMediaDevices({ 'video': true, 'audio': true });
-    //     console.log('Got MediaStream:', stream);
-    // } catch (error) {
-    //     console.error('Error accessing media devices.', error);
-    // }
-
-
-    // check if browser is compatible with TRTC
-    TRTC.checkSystemRequirements().then(result => {
-        if (!result) {
-            alert('您的浏览器不兼容此应用！\n建议下载最新版Chrome浏览器');
-            // window.location.href = 'http://www.google.cn/chrome/';
-        }
-    });
-    // setup logging stuffs
-    TRTC.Logger.setLogLevel(TRTC.Logger.LogLevel.DEBUG);
-    TRTC.Logger.enableUploadLog();
-
-    TRTC.getDevices()
-        .then(devices => {
-            devices.forEach(item => {
-                console.log('device: ' + item.kind + ' ' + item.label + ' ' + item.deviceId);
-            });
-        })
-        .catch(error => console.error('getDevices error observed ' + error));
-
-    // populate camera options
-    TRTC.getCameras().then(devices => {
-        $('#camera-option').empty();
-        devices.forEach(device => {
-            if (!RtcCommon.cameraId) {
-                RtcCommon.cameraId = device.deviceId;
-            }
-            let div = $('<div></div>');
-            div.attr('id', device.deviceId);
-            div.addClass('simplehover');
-            div.html(device.label);
-            div.appendTo('#camera-option');
-            div.on('click', (evt) => {
-                RtcCommon.setCameraId($(evt.target).attr("id"));
-            });
-        });
-    });
-
-    // populate microphone options
-    TRTC.getMicrophones().then(devices => {
-        $('#mic-option').empty();
-        devices.forEach(device => {
-            if (!RtcCommon.micId) {
-                RtcCommon.micId = device.deviceId;
-            }
-            let div = $('<div></div>');
-            div.attr('id', device.deviceId);
-            div.addClass('simplehover');
-            div.html(device.label);
-            div.appendTo('#mic-option');
-            div.on('click', (evt) => {
-                RtcCommon.setMicId(device.deviceId);
-            });
-        });
-    });
-};
 KFK.prepareUserIdForRTC = (userId) => {
     return userId.replace(/[@|\.]/g, '_');
 };
@@ -12058,7 +11966,7 @@ KFK.toggleVideoCall = async () => {
 }
 KFK.askVideoCall = async () => {
     KFK.RtcManager ? await KFK.RtcManager.initMediaDevices() :
-    import('./RtcManager').then((pack) => {
+    import('./rtcManager').then(async (pack) => {
         KFK.RtcManager = pack.RtcManager;
         await KFK.RtcManager.initMediaDevices();
     });
@@ -12066,94 +11974,24 @@ KFK.askVideoCall = async () => {
     let user_ser = KFK.prepareUserIdForRTC(KFK.APP.model.cocouser.userid);
     await KFK.sendCmd('GENSIG', { user_ser: user_ser });
 };
-KFK.stopVideoCall = async () => {
-    if (KFK.duringVideo === true) {
-        RtcCommon.leave();
-        KFK.duringVideo = false;
-        $('#video_room').addClass('noshow');
-    }
-};
-
-KFK.startVideoCall = function (config, shareConfig) {
-    KFK.rtcConfig = config;
-    KFK.rtcShareConfig = shareConfig;
-    KFK.show($('#video_room'));
-    KFK.QC_RTC_login(false, options => {
-        RtcCommon.rtc = new RtcClient(options);
-        RtcCommon.join();
-    });
-    KFK.QC_RTC_login(true, options => {
-        RtcCommon.shareUserId = options.userId;
-        RtcCommon.share = new ShareClient(options);
-    });
+KFK.stopVideoCall = async ()=>{
+    await KFK.RtcManager.stopVideoCall();
 }
-
-KFK.toggleScreenSharing = function () {
-    if (KFK.lastScreenSharingClick !== undefined) return;
-    KFK.lastScreenSharingClick = new Date().getTime();
-    if (!TRTC.isScreenShareSupported()) {
-        alert('当前浏览器不支持屏幕分享！');
-        return;
-    }
-    if (RtcCommon.isScreenOn === true) {
-        $('#screen-btn').attr('src', KFK.getFrontEndUrl('rtc/screen-off.png'));
-        RtcCommon.stopSharing();
-        RtcCommon.isScreenOn = false;
-    } else {
-        $('#screen-btn').attr('src', KFK.getFrontEndUrl('rtc/screen-on.png'));
-        RtcCommon.startSharing();
-        RtcCommon.isScreenOn = true;
-    }
-    setTimeout(function () {
-        KFK.lastScreenSharingClick = undefined;
-    }, 2000);
+KFK.toggleScreenSharing = function(){
+    KFK.RtcManager.toggleScreenSharing();
 };
-
-KFK.switchCamera = function () {
-    if (RtcCommon.isCamOn) {
-        $('#video-btn').attr('src', KFK.getFrontEndUrl('rtc/big-camera-off.png'));
-        $('#video-btn').attr('title', '打开摄像头');
-        $('#member-me').find('.member-video-btn').attr('src', KFK.getFrontEndUrl('rtc/camera-off.png'));
-        RtcCommon.isCamOn = false;
-        RtcCommon.muteVideo();
-    } else {
-        $('#video-btn').attr('src', KFK.getFrontEndUrl('rtc/big-camera-on.png'));
-        $('#video-btn').attr('title', '关闭摄像头');
-        $('#member-me').find('.member-video-btn').attr('src', KFK.getFrontEndUrl('rtc/camera-on.png'));
-        RtcCommon.isCamOn = true;
-        RtcCommon.unmuteVideo();
-    }
-};
-
-KFK.switchMic = function () {
-    if (RtcCommon.isMicOn) {
-        $('#mic-btn').attr('src', KFK.getFrontEndUrl('rtc/big-mic-off.png'));
-        $('#mic-btn').attr('title', '打开麦克风');
-        $('#member-me').find('.member-audio-btn').attr('src', KFK.getFrontEndUrl('rtc/mic-off.png'));
-        RtcCommon.isMicOn = false;
-        RtcCommon.muteAudio();
-    } else {
-        $('#mic-btn').attr('src', KFK.getFrontEndUrl('rtc/big-mic-on.png'));
-        $('#mic-btn').attr('title', '关闭麦克风');
-        $('#member-me').find('.member-audio-btn').attr('src', KFK.getFrontEndUrl('rtc/mic-on.png'));
-        RtcCommon.isMicOn = true;
-        RtcCommon.unmuteAudio();
-    }
-};
+KFK.switchCamera = function(){
+    KFK.RtcManager.switchCamera();
+}
+KFK.switchMic = function(){
+    KFK.RtcManager.switchMic();
+}
 KFK.clickMainVideo = function () {
     let mainVideo = $('.video-box').first();
     if ($('#main-video').is(mainVideo)) {
         return;
     }
-    //释放main-video grid-area
-    // mainVideo.css('grid-area', 'auto/auto/auto/auto');
-    RtcCommon.exchangeView($('#main-video'), mainVideo);
-    //将video-grid中第一个div设为main-video
-    // $('.video-box').first().css('grid-area', '1/1/3/4');
-    //chromeM71以下会自动暂停，手动唤醒
-    if (RtcCommon.getBroswer().broswer == 'Chrome' && RtcCommon.getBroswer().version < '72') {
-        RtcCommon.rtc.resumeStreams();
-    }
+    KFK.RtcManager.clickMainVideo();
 };
 
 KFK.expandTool = function (evt, tool) {
