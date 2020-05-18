@@ -134,7 +134,7 @@
                             :state="state.reg.userid" required placeholder="手机号或邮箱地址"></b-form-input>
                     </b-input-group>
                     请使用邮箱地址注册，谢谢<BR>手机号码注册暂未上线
-                    <!-- 虽然可以用邮箱注册，但如果你未来需要组织三人以上的团队协作时，还是需要用到手机号码<BR>
+                    <!-- 虽然可以用邮箱注册，但如果你未来需要团队三人以上的团队协作时，还是需要用到手机号码<BR>
                     所以，请尽量使用手机号码来注册 -->
                     <b-input-group prepend="您的全称" class="mb-1">
                         <b-form-input id="regUserName" tabindex="2" trim v-model="model.register.name"
@@ -1603,20 +1603,20 @@
                         <b-tab title-link-class="tab-space" disabled>
                         </b-tab>
 
-                        <b-tab title="我的组织" @click="KFK.onClickOrgTab">
+                        <b-tab title="我的团队" @click="KFK.onClickOrgTab">
                             <!-- org list -->
                             <!-- https://bootstrap-vue.js.org/docs/components/collapse/#accordion-support -->
                             <div role="tablist">
                                 <b-card no-body class="mb-1">
                                     <b-card-header header-tag="header" class="p-1" role="tab">
-                                        <b-button block href="#" v-b-toggle.accordion_currentorg variant="info">当前组织:
+                                        <b-button block href="#" v-b-toggle.accordion_currentorg variant="info">当前团队:
                                             {{model.cocouser.orgname}}
                                         </b-button>
                                     </b-card-header>
                                     <b-collapse id="accordion_currentorg" visible accordion="my-accordion"
                                         role="tabpanel">
                                         <b-card-body>
-                                            您当前工作所在的组织为: {{model.cocouser.orgname}}
+                                            您当前工作所在的团队为: {{model.cocouser.orgname}}
                                         </b-card-body>
                                     </b-collapse>
                                 </b-card>
@@ -1625,7 +1625,7 @@
                                     <b-card-header header-tag="header" class="p-1" role="tab">
                                         <b-button block href="#" v-b-toggle.accordion_myorg variant="info"
                                             @click="KFK.toggleAccordionMyOrg">
-                                            我创建并管理的组织
+                                            我创建并管理的团队
                                         </b-button>
                                     </b-card-header>
                                     <b-collapse id="accordion_myorg" v-model="model.accordion.myorg"
@@ -1645,7 +1645,7 @@
                                                         <b-button size="sm"
                                                             @click="KFK.deleteOrg(aOrg.item, aOrg.item.name)"
                                                             class="mr-2">
-                                                            删除组织
+                                                            删除团队
                                                         </b-button>
                                                         <b-button size="sm" @click="KFK.enterOrg(aOrg.item._id)"
                                                             class="mr-2">
@@ -1718,7 +1718,7 @@
                                     <!-- my vorg myvog my joined org-->
                                     <b-card-header header-tag="header" class="p-1" role="tab">
                                         <b-button block href="#" v-b-toggle.accordion_vorg variant="info"
-                                            @click="KFK.toggleAccordionEnteredOrg">我可以加入的由他人管理组织
+                                            @click="KFK.toggleAccordionEnteredOrg">我可以加入的由他人管理团队
                                         </b-button>
                                     </b-card-header>
                                     <b-collapse id="accordion_vorg" accordion="my-accordion" role="tabpanel">
@@ -1740,13 +1740,13 @@
                                 </b-card>
                                 <b-card no-body class="mb-1">
                                     <b-card-header header-tag="header" class="p-1" role="tab">
-                                        <b-button block href="#" v-b-toggle.accordion_neworg variant="info">新创建组织
+                                        <b-button block href="#" v-b-toggle.accordion_neworg variant="info">新创建团队
                                         </b-button>
                                     </b-card-header>
                                     <b-collapse id="accordion_neworg" accordion="my-accordion" role="tabpanel">
                                         <b-card-body>
                                             <b-form>
-                                                <b-input-group prepend="组织名称">
+                                                <b-input-group prepend="团队名称">
                                                     <b-form-input class="coco-input" id="neworgname" trim
                                                         placeholer="4-20个英文字母或汉字" v-model="model.org.neworg.name"
                                                         v-on:keydown="KFK.onNormalInput($event)">
@@ -1942,7 +1942,7 @@
                         <b-form-group label="请选择访问范围">
                             <b-form-radio v-model="model.currentDoc.acl" name="aclRadios" value="S">仅发起人: 只有发起人自己可以使用
                             </b-form-radio>
-                            <b-form-radio v-model="model.currentDoc.acl" name="aclRadios" value="O">所在组织: 在白板所属组织内使用
+                            <b-form-radio v-model="model.currentDoc.acl" name="aclRadios" value="O">所在团队: 在白板所属团队内使用
                             </b-form-radio>
                             <b-form-radio v-model="model.currentDoc.acl" name="aclRadios" value="P">公开使用: 不限制使用范围
                             </b-form-radio>
@@ -1959,7 +1959,7 @@
                                 <B>仅发起人</B>: 只有白板发起人可以使用
                             </li>
                             <li>
-                                <B>所在组织</B>: 在白板所属组织(创建时发起人的组织)内使用
+                                <B>所在团队</B>: 在白板所属团队(创建时发起人的团队)内使用
                             </li>
                             <li>
                                 <B>公开可见</B>: 不限制使用范围
@@ -2138,7 +2138,7 @@
                         <b-row class="m-0 p-0">
                             <b-col class="m-0 p-1">
                                 <b-button variant='outline-primary' @click="KFK.showPriceListDialog" class="w-100">
-                                    彩板功能使用点费说明 》 点此查看不同组织等级的操作权限、升级方法及相关费用。
+                                    彩板功能使用点费说明 》 点此查看不同团队等级的操作权限、升级方法及相关费用。
                                 </b-button>
                             </b-col>
                         </b-row>
@@ -2185,7 +2185,7 @@
                     </b-container>
                 </b-modal>
                 <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" v-model="show.dialog.priceListDialog"
-                    button-size="sm" centered size="xl" :hide-footer="true" title="关于组织等级及操作点的说明">
+                    button-size="sm" centered size="xl" :hide-footer="true" title="关于团队等级及操作点的说明">
                     <iframe id="iframe-price" :src="KFK.getFrontEndUrl('listprice.html')" frameborder="0"
                         style="overflow:hidden;height:600px;width:100%"></iframe>
                 </b-modal>
@@ -2257,7 +2257,7 @@
                         <b-col>
                             <div v-show='model.share.okToSetACL'>
                                 <b-button class="mt-1" @click='KFK.setAclInShare("S")'>设为仅自己可用</b-button>
-                                <b-button class="mt-1" @click='KFK.setAclInShare("O")'>设为仅当前组织可参与</b-button>
+                                <b-button class="mt-1" @click='KFK.setAclInShare("O")'>设为仅当前团队可参与</b-button>
                                 <b-button class="mt-1" @click='KFK.setAclInShare("P")'>设为公开可参与</b-button>
                             </div>
                         </b-col>
@@ -2306,13 +2306,13 @@
                             <font color='red'>如白板限制为仅发起人，协作者无法参与协作</font>
                         </li>
                         <li>
-                            <font color='red'>如白板限制为当前组织，协作者需要在同一组织才能参与</font>
+                            <font color='red'>如白板限制为当前团队，协作者需要在同一团队才能参与</font>
                         </li>
                         <li>
                             <font color='red'>如白板限制为公开使用，任何协作者均可参与</font>
                         </li>
                         <li>如协作者打开链接时未注册未登录过，则使用临时用户身份参与，此时，协作者只能参与“公开使用”的白板</li>
-                        <li>请提醒对方尽快注册为正式用户，然后你需要把该用户添加到你的组织，对方选择进入组织后，即可参与权限为”当前组织“的白板协作</li>
+                        <li>请提醒对方尽快注册为正式用户，然后你需要把该用户添加到你的团队，对方选择进入团队后，即可参与权限为”当前团队“的白板协作</li>
                         <li>需要时，你还可以进一步在管理界面设置白板密码, 即便协作者有权参与协作，也需要输入正确的密码才能打开白板</li>
                         <li>你也可以将白板设为只读模式， 此时，所有人只能查看、不能修改白板</li>
                     </ol>

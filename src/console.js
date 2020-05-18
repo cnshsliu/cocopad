@@ -1242,33 +1242,15 @@ KFK.procLinkNode = function (shiftKey, text) {
     let tmp4 = KFK.linkPosNode[1].attr("linkto");
     if (tmp1 !== tmp3) {
         KFK.debug("The first node linkto has been changed");
-        KFK.syncNodePut(
-            "U",
-            KFK.linkPosNode[0],
-            "connect nodes",
-            null,
-            false,
-            0,
-            1
-        );
+        KFK.syncNodePut("U", KFK.linkPosNode[0], "connect nodes", null, false, 0, 1);
     }
     if (tmp2 !== tmp4) {
         KFK.debug("The second node linkto has been changed");
-        KFK.syncNodePut(
-            "U",
-            KFK.linkPosNode[1],
-            "connect nodes",
-            null,
-            false,
-            0,
-            1
-        );
+        KFK.syncNodePut("U", KFK.linkPosNode[1], "connect nodes", null, false, 0, 1);
     }
 
     if (!shiftKey) {
         KFK.linkPosNode.splice(0, 2);
-        if (KFK.lockTool === false)
-            KFK.setMode("pointer");
     } else {
         KFK.linkPosNode[0] = KFK.linkPosNode[1];
         KFK.linkPosNode.splice(1, 1);
@@ -1810,6 +1792,15 @@ KFK.initC3 = function () {
     });
     KFK.JC3.on("click", async function (evt) {
         if (KFK.inDesigner() === false) return;
+        let tmpPoint = { x: evt.clientX, y: evt.clientY };
+        if (KFK.pointAfterResize) {
+            if (KFK.distance(tmpPoint, KFK.pointAfterResize) < 10) {
+                KFK.pointAfterResize = undefined;
+                return;
+            } else {
+                KFK.pointAfterResize = undefined;
+            }
+        }
         if (KFK.isEditting && KFK.quillEdittingNode) {
             await KFK.finishQuillEditting();
             return;
@@ -1882,18 +1873,8 @@ KFK.initC3 = function () {
                 let realX = KFK.scalePoint(KFK.scrXToJc3X(evt.clientX));
                 let realY = KFK.scalePoint(KFK.scrYToJc3Y(evt.clientY));
                 let jqDIV = await KFK.placeNode(
-                    evt.shiftKey,
-                    KFK.myuid(),
-                    KFK.mode,
-                    variant,
-                    realX,
-                    realY,
-                    undefined,
-                    undefined,
-                    "",
-                    ""
+                    evt.shiftKey, KFK.myuid(), KFK.mode, variant, realX, realY, undefined, undefined, "", ""
                 );
-                if (!evt.shiftKey) KFK.setMode("pointer");
                 await KFK.syncNodePut("C", jqDIV, "new node", null, false, 0, 1);
             }
         }
@@ -2706,18 +2687,7 @@ KFK.beginImportBr = async function () {
  * @param   attach  the inner content
  * @param   attach2  the lower inner content, which has a ossimage class which z-index is -1, normally, attach2 is suitable for place a backgrund div
  */
-KFK.placeNode = async function (
-    shiftKey,
-    id,
-    type,
-    variant,
-    x,
-    y,
-    w,
-    h,
-    attach,
-    attach2
-) {
+KFK.placeNode = async function (shiftKey, id, type, variant, x, y, w, h, attach, attach2) {
     let aNode = new Node(id, type, variant, x, y, w, h, attach, attach2);
 
     let nodeDIV = await KFK._createNode(aNode);
@@ -3461,8 +3431,9 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
                     KFK.resizing = true;
                 },
                 resize: () => { },
-                stop: async () => {
+                stop: async (evt) => {
                     KFK.debug("Stop Resizing...");
+                    KFK.pointAfterResize = { x: evt.clientX, y: evt.clientY };
                     if (KFK.APP.model.viewConfig.snap) {
                         let tmpRight = KFK.divRight(jqNodeDIV);
                         let tmpBottom = KFK.divBottom(jqNodeDIV);
@@ -3519,15 +3490,7 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
                     KFK.setSelectedNodesBoundingRect();
 
                     if (KFK.isNotA(jqNodeDIV, "noedit")) {
-                        await KFK.syncNodePut(
-                            "U",
-                            jqNodeDIV.clone(),
-                            "resize node",
-                            KFK.fromJQ,
-                            false,
-                            0,
-                            1
-                        );
+                        await KFK.syncNodePut("U", jqNodeDIV.clone(), "resize node", KFK.fromJQ, false, 0, 1);
                     }
 
                 },
@@ -3893,8 +3856,6 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
             if (KFK.mode === "pointer") {
                 KFK.selectNodesOnClick(jqNodeDIV, evt.shiftKey);
                 KFK.resetPropertyOnMultipleNodesSelected();
-            } else if (KFK.mode === "yellowtip") {
-                KFK.setMode('pointer');
             } else if (KFK.mode === "connect") {
                 if (KFK.afterDragging === false) {
                     KFK.yarkLinkNode(jqNodeDIV, evt.shiftKey, "", KFK.FROM_CLIENT);
@@ -3920,6 +3881,8 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
                 evt.stopPropagation();
                 KFK.setMode("pointer");
                 return;
+            } else {
+                KFK.setMode('pointer');
             }
         });
     } catch (error) {
@@ -5316,18 +5279,25 @@ KFK.init = async function () {
     $("#left_scenarios").removeClass("noshow");
     //先不做重新载入,每次进入使用缺省配置可能对培养用户习惯更合适一些
     KFK.initExplorer();
-    await KFK.showSection({
-        sigin: false,
-        register: false,
-        explorer: false,
-        designer: false,
-    });
+    if (KFK.urlMode === 'gotoSignin') {
+        KFK.gotoSignin();
+        KFK.setAppData("show", "waiting", false);
+    } else if (KFK.urlMode == 'gotoRegister') {
+        KFK.gotoRegister();
+        KFK.setAppData("show", "waiting", false);
+    } else {
+        await KFK.showSection({
+            sigin: false,
+            register: false,
+            explorer: false,
+            designer: false,
+        });
 
-    KFK.scrLog("彩板-多人协作网络白板", 1000);
-    await KFK.checkSession();
-    setInterval(() => {
-        KFK.AI('hover_c3');
-    }, 10000);
+        await KFK.checkSession();
+        setInterval(() => {
+            KFK.AI('hover_c3');
+        }, 10000);
+    }
 
 };
 
@@ -5371,7 +5341,7 @@ KFK.initDesigner = async function () {
 
 KFK.initTypeWriter = function () {
     KFK.dataText = ["异地办公", "跨地域团队", "在家办公", "通过网络开展工作时", "出差在外", "需要远程工作时", "无法跟同事当面讨论时",
-"订不到会议室时", "找不到可以一起写写画画的白板时" ];
+        "订不到会议室时", "找不到可以一起写写画画的白板时"];
 
     // type one text in the typwriter
     // keeps calling itself until the text is finished
@@ -5399,11 +5369,11 @@ KFK.initTypeWriter = function () {
                 StartTextAnimation(0);
             }, 1000);
         } else {
-                // text exists! start typewriter animation
-                typeWriter(KFK.dataText[i], 0, function () {
-                    // after callback (and whole text has been animated), start next text
-                    StartTextAnimation(i + 1);
-                });
+            // text exists! start typewriter animation
+            typeWriter(KFK.dataText[i], 0, function () {
+                // after callback (and whole text has been animated), start next text
+                StartTextAnimation(i + 1);
+            });
         }
     }
     // start the text animation
@@ -8327,24 +8297,48 @@ KFK.addDocumentEventHandler = function () {
                     evt.stopPropagation();
                 } else if (evt.keyCode === 37) {
                     //Left
-                    KFK.gotoLeftPage();
-                    evt.preventDefault();
-                    evt.stopPropagation();
+                    if (evt.shiftKey) {
+                        KFK.DivStyler ? KFK.DivStyler.horiSizeSmaller() :
+                            import('./DivStyler').then((pack) => {
+                                KFK.DivStyler = pack.DivStyler;
+                                KFK.DivStyler.horiSizeSmaller();
+                            });
+                    } else
+                        KFK.gotoLeftPage();
+                    KFK.holdEvent(evt);
                 } else if (evt.keyCode === 38) {
                     //UP
-                    KFK.gotoUpperPage();
-                    evt.preventDefault();
-                    evt.stopPropagation();
+                    if (evt.shiftKey) {
+                        KFK.DivStyler ? KFK.DivStyler.vertSizeBigger() :
+                            import('./DivStyler').then((pack) => {
+                                KFK.DivStyler = pack.DivStyler;
+                                KFK.DivStyler.vertSizeBigger();
+                            });
+                    } else
+                        KFK.gotoUpperPage();
+                    KFK.holdEvent(evt);
                 } else if (evt.keyCode === 39) {
                     //Right
-                    KFK.gotoRightPage();
-                    evt.preventDefault();
-                    evt.stopPropagation();
+                    if (evt.shiftKey) {
+                        KFK.DivStyler ? KFK.DivStyler.horiSizeBigger() :
+                            import('./DivStyler').then((pack) => {
+                                KFK.DivStyler = pack.DivStyler;
+                                KFK.DivStyler.horiSizeBigger();
+                            });
+                    } else
+                        KFK.gotoRightPage();
+                    KFK.holdEvent(evt);
                 } else if (evt.keyCode === 40) {
                     //Down
-                    KFK.gotoLowerPage();
-                    evt.preventDefault();
-                    evt.stopPropagation();
+                    if (evt.shiftKey) {
+                        KFK.DivStyler ? KFK.DivStyler.vertSizeSmaller() :
+                            import('./DivStyler').then((pack) => {
+                                KFK.DivStyler = pack.DivStyler;
+                                KFK.DivStyler.vertSizeSmaller();
+                            });
+                    } else
+                        KFK.gotoLowerPage();
+                    KFK.holdEvent(evt);
                 } else if (evt.keyCode === 32) { //space
                     //浏览器中按空格时，浏览器会滚动， 这里把它屏蔽掉
                     evt.preventDefault();
@@ -8516,7 +8510,7 @@ KFK.addDocumentEventHandler = function () {
             case 46: //Delete
                 KFK.deleteHoverOrSelectedDiv(evt, false);
                 break;
-            case 66:
+            case 66: // key B
                 if (evt.ctrlKey || evt.metaKey) {
                     let ijq = KFK.getHoverFocusLastCreateInner();
                     if (ijq) {
@@ -8529,7 +8523,7 @@ KFK.addDocumentEventHandler = function () {
                     }
                 }
                 break;
-            case 73:
+            case 73: //key I
                 if (evt.ctrlKey || evt.metaKey) {
                     let ijq = KFK.getHoverFocusLastCreateInner();
                     if (ijq) {
@@ -8560,6 +8554,46 @@ KFK.addDocumentEventHandler = function () {
                     evt.preventDefault();
                     evt.stopPropagation();
                     KFK.zoomInOut('zoomout');
+                }
+                break;
+            case 67: //Ctrl-Shift-C
+                if (evt.ctrlKey && evt.shiftKey) {
+                    KFK.holdEvent(evt);
+                    KFK.DivStyler ? KFK.DivStyler.copyStyle() :
+                        import('./DivStyler').then((pack) => {
+                            KFK.DivStyler = pack.DivStyler;
+                            KFK.DivStyler.copyStyle();
+                        });
+                }
+                break;
+            case 86: //Ctrl-Shift-V
+                if (evt.ctrlKey && evt.shiftKey) {
+                    KFK.holdEvent(evt);
+                    KFK.DivStyler ? KFK.DivStyler.pasteStyle() :
+                        import('./DivStyler').then((pack) => {
+                            KFK.DivStyler = pack.DivStyler;
+                            KFK.DivStyler.pasteStyle();
+                        });
+                }
+                break;
+            case 219: //Ctrl-[
+                if (evt.ctrlKey) {
+                    KFK.holdEvent(evt);
+                    KFK.DivStyler ? KFK.DivStyler.fontSmaller() :
+                        import('./DivStyler').then((pack) => {
+                            KFK.DivStyler = pack.DivStyler;
+                            KFK.DivStyler.fontSmaller();
+                        });
+                }
+                break;
+            case 221: //Ctrl-]
+                if (evt.ctrlKey) {
+                    KFK.holdEvent(evt);
+                    KFK.DivStyler ? KFK.DivStyler.fontBigger() :
+                        import('./DivStyler').then((pack) => {
+                            KFK.DivStyler = pack.DivStyler;
+                            KFK.DivStyler.fontBigger();
+                        });
                 }
                 break;
             default:
@@ -8695,6 +8729,16 @@ KFK.addDocumentEventHandler = function () {
     });
 
     KFK.documentEventHandlerSet = true;
+};
+
+KFK.executeFunctionByName = function (functionName, context) {
+    var args = Array.prototype.slice.call(arguments, 2);
+    var namespaces = functionName.split(".");
+    var func = namespaces.pop();
+    for (var i = 0; i < namespaces.length; i++) {
+        context = context[namespaces[i]];
+    }
+    return context[func].apply(context, args);
 };
 
 
@@ -11547,16 +11591,7 @@ KFK.procPasteBlob = async function (blob) {
 
 KFK.makeImageDiv = async function (fileId, posx, posy, imgUrl) {
     let jqDIV = await KFK.placeNode(
-        false, //shiftKey
-        fileId,
-        "textblock",
-        "default",
-        posx,
-        posy,
-        100,
-        100,
-        "",
-        `<img src="${imgUrl} "/>`
+        false, //shiftKey fileId, "textblock", "default", posx, posy, 100, 100, "", `<img src="${imgUrl} "/>`
     );
     await KFK.syncNodePut("C", jqDIV, "create image node", null, false, 0, 1);
 };
@@ -12022,7 +12057,11 @@ KFK.toggleVideoCall = async () => {
     }
 }
 KFK.askVideoCall = async () => {
-    await KFK.initMediaDevices();
+    KFK.RtcManager ? await KFK.RtcManager.initMediaDevices() :
+    import('./RtcManager').then((pack) => {
+        KFK.RtcManager = pack.RtcManager;
+        await KFK.RtcManager.initMediaDevices();
+    });
     KFK.duringVideo = true;
     let user_ser = KFK.prepareUserIdForRTC(KFK.APP.model.cocouser.userid);
     await KFK.sendCmd('GENSIG', { user_ser: user_ser });
@@ -12131,6 +12170,7 @@ KFK.expandTool = function (evt, tool) {
     jExpand.css({ 'top': top, 'left': 65 });
 };
 
+
 document.onpaste = KFK.onPaste;
 document.oncopy = KFK.onCopy;
 document.oncut = KFK.onCut;
@@ -12140,6 +12180,7 @@ let host = $(location).attr("host");
 let protocol = $(location).attr("protocol");
 KFK.urlBase = protocol + "//" + host + cocoConfig.product.basedir;
 let urlSearch = window.location.search;
+let urlPath = window.location.pathname;
 WS.remoteEndpoint = cocoConfig.ws_server.endpoint.url;
 BossWS.remoteEndpoint = cocoConfig.ws_server.endpoint.url;
 if (urlSearch.startsWith("?dou=")) {
@@ -12152,9 +12193,17 @@ if (urlSearch.startsWith("?dou=")) {
     KFK.urlMode = "ivtcode";
     KFK.shareCode = urlSearch.substr(3);
     window.history.replaceState({}, null, KFK.urlBase);
+} else if (urlPath.startsWith("/reg") || urlPath.startsWith('/signup')) {
+    KFK.urlMode = "gotoRegister";
+    console.log('KFK.gotoRegister.....');
+    window.history.replaceState({}, null, KFK.urlBase);
+} else if (urlPath.startsWith("/signin")) {
+    KFK.urlMode = "gotoSignin";
+    console.log('KFK.gotoRegister.....');
+    window.history.replaceState({}, null, KFK.urlBase);
 } else {
     window.history.replaceState({}, null, KFK.urlBase);
 }
-KFK.debug("URL MODE is", KFK.urlMode);
+KFK.debug("Path:", urlPath, "Search:", urlSearch, "Mode:", KFK.urlMode);
 
 export default KFK;

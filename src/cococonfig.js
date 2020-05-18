@@ -25,7 +25,7 @@ const config = {
         endpoint_local: { label: 'LOCAL', url: 'ws://localhost:5008/grume/wsquux' },
     },
     frontend: {
-        url: 'https://mlib.liuzijin.com/frontend',
+        url: 'http://localhost:8087',
         url_remote: 'https://mlib.liuzijin.com/frontend',
         url_local: 'http://localhost:8087',
     },
@@ -75,7 +75,7 @@ const config = {
         yellowtip: {
             edittable: true,
             resizable: true, droppable: true, defaultTip: 'tip',
-            minWidth: 20, minHeight: 20, //resize的最小高度和宽度
+            minWidth: 50, minHeight: 50, //resize的最小高度和宽度
             style: {
                 'width': '160', 'height': '160',
                 'display': 'flex',
@@ -89,7 +89,6 @@ const config = {
                 content: '',
                 style: {
                     'display': 'flex',
-                    'padding': '0px',
                     'font-size': '18px', 'color': 'black',
                     'position': 'absolute', width: '100%', height: '100%', 'z-index': 1,
                     'justify-content': 'center',
@@ -100,7 +99,7 @@ const config = {
         textblock: {
             edittable: true,
             resizable: true, droppable: true, defaultTip: 'tip',
-            minWidth: 20, minHeight: 20,
+            minWidth: 30, minHeight: 30,
             customshape: true,
             style: {
                 'width': '160', 'height': '160',
