@@ -182,6 +182,7 @@ input::placeholder {
 }
 
 .leftbkg {
+    display:none;
     position: absolute;
     top: 0px;
     left: 0px;
@@ -196,33 +197,22 @@ input::placeholder {
 .left_scenarios {
     position: absolute;
     top: 100px;
-    left: 50px;
+    left: 0px;
     width: 200px;
     height: 100%;
+    display: none;
 }
 
 
-.left_top_logo_image {
+.left_top_logo {
     position: absolute;
-    left: 20px;
-    top: 20px;
-    width: 80px;
-    height: 80px;
-    border-radius: 10px;
+    left: 20px; top: 10px;
     z-index: 10;
+    display: flex; flex-direction: row;
 }
-
-.cocoslogon {
-    position: absolute;
-    left: 120px;
-    top: 15px;
-    width: 200px;
-    height: 80px;
-    border-radius: 10px;
-    z-index: 10;
-    /* background-image: url('../src/caiban.png'); */
-    background-repeat: no-repeat;
-    background-size: 100% 100%;
+.left_top_logo img{
+    height: 50px;
+    margin-right: 10px;
 }
 
 .left_top_image {
@@ -362,8 +352,7 @@ input::placeholder {
 }
 
 .logo {
-    width: 48px;
-    height: 48px;
+    width: 65px;
 }
 
 .cocologo {
@@ -676,8 +665,8 @@ svg path {
 .signinform,
 .registerform {
     position: absolute;
-    width: 400px;
-    height: 600px;
+    width: 98%;
+    height: 500px;
     background-color: transparent;
     z-index: 99999;
     border-radius: 20px;
@@ -823,12 +812,11 @@ input#regUserCode {
     -ms-transform: translate(-50%, 0%);
     -o-transform: translate(-50%, 0%);
     transform: translate(-50%, 0%);
-    background-color: #ffffffbb;
+    background-color: #ffffff;
     /*最大1000px, 窗口宽度的90%*/
     width: min(90vw, 1000px);
     height: calc(100vh - 120px);
     padding: 20px;
-    box-shadow: -1px 0 15px #919191, 0 1px 15px #919191, 1px 0 15px #919191, 0 -1px 15px #919191;
     border-radius: 10px;
 }
 
@@ -940,7 +928,7 @@ select:focus {
     font-size: 24px;
     color: white;
     padding-left:5px;
-    background-color: #28a745;
+    background-color: #4B92DB;
     border-radius: 10px 10px 0px 0px;
     cursor: pointer;
 }
@@ -1317,6 +1305,137 @@ select:focus {
     width: 100%;
     height: 100%;
 }
+@keyframes jellomiddle {
+    0% {
+        -webkit-transform: scale(1.2);
+        transform: scale(1.2);
+    }
+    50% {
+        -webkit-transform: scale(0.8);
+        transform: scale(0.8);
+    }
+    100% {
+        -webkit-transform: scale(1.2);
+        transform: scale(1.2);
+    }
+}
+@keyframes progress1 {
+    from { width: 0 } to { width: 20px; }
+}
+@keyframes progress2 {
+    from { width: 0 } to { width: 60px; }
+}
+@keyframes progress3 {
+    from { width: 0 } to { width: 10px; }
+}
+.demo-progress1{
+    animation: progress1 5s steps(10, end);
+    animation-iteration-count: infinite; 
+}
+.demo-progress2{
+    animation: progress2 10s;
+    animation-iteration-count: infinite; 
+}
+.demo-progress3{
+    animation: progress3 5s;
+    animation-iteration-count: infinite; 
+}
+#demo_brain{
+    animation: jellomiddle 5s;
+    animation-iteration-count: infinite; 
+    transform-origin: 90% 70%;
+}
+#demo_chat{
+    animation: demoshow2 3s;
+    animation-iteration-count: infinite; 
+}
+
+.demo-user-action1{
+    animation: demoshow1 5s;
+    animation-iteration-count: infinite; 
+}
+.demo-user-action2{
+    animation: demoshow2 5s;
+    animation-iteration-count: infinite; 
+}
+.demo-user-action3{
+    animation: demoshow3 5s;
+    animation-iteration-count: infinite; 
+}
+.demo-user-action4{
+    animation: demoshow4 5s;
+    animation-iteration-count: infinite; 
+}
+
+@keyframes demoshow1 {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
+@keyframes demoshow2 {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
+@keyframes demoshow3 {
+    0% { opacity: 0; }
+    20% { opacity: 0; }
+    100% { opacity: 1; }
+}
+@keyframes demoshow4 {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    80% { opacity: 1; }
+    100% { opacity: 1; }
+}
+
+.introduce{
+    display: flex; flex-direction: column; align-items: center;
+}
+
+.introduce_svg{
+    position: absolute; z-index:1;
+    width: 100%; height: 300px;
+}
+.introduce_svg_inner{
+    animation: opacity1 5s;
+    animation-iteration-count: infinite; 
+}
+@keyframes opacity1 {
+    0% { opacity: 0.1; }
+    50% { opacity: 0.4; }
+    100% { opacity: 0.1; }
+}
+
+.signinform-outer{
+    display:flex; flex-direction: column;
+    align-items: center;
+    z-index: 100;
+    width: 300px; height: 300px;
+}
+.signinform-innerform{
+    width: 300px; height: 300px;
+}
+.signin-button{
+    width:50%;
+}
+.typewriter{
+    font-size:48px;
+    white-space: nowrap; 
+}
+.typewriter-follower{
+    font-size:24px;
+    white-space: nowrap; 
+}
+.typewriter span{
+  border-right: .05em solid;
+  animation: caret 1s steps(1) infinite;
+}
+  
+  /* The typing effect */
+@keyframes caret {
+    50% { border-color: transparent; }
+}
 
 .selectingrect {
     z-index: 3;
@@ -1449,7 +1568,10 @@ input {
 .footnote {
     position: absolute;
     bottom: 20px;
-    right: 20px;
+    width: 100%;
+    display: flex; flex-direction: column; 
+    align-items: center;
+    font-size: xx-small;
 }
 
 .docopmenu {
@@ -1876,4 +1998,10 @@ table.quick-help-table td:first-of-type {
 }
 #shape_freehand{
     background-image: url("https://mlib.liuzijin.com/frontend/assets/freehand.svg");
+}
+
+.login-button-area{
+    display:flex; flex-direction: column; 
+    justify-content: center;
+    align-items: center;
 }

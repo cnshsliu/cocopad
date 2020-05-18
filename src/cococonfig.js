@@ -25,7 +25,9 @@ const config = {
         endpoint_local: { label: 'LOCAL', url: 'ws://localhost:5008/grume/wsquux' },
     },
     frontend: {
-        url: 'https://mlib.liuzijin.com/frontend'
+        url: 'https://mlib.liuzijin.com/frontend',
+        url_remote: 'https://mlib.liuzijin.com/frontend',
+        url_local: 'http://localhost:8087',
     },
     cos: {
         region: 'ap-nanjing',
@@ -61,7 +63,7 @@ const config = {
                 'position': 'absolute',
             },
             inner: {
-                content: '一行文字',
+                content: '单行文字',
                 style: {
                     "display": 'block',
                     'padding': '0px', 'white-space': 'nowrap',

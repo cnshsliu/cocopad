@@ -1,3 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="42px" height="36px" viewBox="-0.5 -0.5 42 36"><defs/><g><ellipse cx="6" cy="29" rx="5" ry="5" fill="#ffffff" stroke="#000000" pointer-events="all"/><path d="M 14 1 L 40 1 L 40 7.2 L 14 7.2 Z M 14 13.4 L 40 13.4 L 40 19.6 L 14 19.6 Z M 14 25.8 L 40 25.8 L 40 32 L 14 32 Z" fill="#222222" stroke="none" pointer-events="all"/><ellipse cx="5.5" cy="5" rx="5" ry="5" fill="#ffffff" stroke="#000000" pointer-events="all"/><path d="M 3 3.5 L 4.93 7 L 12 0" fill="none" stroke="#0080f0" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/><ellipse cx="5.5" cy="17" rx="5" ry="5" fill="#ffffff" stroke="#000000" pointer-events="all"/><path d="M 3 15.5 L 4.93 19 L 12 12" fill="none" stroke="#0080f0" stroke-width="2" stroke-miterlimit="10" pointer-events="all"/></g></svg>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 24.0.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 42 36" style="enable-background:new 0 0 42 36;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#FFFFFF;stroke:#4B92DB;}
+	.st1{fill:#4B92DB;}
+	.st2{fill:none;stroke:#4B92DB;stroke-width:2;stroke-miterlimit:10;}
+</style>
+<ellipse pointer-events="all" class="st0" cx="6.5" cy="29.5" rx="5" ry="5"/>
+<path pointer-events="all" class="st1" d="M14.5,1.5h26v6.2h-26V1.5z M14.5,13.9h26v6.2h-26V13.9z M14.5,26.3h26v6.2h-26V26.3z"/>
+<ellipse pointer-events="all" class="st0" cx="6" cy="5.5" rx="5" ry="5"/>
+<path pointer-events="all" class="st2" d="M3.5,4l1.9,3.5l7.1-7"/>
+<ellipse pointer-events="all" class="st0" cx="6" cy="17.5" rx="5" ry="5"/>
+<path pointer-events="all" class="st2" d="M3.5,16l1.9,3.5l7.1-7"/>
+</svg>
