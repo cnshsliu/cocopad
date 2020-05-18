@@ -11,10 +11,10 @@ import Bowser from "../lib/bowser/bowser";
 // import Quill from 'quill';
 // import { QuillDeltaToHtmlConverter } from '../lib/quill/quill2html/quill2html';
 import { gzip, ungzip } from "../lib/gzip";
+import AIXJ from "./aixj";
 import assetIcons from './assetIcons';
 import avatarIcons from './avatarIcons';
 import BossWS from "./bossws";
-import AIXJ from "./aixj";
 // import uuidv4 from "uuid/v4";
 // import "./fontpicker/jquery.fontpicker";
 // import "./minimap/jquery-minimap";
@@ -23,11 +23,11 @@ import RegHelper from "./reghelper";
 import SHARE from "./sharemanage";
 import SVGs from "./svgs";
 import Validator from "./validator";
-import WS from "./ws";
 // import { BIconFileEarmarkBreak } from "bootstrap-vue";
 import RtcCommon from './Web/js/common';
 import RtcClient from './Web/js/rtc-client';
 import ShareClient from './Web/js/share-client';
+import WS from "./ws";
 const TRTC = require('./Web/js/trtc');
 
 
@@ -1804,7 +1804,7 @@ KFK.initC3 = function () {
     });
     KFK.JC3.keydown(function (evt) {
         // console.log('JC3.keydown', evt.keyCode, KFK.mode, KFK.drawMode);
-        if (evt.keyCode === 13 && KFK.mode === 'line' && (KFK.drawMode === 'polyline' || KFK.drawMode === 'polygon')) {
+        if ((evt.keyCode === 13 || evt.keyCode === 27) && KFK.mode === 'line' && (KFK.drawMode === 'polyline' || KFK.drawMode === 'polygon')) {
             KFK.closePolyPoint();
         }
     });
@@ -3585,55 +3585,51 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
                 };
 
                 //BEGIN auto drag scroll
-                var isMoving = false;        
+                var isMoving = false;
                 //Left
-                if(evt.pageX <= KFK.autoScroll.distance)
-                {
+                if (evt.pageX <= KFK.autoScroll.distance) {
                     isMoving = true;
-                    KFK.autoScroll.clearInetervals();            
-                    KFK.autoScroll.intLeftHandler= setInterval(function(){
+                    KFK.autoScroll.clearInetervals();
+                    KFK.autoScroll.intLeftHandler = setInterval(function () {
                         KFK.JS1.scrollLeft(KFK.JS1.scrollLeft() - KFK.autoScroll.step);
-                    },KFK.autoScroll.timer);
+                    }, KFK.autoScroll.timer);
                     console.log('left')
                 }
-        
+
                 //Right
-                if(evt.pageX >= (window.innerWidth - KFK.autoScroll.distance))
-                {
+                if (evt.pageX >= (window.innerWidth - KFK.autoScroll.distance)) {
                     isMoving = true;
-                    KFK.autoScroll.clearInetervals();            
-                    KFK.autoScroll.intRightHandler = setInterval(function(){
+                    KFK.autoScroll.clearInetervals();
+                    KFK.autoScroll.intRightHandler = setInterval(function () {
                         KFK.JS1.scrollLeft(KFK.JS1.scrollLeft() + KFK.autoScroll.step);
-                        jqNodeDIV.css('left', jqNodeDIV.css('left') + KFK.autoScroll.step );
-                    },KFK.autoScroll.timer);
+                        jqNodeDIV.css('left', jqNodeDIV.css('left') + KFK.autoScroll.step);
+                    }, KFK.autoScroll.timer);
                     console.log('right')
                 }
-        
+
                 //Top
-                if(evt.pageY  <= KFK.autoScroll.distance)
-                {
+                if (evt.pageY <= KFK.autoScroll.distance) {
                     isMoving = true;
-                    KFK.autoScroll.clearInetervals();            
-                    KFK.autoScroll.intTopHandler= setInterval(function(){
+                    KFK.autoScroll.clearInetervals();
+                    KFK.autoScroll.intTopHandler = setInterval(function () {
                         KFK.JS1.scrollTop(KFK.JS1.scrollTop() - KFK.autoScroll.step);
-                    },KFK.autoScroll.timer);
+                    }, KFK.autoScroll.timer);
                     console.log('top')
-                }                          
-        
+                }
+
                 //Bottom
-                if(evt.pageY >= (window.innerHeight - KFK.autoScroll.distance))
-                {
+                if (evt.pageY >= (window.innerHeight - KFK.autoScroll.distance)) {
                     isMoving = true;
-                    KFK.autoScroll.clearInetervals();            
-                    KFK.autoScroll.intBottomHandler= setInterval(function(){
+                    KFK.autoScroll.clearInetervals();
+                    KFK.autoScroll.intBottomHandler = setInterval(function () {
                         KFK.JS1.scrollTop(KFK.JS1.scrollTop() + KFK.autoScroll.step);
-                    },KFK.autoScroll.timer);
+                    }, KFK.autoScroll.timer);
                     console.log('bottom')
-                }     
-        
+                }
+
                 //No events
-                if(!isMoving)
-                KFK.autoScroll.clearInetervals();  
+                if (!isMoving)
+                    KFK.autoScroll.clearInetervals();
             },
             stop: async (evt, ui) => {
                 KFK.dragging = false;
@@ -5312,6 +5308,7 @@ KFK.init = async function () {
     }
     KFK.debug("Initializing...");
     KFK.checkBrowser();
+    KFK.initTypeWriter();
     KFK.pickerMatlib = $(".matlib-topick");
 
     $('.showAfterInit').removeClass('showAfterInit');
@@ -5371,6 +5368,49 @@ KFK.initDesigner = async function () {
         console.error(error);
     }
 };
+
+KFK.initTypeWriter = function () {
+    KFK.dataText = ["异地办公", "跨地域团队", "在家办公", "通过网络开展工作时", "出差在外", "需要远程工作时", "无法跟同事当面讨论时",
+"订不到会议室时", "找不到可以一起写写画画的白板时" ];
+
+    // type one text in the typwriter
+    // keeps calling itself until the text is finished
+    function typeWriter(text, i, fnCallback) {
+        // chekc if text isn't finished yet
+        if (i < (text.length)) {
+            // add next character to h1
+            $('.typewriter').prop('innerHTML', text.substring(0, i + 1) + '<span aria-hidden="true"></span>');
+
+            // wait for a while and call this function again for next character
+            setTimeout(function () {
+                typeWriter(text, i + 1, fnCallback)
+            }, 150);
+        }
+        // text finished, call callback if there is a callback function
+        else if (typeof fnCallback == 'function') {
+            // call callback after timeout
+            setTimeout(fnCallback, 1000);
+        }
+    }
+    // start a typewriter animation for a text in the dataText array
+    function StartTextAnimation(i) {
+        if (i >= KFK.dataText.length) {
+            setTimeout(function () {
+                StartTextAnimation(0);
+            }, 1000);
+        } else {
+                // text exists! start typewriter animation
+                typeWriter(KFK.dataText[i], 0, function () {
+                    // after callback (and whole text has been animated), start next text
+                    StartTextAnimation(i + 1);
+                });
+        }
+    }
+    // start the text animation
+    StartTextAnimation(0);
+};
+
+
 
 KFK.initCocoChat = async function () {
     let jqCocoChat = $('#coco_chat');
@@ -10977,7 +11017,7 @@ KFK.addShapeEventListner = function (theShape) {
         let color = theShape.attr("stroke");
         let width = theShape.attr("origin-width");
         let linecap = theShape.attr("stroke-linecap");
-        $("#lineColor").spectrum("set", color);
+        $("#lineColor").spectrum("set", KFK.shapeOriginColor);
         $("#spinner_line_width").spinner("value", width);
         let lineSetting = KFK.APP.model.svg.connect.line;
         lineSetting = {
