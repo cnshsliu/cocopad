@@ -58,7 +58,6 @@ const assetIcons = [
 'wm_rl',
 'wm_tb',
 'chat',
-'draw',
 ];
 
 export default assetIcons;
