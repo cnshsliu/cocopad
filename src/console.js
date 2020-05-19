@@ -1830,7 +1830,7 @@ KFK.initC3 = function () {
                 KFK.materialPicked.url
             );
             return;
-        } else if (KFK.mode === "line" && KFK.isFreeHandDrawing === false) {
+        } else if (KFK.mode === "line" && KFK.isFreeHandDrawing === false && IsFalse(KFK.isZoomingShape)) {
             // console.log("yarkShapePoint");
             KFK.yarkShapePoint(
                 KFK.scalePoint(KFK.scrXToJc3X(evt.clientX)),
@@ -10970,7 +10970,7 @@ KFK.addShapeEventListner = function (theShape) {
         }
 
         $(document.body).css("cursor", "pointer");
-        if (theShape.array) {
+        if (theShape.array && theShape.hasClass("kfkline")) {
             let parr = theShape.array();
             console.log('TheShape.array exist', parr);
             if (
