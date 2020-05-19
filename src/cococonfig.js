@@ -190,6 +190,9 @@ const config = {
     },
     quickglance: {
         timer: 10,
+    },
+    morph:{
+        delta: 2,
     }
 };
 

@@ -1508,7 +1508,6 @@ select:focus {
     width: 20px;
     height: 20px;
     z-index: 5;
-    visibility: hidden;
 }
 
 input {

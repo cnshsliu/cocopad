@@ -1799,6 +1799,7 @@ KFK.initC3 = function () {
         KFK.justCreatedShape = null;
 
         KFK.pickedShape = null;
+        KFK.morphedShape = null;
 
         // if (KFK.mode === 'lock' || KFK.mode === 'connect') {
         //   KFK.setMode('pointer');
@@ -2113,7 +2114,8 @@ KFK.isDuringKuangXuan = function () {
         KFK.minimapMouseDown === false &&
         KFK.isShowingModal === false &&
         KFK.touchChatTodo === false &&
-        KFK.isEditting === false
+        KFK.isEditting === false &&
+        KFK.isZoomingShape === false
     )
         return true;
     else return false;
@@ -5688,11 +5690,11 @@ KFK.restoreLayoutDisplay = async function () {
     else $(".pageBoundingLine").addClass("noshow");
 
     await KFK.showSection({ minimap: KFK.layoutRemembered.minimap });
-    KFK.layoutRemembered.toplogo?$('#toplogo').addClass('noshow'):$('#toplogo').removeClass('noshow');
-    KFK.layoutRemembered.docHeaderInfo?$("#docHeaderInfo").addClass('noshow'):$("#docHeaderInfo").removeClass('noshow');
-    KFK.layoutRemembered.rtcontrol?$("#rtcontrol").addClass('noshow'):$("#rtcontrol").removeClass('noshow');
-    KFK.layoutRemembered.left?$("#left").addClass('noshow'):$("#left").removeClass('noshow');
-    KFK.layoutRemembered.right?$("#right").addClass('noshow'):$("#right").removeClass('noshow');
+    KFK.layoutRemembered.toplogo ? $('#toplogo').addClass('noshow') : $('#toplogo').removeClass('noshow');
+    KFK.layoutRemembered.docHeaderInfo ? $("#docHeaderInfo").addClass('noshow') : $("#docHeaderInfo").removeClass('noshow');
+    KFK.layoutRemembered.rtcontrol ? $("#rtcontrol").addClass('noshow') : $("#rtcontrol").removeClass('noshow');
+    KFK.layoutRemembered.left ? $("#left").addClass('noshow') : $("#left").removeClass('noshow');
+    KFK.layoutRemembered.right ? $("#right").addClass('noshow') : $("#right").removeClass('noshow');
 };
 KFK.setLayoutDisplay = async function (config) {
     KFK.debug("setlayoutdisplay", JSON.stringify(config));
@@ -5713,11 +5715,11 @@ KFK.setLayoutDisplay = async function (config) {
     }
 
     await KFK.showSection({ minimap: config.minimap });
-    config.toplogo?$('#toplogo').removeClass('noshow'):$('#toplogo').addClass('noshow');
-    config.docHeaderInfo?$('#docHeaderInfo').removeClass('noshow'):$('#docHeaderInfo').addClass('noshow');
-    config.rtcontrol?$('#rtcontrol').removeClass('noshow'):$('#rtcontrol').addClass('noshow');
-    config.left?$('#left').removeClass('noshow'):$('#left').addClass('noshow');
-    config.right?$('#right').removeClass('noshow'):$('#right').addClass('noshow');
+    config.toplogo ? $('#toplogo').removeClass('noshow') : $('#toplogo').addClass('noshow');
+    config.docHeaderInfo ? $('#docHeaderInfo').removeClass('noshow') : $('#docHeaderInfo').addClass('noshow');
+    config.rtcontrol ? $('#rtcontrol').removeClass('noshow') : $('#rtcontrol').addClass('noshow');
+    config.left ? $('#left').removeClass('noshow') : $('#left').addClass('noshow');
+    config.right ? $('#right').removeClass('noshow') : $('#right').addClass('noshow');
 };
 
 KFK.showSection = async function (options) {
@@ -8280,10 +8282,11 @@ KFK.addDocumentEventHandler = function () {
                 } else if (evt.keyCode === 37) {
                     //Left
                     if (evt.shiftKey) {
-                        KFK.DivStyler ? KFK.DivStyler.horiSizeSmaller() :
+                        let delta = evt.ctrlKey ? KFK.config.morph.delta * 3 : KFK.config.morph.delta;
+                        KFK.DivStyler ? KFK.DivStyler.horiSizeSmaller(delta) :
                             import('./divStyler').then((pack) => {
                                 KFK.DivStyler = pack.DivStyler;
-                                KFK.DivStyler.horiSizeSmaller();
+                                KFK.DivStyler.horiSizeSmaller(delta);
                             });
                     } else
                         KFK.gotoLeftPage();
@@ -8291,10 +8294,11 @@ KFK.addDocumentEventHandler = function () {
                 } else if (evt.keyCode === 38) {
                     //UP
                     if (evt.shiftKey) {
-                        KFK.DivStyler ? KFK.DivStyler.vertSizeBigger() :
+                        let delta = evt.ctrlKey ? KFK.config.morph.delta * 3 : KFK.config.morph.delta;
+                        KFK.DivStyler ? KFK.DivStyler.vertSizeBigger(delta) :
                             import('./divStyler').then((pack) => {
                                 KFK.DivStyler = pack.DivStyler;
-                                KFK.DivStyler.vertSizeBigger();
+                                KFK.DivStyler.vertSizeBigger(delta);
                             });
                     } else
                         KFK.gotoUpperPage();
@@ -8302,10 +8306,11 @@ KFK.addDocumentEventHandler = function () {
                 } else if (evt.keyCode === 39) {
                     //Right
                     if (evt.shiftKey) {
-                        KFK.DivStyler ? KFK.DivStyler.horiSizeBigger() :
+                        let delta = evt.ctrlKey ? KFK.config.morph.delta * 3 : KFK.config.morph.delta;
+                        KFK.DivStyler ? KFK.DivStyler.horiSizeBigger(delta) :
                             import('./divStyler').then((pack) => {
                                 KFK.DivStyler = pack.DivStyler;
-                                KFK.DivStyler.horiSizeBigger();
+                                KFK.DivStyler.horiSizeBigger(delta);
                             });
                     } else
                         KFK.gotoRightPage();
@@ -8313,10 +8318,11 @@ KFK.addDocumentEventHandler = function () {
                 } else if (evt.keyCode === 40) {
                     //Down
                     if (evt.shiftKey) {
-                        KFK.DivStyler ? KFK.DivStyler.vertSizeSmaller() :
+                        let delta = evt.ctrlKey ? KFK.config.morph.delta * 3 : KFK.config.morph.delta;
+                        KFK.DivStyler ? KFK.DivStyler.vertSizeSmaller(delta) :
                             import('./divStyler').then((pack) => {
                                 KFK.DivStyler = pack.DivStyler;
-                                KFK.DivStyler.vertSizeSmaller();
+                                KFK.DivStyler.vertSizeSmaller(delta);
                             });
                     } else
                         KFK.gotoLowerPage();
@@ -8486,8 +8492,8 @@ KFK.addDocumentEventHandler = function () {
             case 82: //R
             case 66: // key B
             case 73: //key I
-                if (([69,76,82].indexOf(evt.keyCode)>=0 && evt.metaKey && evt.ctrlKey) ||
-                 ([66, 73].indexOf(evt.keyCode)>=0 && (evt.metaKey || evt.ctrlKey))) {
+                if (([69, 76, 82].indexOf(evt.keyCode) >= 0 && evt.metaKey && evt.ctrlKey) ||
+                    ([66, 73].indexOf(evt.keyCode) >= 0 && (evt.metaKey || evt.ctrlKey))) {
                     KFK.holdEvent(evt);
                     KFK.DivStyler ? KFK.DivStyler.alignItem(evt.keyCode) :
                         import('./divStyler').then((pack) => {
@@ -8572,12 +8578,14 @@ KFK.addDocumentEventHandler = function () {
                 break;
             case 17:
                 KFK.KEYDOWN.ctrl = false;
+                KFK.stopZoomShape();
                 break;
             case 18:
                 KFK.KEYDOWN.alt = false;
                 break;
             case 91:
                 KFK.KEYDOWN.meta = false;
+                KFK.stopZoomShape();
                 break;
             case 32:
                 //如果coco_chat显示着，就尝试把它隐藏，相应的，在space keyup时，再显示出来
@@ -8605,6 +8613,8 @@ KFK.addDocumentEventHandler = function () {
         };
         if (KFK.isDuringKuangXuan()) {
             KFK.kuangXuan(KFK.kuangXuanStartPoint, tmp);
+        } else if (KFK.isZoomingShape) {
+            KFK.zoomShape(evt);
         }
     });
     $(document).on("mousedown", function (evt) {
@@ -10940,6 +10950,7 @@ KFK.reverseColor = function (color) {
     return '#' + (Number(`0x1${color}`) ^ 0xFFFFFF).toString(16).substr(1).toUpperCase();
 };
 KFK.addShapeEventListner = function (theShape) {
+    console.log("Add Shape Event Listener", theShape);
     theShape.on("mouseover", (evt) => {
         if (KFK.shapeDragging || KFK.isFreeHandDrawing) return;
         KFK.hoverSvgLine(theShape);
@@ -10961,9 +10972,11 @@ KFK.addShapeEventListner = function (theShape) {
         $(document.body).css("cursor", "pointer");
         if (theShape.array) {
             let parr = theShape.array();
+            console.log('TheShape.array exist', parr);
             if (
                 KFK.mouseNear(KFK.C3MousePos(evt), { x: parr[0][0], y: parr[0][1] }, 20)
             ) {
+                console.log("mousenear start point");
                 KFK.show("#linetransformer");
                 KFK.moveLinePoint = "from";
                 KFK.lineToResize = theShape;
@@ -10973,6 +10986,7 @@ KFK.addShapeEventListner = function (theShape) {
             } else if (
                 KFK.mouseNear(KFK.C3MousePos(evt), { x: parr[1][0], y: parr[1][1] }, 20)
             ) {
+                console.log("mousenear end point");
                 KFK.show("#linetransformer");
                 KFK.moveLinePoint = "to";
                 KFK.lineToResize = theShape;
@@ -10980,6 +10994,7 @@ KFK.addShapeEventListner = function (theShape) {
                 KFK.setShapeToRemember(theShape);
                 KFK.moveLineMoverTo(KFK.jc3PosToJc1Pos({ x: parr[1][0], y: parr[1][1] }));
             } else {
+                console.log("mousenear deos not near from or end point");
                 KFK.hide("#linetransformer");
             }
         }
@@ -10995,16 +11010,41 @@ KFK.addShapeEventListner = function (theShape) {
     theShape.on("mousedown", (evt) => {
         KFK.closeActionLog();
 
-        KFK.shapeToDrag = theShape;
         KFK.mousePosToRemember = {
             x: KFK.currentMousePos.x,
             y: KFK.currentMousePos.y,
         };
-        KFK.setShapeToRemember(theShape);
-        KFK.shapeDraggingStartPoint = {
-            x: KFK.scalePoint(KFK.scrXToJc3X(evt.clientX)),
-            y: KFK.scalePoint(KFK.scrYToJc3Y(evt.clientY)),
-        };
+        if ((evt.ctrlKey || evt.metaKey)) {
+            KFK.isZoomingShape = true;
+            KFK.shapeToZoom = theShape;
+            KFK.setShapeToRemember(theShape);
+            KFK.shapeSizeCenter = {
+                x: KFK.scalePoint(theShape.cx()),
+                y: KFK.scalePoint(theShape.cy())
+            }
+            KFK.shapeSizeOrigin = {
+                w: theShape.width(),
+                h: theShape.height(),
+            }
+            KFK.shapeZoomStartPoint = {
+                x: KFK.scalePoint(KFK.scrXToJc3X(evt.clientX)),
+                y: KFK.scalePoint(KFK.scrYToJc3Y(evt.clientY)),
+            };
+            let dis = KFK.distance(KFK.shapeSizeCenter,
+                KFK.shapeZoomStartPoint);
+            console.log("Begin shapeZoom ", dis);
+        } else {
+            KFK.isZoomingShape = false;
+            KFK.shapeToDrag = theShape;
+            KFK.setShapeToRemember(theShape);
+            KFK.shapeDraggingStartPoint = {
+                x: KFK.scalePoint(KFK.scrXToJc3X(evt.clientX)),
+                y: KFK.scalePoint(KFK.scrYToJc3Y(evt.clientY)),
+            };
+        }
+    });
+    theShape.on("mouseup", (evt) => {
+        KFK.stopZoomShape();
     });
     //click line
     theShape.on("click", (evt) => {
@@ -11013,11 +11053,10 @@ KFK.addShapeEventListner = function (theShape) {
         evt.preventDefault();
         KFK.hoverSvgLine(theShape);
         if (KFK.anyLocked(theShape)) return;
-        if (KFK.firstShown['right'] === false && KFK.docIsNotReadOnly()) {
-            KFK.show('#right');
-            KFK.firstShown['right'] = true;
-        }
-
+        // if (KFK.firstShown['right'] === false && KFK.docIsNotReadOnly()) {
+        // KFK.show('#right');
+        // KFK.firstShown['right'] = true;
+        // }
         if (KFK.mode === "lock") {
             KFK.tryToLockUnlock(evt.shiftKey);
         }
@@ -11047,6 +11086,30 @@ KFK.addShapeEventListner = function (theShape) {
         };
         KFK.setAppData("model", "line", lineSetting);
     });
+};
+
+KFK.zoomShape = function (evt) {
+    let zoomTo = {
+        x: KFK.scalePoint(KFK.scrXToJc3X(evt.clientX)),
+        y: KFK.scalePoint(KFK.scrYToJc3Y(evt.clientY)),
+    };
+    let dis_1 = KFK.distance(KFK.shapeZoomStartPoint, KFK.shapeSizeCenter);
+    let dis_2 = KFK.distance(zoomTo, KFK.shapeSizeCenter);
+    let delta = 3 * (dis_2 - dis_1);
+    KFK.DivStyler ? KFK.DivStyler.zoom('in', delta) :
+        import('./divStyler').then((pack) => {
+            KFK.DivStyler = pack.DivStyler;
+            KFK.DivStyler.zoom('in', delta);
+        });
+};
+KFK.stopZoomShape = async function () {
+    if(KFK.isZoomingShape){
+        KFK.isZoomingShape = false;
+        KFK.morphedShape = null;
+        if((KFK.shapeToZoom.width() !== KFK.shapeToRemember.width()) 
+        || (KFK.shapeToZoom.height() !== KFK.shapeToZoom.height()))
+        await KFK.syncLinePut("U", KFK.shapeToZoom, "resize", KFK.shapeToRemember, false);
+    }
 };
 
 KFK.initLineTransformer = function () {
@@ -11098,13 +11161,7 @@ KFK.initLineTransformer = function () {
                 [stopAtPos.x, stopAtPos.y]
                 ]);
             }
-            await KFK.syncLinePut(
-                "U",
-                KFK.lineToResize,
-                "resize",
-                KFK.shapeToRemember,
-                false
-            );
+            await KFK.syncLinePut("U", KFK.lineToResize, "resize", KFK.shapeToRemember, false);
             KFK.hide("#linetransformer");
         },
     }); //line transformer. draggable()
@@ -11966,24 +12023,24 @@ KFK.toggleVideoCall = async () => {
 }
 KFK.askVideoCall = async () => {
     KFK.RtcManager ? await KFK.RtcManager.initRtc() :
-    import('./rtcManager').then(async (pack) => {
-        KFK.RtcManager = pack.RtcManager;
-        await KFK.RtcManager.initRtc();
-    });
+        import('./rtcManager').then(async (pack) => {
+            KFK.RtcManager = pack.RtcManager;
+            await KFK.RtcManager.initRtc();
+        });
     KFK.duringVideo = true;
     let user_ser = KFK.prepareUserIdForRTC(KFK.APP.model.cocouser.userid);
     await KFK.sendCmd('GENSIG', { user_ser: user_ser });
 };
-KFK.stopVideoCall = async ()=>{
+KFK.stopVideoCall = async () => {
     await KFK.RtcManager.stopVideoCall();
 }
-KFK.toggleScreenSharing = function(){
+KFK.toggleScreenSharing = function () {
     KFK.RtcManager.toggleScreenSharing();
 };
-KFK.switchCamera = function(){
+KFK.switchCamera = function () {
     KFK.RtcManager.switchCamera();
 }
-KFK.switchMic = function(){
+KFK.switchMic = function () {
     KFK.RtcManager.switchMic();
 }
 KFK.clickMainVideo = function () {

@@ -1,9 +1,7 @@
 //TODO: 线段带箭头
 //TODO：Shape大小可变
-//TODO：FS时关闭Shape弹窗
 //TODO：
 //TODO: 根据grade设置 video时长
-//TODO: 呼叫时才启动video
 //TODO: startup tempalte
 //TODO: tempaltes many templates
 //TODO: direct arrow

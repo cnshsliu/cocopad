@@ -25,11 +25,15 @@
     <!-- see: https://github.com/nguyenj/spectrum/commit/01fe88bc03355f854f5ba5ff711745ca235539b9 -->
     <script src="https://liuzijin.com/jslib/spectrum.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://liuzijin.com/jslib/spectrum.min.css">
+    <link rel="stylesheet" type="text/css" href="https://liuzijin.com/jslib/svg.select.min.css">
     <script src="https://liuzijin.com/jslib/cos-js-sdk-v5.min.js"></script>
     <!-- <script type="text/javascript" src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.js"></script> -->
     <link rel="stylesheet" href="/my-styles/qlviewer.css">
     <link rel="stylesheet" href="https://cdn.staticfile.org/quill/2.0.0-dev.3/quill.snow.min.css">
     <script type="text/javascript" src="https://cdn.staticfile.org/svg.js/3.0.16/svg.min.js"></script>
+    <!-- <script type="text/javascript" src="https://liuzijin.com/jslib/svg.min.js"></script> -->
+    <!-- <script type="text/javascript" src="https://liuzijin.com/jslib/svg.select.min.js"></script> -->
+    <!-- <script type="text/javascript" src="https://liuzijin.com/jslib/svg.resize.min.js"></script> -->
     <script type="text/javascript" src="https://cdn.staticfile.org/quill/2.0.0-dev.3/quill.min.js"></script>
     <script type="text/javascript" src="https://liuzijin.com/jslib/quill2html.js"></script>
     <script type="text/javascript"
@@ -603,7 +607,7 @@
                         <img id="modeIndicatorImg" :src="getImageSrc('pointer')" style='width: 18px; height: 18px;' />
                         <div id="modeIndicatorDiv" style='width: 18px; height: 18px;'></div>
                     </div>
-                    <img id="linetransformer" :src="getImageSrc('linetransformer')">
+                    <img id="linetransformer" class="noshow" :src="getImageSrc('linetransformer')">
                 </div>
             </div>
             <div id="toplogo" class="padlayout spaceToHide" @click="KFK.gotoExplorer">
