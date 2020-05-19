@@ -22,6 +22,7 @@ DivStyler.pasteStyle = async function () {
     if (!DivStyler.styleCache.nodetype) return;
     try {
         let div = KFK.getHoverFocusLastCreate();
+        if (KFK.anyLocked(div)) return;
         if (div.attr("id") === DivStyler.styleCache.nodeid) return;
         let oldDiv = div.clone();
         let innerDiv = div.find('.innerobj');
@@ -46,6 +47,7 @@ DivStyler.pasteStyle = async function () {
 DivStyler.fontSmaller = async function () {
     try {
         let div = KFK.getHoverFocusLastCreate();
+        if (KFK.anyLocked(div)) return;
         let oldDiv = div.clone();
         let innerDiv = div.find('.innerobj');
         let fontSize = innerDiv.css("font-size");
@@ -64,6 +66,7 @@ DivStyler.fontSmaller = async function () {
 DivStyler.fontBigger = async function () {
     try {
         let div = KFK.getHoverFocusLastCreate();
+        if (KFK.anyLocked(div)) return;
         let oldDiv = div.clone();
         let innerDiv = div.find('.innerobj');
         let fontSize = innerDiv.css("font-size");
@@ -82,6 +85,7 @@ DivStyler.fontBigger = async function () {
 DivStyler.vertSizeSmaller = async function () {
     try {
         let div = KFK.getHoverFocusLastCreate();
+        if (KFK.anyLocked(div)) return;
         let nodeType = div.attr('nodetype');
         let oldDiv = div.clone();
         let tmpTop = KFK.divTop(div);
@@ -92,7 +96,7 @@ DivStyler.vertSizeSmaller = async function () {
         if (KFK.config.node[nodeType].minHeight) {
             minH = KFK.config.node[nodeType].minHeight;
         }
-        if(tmpHeight >= minH){
+        if (tmpHeight >= minH) {
             div.css('top', tmpTop);
             div.css('height', tmpHeight);
             await KFK.syncNodePut("U", div, "change height", oldDiv, false, 0, 1);
@@ -106,6 +110,7 @@ DivStyler.vertSizeSmaller = async function () {
 DivStyler.horiSizeBigger = async function () {
     try {
         let div = KFK.getHoverFocusLastCreate();
+        if (KFK.anyLocked(div)) return;
         let oldDiv = div.clone();
         let tmpLeft = KFK.divLeft(div);
         let tmpWidth = KFK.divWidth(div);
@@ -121,6 +126,7 @@ DivStyler.horiSizeBigger = async function () {
 DivStyler.horiSizeSmaller = async function () {
     try {
         let div = KFK.getHoverFocusLastCreate();
+        if (KFK.anyLocked(div)) return;
         let nodeType = div.attr('nodetype');
         let oldDiv = div.clone();
         let tmpLeft = KFK.divLeft(div);
@@ -143,6 +149,7 @@ DivStyler.horiSizeSmaller = async function () {
 DivStyler.vertSizeBigger = async function () {
     try {
         let div = KFK.getHoverFocusLastCreate();
+        if (KFK.anyLocked(div)) return;
         let oldDiv = div.clone();
         let tmpTop = KFK.divTop(div);
         let tmpHeight = KFK.divHeight(div);
@@ -154,5 +161,39 @@ DivStyler.vertSizeBigger = async function () {
     } catch (error) {
         console.error(error);
     }
-}
+};
+DivStyler.alignItem = async function (keyCode) {
+    let ijq = KFK.getHoverFocusLastCreateInner();
+    if (!ijq) return;
+    switch (keyCode) {
+        case 66: // key B
+            let fst = ijq.css('font-weight');
+            if (fst === '700')
+                ijq.css('font-weight', '400');
+            else
+                ijq.css('font-weight', '700');
+            break;
+        case 73: //key I
+            if (ijq.css('font-style') === 'italic')
+                ijq.css('font-style', '');
+            else
+                ijq.css('font-style', 'italic');
+            break;
+        case 69: // key E
+            ijq.css("justify-content", 'center');
+            ijq.css("text-align", 'center');
+            ijq.css("text-align-last", 'center');
+            break;
+        case 76: // key L
+            ijq.css("justify-content", 'flex-start');
+            ijq.css("text-align", 'left');
+            ijq.css("text-align-last", 'left');
+            break;
+        case 82: // key R
+            ijq.css("justify-content", 'flex-end');
+            ijq.css("text-align", 'right');
+            ijq.css("text-align-last", 'right');
+            break;
+    }
+};
 module.exports.DivStyler = DivStyler;
