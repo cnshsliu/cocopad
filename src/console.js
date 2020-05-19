@@ -98,6 +98,7 @@ KFK.isFreeHandDrawing = false;
 KFK.isShowingModal = false;
 KFK.jumpStackPointer = -1;
 KFK.wsTryTimesBeforeGiveup = 60;
+KFK.isZoomingShape = false;
 KFK.idRowMap = {};
 KFK.idSwitchMap = {};
 KFK.FROM_SERVER = true; //三个常量
@@ -2061,19 +2062,22 @@ KFK.zoomInOut = function (direction) {
     let scaleX = window_width / KFK._width;
     let scaleY = window_height / KFK._height;
     let minScale = Math.min(scaleX, scaleY);
+    let pageScale = Math.min(window_width/KFK.PageWidth, window_height/KFK.PageHeight);
     let tmp = KFK.scaleRatio;
     try {
         if (direction === 'zoomin') {
             if (tmp < 1) {
-                tmp = tmp * 1.1;
+                tmp = tmp * 1.2;
                 if (tmp > 1) tmp = 1;
                 KFK.scale(tmp);
             }
         } else if (direction === '100%') {
             KFK.scale(1);
+        } else if (direction === 'page') {
+            KFK.scale(pageScale);
         } else {
             if (tmp > minScale) {
-                tmp = tmp / 1.1;
+                tmp = tmp / 1.2;
                 if (tmp < minScale) tmp = minScale;
                 KFK.scale(tmp);
             }
@@ -2118,7 +2122,9 @@ KFK.isDuringKuangXuan = function () {
         KFK.isZoomingShape === false
     )
         return true;
-    else return false;
+    else {
+        return false;
+    }
 };
 
 KFK.addMinimap = function () {
@@ -3347,6 +3353,7 @@ KFK.setShapeDynamicDefaultSize = function (nodeType, variant, width, height) {
 
 KFK.getShapeDynamicDefaultSize = function (nodeType, variant) {
     let ret = {};
+    console.log(nodeType, variant);
     //如果有 defaultSize[nodeType][variant]
     if (
         cocoConfig.defaultSize[nodeType] &&
@@ -7958,9 +7965,13 @@ KFK.addDocumentEventHandler = function () {
                     evt.preventDefault();
                     await KFK.beginTodoMode();
                     return;
-                } else if (KFK.keypool.endsWith("nn")) {
+                } else if (KFK.keypool.endsWith("tt")) {
                     KFK.keypool = "";
                     await KFK.toggleControlButtonOnly();
+                    return;
+                } else if (KFK.keypool.endsWith("nn")) {
+                    KFK.keypool = "";
+                    await KFK.toggleNoControls();
                     return;
                 } else if (KFK.keypool.endsWith("nh")) {
                     KFK.keypool = "";
@@ -8288,8 +8299,8 @@ KFK.addDocumentEventHandler = function () {
                                 KFK.DivStyler = pack.DivStyler;
                                 KFK.DivStyler.horiSizeSmaller(delta);
                             });
-                    } else
-                        KFK.gotoLeftPage();
+                    } 
+                    // else KFK.gotoLeftPage();
                     KFK.holdEvent(evt);
                 } else if (evt.keyCode === 38) {
                     //UP
@@ -8300,8 +8311,8 @@ KFK.addDocumentEventHandler = function () {
                                 KFK.DivStyler = pack.DivStyler;
                                 KFK.DivStyler.vertSizeBigger(delta);
                             });
-                    } else
-                        KFK.gotoUpperPage();
+                    } 
+                    // else KFK.gotoUpperPage();
                     KFK.holdEvent(evt);
                 } else if (evt.keyCode === 39) {
                     //Right
@@ -8312,8 +8323,8 @@ KFK.addDocumentEventHandler = function () {
                                 KFK.DivStyler = pack.DivStyler;
                                 KFK.DivStyler.horiSizeBigger(delta);
                             });
-                    } else
-                        KFK.gotoRightPage();
+                    } 
+                    // else KFK.gotoRightPage();
                     KFK.holdEvent(evt);
                 } else if (evt.keyCode === 40) {
                     //Down
@@ -8324,8 +8335,8 @@ KFK.addDocumentEventHandler = function () {
                                 KFK.DivStyler = pack.DivStyler;
                                 KFK.DivStyler.vertSizeSmaller(delta);
                             });
-                    } else
-                        KFK.gotoLowerPage();
+                    } 
+                    // else KFK.gotoLowerPage();
                     KFK.holdEvent(evt);
                 } else if (evt.keyCode === 32) { //space
                     //浏览器中按空格时，浏览器会滚动， 这里把它屏蔽掉
@@ -8352,20 +8363,20 @@ KFK.addDocumentEventHandler = function () {
             } // not in presentation mode
         } // inDesigner
 
-        if (evt.keyCode === 69 && evt.shiftKey && (evt.ctrlKey || evt.metaKey)) {
-            KFK.logKey("CTRL-SHIFT-E");
-            if (KFK.inDesigner())
-                //在Desinger中时，可切换到explorer
-                KFK.gotoExplorer();
-            else if (KFK.currentView === "explorer") KFK.gotoDesigner();
-            //这里不能用 KFK.inDesigner===false来判断
-            //因为即便不在designer中，如果designer没有被显示过，不能切换过去
-            //因为不知道designer中显示什么，只有designer打开过一次后，才能切换过去
-            //程序中， KFK.currentView的初始值为unknown, 当第一次显示designer后，
-            //KFK.currentView的值变为designer, 切换回到explorer时，KFK.currentView的值是explorer
-            //这时，用KFK.currentView === 'explorer'进行判断是可以的
-            return
-        }
+        // if (evt.keyCode === 69 && evt.shiftKey && (evt.ctrlKey || evt.metaKey)) {
+        //     KFK.logKey("CTRL-SHIFT-E");
+        //     if (KFK.inDesigner())
+        //         //在Desinger中时，可切换到explorer
+        //         KFK.gotoExplorer();
+        //     else if (KFK.currentView === "explorer") KFK.gotoDesigner();
+        //     //这里不能用 KFK.inDesigner===false来判断
+        //     //因为即便不在designer中，如果designer没有被显示过，不能切换过去
+        //     //因为不知道designer中显示什么，只有designer打开过一次后，才能切换过去
+        //     //程序中， KFK.currentView的初始值为unknown, 当第一次显示designer后，
+        //     //KFK.currentView的值变为designer, 切换回到explorer时，KFK.currentView的值是explorer
+        //     //这时，用KFK.currentView === 'explorer'进行判断是可以的
+        //     return
+        // }
 
         if (KFK.inDesigner() === false) return;
         if (KFK.isEditting) return;
@@ -8511,6 +8522,13 @@ KFK.addDocumentEventHandler = function () {
                     evt.preventDefault();
                     evt.stopPropagation();
                     KFK.zoomInOut('100%');
+                }
+                break;
+            case 49:  //key 1
+                if (evt.ctrlKey || evt.metaKey) {
+                    evt.preventDefault();
+                    evt.stopPropagation();
+                    KFK.zoomInOut('page');
                 }
                 break;
             case 187:  //key =
@@ -9475,6 +9493,30 @@ KFK.toggleControlButtonOnly = async function (evt) {
     KFK.keypool = "";
     //add a mask layer
 };
+
+KFK.toggleNoControls = async function (evt) {
+    KFK.controlNoControl = !KFK.controlNoControl;
+    KFK.APP.setData("show", "actionlog", false);
+    //切换minimap
+    await KFK.showSection({ minimap: false });
+    if (KFK.controlNoControl) {
+        KFK.hide("#left");
+        KFK.hide("#right");
+        KFK.hide("#docHeaderInfo");
+        KFK.hide("#toplogo");
+        KFK.hide('#rtcontrol')
+        KFK.hideDIVsWithStatus(['.msgInputWindow', '#coco_chat']);
+    } else {
+        KFK.show("#left");
+        KFK.show("#right");
+        KFK.show("#docHeaderInfo");
+        KFK.show("#toplogo");
+        KFK.shlow('#rtcontrol')
+        KFK.restoreDIVsWithStatus(['.msgInputWindow', '#coco_chat']);
+    }
+    KFK.keypool = "";
+    //add a mask layer
+};
 KFK.toggleNoDocHeader = async function (evt) {
     KFK.noDocHeader = !KFK.noDocHeader;
     if (KFK.APP.model.cocodoc.readonly) {
@@ -9672,9 +9714,11 @@ KFK.pasteContent = function () {
 
 KFK.showTextPasteDialog = async function (content) {
     if (KFK.anyLocked(KFK.hoverJqDiv())) return;
+    let toDisplay = content.text;
     let toAdd = content.text;
     let showbox = false;
     if (content.html !== "") {
+        console.log("Origin html[", content.html, "]");
         let tmpText = RegHelper.removeMeta(content.html);
         toAdd = "<div>" + KFK.replaceHTMLTarget(tmpText) + "</div>";
         let tmp = $(toAdd);
@@ -9683,25 +9727,30 @@ KFK.showTextPasteDialog = async function (content) {
         showbox = KFK.hoverJqDiv() ? false : true;
         if (showbox) {
             await KFK.mergeAppData("model", "paste", {
+                format: '粘贴内容格式为HTML',
                 showcontent: false,
                 showdisplay: false,
                 showbox: showbox,
                 content: toAdd,
-                display: toAdd,
+                displayBackup: toDisplay,
+                convertHTMLToText: true,
+                display: toDisplay,
                 ctype: "html",
             });
+            console.log("showDialog 1");
             KFK.showDialog({ pasteContentDialog: true });
         } else {
             KFK.APP.model.paste.content = toAdd;
             KFK.placePastedContent();
         }
-    } else
+    } else{
         if (content.text !== "") {
             toAdd = content.text;
             if (RegHelper.isUrl(toAdd)) {
                 // Plain text is a URL
                 showbox = KFK.hoverJqDiv() ? false : true;
                 await KFK.mergeAppData("model", "paste", {
+                    format: '粘贴内容格式为URL地址链接',
                     showcontent: true,
                     showdisplay: true,
                     showbox: showbox,
@@ -9709,12 +9758,14 @@ KFK.showTextPasteDialog = async function (content) {
                     display: "请点击访问",
                     ctype: "url",
                 });
+            console.log("showDialog 2");
                 KFK.showDialog({ pasteContentDialog: true });
             } else {
                 //Normal plain text
                 showbox = KFK.hoverJqDiv() ? false : true;
                 if (showbox) {
                     await KFK.mergeAppData("model", "paste", {
+                        format: '粘贴内容格式为纯文本',
                         showcontent: false,
                         showdisplay: false,
                         showbox: showbox,
@@ -9722,6 +9773,7 @@ KFK.showTextPasteDialog = async function (content) {
                         display: toAdd,
                         ctype: "text",
                     });
+                    console.log("showDialog 3");
                     KFK.showDialog({ pasteContentDialog: true });
                 } else {
                     KFK.APP.model.paste.content = toAdd;
@@ -9729,6 +9781,7 @@ KFK.showTextPasteDialog = async function (content) {
                 }
             }
         }
+    }
 };
 
 KFK.placePastedContent = async function () {
@@ -9737,6 +9790,10 @@ KFK.placePastedContent = async function () {
     let ctype = KFK.APP.model.paste.ctype;
     if (ctype === "url") {
         toAdd = `<a href="${toAdd}" target="_blank">${display}</a>`;
+    }else if(ctype === "html" && KFK.APP.model.paste.convertHTMLToText===true){
+        let tmp = $(toAdd);
+        toAdd = tmp.text();
+        console.log(toAdd);
     }
     //paste image or paste text
     let hoveredJQ = KFK.hoverJqDiv();
@@ -11624,7 +11681,7 @@ KFK.procPasteBlob = async function (blob) {
 
 KFK.makeImageDiv = async function (fileId, posx, posy, imgUrl) {
     let jqDIV = await KFK.placeNode(
-        false, //shiftKey fileId, "textblock", "default", posx, posy, 100, 100, "", `<img src="${imgUrl} "/>`
+        false, fileId, "textblock", "default", posx, posy, 100, 100, "", `<img src="${imgUrl} "/>`
     );
     await KFK.syncNodePut("C", jqDIV, "create image node", null, false, 0, 1);
 };

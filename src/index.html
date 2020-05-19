@@ -2327,6 +2327,15 @@
             <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" @ok="KFK.placePastedContent"
                 v-model="show.dialog.pasteContentDialog" title="请选择粘贴方式" button-size="sm" centered size="md">
                 <b-container>
+                    <b-row>
+                        <b-col cols="12">{{model.paste.format}}
+                        </b-col>
+                    </b-row>
+                    <b-row v-show="model.paste.ctype==='html'">
+                        <b-col cols="12">
+                            <b-form-checkbox v-model="model.paste.convertHTMLToText">粘贴为纯文字</b-form-checkbox>
+                        </b-col>
+                    </b-row>
                     <b-row v-show="model.paste.showcontent">
                         <b-col cols="12">粘贴内容
                             <b-form-input disabled trim type="text" v-model="model.paste.content"> </b-form-input>

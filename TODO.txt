@@ -1,6 +1,6 @@
 //TODO: 线段带箭头
 //TODO：Shape大小可变
-//TODO：
+//TODO：同时改变所选中所有元素的属性， 粘贴格式时也一样
 //TODO: 根据grade设置 video时长
 //TODO: startup tempalte
 //TODO: tempaltes many templates
