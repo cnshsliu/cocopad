@@ -10,10 +10,7 @@ import suuid from "short-uuid";
 import Bowser from "../lib/bowser/bowser";
 // import Quill from 'quill';
 // import { QuillDeltaToHtmlConverter } from '../lib/quill/quill2html/quill2html';
-import {
-    gzip,
-    ungzip
-} from "../lib/gzip";
+import { gzip, ungzip } from "../lib/gzip";
 import AIXJ from "./aixj";
 import assetIcons from './assetIcons';
 import avatarIcons from './avatarIcons';
