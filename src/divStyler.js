@@ -22,24 +22,20 @@ DivStyler.copyStyle = function () {
 DivStyler.pasteStyle = async function () {
     if (!DivStyler.styleCache.nodetype) return;
     try {
-        let div = KFK.getHoverFocusLastCreate();
-        if (!div || KFK.anyLocked(div)) return;
-        if (div.attr("id") === DivStyler.styleCache.nodeid) return;
-        let oldDiv = div.clone();
-        let innerDiv = div.find('.innerobj');
-        let myNodeType = div.attr('nodetype');
-        if (myNodeType === DivStyler.styleCache.nodetype) {
-            for (let i = 0; i < DivStyler.NodeOuterStyleNames.length; i++) {
-                if (DivStyler.styleCache.outerStyle[i])
-                    div.css(DivStyler.NodeOuterStyleNames[i], DivStyler.styleCache.outerStyle[i]);
+        await KFK.updateSelectedDIVs('paste style', async function (div) {
+            let innerDiv = div.find('.innerobj');
+            let myNodeType = div.attr('nodetype');
+            if (myNodeType === DivStyler.styleCache.nodetype) {
+                for (let i = 0; i < DivStyler.NodeOuterStyleNames.length; i++) {
+                    if (DivStyler.styleCache.outerStyle[i])
+                        div.css(DivStyler.NodeOuterStyleNames[i], DivStyler.styleCache.outerStyle[i]);
+                }
             }
-        }
-        for (let i = 0; i < DivStyler.NodeInnerStyleNames.length; i++) {
-            if (DivStyler.styleCache.innerStyle[i])
-                innerDiv.css(DivStyler.NodeInnerStyleNames[i], DivStyler.styleCache.innerStyle[i]);
-        }
-
-        await KFK.syncNodePut("U", div, "paste style", oldDiv, false, 0, 1);
+            for (let i = 0; i < DivStyler.NodeInnerStyleNames.length; i++) {
+                if (DivStyler.styleCache.innerStyle[i])
+                    innerDiv.css(DivStyler.NodeInnerStyleNames[i], DivStyler.styleCache.innerStyle[i]);
+            }
+        });
     } catch (error) {
         console.error(error);
     }
@@ -47,48 +43,38 @@ DivStyler.pasteStyle = async function () {
 
 DivStyler.fontSmaller = async function () {
     try {
-        let div = KFK.getHoverFocusLastCreate();
-        if (!div || KFK.anyLocked(div)) return;
-        let oldDiv = div.clone();
-        let innerDiv = div.find('.innerobj');
-        let fontSize = innerDiv.css("font-size");
-        if (!fontSize) fontSize = "18px";
-        fontSize = KFK.unpx(fontSize);
-        let newFontSize = fontSize - 1;
-        newFontSize = newFontSize < 8 ? 8 : newFontSize;
-        if (newFontSize != fontSize) {
+        await KFK.updateSelectedDIVs('font smaller', async function (div) {
+            let innerDiv = div.find('.innerobj');
+            let fontSize = innerDiv.css("font-size");
+            if (!fontSize) fontSize = "18px";
+            fontSize = KFK.unpx(fontSize);
+            let newFontSize = fontSize - 1;
+            newFontSize = newFontSize < 8 ? 8 : newFontSize;
             innerDiv.css('font-size', newFontSize);
-            await KFK.syncNodePut("U", div, "change font", oldDiv, false, 0, 1);
-        }
+        });
     } catch (error) {
         console.error(error);
     }
 }
 DivStyler.fontBigger = async function () {
     try {
-        let div = KFK.getHoverFocusLastCreate();
-        if (!div || KFK.anyLocked(div)) return;
-        let oldDiv = div.clone();
-        let innerDiv = div.find('.innerobj');
-        let fontSize = innerDiv.css("font-size");
-        if (!fontSize) fontSize = "18px";
-        fontSize = KFK.unpx(fontSize);
-        let newFontSize = fontSize + 1;
-        newFontSize = newFontSize > 100 ? 100 : newFontSize;
-        if (newFontSize != fontSize) {
+        await KFK.updateSelectedDIVs('font smaller', async function (div) {
+            let innerDiv = div.find('.innerobj');
+            let fontSize = innerDiv.css("font-size");
+            if (!fontSize) fontSize = "18px";
+            fontSize = KFK.unpx(fontSize);
+            let newFontSize = fontSize + 1;
+            newFontSize = newFontSize > 100 ? 100 : newFontSize;
             innerDiv.css('font-size', newFontSize);
-            await KFK.syncNodePut("U", div, "change font", oldDiv, false, 0, 1);
-        }
+        });
     } catch (error) {
         console.error(error);
     }
 }
 DivStyler.vertSizeSmaller = async function (delta) {
     try {
-        let div = KFK.getHoverFocusLastCreate();
-        if (div && KFK.notAnyLocked(div)) {
+        let divNum = await KFK.updateSelectedDIVs('set border width', async function (div) {
             let nodeType = div.attr('nodetype');
-            let oldDiv = div.clone();
             let tmpTop = KFK.divTop(div);
             let tmpHeight = KFK.divHeight(div);
             tmpTop = tmpTop + delta;
@@ -100,9 +86,9 @@ DivStyler.vertSizeSmaller = async function (delta) {
             if (tmpHeight >= minH) {
                 div.css('top', tmpTop);
                 div.css('height', tmpHeight);
-                await KFK.syncNodePut("U", div, "change height", oldDiv, false, 0, 1);
             }
-        } else {
+        });
+        if (divNum === 0) {
             let shape = KFK.hoverSvgLine();
             shape && (KFK.morphedShape = shape);
             KFK.morphedShape && DivStyler.resizeShape(KFK.morphedShape, 'vertSizeSmaller', delta);
@@ -115,17 +101,15 @@ DivStyler.vertSizeSmaller = async function (delta) {
 
 DivStyler.horiSizeBigger = async function (delta) {
     try {
-        let div = KFK.getHoverFocusLastCreate();
-        if (div && KFK.notAnyLocked(div)) {
-            let oldDiv = div.clone();
+        let divNum = await KFK.updateSelectedDIVs('set border width', async function (div) {
             let tmpLeft = KFK.divLeft(div);
             let tmpWidth = KFK.divWidth(div);
             tmpLeft = tmpLeft - delta;
             tmpWidth = tmpWidth + delta * 2;
             div.css('left', tmpLeft);
             div.css('width', tmpWidth);
-            await KFK.syncNodePut("U", div, "change width", oldDiv, false, 0, 1);
-        } else {
+        });
+        if (divNum === 0) {
             let shape = KFK.hoverSvgLine();
             shape && (KFK.morphedShape = shape);
             KFK.morphedShape && DivStyler.resizeShape(KFK.morphedShape, 'horiSizeBigger', delta);
@@ -136,10 +120,8 @@ DivStyler.horiSizeBigger = async function (delta) {
 }
 DivStyler.horiSizeSmaller = async function (delta) {
     try {
-        let div = KFK.getHoverFocusLastCreate();
-        if (div && KFK.notAnyLocked(div)) {
+        let divNum = await KFK.updateSelectedDIVs('set border width', async function (div) {
             let nodeType = div.attr('nodetype');
-            let oldDiv = div.clone();
             let tmpLeft = KFK.divLeft(div);
             let tmpWidth = KFK.divWidth(div);
             tmpLeft = tmpLeft + delta;
@@ -151,9 +133,9 @@ DivStyler.horiSizeSmaller = async function (delta) {
             if (tmpWidth >= minW) {
                 div.css('left', tmpLeft);
                 div.css('width', tmpWidth);
-                await KFK.syncNodePut("U", div, "change width", oldDiv, false, 0, 1);
             }
-        } else {
+        });
+        if (divNum === 0) {
             let shape = KFK.hoverSvgLine();
             shape && (KFK.morphedShape = shape);
             KFK.morphedShape && DivStyler.resizeShape(KFK.morphedShape, 'horiSizeSmaller', delta);
@@ -164,17 +146,15 @@ DivStyler.horiSizeSmaller = async function (delta) {
 }
 DivStyler.vertSizeBigger = async function (delta) {
     try {
-        let div = KFK.getHoverFocusLastCreate();
-        if (div && KFK.notAnyLocked(div)) {
-            let oldDiv = div.clone();
+        let divNum = await KFK.updateSelectedDIVs('set border width', async function (div) {
             let tmpTop = KFK.divTop(div);
             let tmpHeight = KFK.divHeight(div);
             tmpTop = tmpTop - delta;
             tmpHeight = tmpHeight + delta * 2;
             div.css('top', tmpTop);
             div.css('height', tmpHeight);
-            await KFK.syncNodePut("U", div, "change height", oldDiv, false, 0, 1);
-        } else {
+        });
+        if (divNum === 0) {
             let shape = KFK.hoverSvgLine();
             shape && (KFK.morphedShape = shape);
             KFK.morphedShape && DivStyler.resizeShape(KFK.morphedShape, 'vertSizeBigger', delta);
@@ -185,7 +165,7 @@ DivStyler.vertSizeBigger = async function (delta) {
 };
 DivStyler.zoom = async function (direction, delta) {
     try {
-        if(!KFK.morphedShape){
+        if (!KFK.morphedShape) {
             let shape = KFK.hoverSvgLine();
             shape && (KFK.morphedShape = shape);
         }
@@ -195,16 +175,16 @@ DivStyler.zoom = async function (direction, delta) {
     }
 };
 DivStyler.zoomShape = async function (shape, direction, delta) {
-        // let cpt = { x: shape.cx(), y: shape.cy() };
-        // let rect = { w: shape.width(), h: shape.height() };
-        // rect.w += delta;
-        // rect.h += delta;
-        let tmpw = KFK.shapeSizeOrigin.w+delta;
-        let tmph = KFK.shapeSizeOrigin.h+delta;
-        tmpw = tmpw<10?10:tmpw;
-        tmph = tmph<10?10:tmph;
-        shape.size(tmpw, tmph);
-        shape.center(KFK.shapeSizeCenter.x, KFK.shapeSizeCenter.y);
+    // let cpt = { x: shape.cx(), y: shape.cy() };
+    // let rect = { w: shape.width(), h: shape.height() };
+    // rect.w += delta;
+    // rect.h += delta;
+    let tmpw = KFK.shapeSizeOrigin.w + delta;
+    let tmph = KFK.shapeSizeOrigin.h + delta;
+    tmpw = tmpw < 10 ? 10 : tmpw;
+    tmph = tmph < 10 ? 10 : tmph;
+    shape.size(tmpw, tmph);
+    shape.center(KFK.shapeSizeCenter.x, KFK.shapeSizeCenter.y);
 };
 /**
  * 对shape边框进行横向和纵向扩展
@@ -226,51 +206,77 @@ DivStyler.resizeShape = async function (shape, direction, delta) {
         switch (direction) {
             case "vertSizeBigger":
                 if (arr[0][1] == rect.b) {
-                    smallIndex = 1; bigIndex = 0;
-                } else { smallIndex = 0; bigIndex = 1; }
-                arr[smallIndex][1] -= delta; arr[bigIndex][1] += delta;
+                    smallIndex = 1;
+                    bigIndex = 0;
+                } else {
+                    smallIndex = 0;
+                    bigIndex = 1;
+                }
+                arr[smallIndex][1] -= delta;
+                arr[bigIndex][1] += delta;
                 break;
             case "vertSizeSmaller":
                 if (arr[0][1] == rect.b) {
-                    smallIndex = 1; bigIndex = 0;
-                } else { smallIndex = 0; bigIndex = 1; }
-                arr[smallIndex][1] += delta; arr[bigIndex][1] -= delta;
-            break;
+                    smallIndex = 1;
+                    bigIndex = 0;
+                } else {
+                    smallIndex = 0;
+                    bigIndex = 1;
+                }
+                arr[smallIndex][1] += delta;
+                arr[bigIndex][1] -= delta;
+                break;
             case "horiSizeBigger":
                 console.log("Bigger");
                 if (arr[0][0] == rect.r) {
-                    smallIndex = 1; bigIndex = 0;
-                } else { smallIndex = 0; bigIndex = 1; }
-                arr[smallIndex][0] -= delta; arr[bigIndex][0] += delta;
+                    smallIndex = 1;
+                    bigIndex = 0;
+                } else {
+                    smallIndex = 0;
+                    bigIndex = 1;
+                }
+                arr[smallIndex][0] -= delta;
+                arr[bigIndex][0] += delta;
                 break;
             case "horiSizeSmaller":
                 console.log("Smaller");
                 if (arr[0][0] == rect.r) {
-                    smallIndex = 1; bigIndex = 0;
-                } else { smallIndex = 0; bigIndex = 1; }
-                arr[smallIndex][0] += delta; arr[bigIndex][0] -= delta;
+                    smallIndex = 1;
+                    bigIndex = 0;
+                } else {
+                    smallIndex = 0;
+                    bigIndex = 1;
+                }
+                arr[smallIndex][0] += delta;
+                arr[bigIndex][0] -= delta;
                 break;
         }
         shape.plot(arr);
-    } else if (sType === 'rectangle' || sType === 'ellipse'
-    || sType === 'polygon' || sType === 'polyline'
-    || sType === 'freehand') {
-        let cpt = { x: shape.cx(), y: shape.cy() };
-        let rect = { w: shape.width(), h: shape.height() };
+    } else if (sType === 'rectangle' || sType === 'ellipse' ||
+        sType === 'polygon' || sType === 'polyline' ||
+        sType === 'freehand') {
+        let cpt = {
+            x: shape.cx(),
+            y: shape.cy()
+        };
+        let rect = {
+            w: shape.width(),
+            h: shape.height()
+        };
         switch (direction) {
             case "vertSizeBigger":
                 rect.h += 2 * delta;
                 break;
             case "vertSizeSmaller":
                 rect.h -= 2 * delta;
-                rect.h = rect.h<10?10:rect.h;
+                rect.h = rect.h < 10 ? 10 : rect.h;
                 break;
             case "horiSizeBigger":
                 rect.w += 2 * delta;
                 break;
             case "horiSizeSmaller":
                 rect.w -= 2 * delta;
-                rect.w = rect.w<10?10:rect.w;
+                rect.w = rect.w < 10 ? 10 : rect.w;
                 break;
         }
         shape.size(rect.w, rect.h);
@@ -295,37 +301,38 @@ DivStyler.shapeType = function (shape) {
     return ret;
 };
 DivStyler.alignItem = async function (keyCode) {
-    let ijq = KFK.getHoverFocusLastCreateInner();
-    if (!ijq) return;
-    switch (keyCode) {
-        case 66: // key B
-            let fst = ijq.css('font-weight');
-            if (fst === '700')
-                ijq.css('font-weight', '400');
-            else
-                ijq.css('font-weight', '700');
-            break;
-        case 73: //key I
-            if (ijq.css('font-style') === 'italic')
-                ijq.css('font-style', '');
-            else
-                ijq.css('font-style', 'italic');
-            break;
-        case 69: // key E
-            ijq.css("justify-content", 'center');
-            ijq.css("text-align", 'center');
-            ijq.css("text-align-last", 'center');
-            break;
-        case 76: // key L
-            ijq.css("justify-content", 'flex-start');
-            ijq.css("text-align", 'left');
-            ijq.css("text-align-last", 'left');
-            break;
-        case 82: // key R
-            ijq.css("justify-content", 'flex-end');
-            ijq.css("text-align", 'right');
-            ijq.css("text-align-last", 'right');
-            break;
-    }
+    let divNum = await KFK.updateSelectedDIVs('set border width', async function (div) {
+        let divInner = div.find('.innerobj');
+        switch (keyCode) {
+            case 66: // key B
+                let fst = divInner.css('font-weight');
+                if (fst === '700')
+                    divInner.css('font-weight', '400');
+                else
+                    divInner.css('font-weight', '700');
+                break;
+            case 73: //key I
+                if (divInner.css('font-style') === 'italic')
+                    divInner.css('font-style', '');
+                else
+                    divInner.css('font-style', 'italic');
+                break;
+            case 69: // key E
+                divInner.css("justify-content", 'center');
+                divInner.css("text-align", 'center');
+                divInner.css("text-align-last", 'center');
+                break;
+            case 76: // key L
+                divInner.css("justify-content", 'flex-start');
+                divInner.css("text-align", 'left');
+                divInner.css("text-align-last", 'left');
+                break;
+            case 82: // key R
+                divInner.css("justify-content", 'flex-end');
+                divInner.css("text-align", 'right');
+                divInner.css("text-align-last", 'right');
+                break;
+        }
+    });
 };
 module.exports.DivStyler = DivStyler;
