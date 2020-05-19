@@ -1,5 +1,5 @@
 // import "./importjquery";
-import bent from "bent";
+// import bent from "bent";
 import "regenerator-runtime/runtime";
 // import imageCompression from 'browser-image-compression';
 // import { SVG } from "@svgdotjs/svg.js";
@@ -5422,6 +5422,7 @@ KFK.initVideoRoom = async function () {
     });
 };
 
+/*
 KFK.loadSvgs = function () {
     if (NotSet(KFK.svgLoaded)) {
         const getString = bent('string');
@@ -5437,6 +5438,7 @@ KFK.loadSvgs = function () {
         KFK.svgLoaded = true;
     }
 };
+*/
 
 KFK.initPropertySvgGroup = function () {
     //在pad.js中的tip_groups中定义了要用到的svgs。
@@ -5669,11 +5671,11 @@ KFK.rememberLayoutDisplay = function () {
         showbounding: KFK.APP.model.viewConfig.showbounding,
         showgrid: KFK.APP.model.viewConfig.showgrid,
         minimap: KFK.APP.show.section.minimap,
-        toplogo: $("#toplogo").css("visibility"),
-        docHeaderInfo: $("#docHeaderInfo").css("visibility"),
-        rtcontrol: $("#rtcontrol").css("visibility"),
-        left: $("#left").css("visibilityj"),
-        right: $("#right").css("visibility"),
+        toplogo: $("#toplogo").hasClass('noshow'),
+        docHeaderInfo: $("#docHeaderInfo").hasClass('noshow'),
+        rtcontrol: $("#rtcontrol").hasClass('noshow'),
+        left: $("#left").hasClass('noshow'),
+        right: $("#right").hasClass('noshow')
     };
 };
 KFK.restoreLayoutDisplay = async function () {
@@ -5686,11 +5688,11 @@ KFK.restoreLayoutDisplay = async function () {
     else $(".pageBoundingLine").addClass("noshow");
 
     await KFK.showSection({ minimap: KFK.layoutRemembered.minimap });
-    $("#toplogo").css("visibility", KFK.layoutRemembered.toplogo);
-    $("#docHeaderInfo").css("visibility", KFK.layoutRemembered.docHeaderInfo);
-    $("#rtcontrol").css("visibility", KFK.layoutRemembered.rtcontrol);
-    $("#left").css("visibility", KFK.layoutRemembered.left);
-    $("#right").css("visibility", KFK.layoutRemembered.right);
+    KFK.layoutRemembered.toplogo?$('#toplogo').addClass('noshow'):$('#toplogo').removeClass('noshow');
+    KFK.layoutRemembered.docHeaderInfo?$("#docHeaderInfo").addClass('noshow'):$("#docHeaderInfo").removeClass('noshow');
+    KFK.layoutRemembered.rtcontrol?$("#rtcontrol").addClass('noshow'):$("#rtcontrol").removeClass('noshow');
+    KFK.layoutRemembered.left?$("#left").addClass('noshow'):$("#left").removeClass('noshow');
+    KFK.layoutRemembered.right?$("#right").addClass('noshow'):$("#right").removeClass('noshow');
 };
 KFK.setLayoutDisplay = async function (config) {
     KFK.debug("setlayoutdisplay", JSON.stringify(config));
@@ -5711,11 +5713,11 @@ KFK.setLayoutDisplay = async function (config) {
     }
 
     await KFK.showSection({ minimap: config.minimap });
-    $("#toplogo").css("visibility", config.toplogo);
-    $("#docHeaderInfo").css("visibility", config.docHeaderInfo);
-    $("#rtcontrol").css("visibility", config.rtcontrol);
-    $("#left").css("visibility", config.left);
-    $("#right").css("visibility", config.right);
+    config.toplogo?$('#toplogo').removeClass('noshow'):$('#toplogo').addClass('noshow');
+    config.docHeaderInfo?$('#docHeaderInfo').removeClass('noshow'):$('#docHeaderInfo').addClass('noshow');
+    config.rtcontrol?$('#rtcontrol').removeClass('noshow'):$('#rtcontrol').addClass('noshow');
+    config.left?$('#left').removeClass('noshow'):$('#left').addClass('noshow');
+    config.right?$('#right').removeClass('noshow'):$('#right').addClass('noshow');
 };
 
 KFK.showSection = async function (options) {
@@ -7958,6 +7960,10 @@ KFK.addDocumentEventHandler = function () {
                     KFK.keypool = "";
                     await KFK.toggleControlButtonOnly();
                     return;
+                } else if (KFK.keypool.endsWith("nh")) {
+                    KFK.keypool = "";
+                    await KFK.toggleNoDocHeader();
+                    return;
                 } else if (KFK.keypool.endsWith("tl")) {
                     KFK.keypool = "";
                     await KFK.toggleTopAndLeftOnly();
@@ -8475,41 +8481,24 @@ KFK.addDocumentEventHandler = function () {
                     KFK.undo();
                 }
                 break;
-            case 76:
-                if (evt.metaKey || evt.ctrlKey) {
-                    KFK.logKey("META-SHIFT-L");
-                    KFK.tryToLockUnlock();
+            case 69: //E
+            case 76: //L
+            case 82: //R
+            case 66: // key B
+            case 73: //key I
+                if (([69,76,82].indexOf(evt.keyCode)>=0 && evt.metaKey && evt.ctrlKey) ||
+                 ([66, 73].indexOf(evt.keyCode)>=0 && (evt.metaKey || evt.ctrlKey))) {
                     KFK.holdEvent(evt);
+                    KFK.DivStyler ? KFK.DivStyler.alignItem(evt.keyCode) :
+                        import('./divStyler').then((pack) => {
+                            KFK.DivStyler = pack.DivStyler;
+                            KFK.DivStyler.alignItem(evt.keyCode);
+                        });
                 }
                 break;
             case 8: //Backspace
             case 46: //Delete
                 KFK.deleteHoverOrSelectedDiv(evt, false);
-                break;
-            case 66: // key B
-                if (evt.ctrlKey || evt.metaKey) {
-                    let ijq = KFK.getHoverFocusLastCreateInner();
-                    if (ijq) {
-                        let fst = ijq.css('font-weight');
-                        if (fst === '700') {
-                            ijq.css('font-weight', '400');
-                        } else {
-                            ijq.css('font-weight', '700');
-                        }
-                    }
-                }
-                break;
-            case 73: //key I
-                if (evt.ctrlKey || evt.metaKey) {
-                    let ijq = KFK.getHoverFocusLastCreateInner();
-                    if (ijq) {
-                        if (ijq.css('font-style') === 'italic') {
-                            ijq.css('font-style', '');
-                        } else {
-                            ijq.css('font-style', 'italic');
-                        }
-                    }
-                }
                 break;
             case 48:  //key 0
                 if (evt.ctrlKey || evt.metaKey) {
@@ -9410,22 +9399,18 @@ KFK.toggleFullScreen = function (evt) {
     if (KFK.inPresentingMode) return;
     KFK.inFullScreenMode = !KFK.inFullScreenMode;
     if (KFK.inFullScreenMode === true) {
-        // if (KFK.inOverviewMode === false) {
-        //   KFK.setLayoutDisplay({
-        //     showgrid: KFK.APP.model.viewConfig.showgrid,
-        //     minimap: false,
-        //     toplogo: 'hidden',
-        //     docHeaderInfo: 'hidden',
-        //     rtcontrol: 'hidden',
-        //     left: 'none',
-        //     right: 'none',
-        //   });
-        // }
+        /*
+        if (KFK.inOverviewMode === false) {
+          KFK.setLayoutDisplay({ minimap: false, toplogo: false, docHeaderInfo: false, rtcontrol: true, left: true, right: true, });
+        }
+        */
         KFK.scrLog("进入全屏模式: 输入fs退出");
     } else {
         KFK.scrLog("");
-        // if (KFK.inOverviewMode === false)
-        //   KFK.restoreLayoutDisplay();
+        /*
+        if (KFK.inOverviewMode === false)
+          KFK.restoreLayoutDisplay();
+          */
     }
     KFK.APP.setData("show", "actionlog", false);
     if (KFK.inFullScreenMode === true) {
@@ -9473,6 +9458,28 @@ KFK.toggleControlButtonOnly = async function (evt) {
     } else {
         KFK.show("#left");
         KFK.show("#right");
+        KFK.show("#docHeaderInfo");
+        KFK.show("#toplogo");
+        KFK.restoreDIVsWithStatus(['.msgInputWindow', '#coco_chat']);
+    }
+    KFK.keypool = "";
+    //add a mask layer
+};
+KFK.toggleNoDocHeader = async function (evt) {
+    KFK.noDocHeader = !KFK.noDocHeader;
+    if (KFK.APP.model.cocodoc.readonly) {
+        //文档锁定时，依然可以对minimap切换显示与否
+        await KFK.showSection({ minimap: !KFK.controlButtonsOnly });
+        return;
+    }
+    KFK.APP.setData("show", "actionlog", false);
+    //切换minimap
+    await KFK.showSection({ minimap: !KFK.noDocHeader });
+    if (KFK.noDocHeader) {
+        KFK.hide("#docHeaderInfo");
+        KFK.hide("#toplogo");
+        KFK.hideDIVsWithStatus(['.msgInputWindow', '#coco_chat']);
+    } else {
         KFK.show("#docHeaderInfo");
         KFK.show("#toplogo");
         KFK.restoreDIVsWithStatus(['.msgInputWindow', '#coco_chat']);
@@ -10006,11 +10013,11 @@ KFK.startPresentation = async function () {
         showbounding: false,
         showgrid: false,
         minimap: false,
-        toplogo: "hidden",
-        docHeaderInfo: "hidden",
-        rtcontrol: "hidden",
-        left: "none",
-        right: "none",
+        toplogo: false,
+        docHeaderInfo: false,
+        rtcontrol: false,
+        left: false,
+        right: false,
     });
     let cbkg = $("#containerbkg");
     KFK.rememberGrid = cbkg.hasClass("grid1") ?
@@ -10323,17 +10330,10 @@ KFK.toggleOverview = function (jc3MousePos) {
         if (KFK.inFullScreenMode === false) KFK.restoreLayoutDisplay();
     } else {
         if (KFK.inFullScreenMode === false) {
-            KFK.setLayoutDisplay({
-                showgrid: false,
-                minimap: false,
-                toplogo: "hidden",
-                docHeaderInfo: "hidden",
-                rtcontrol: "hidden",
-                left: "none",
-                right: "none",
-            });
+            KFK.setLayoutDisplay({ showgrid: false, minimap: false, toplogo: false, docHeaderInfo: false, rtcontrol: false, left: false, right: false, });
         }
         KFK.hideDIVsWithStatus(['.msgInputWindow', '#coco_chat', '#system_message']);
+        $('#lineExpand').addClass('noshow');
         let cbkg = $("#containerbkg");
         KFK.rememberGrid = cbkg.hasClass("grid1") ?
             "grid1" :
@@ -11999,12 +11999,9 @@ KFK.expandTool = function (evt, tool) {
     if (jTool.hasClass('toolbox') === false) {
         jTool = jTool.parent();
     }
-    console.log(KFK.divRect(jTool));
-    console.log(evt);
     let jExpand = $('#lineExpand');
     jExpand.removeClass('noshow');
     let top = evt.clientY - 50;
-    console.log(top);
     jExpand.css({ 'top': top, 'left': 65 });
 };
 
