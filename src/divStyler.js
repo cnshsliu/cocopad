@@ -3,7 +3,7 @@ DivStyler.styleCache = {};
 import KFK from './console';
 
 
-DivStyler.NodeOuterStyleNames = ["background-color", "border-color ", "border-width", "border-style", "border-radius"];
+DivStyler.NodeOuterStyleNames = ["background-color", "border", "border-width", "border-style", "border-radius"];
 DivStyler.NodeInnerStyleNames = ["font-size", "color", "justify-content", "align-items", "text-align-last", "text-align", "font-family", "font-weight", "font-style"];
 DivStyler.copyStyle = function () {
     let div = KFK.getHoverFocusLastCreate();
@@ -27,13 +27,15 @@ DivStyler.pasteStyle = async function () {
             let myNodeType = div.attr('nodetype');
             if (myNodeType === DivStyler.styleCache.nodetype) {
                 for (let i = 0; i < DivStyler.NodeOuterStyleNames.length; i++) {
-                    if (DivStyler.styleCache.outerStyle[i])
+                    if (DivStyler.styleCache.outerStyle[i]){
                         div.css(DivStyler.NodeOuterStyleNames[i], DivStyler.styleCache.outerStyle[i]);
+                    }
                 }
             }
             for (let i = 0; i < DivStyler.NodeInnerStyleNames.length; i++) {
-                if (DivStyler.styleCache.innerStyle[i])
+                if (DivStyler.styleCache.innerStyle[i]){
                     innerDiv.css(DivStyler.NodeInnerStyleNames[i], DivStyler.styleCache.innerStyle[i]);
+                }
             }
         });
     } catch (error) {

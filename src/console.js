@@ -1265,11 +1265,11 @@ KFK.procLinkNode = function (shiftKey, text) {
     let tmp4 = KFK.linkPosNode[1].attr("linkto");
     if (tmp1 !== tmp3) {
         KFK.debug("The first node linkto has been changed");
-        KFK.syncNodePut("U", KFK.linkPosNode[0], "connect nodes", null, false, 0, 1);
+        KFK.syncNodePut("U", KFK.linkPosNode[0].clone(), "connect nodes", null, false, 0, 1);
     }
     if (tmp2 !== tmp4) {
         KFK.debug("The second node linkto has been changed");
-        KFK.syncNodePut("U", KFK.linkPosNode[1], "connect nodes", null, false, 0, 1);
+        KFK.syncNodePut("U", KFK.linkPosNode[1].clone(), "connect nodes", null, false, 0, 1);
     }
 
     if (!shiftKey) {
@@ -2763,10 +2763,6 @@ KFK.placeNode = async function (shiftKey, id, type, variant, x, y, w, h, attach,
 
     //如果在脑图模式下，则自动建立脑图链接
     await KFK.LinkFromBrainCenter(KFK.justCreatedJqNode);
-    if (KFK.firstShown['right'] === false && KFK.docIsNotReadOnly()) {
-        KFK.show('#right');
-        KFK.firstShown['right'] = true;
-    }
 
     return jqDIV;
 };
@@ -4818,6 +4814,7 @@ KFK.deleteHoverOrSelectedDiv = async function (evt, cutMode = false) {
                 KFK._deleteLine(theSvgLine);
                 KFK.hoverSvgLine(null);
             } else if (KFK.hoveredConnectId) {
+                //delete connect
                 //最后看鼠标滑过的connect（节点间连接线）
                 if (KFK.docIsReadOnly()) return;
                 //Find ids of the two nodes connected by this connect.
@@ -4835,7 +4832,7 @@ KFK.deleteHoverOrSelectedDiv = async function (evt, cutMode = false) {
                 //Remove ths connect drawing
                 KFK.removeConnectById(connect_id);
                 //删除一个connect, 则jqFrom被修改
-                await KFK.syncNodePut("U", jqFrom, "remove connect", oldJq, false, 0, 1);
+                await KFK.syncNodePut("U", jqFrom.clone(), "remove connect", oldJq, false, 0, 1);
                 KFK.debug(KFK.hoveredConnectId, nid, tid);
             }
         }
@@ -7222,52 +7219,20 @@ KFK.setLineModel = function (options) {
     KFK.APP.setData("model", "line", setting);
 };
 KFK.changeBorderRadius = async function (radius) {
-    let jqNode = KFK.getPropertyApplyToJqNode();
-    if (jqNode != null && KFK.notAnyLocked(jqNode)) {
-        KFK.fromJQ = jqNode.clone();
+    await KFK.updateSelectedDIVs('', async function (jqNode) {
         jqNode.css("border-radius", radius);
-        await KFK.syncNodePut(
-            "U",
-            jqNode,
-            "set border radius",
-            KFK.fromJQ,
-            false,
-            0,
-            1
-        );
-    }
+    });
 };
 KFK.changeToTransparent = async function () {
-    let jqNode = KFK.getPropertyApplyToJqNode();
-    if (jqNode != null && KFK.notAnyLocked(jqNode)) {
-        KFK.fromJQ = jqNode.clone();
+    await KFK.updateSelectedDIVs('', async function (jqNode) {
         jqNode.css("background-color", "transparent");
         jqNode.css("border-color", "transparent");
-        await KFK.syncNodePut(
-            "U",
-            jqNode,
-            "set border radius",
-            KFK.fromJQ,
-            false,
-            0,
-            1
-        );
-    }
+    });
 };
 KFK.setWritingMode = async function (wmode) {
-    let jqNode = KFK.getPropertyApplyToJqNode();
-    if (NotSet(jqNode) || KFK.anyLocked(jqNode)) return;
-    KFK.fromJQ = jqNode.clone();
+    await KFK.updateSelectedDIVs('', async function (jqNode) {
     jqNode.css("writing-mode", wmode);
-    await KFK.syncNodePut(
-        "U",
-        jqNode,
-        "set font writing-mode",
-        KFK.fromJQ,
-        false,
-        0,
-        1
-    );
+    });
 };
 KFK.initViewByLocalConfig = async function () {
     try {
@@ -7706,9 +7671,46 @@ KFK.setGridColor = function (bgcolor) {
 
 KFK.textAlignChanged = async function (evt, value) {
     let alignInfo = $("#textAlign").val();
-    let jqNode = KFK.getPropertyApplyToJqNode();
-    KFK.setAlignmentDirectly(jqNode, alignInfo);
-    KFK.focusOnC3();
+    let divNum = await KFK.updateSelectedDIVs('', async function(jqNode) {
+        let jqInner = jqNode.find('.innerobj');
+        if (jqInner.length !== 0) {
+            jqInner.css("justify-content", alignInfo);
+            jqInner.css(
+                    "text-align-last",
+                    alignInfo === "flex-start" ?
+                        "left" :
+                        alignInfo === "flex-end" ?
+                            "right" :
+                            "center"
+                );
+            jqInner.css(
+                    "text-align",
+                    alignInfo === "flex-start" ?
+                        "left" :
+                        alignInfo === "flex-end" ?
+                            "right" :
+                            "center"
+                );
+        } else {
+            jqNode.css("justify-content", alignInfo);
+            jqNode.css(
+                "text-align-last",
+                alignInfo === "flex-start" ?
+                    "left" :
+                    alignInfo === "flex-end" ?
+                        "right" :
+                        "center"
+            );
+            jqNode.css(
+                "text-align",
+                alignInfo === "flex-start" ?
+                    "left" :
+                    alignInfo === "flex-end" ?
+                        "right" :
+                        "center"
+            );
+        }
+    });
 };
 KFK.toggleCustomShape = function (evt) {
     if ($(".customcontrol").hasClass("btn_collapse")) {
@@ -7736,83 +7738,16 @@ KFK.toggleCustomShape = function (evt) {
     }
 };
 
-KFK.setAlignmentDirectly = async function (jqNode, alignInfo) {
-    if (jqNode != null && KFK.notAnyLocked(jqNode)) {
-        KFK.fromJQ = jqNode.clone();
-        if (jqNode.find(".innerobj").length !== 0) {
-            jqNode.find(".innerobj").css("justify-content", alignInfo);
-            jqNode
-                .find(".innerobj")
-                .css(
-                    "text-align-last",
-                    alignInfo === "flex-start" ?
-                        "left" :
-                        alignInfo === "flex-end" ?
-                            "right" :
-                            "center"
-                );
-            jqNode
-                .find(".innerobj")
-                .css(
-                    "text-align",
-                    alignInfo === "flex-start" ?
-                        "left" :
-                        alignInfo === "flex-end" ?
-                            "right" :
-                            "center"
-                );
-        } else {
-            jqNode.css("justify-content", alignInfo);
-            jqNode.css(
-                "text-align-last",
-                alignInfo === "flex-start" ?
-                    "left" :
-                    alignInfo === "flex-end" ?
-                        "right" :
-                        "center"
-            );
-            jqNode.css(
-                "text-align",
-                alignInfo === "flex-start" ?
-                    "left" :
-                    alignInfo === "flex-end" ?
-                        "right" :
-                        "center"
-            );
-        }
-        await KFK.syncNodePut(
-            "U",
-            jqNode,
-            "set text alignment",
-            KFK.fromJQ,
-            false,
-            0,
-            1
-        );
-    }
-};
 
 KFK.vertAlignChanged = async function (evt, value) {
     let valignInfo = $("#vertAlign").val();
-    let jqNode = KFK.getPropertyApplyToJqNode();
-    if (jqNode != null && KFK.notAnyLocked(jqNode)) {
-        KFK.fromJQ = jqNode.clone();
+    let divNum = await KFK.updateSelectedDIVs('set border width', async function(jqNode) {
         if (jqNode.find(".innerobj").length !== 0) {
             jqNode.find(".innerobj").css("align-items", valignInfo);
         } else {
             jqNode.css("align-items", valignInfo);
         }
-        await KFK.syncNodePut(
-            "U",
-            jqNode,
-            "set text vert alignment",
-            KFK.fromJQ,
-            false,
-            0,
-            1
-        );
-    }
-    KFK.focusOnC3();
+    });
 };
 
 KFK.setDrawMode = function (mode, event) {
