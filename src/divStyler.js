@@ -88,6 +88,7 @@ DivStyler.vertSizeSmaller = async function (delta) {
             if (tmpHeight >= minH) {
                 div.css('top', tmpTop);
                 div.css('height', tmpHeight);
+                KFK.redrawLinkLines(div, "resize", true);
             }
         });
         if (divNum === 0) {
@@ -110,6 +111,7 @@ DivStyler.horiSizeBigger = async function (delta) {
             tmpWidth = tmpWidth + delta * 2;
             div.css('left', tmpLeft);
             div.css('width', tmpWidth);
+            KFK.redrawLinkLines(div, "resize", true);
         });
         if (divNum === 0) {
             let shape = KFK.hoverSvgLine();
@@ -135,6 +137,7 @@ DivStyler.horiSizeSmaller = async function (delta) {
             if (tmpWidth >= minW) {
                 div.css('left', tmpLeft);
                 div.css('width', tmpWidth);
+                KFK.redrawLinkLines(div, "resize", true);
             }
         });
         if (divNum === 0) {
@@ -155,6 +158,7 @@ DivStyler.vertSizeBigger = async function (delta) {
             tmpHeight = tmpHeight + delta * 2;
             div.css('top', tmpTop);
             div.css('height', tmpHeight);
+            KFK.redrawLinkLines(div, "resize", true);
         });
         if (divNum === 0) {
             let shape = KFK.hoverSvgLine();
@@ -196,6 +200,7 @@ DivStyler.moveDIV = async function (keyCode, ctrlKey) {
             };
             div.css('top', newTop);
             div.css('left', newLeft);
+            KFK.redrawLinkLines(div, "move", true);
         });
     }else{
         console.log("no refDiv, contineu with shape");
