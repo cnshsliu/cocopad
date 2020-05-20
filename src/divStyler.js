@@ -27,13 +27,13 @@ DivStyler.pasteStyle = async function () {
             let myNodeType = div.attr('nodetype');
             if (myNodeType === DivStyler.styleCache.nodetype) {
                 for (let i = 0; i < DivStyler.NodeOuterStyleNames.length; i++) {
-                    if (DivStyler.styleCache.outerStyle[i]){
+                    if (DivStyler.styleCache.outerStyle[i]) {
                         div.css(DivStyler.NodeOuterStyleNames[i], DivStyler.styleCache.outerStyle[i]);
                     }
                 }
             }
             for (let i = 0; i < DivStyler.NodeInnerStyleNames.length; i++) {
-                if (DivStyler.styleCache.innerStyle[i]){
+                if (DivStyler.styleCache.innerStyle[i]) {
                     innerDiv.css(DivStyler.NodeInnerStyleNames[i], DivStyler.styleCache.innerStyle[i]);
                 }
             }
@@ -165,6 +165,71 @@ DivStyler.vertSizeBigger = async function (delta) {
         console.error(error);
     }
 };
+DivStyler.moveDIV = async function (keyCode, ctrlKey) {
+    let refDiv = KFK.getHoverFocusLastCreate();
+    refDiv && (KFK.divStylerRefDiv = refDiv);
+    if(KFK.divStylerRefDiv){
+        let divNum = await KFK.updateSelectedDIVs('move by keyboard', async function (div) {
+            let tmpTop = KFK.divTop(div);
+            let tmpLeft = KFK.divLeft(div);
+            let newTop = tmpTop;
+            let newLeft = tmpLeft;
+            let horiDelta = 20;
+            let vertDelta = 20;
+            if (ctrlKey) { // use refDiv's width and top
+                horiDelta = KFK.divWidth(KFK.divStylerRefDiv);
+                vertDelta = KFK.divHeight(KFK.divStylerRefDiv);
+            }
+            switch (keyCode) {
+                case 37:
+                    newLeft = tmpLeft - horiDelta;
+                break;
+                case 39:
+                    newLeft = tmpLeft + horiDelta;
+                break;
+                case 38:
+                    newTop = tmpTop - vertDelta;
+                break;
+                case 40:
+                    newTop = tmpTop + vertDelta;
+                break;
+            };
+            div.css('top', newTop);
+            div.css('left', newLeft);
+        });
+    }else{
+        console.log("no refDiv, contineu with shape");
+        let shape = KFK.hoverSvgLine();
+        shape && (KFK.morphedShape = shape);
+        if (KFK.morphedShape) {
+            let horiDelta = 20;
+            let vertDelta = 20;
+            if (ctrlKey) {
+                horiDelta = 60;
+                vertDelta = 60;
+            }
+            switch (keyCode) {
+                case 37:
+                    horiDelta = -horiDelta;
+                vertDelta = 0;
+                break;
+                case 39:
+                    vertDelta = 0;
+                break;
+                case 38:
+                    vertDelta = -vertDelta;
+                horiDelta = 0;
+                break;
+                case 40:
+                    horiDelta = 0;
+                break;
+            }
+            KFK.morphedShape.dmove(horiDelta, vertDelta);
+        }
+        return;
+    }
+};
+
 DivStyler.zoom = async function (direction, delta) {
     try {
         if (!KFK.morphedShape) {
@@ -193,7 +258,6 @@ DivStyler.zoomShape = async function (shape, direction, delta) {
  */
 DivStyler.resizeShape = async function (shape, direction, delta) {
     let sType = DivStyler.shapeType(shape);
-    console.log(sType);
     let smallIndex = -1;
     let bigIndex = -1;
     if (sType === 'line') {

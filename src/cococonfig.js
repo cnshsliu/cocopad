@@ -20,12 +20,12 @@ const config = {
         basedir: '',
     },
     ws_server: {
-		endpoint: { label: 'LZJ', url: 'wss://liuzijin.com/clbdapi/grume/wsquux' },
+        endpoint: { label: 'LZJ', url: 'wss://liuzijin.com/clbdapi/grume/wsquux' },
         endpoint_lzj: { label: 'LZJ', url: 'wss://liuzijin.com/clbdapi/grume/wsquux' },
         endpoint_local: { label: 'LOCAL', url: 'ws://localhost:5008/grume/wsquux' },
     },
     frontend: {
-        url: 'http://localhost:8087',
+        url: 'https://mlib.liuzijin.com/frontend',
         url_remote: 'https://mlib.liuzijin.com/frontend',
         url_local: 'http://localhost:8087',
     },

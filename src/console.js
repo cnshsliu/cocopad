@@ -527,7 +527,7 @@ KFK.onWsMsg = async function (response) {
             break;
         case "D":
             KFK.updateReceived++;
-            KFK.deleteObject_for_Response(response.block);
+            await KFK.deleteObject_for_Response(response.block);
             break;
         case "CONTENT":
             KFK.updateQuillingContent(response);
@@ -1217,14 +1217,7 @@ KFK.drawPathBetween = function (A, B, posLimitA = [0, 1, 2, 3], posLimitB = [0, 
         }
     }
     let svgLine = KFK.svgConnectNode(
-        A.attr("id"),
-        B.attr("id"),
-        AIndex,
-        BIndex,
-        APos.points[AIndex].x,
-        APos.points[AIndex].y,
-        BPos.points[BIndex].x,
-        BPos.points[BIndex].y, {}
+        A.attr("id"), B.attr("id"), AIndex, BIndex, APos.points[AIndex].x, APos.points[AIndex].y, BPos.points[BIndex].x, BPos.points[BIndex].y, {}
     );
 };
 
@@ -1613,7 +1606,7 @@ KFK.undo = async () => {
             }
             if (ope.from.length > 1) {
                 KFK.debug("selected count after undo", KFK.selectedDIVs.length);
-                KFK.setSelectedNodesBoundingRect();
+                KFK.updateSelectedNodesBoundingRect();
             }
         } else if (ope.etype === "SLINE") {
             KFK.hideLineTransformer();
@@ -1717,7 +1710,7 @@ KFK.redo = async () => {
                 }
             }
             if (ope.from.length > 1) {
-                KFK.setSelectedNodesBoundingRect();
+                KFK.updateSelectedNodesBoundingRect();
             }
         } else if (ope.etype === "SLINE") {
             if (ope.from === "" && ope.to !== "") {
@@ -1866,6 +1859,7 @@ KFK.initC3 = function () {
         if (KFK.tobeTransformJqLine) KFK.tobeTransformJqLine.removeClass("shadow2");
         KFK.hide("#linetransformer");
         KFK.tobeTransformJqLine = null;
+        KFK.divStylerRefDiv = null;
 
         if (KFK.afterDragging === true) {
             KFK.afterDragging = false;
@@ -2309,13 +2303,13 @@ KFK.moveLineMoverTo = function (position) {
 KFK.selectNode = function (jqDIV) {
     jqDIV.addClass("selected");
     KFK.selectedDIVs.push(jqDIV);
-    KFK.setSelectedNodesBoundingRect();
+    KFK.updateSelectedNodesBoundingRect();
 };
 
 /**
  * 根据选定的多个元素，显示其周围的边框
  */
-KFK.setSelectedNodesBoundingRect = function () {
+KFK.updateSelectedNodesBoundingRect = function () {
     let brect = $(".boundingrect");
     if (brect.length <= 0) {
         let rect = document.createElement("div");
@@ -2413,10 +2407,10 @@ KFK.deselectNode = function (theDIV) {
     $(theDIV).removeClass("selected");
     let index = KFK.selectedDIVs.indexOf(theDIV);
     KFK.selectedDIVs.splice(index, 1);
-    KFK.setSelectedNodesBoundingRect();
+    KFK.updateSelectedNodesBoundingRect();
 };
 
-KFK.selectNodesOnClick = function (jqDIV, shiftKey) {
+KFK.selectNodeOnClick = function (jqDIV, shiftKey) {
     let exist = KFK.selectedDIVs.indexOf(jqDIV);
     if (shiftKey) {
         if (exist >= 0) {
@@ -3543,7 +3537,7 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
                     //节点大小resize后，也要重画连接线
                     KFK.redrawLinkLines(jqNodeDIV, "after resize");
 
-                    KFK.setSelectedNodesBoundingRect();
+                    KFK.updateSelectedNodesBoundingRect();
 
                     if (KFK.isNotA(jqNodeDIV, "noedit")) {
                         await KFK.syncNodePut("U", jqNodeDIV.clone(), "resize node", KFK.fromJQ, false, 0, 1);
@@ -3753,7 +3747,7 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
                 KFK.originZIndex = 1;
                 //节点移动后，对连接到节点上的连接线重新划线
                 KFK.redrawLinkLines(jqNodeDIV, "after moving");
-                KFK.setSelectedNodesBoundingRect();
+                KFK.updateSelectedNodesBoundingRect();
                 if (KFK.isNotA(jqNodeDIV, "noedit")) {
                     await KFK.syncNodePut(
                         "U",
@@ -3906,7 +3900,7 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
                 KFK.jumpStackPointer = tmpIdx;
             }
             if (KFK.mode === "pointer") {
-                KFK.selectNodesOnClick(jqNodeDIV, evt.shiftKey);
+                KFK.selectNodeOnClick(jqNodeDIV, evt.shiftKey);
                 KFK.resetPropertyOnMultipleNodesSelected();
             } else if (KFK.mode === "connect") {
                 if (KFK.afterDragging === false) {
@@ -4632,7 +4626,7 @@ KFK.alignNodes = async function (direction) {
             }
             break;
     }
-    KFK.setSelectedNodesBoundingRect();
+    KFK.updateSelectedNodesBoundingRect();
     KFK.selectedDIVs.forEach((aNode) => {
         KFK.redrawLinkLines(aNode, "align", true);
     });
@@ -4664,7 +4658,18 @@ KFK.deleteNode_request = async function (jqDIV) {
     KFK.debug("sync D to delete this node " + jqDIV.attr("id"));
     await KFK.syncNodePut("D", jqDIV, "delete node", null, false, 0, 1);
 };
-KFK.deleteNode_exec = function (jqDIV) {
+
+KFK.deleteNode_exec = async function (jqDIV) {
+    await KFK.cleanUpConnection(jqDIV, true);
+    jqDIV.remove();
+};
+
+/**
+ * 去掉一个div的所有链接
+ * @param jqDIV 元素
+ * @param forDelete 这个节点是要被删除吗？ 
+ */
+KFK.cleanUpConnection = async function (jqDIV, forDelete = false) {
     //删除linkto线条
     let myId = jqDIV.attr("id");
     let toIds = KFK.stringToArray(jqDIV.attr("linkto"));
@@ -4678,23 +4683,36 @@ KFK.deleteNode_exec = function (jqDIV) {
             KFK.svgDraw.findOne(triClassSelector).remove();
         } catch (err) { } finally { }
     });
+    if (forDelete === false) {
+        if (toIds.length > 0) {
+            let oldJq = jqDIV.clone();
+            jqDIV.attr("linkto", "");
+            await KFK.syncNodePut("U", jqDIV.clone(), "remove connect", oldJq, false, 0, 1);
+        }
+    }
+
     //重置全局ZIndex 同时，删除那些链接到当前节点的连接线
     let myZI = KFK.getZIndex(jqDIV);
     let count = 0;
     let allnodes = KFK.JC3.find(".kfknode");
     let tmp1 = "";
     let tmp2 = "";
-    allnodes.each((index, aDIV) => {
+    allnodes.each(async (index, aDIV) => {
         count += 1;
         let jqDIV = $(aDIV);
         let fromId = jqDIV.attr("id");
         let tmpzi = KFK.getZIndex(jqDIV);
-        if (tmpzi > myZI) {
-            KFK.setZIndex(jqDIV, tmpzi - 1);
-        }
+        //if (tmpzi > myZI) {
+        //KFK.setZIndex(jqDIV, tmpzi - 1);
+        //}
         tmp1 = jqDIV.attr("linkto");
         let arr = KFK.stringToArray(tmp1);
         if (arr.indexOf(myId) >= 0) {
+            let oldJq = jqDIV.clone();
+            arr.splice(arr.indexOf(myId), 1);
+            jqDIV.attr('linkto', arr.join(','));
+            await KFK.syncNodePut("U", jqDIV.clone(), "remove connect", oldJq, false, 0, 1);
+
             let lineClassSelector = `.connect_${fromId}_${myId}`;
             let triClassSelector = `.connect_${fromId}_${myId}_triangle`;
             try {
@@ -4704,24 +4722,12 @@ KFK.deleteNode_exec = function (jqDIV) {
                 KFK.svgDraw.findOne(triClassSelector).remove();
             } catch (err) { } finally { }
         }
-        // KFK.removeLinkTo(jqDIV, myId);
-        // tmp2 = jqDIV.attr("linkto");
-        // if (tmp1 !== tmp2) {
-        //   KFK.debug("remove link for ", fromId);
-        //   let lineClassSelector = `.connect_${fromId}_${myId}`;
-        //   let triClassSelector = `.connect_${fromId}_${myId}_triangle`;
-        //   try { KFK.svgDraw.findOne(lineClassSelector).remove(); }catch(err){} finally { };
-        //   try { KFK.svgDraw.findOne(triClassSelector).remove(); }catch(err){} finally { };
-        // } else {
-        //   KFK.debug(fromId, ' has no link to me');
-        // }
     });
     let nodeIndex = KFK.selectedDIVs.indexOf(jqDIV);
     if (nodeIndex >= 0) {
         KFK.selectedDIVs.splice(nodeIndex, 1);
+        KFK.updateSelectedNodesBoundingRect();
     }
-
-    jqDIV.remove();
 };
 
 KFK._deleteLine = function (svgLine) {
@@ -4850,7 +4856,7 @@ KFK.deleteHoverOrSelectedDiv = async function (evt, cutMode = false) {
         console.error(error);
     } finally {
         setTimeout(() => {
-            KFK.setSelectedNodesBoundingRect();
+            KFK.updateSelectedNodesBoundingRect();
         }, 500);
     }
 };
@@ -5046,15 +5052,7 @@ KFK.makeCopyOfJQs = async function (jqstocopy, shiftKey) {
         jqNewNode.appendTo(KFK.C3);
         await KFK.setNodeEventHandler(jqNewNode, async function () {
             if (i === 0) KFK.focusOnNode(jqNewNode);
-            await KFK.syncNodePut(
-                "C",
-                jqNewNode,
-                "duplicate node",
-                null,
-                false,
-                0,
-                1
-            );
+            await KFK.syncNodePut("C", jqNewNode, "duplicate node", null, false, 0, 1);
             await KFK.LinkFromBrainCenter(jqNewNode);
         });
     }
@@ -5739,15 +5737,7 @@ KFK.onWsConnected = function () {
             .find(".offline")
             .each(async (index, aNodeDIV) => {
                 count += 1;
-                await KFK.syncNodePut(
-                    "U",
-                    $(aNodeDIV),
-                    "offline_not_undoable",
-                    null,
-                    false,
-                    0,
-                    1
-                );
+                await KFK.syncNodePut("U", $(aNodeDIV), "offline_not_undoable", null, false, 0, 1);
             });
         KFK.info(`There are ${count} offline nodes `);
         if (count === 0) {
@@ -6893,6 +6883,7 @@ KFK._onDocFullyLoaded = async function () {
             }
         }
         KFK.redrawLinkLines(jqNode, " after designer ready", false);
+        //cleanup linkto
     });
     // KFK.info('ondocFullyLoaded, doc is', KFK.APP.model.cocodoc);
     KFK.C3.dispatchEvent(KFK.refreshC3event);
@@ -7135,7 +7126,7 @@ KFK.updateQuillingContent = async function (response) {
     }
 };
 //从服务器收到D指令，
-KFK.deleteObject_for_Response = function (obj) {
+KFK.deleteObject_for_Response = async function (obj) {
     try {
         if (obj.etype === "DIV") {
             let tobeDelete = $(`#${obj.nodeid}`);
@@ -7145,7 +7136,7 @@ KFK.deleteObject_for_Response = function (obj) {
                     obj.nodeid,
                     ", but it does not exist"
                 );
-            else KFK.deleteNode_exec(tobeDelete);
+            else await KFK.deleteNode_exec(tobeDelete);
         } else if (obj.etype === "SLINE") {
             let selector = `.${obj.nodeid}`;
             try {
@@ -7231,7 +7222,7 @@ KFK.changeToTransparent = async function () {
 };
 KFK.setWritingMode = async function (wmode) {
     await KFK.updateSelectedDIVs('', async function (jqNode) {
-    jqNode.css("writing-mode", wmode);
+        jqNode.css("writing-mode", wmode);
     });
 };
 KFK.initViewByLocalConfig = async function () {
@@ -7284,9 +7275,13 @@ KFK.updateSelectedDIVs = async function (reason, callback) {
     if (KFK.selectedDIVs.length > 0) {
         divs = KFK.selectedDIVs;
     } else {
-        let jqNode = KFK.getPropertyApplyToJqNode();
+        let jqNode = KFK.getHoverFocusLastCreate();
         if (jqNode != null && KFK.notAnyLocked(jqNode)) {
             divs.push(jqNode);
+        }else{
+            if(KFK.divStylerRefDiv !== null){
+                divs.push(KFK.divStylerRefDiv);
+            }
         }
     }
     let changeSer = 0;
@@ -7300,6 +7295,7 @@ KFK.updateSelectedDIVs = async function (reason, callback) {
             changeSer = changeSer + 1;
         }
     }
+    KFK.updateSelectedNodesBoundingRect();
     return divs.length;
 };
 KFK.initPropertyForm = function () {
@@ -7671,26 +7667,26 @@ KFK.setGridColor = function (bgcolor) {
 
 KFK.textAlignChanged = async function (evt, value) {
     let alignInfo = $("#textAlign").val();
-    let divNum = await KFK.updateSelectedDIVs('', async function(jqNode) {
+    let divNum = await KFK.updateSelectedDIVs('', async function (jqNode) {
         let jqInner = jqNode.find('.innerobj');
         if (jqInner.length !== 0) {
             jqInner.css("justify-content", alignInfo);
             jqInner.css(
-                    "text-align-last",
-                    alignInfo === "flex-start" ?
-                        "left" :
-                        alignInfo === "flex-end" ?
-                            "right" :
-                            "center"
-                );
+                "text-align-last",
+                alignInfo === "flex-start" ?
+                    "left" :
+                    alignInfo === "flex-end" ?
+                        "right" :
+                        "center"
+            );
             jqInner.css(
-                    "text-align",
-                    alignInfo === "flex-start" ?
-                        "left" :
-                        alignInfo === "flex-end" ?
-                            "right" :
-                            "center"
-                );
+                "text-align",
+                alignInfo === "flex-start" ?
+                    "left" :
+                    alignInfo === "flex-end" ?
+                        "right" :
+                        "center"
+            );
         } else {
             jqNode.css("justify-content", alignInfo);
             jqNode.css(
@@ -7741,7 +7737,7 @@ KFK.toggleCustomShape = function (evt) {
 
 KFK.vertAlignChanged = async function (evt, value) {
     let valignInfo = $("#vertAlign").val();
-    let divNum = await KFK.updateSelectedDIVs('set border width', async function(jqNode) {
+    let divNum = await KFK.updateSelectedDIVs('set border width', async function (jqNode) {
         if (jqNode.find(".innerobj").length !== 0) {
             jqNode.find(".innerobj").css("align-items", valignInfo);
         } else {
@@ -8405,48 +8401,80 @@ KFK.addDocumentEventHandler = function () {
                 } else if (evt.keyCode === 37) {
                     //Left
                     if (evt.shiftKey) {
-                        let delta = evt.ctrlKey ? KFK.config.morph.delta * 3 : KFK.config.morph.delta;
-                        KFK.DivStyler ? KFK.DivStyler.horiSizeSmaller(delta) :
-                            import('./divStyler').then((pack) => {
-                                KFK.DivStyler = pack.DivStyler;
-                                KFK.DivStyler.horiSizeSmaller(delta);
-                            });
+                        if (evt.altKey) {
+                            KFK.DivStyler ? KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey) :
+                                import('./divStyler').then((pack) => {
+                                    KFK.DivStyler = pack.DivStyler;
+                                    KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey);
+                                });
+                        } else {
+                            let delta = evt.ctrlKey ? KFK.config.morph.delta * 3 : KFK.config.morph.delta;
+                            KFK.DivStyler ? KFK.DivStyler.horiSizeSmaller(delta) :
+                                import('./divStyler').then((pack) => {
+                                    KFK.DivStyler = pack.DivStyler;
+                                    KFK.DivStyler.horiSizeSmaller(delta);
+                                });
+                        }
                     }
                     // else KFK.gotoLeftPage();
                     KFK.holdEvent(evt);
                 } else if (evt.keyCode === 38) {
                     //UP
                     if (evt.shiftKey) {
-                        let delta = evt.ctrlKey ? KFK.config.morph.delta * 3 : KFK.config.morph.delta;
-                        KFK.DivStyler ? KFK.DivStyler.vertSizeBigger(delta) :
-                            import('./divStyler').then((pack) => {
-                                KFK.DivStyler = pack.DivStyler;
-                                KFK.DivStyler.vertSizeBigger(delta);
-                            });
+                        if (evt.altKey) {
+                            KFK.DivStyler ? KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey) :
+                                import('./divStyler').then((pack) => {
+                                    KFK.DivStyler = pack.DivStyler;
+                                    KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey);
+                                });
+                        } else {
+                            let delta = evt.ctrlKey ? KFK.config.morph.delta * 3 : KFK.config.morph.delta;
+                            KFK.DivStyler ? KFK.DivStyler.vertSizeBigger(delta) :
+                                import('./divStyler').then((pack) => {
+                                    KFK.DivStyler = pack.DivStyler;
+                                    KFK.DivStyler.vertSizeBigger(delta);
+                                });
+                        }
                     }
                     // else KFK.gotoUpperPage();
                     KFK.holdEvent(evt);
                 } else if (evt.keyCode === 39) {
                     //Right
-                    if (evt.shiftKey) {
-                        let delta = evt.ctrlKey ? KFK.config.morph.delta * 3 : KFK.config.morph.delta;
-                        KFK.DivStyler ? KFK.DivStyler.horiSizeBigger(delta) :
+                    if (evt.altKey) {
+                        KFK.DivStyler ? KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey) :
                             import('./divStyler').then((pack) => {
                                 KFK.DivStyler = pack.DivStyler;
-                                KFK.DivStyler.horiSizeBigger(delta);
+                                KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey);
                             });
+                    } else {
+                        if (evt.shiftKey) {
+                            let delta = evt.ctrlKey ? KFK.config.morph.delta * 3 : KFK.config.morph.delta;
+                            KFK.DivStyler ? KFK.DivStyler.horiSizeBigger(delta) :
+                                import('./divStyler').then((pack) => {
+                                    KFK.DivStyler = pack.DivStyler;
+                                    KFK.DivStyler.horiSizeBigger(delta);
+                                });
+                        }
                     }
                     // else KFK.gotoRightPage();
                     KFK.holdEvent(evt);
                 } else if (evt.keyCode === 40) {
                     //Down
-                    if (evt.shiftKey) {
-                        let delta = evt.ctrlKey ? KFK.config.morph.delta * 3 : KFK.config.morph.delta;
-                        KFK.DivStyler ? KFK.DivStyler.vertSizeSmaller(delta) :
+                    if (evt.altKey) {
+                        KFK.DivStyler ? KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey) :
                             import('./divStyler').then((pack) => {
                                 KFK.DivStyler = pack.DivStyler;
-                                KFK.DivStyler.vertSizeSmaller(delta);
+                                KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey);
                             });
+                    } else {
+                        if (evt.shiftKey) {
+                            let delta = evt.ctrlKey ? KFK.config.morph.delta * 3 : KFK.config.morph.delta;
+                            KFK.DivStyler ? KFK.DivStyler.vertSizeSmaller(delta) :
+                                import('./divStyler').then((pack) => {
+                                    KFK.DivStyler = pack.DivStyler;
+                                    KFK.DivStyler.vertSizeSmaller(delta);
+                                });
+                        }
                     }
                     // else KFK.gotoLowerPage();
                     KFK.holdEvent(evt);
@@ -11354,7 +11382,7 @@ KFK.addShapeEventListner = function (theShape) {
     theShape.on("mouseup", (evt) => {
         KFK.stopZoomShape();
     });
-    //click line
+    //click line click shape
     theShape.on("click", (evt) => {
         evt.stopImmediatePropagation();
         evt.stopPropagation();
@@ -11370,6 +11398,7 @@ KFK.addShapeEventListner = function (theShape) {
         }
         // KFK.shapeToDrag = null;
         KFK.focusOnNode(null);
+        KFK.divStylerRefDiv = null;
         KFK.APP.setData("show", "shape_property", true);
         KFK.APP.setData("show", "customshape", false);
         KFK.APP.setData("show", "customline", true);
@@ -11497,7 +11526,7 @@ KFK.svgDrawTmpLine = function (fx, fy, tx, ty, option) {
 
 KFK.svgConnectNode = function (fid, tid, fbp, tbp, fx, fy, tx, ty) {
     if (!(fid && tid)) {
-        KFK.debug("svgConnectNode between, from", fid, "to", tid);
+        //KFK.debug("svgConnectNode between, from", fid, "to", tid);
         return;
     }
     let lineClass = `connect_${fid}_${tid}`;
@@ -11606,14 +11635,7 @@ KFK.svgConnectNode = function (fid, tid, fbp, tbp, fx, fy, tx, ty) {
             }
             break;
     }
-    KFK._svgDrawNodesConnect(
-        fid,
-        tid,
-        lineClass,
-        lineClassReverse,
-        pstr,
-        triangle
-    );
+    KFK._svgDrawNodesConnect(fid, tid, lineClass, lineClassReverse, pstr, triangle);
 };
 
 KFK.myFadeIn = function (jq, ms = 200) {
@@ -12108,6 +12130,8 @@ KFK.placeFollowerNode = async (jdiv, direction) => {
         await KFK.syncNodePut("C", newDIV, "new node", null, false, 0, 1);
         await KFK.LinkFromBrainCenter(newDIV);
     });
+    KFK.justCreatedJqNode = newDIV;
+    KFK.lastCreatedJqNode = newDIV;
     return newDIV;
 };
 
@@ -12198,7 +12222,7 @@ KFK.jumpToLastCreated = async (takeBrain) => {
 KFK.jumpToNode = (jdiv, takeBrain, iamBrain = false) => {
     KFK.scrollToNode(jdiv);
     KFK.focusOnNode(jdiv);
-    KFK.selectNodesOnClick(jdiv, false);
+    KFK.selectNodeOnClick(jdiv, false);
     if (KFK.brainstormMode && takeBrain && iamBrain === false) {
         KFK.startBrainstorm(jdiv);
     }
