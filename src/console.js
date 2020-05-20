@@ -1606,7 +1606,7 @@ KFK.undo = async () => {
             }
             if (ope.from.length > 1) {
                 KFK.debug("selected count after undo", KFK.selectedDIVs.length);
-                KFK.updateSelectedNodesBoundingRect();
+                KFK.setSelectedNodesBoundingRect();
             }
         } else if (ope.etype === "SLINE") {
             KFK.hideLineTransformer();
@@ -1710,7 +1710,7 @@ KFK.redo = async () => {
                 }
             }
             if (ope.from.length > 1) {
-                KFK.updateSelectedNodesBoundingRect();
+                KFK.setSelectedNodesBoundingRect();
             }
         } else if (ope.etype === "SLINE") {
             if (ope.from === "" && ope.to !== "") {
@@ -2303,13 +2303,13 @@ KFK.moveLineMoverTo = function (position) {
 KFK.selectNode = function (jqDIV) {
     jqDIV.addClass("selected");
     KFK.selectedDIVs.push(jqDIV);
-    KFK.updateSelectedNodesBoundingRect();
+    KFK.setSelectedNodesBoundingRect();
 };
 
 /**
  * 根据选定的多个元素，显示其周围的边框
  */
-KFK.updateSelectedNodesBoundingRect = function () {
+KFK.setSelectedNodesBoundingRect = function () {
     let brect = $(".boundingrect");
     if (brect.length <= 0) {
         let rect = document.createElement("div");
@@ -2407,7 +2407,7 @@ KFK.deselectNode = function (theDIV) {
     $(theDIV).removeClass("selected");
     let index = KFK.selectedDIVs.indexOf(theDIV);
     KFK.selectedDIVs.splice(index, 1);
-    KFK.updateSelectedNodesBoundingRect();
+    KFK.setSelectedNodesBoundingRect();
 };
 
 KFK.selectNodeOnClick = function (jqDIV, shiftKey) {
@@ -3537,7 +3537,7 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
                     //节点大小resize后，也要重画连接线
                     KFK.redrawLinkLines(jqNodeDIV, "after resize");
 
-                    KFK.updateSelectedNodesBoundingRect();
+                    KFK.setSelectedNodesBoundingRect();
 
                     if (KFK.isNotA(jqNodeDIV, "noedit")) {
                         await KFK.syncNodePut("U", jqNodeDIV.clone(), "resize node", KFK.fromJQ, false, 0, 1);
@@ -3747,7 +3747,7 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
                 KFK.originZIndex = 1;
                 //节点移动后，对连接到节点上的连接线重新划线
                 KFK.redrawLinkLines(jqNodeDIV, "after moving");
-                KFK.updateSelectedNodesBoundingRect();
+                KFK.setSelectedNodesBoundingRect();
                 if (KFK.isNotA(jqNodeDIV, "noedit")) {
                     await KFK.syncNodePut(
                         "U",
@@ -3936,6 +3936,7 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
     }
 
     try {
+        //dblclick to edit
         jqNodeDIV.dblclick(async function (evt) {
             evt.stopPropagation();
             evt.preventDefault();
@@ -4375,260 +4376,18 @@ KFK.getUnlockedCount = function (divs) {
     return numberOfNotLocked;
 };
 
-KFK.alignNodes = async function (direction) {
-    if (KFK.selectedDIVs.length < 2) return;
-    let hasOneLocked = false;
-    KFK.selectedDIVs.forEach((aJQ) => {
-        if (KFK.anyLocked(aJQ)) {
-            hasOneLocked = true;
-        }
+KFK.sameSize = async function (direction) {
+    KFK.DivStyler ? KFK.DivStyler.sameSize(direction) :
+        import('./divStyler').then((pack) => {
+        KFK.DivStyler = pack.DivStyler;
+        KFK.DivStyler.sameSize(direction);
     });
-    // if (hasOneLocked) return;
-    let numberOfNotLocked = 0;
-    let movedSer = 0;
-    let movedCount = 0;
-    switch (direction) {
-        case "left":
-            let left = KFK.divLeft(KFK.selectedDIVs[0]);
-            for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-                let tmp_left = KFK.divLeft(KFK.selectedDIVs[i]);
-                left = tmp_left < left ? tmp_left : left;
-            }
-            movedSer = 0;
-            movedCount = KFK.getUnlockedCount();
-
-            for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-                let jqDIV = $(KFK.selectedDIVs[i]);
-                let jqOld = jqDIV.clone();
-                if (KFK.anyLocked(jqDIV) === false) {
-                    jqDIV.css("left", left);
-                    await KFK.syncNodePut("U", jqDIV, "after align left", jqOld, false, movedSer, movedCount);
-                    movedSer = movedSer + 1;
-                }
-            }
-            break;
-        case "center":
-            let centerX =
-                KFK.divLeft(KFK.selectedDIVs[0]) +
-                KFK.divWidth(KFK.selectedDIVs[0]) * 0.5;
-            movedSer = 0;
-            movedCount = KFK.getUnlockedCount();
-            for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-                let jqDIV = $(KFK.selectedDIVs[i]);
-                let jqOld = jqDIV.clone();
-                if (KFK.anyLocked(jqDIV) === false) {
-                    jqDIV.css("left", centerX - KFK.divWidth(KFK.selectedDIVs[i]) * 0.5);
-                    await KFK.syncNodePut(
-                        "U",
-                        jqDIV,
-                        "after align center",
-                        jqOld,
-                        false,
-                        movedSer,
-                        movedCount
-                    );
-                    movedSer = movedSer + 1;
-                }
-            }
-            break;
-        case "right":
-            let right = KFK.divRight(KFK.selectedDIVs[0]);
-            KFK.selectedDIVs.forEach((aNode) => {
-                let tmp_right = KFK.divRight(aNode);
-                right = tmp_right > right ? tmp_right : right;
-            });
-            movedSer = 0;
-            movedCount = KFK.getUnlockedCount();
-            for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-                let jqDIV = KFK.selectedDIVs[i];
-                let jqOld = jqDIV.clone();
-                if (KFK.anyLocked(jqDIV) === false) {
-                    jqDIV.css("left", right - KFK.divWidth(KFK.selectedDIVs[i]));
-                    await KFK.syncNodePut("U", jqDIV, "after align right", jqOld, false, movedSer, movedCount);
-                    movedSer = movedSer + 1;
-                }
-            }
-            break;
-        case "top":
-            let top = KFK.divTop(KFK.selectedDIVs[0]);
-            KFK.selectedDIVs.forEach((aNode) => {
-                let tmp_top = KFK.divTop(aNode);
-                top = tmp_top < top ? tmp_top : top;
-            });
-            movedSer = 0;
-            movedCount = KFK.getUnlockedCount();
-            for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-                let jqDIV = KFK.selectedDIVs[i];
-                let jqOld = jqDIV.clone();
-                if (KFK.anyLocked(jqDIV) === false) {
-                    jqDIV.css("top", top);
-                    await KFK.syncNodePut("U", jqDIV, "after align top", jqOld, false, movedSer, movedCount);
-                    movedSer = movedSer + 1;
-                }
-            }
-            break;
-        case "middle":
-            let centerY =
-                KFK.divTop(KFK.selectedDIVs[0]) +
-                KFK.divHeight(KFK.selectedDIVs[0]) * 0.5;
-
-            movedSer = 0;
-            movedCount = KFK.getUnlockedCount();
-            for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-                let jqDIV = KFK.selectedDIVs[i];
-                let jqOld = jqDIV.clone();
-                if (KFK.anyLocked(jqDIV) === false) {
-                    jqDIV.css("top", centerY - KFK.divHeight(KFK.selectedDIVs[i]) * 0.5);
-                    await KFK.syncNodePut("U", jqDIV, "after align middle", jqOld, false, movedSer, movedCount);
-                    movedSer = movedSer + 1;
-                }
-            }
-            break;
-        case "bottom":
-            let bottom = KFK.divBottom(KFK.selectedDIVs[0]);
-            KFK.selectedDIVs.forEach((aNode) => {
-                let tmp_bottom = KFK.divBottom(aNode);
-                bottom = tmp_bottom > bottom ? tmp_bottom : bottom;
-            });
-
-            movedSer = 0;
-            movedCount = KFK.getUnlockedCount();
-            for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-                let jqDIV = KFK.selectedDIVs[i];
-                let jqOld = jqDIV.clone();
-                if (KFK.anyLocked(jqDIV) === false) {
-                    jqDIV.css("top", bottom - KFK.divHeight(KFK.selectedDIVs[i]));
-                    await KFK.syncNodePut("U", jqDIV, "after align middle", jqOld, false, movedSer, movedCount);
-                    movedSer = movedSer + 1;
-                }
-            }
-            break;
-        case "hori":
-            let nodeLeftMost = KFK.selectedDIVs[0];
-            let totalWidth = 0;
-            let leftMost = KFK.divLeft(KFK.selectedDIVs[0]);
-            //找到最左边的node及其left位置， leftMost
-            KFK.selectedDIVs.forEach((aNode) => {
-                totalWidth += KFK.divWidth(aNode);
-                let tmp_left = KFK.divLeft(aNode);
-                if (tmp_left < leftMost) {
-                    nodeLeftMost = aNode;
-                    leftMost = tmp_left;
-                }
-            });
-            //找到最右边的node及其右侧边位置， rightMost
-            let nodeAtRightMost = KFK.selectedDIVs[0];
-            let rightMost = KFK.divRight(KFK.selectedDIVs[0]);
-            KFK.selectedDIVs.forEach((aNode) => {
-                let tmp_right = KFK.divRight(aNode);
-                if (tmp_right > rightMost) {
-                    nodeAtRightMost = aNode;
-                    rightMost = tmp_right;
-                }
-            });
-            //计算中间的space
-            let availableWidth = rightMost - leftMost;
-            let space_hori =
-                (availableWidth - totalWidth) / (KFK.selectedDIVs.length - 1);
-            let tmpHoriArr = [];
-            KFK.selectedDIVs.forEach((aNode) => {
-                tmpHoriArr.push(aNode);
-            });
-            //最左边一个不移动
-            tmpHoriArr.splice(tmpHoriArr.indexOf(nodeLeftMost), 1);
-            //把除nodeLeftMos之外节点的中间X放入数组
-            let centerArr = tmpHoriArr.map((aNode) => {
-                return KFK.divCenter(aNode);
-            });
-            let posX = KFK.divRight(nodeLeftMost);
-            movedSer = 0;
-            //这里要减去一，因为最左边的一个不移动
-            movedCount = KFK.getUnlockedCount() - 1;
-            while (centerArr.length > 0) {
-                //找到剩余Node中最靠右边的一个
-                let min = Math.min.apply(null, centerArr);
-                let index = centerArr.indexOf(min);
-                let newLeft = posX + space_hori;
-                let jqDIV = tmpHoriArr[index];
-                let jqOld = jqDIV.clone();
-                if (KFK.anyLocked(jqDIV) === false) {
-                    //重设其位置
-                    jqDIV.css("left", newLeft);
-                    await KFK.syncNodePut("U", jqDIV, "after align hori", jqOld, false, movedSer, movedCount);
-                    movedSer = movedSer + 1;
-                }
-
-                //为下一个节点准备基准点
-                posX = newLeft + KFK.divWidth(tmpHoriArr[index]);
-                centerArr.splice(index, 1);
-                tmpHoriArr.splice(index, 1);
-            }
-            break;
-        case "vert":
-            let nodeTopMost = KFK.selectedDIVs[0];
-            let totalHeight = 0;
-            let topMost = KFK.divTop(KFK.selectedDIVs[0]);
-            KFK.selectedDIVs.forEach((aNode) => {
-                totalHeight += KFK.divHeight(aNode);
-                let tmp_top = KFK.divTop(aNode);
-                if (tmp_top < topMost) {
-                    nodeTopMost = aNode;
-                    topMost = tmp_top;
-                }
-            });
-            let nodeAtBottomMost = KFK.selectedDIVs[0];
-            let bottomMost = KFK.divBottom(KFK.selectedDIVs[0]);
-            KFK.selectedDIVs.forEach((aNode) => {
-                let tmp_bottom = KFK.divBottom(aNode);
-                if (tmp_bottom > bottomMost) {
-                    nodeAtBottomMost = aNode;
-                    bottomMost = tmp_bottom;
-                }
-            });
-            let availableHeight = bottomMost - topMost;
-            let space_vert =
-                (availableHeight - totalHeight) / (KFK.selectedDIVs.length - 1);
-            let tmpVertArr = [];
-            KFK.selectedDIVs.forEach((aNode) => {
-                tmpVertArr.push(aNode);
-            });
-            //最上面一个不移动
-            tmpVertArr.splice(tmpVertArr.indexOf(nodeTopMost), 1);
-            let middleArr = tmpVertArr.map((aNode) => {
-                return KFK.divMiddle(aNode);
-            });
-            let posY = KFK.divBottom(nodeTopMost);
-            movedSer = 0;
-            //这里要减去一，因为最上面一个不移动
-            movedCount = KFK.getUnlockedCount() - 1;
-            while (middleArr.length > 0) {
-                let min = Math.min.apply(null, middleArr);
-                let index = middleArr.indexOf(min);
-                let newTop = posY + space_vert;
-                let jqDIV = tmpVertArr[index];
-                let jqOld = jqDIV.clone();
-                if (KFK.anyLocked(jqDIV) === false) {
-                    jqDIV.css("top", newTop);
-                    await KFK.syncNodePut(
-                        "U",
-                        jqDIV,
-                        "after align right",
-                        jqOld,
-                        false,
-                        movedSer,
-                        movedCount
-                    );
-                    movedSer = movedSer + 1;
-                }
-                posY = newTop + KFK.divHeight(tmpVertArr[index]);
-                middleArr.splice(index, 1);
-                tmpVertArr.splice(index, 1);
-            }
-            break;
-    }
-    KFK.updateSelectedNodesBoundingRect();
-    KFK.selectedDIVs.forEach((aNode) => {
-        KFK.redrawLinkLines(aNode, "align", true);
+}
+KFK.arrangeNodes = async function (direction) {
+    KFK.DivStyler ? KFK.DivStyler.arrangeNodes(direction) :
+        import('./divStyler').then((pack) => {
+        KFK.DivStyler = pack.DivStyler;
+        KFK.DivStyler.arrangeNodes(direction);
     });
 };
 
@@ -4664,6 +4423,11 @@ KFK.deleteNode_exec = async function (jqDIV) {
     jqDIV.remove();
 };
 
+KFK.removeNodeConnections = async function (){
+    let jqDIV = KFK.getHoverFocusLastCreate();
+    await KFK.cleanUpConnection(jqDIV, false);
+};
+
 /**
  * 去掉一个div的所有链接
  * @param jqDIV 元素
@@ -4683,6 +4447,7 @@ KFK.cleanUpConnection = async function (jqDIV, forDelete = false) {
             KFK.svgDraw.findOne(triClassSelector).remove();
         } catch (err) { } finally { }
     });
+    //如果这个节点不是要删除，那么它的变化要被记录
     if (forDelete === false) {
         if (toIds.length > 0) {
             let oldJq = jqDIV.clone();
@@ -4726,7 +4491,7 @@ KFK.cleanUpConnection = async function (jqDIV, forDelete = false) {
     let nodeIndex = KFK.selectedDIVs.indexOf(jqDIV);
     if (nodeIndex >= 0) {
         KFK.selectedDIVs.splice(nodeIndex, 1);
-        KFK.updateSelectedNodesBoundingRect();
+        KFK.setSelectedNodesBoundingRect();
     }
 };
 
@@ -4856,7 +4621,7 @@ KFK.deleteHoverOrSelectedDiv = async function (evt, cutMode = false) {
         console.error(error);
     } finally {
         setTimeout(() => {
-            KFK.updateSelectedNodesBoundingRect();
+            KFK.setSelectedNodesBoundingRect();
         }, 500);
     }
 };
@@ -7295,7 +7060,7 @@ KFK.updateSelectedDIVs = async function (reason, callback) {
             changeSer = changeSer + 1;
         }
     }
-    KFK.updateSelectedNodesBoundingRect();
+    KFK.setSelectedNodesBoundingRect();
     return divs.length;
 };
 KFK.initPropertyForm = function () {
@@ -8064,6 +7829,10 @@ KFK.addDocumentEventHandler = function () {
                     await KFK.childrenToMySide('top');
                     KFK.keypool = "";
                     return;
+                } else if (KFK.keypool.endsWith("ttd")) {
+                    await KFK.copyToTodo();
+                    KFK.keypool = "";
+                    return;
                 } else if (KFK.keypool.endsWith("td") || KFK.keypool.endsWith('todo')) {
                     KFK.keypool = "";
                     KFK.toggleInputFor("todo");
@@ -8071,7 +7840,7 @@ KFK.addDocumentEventHandler = function () {
                     evt.preventDefault();
                     await KFK.beginTodoMode();
                     return;
-                } else if (KFK.keypool.endsWith("tt")) {
+                } else if (KFK.keypool.endsWith("rt")) {
                     KFK.keypool = "";
                     await KFK.toggleControlButtonOnly();
                     return;
@@ -8112,7 +7881,11 @@ KFK.addDocumentEventHandler = function () {
                     KFK.keypool = "";
                     return;
                 } else if (KFK.keypool.endsWith("rr")) { //link to brain
-                    await KFK.linkToBrain(false);
+                    await KFK.linkToBrain();
+                    KFK.keypool = "";
+                    return;
+                } else if (KFK.keypool.endsWith("ul")) { //link to brain
+                    await KFK.removeNodeConnections();
                     KFK.keypool = "";
                     return;
                 } else if (KFK.keypool.endsWith("sc1")) { //link to brain
@@ -8272,31 +8045,22 @@ KFK.addDocumentEventHandler = function () {
                     return;
                 } else if (KFK.keypool.match(/([0-9]+)g$/)) {
                     let m = KFK.keypool.match(/([0-9]+)g$/);
-                    let pindex = parseInt(m[1]) - 1;
-                    pindex = Math.max(
-                        0,
-                        Math.min(pindex, KFK.pageBounding.Pages.length - 1)
-                    );
-                    if (KFK.inPresentingMode) {
-                        KFK.presentAnyPage(pindex);
-                    } else {
-                        KFK.gotoAnyPage(pindex);
+                    if(parseInt(m[1]) === 99){
+                        KFK.gotoTodo();
+                        KFK.keypool = "";
+                    }else{
+                        let pindex = parseInt(m[1]) - 1;
+                        pindex = Math.max(
+                            0,
+                            Math.min(pindex, KFK.pageBounding.Pages.length - 1)
+                        );
+                        if (KFK.inPresentingMode) {
+                            KFK.presentAnyPage(pindex);
+                        } else {
+                            KFK.gotoAnyPage(pindex);
+                        }
+                        KFK.keypool = "";
                     }
-                    KFK.keypool = "";
-                    return;
-                } else if (KFK.keypool.match(/([0-9]+)g$/)) {
-                    let m = KFK.keypool.match(/([0-9]+)g$/);
-                    let pindex = parseInt(m[1]) - 1;
-                    pindex = Math.max(
-                        0,
-                        Math.min(pindex, KFK.pageBounding.Pages.length - 1)
-                    );
-                    if (KFK.inPresentingMode) {
-                        KFK.presentAnyPage(pindex);
-                    } else {
-                        KFK.gotoAnyPage(pindex);
-                    }
-                    KFK.keypool = "";
                     return;
                 } else if (KFK.keypool.endsWith("zt")) {
                     KFK.ZiToTop();
@@ -8660,10 +8424,10 @@ KFK.addDocumentEventHandler = function () {
                 if (([69, 76, 82].indexOf(evt.keyCode) >= 0 && evt.metaKey && evt.ctrlKey) ||
                     ([66, 73].indexOf(evt.keyCode) >= 0 && (evt.metaKey || evt.ctrlKey))) {
                     KFK.holdEvent(evt);
-                    KFK.DivStyler ? KFK.DivStyler.alignItem(evt.keyCode) :
+                    KFK.DivStyler ? KFK.DivStyler.alignInnerContent(evt.keyCode) :
                         import('./divStyler').then((pack) => {
                             KFK.DivStyler = pack.DivStyler;
-                            KFK.DivStyler.alignItem(evt.keyCode);
+                            KFK.DivStyler.alignInnerContent(evt.keyCode);
                         });
                 }
                 break;
@@ -9070,6 +8834,21 @@ KFK.onMsgInput = async function (evt) {
                 KFK.selectedTodo = undefined;
                 KFK.APP.inputMsg = "";
             } else {
+                if (KFK.APP.inputMsg.trim().length > 0) {
+                    await KFK.placeNewTodoItem(KFK.APP.inputMsg);
+                    KFK.APP.inputMsg = "";
+                }
+            }
+        } else if (KFK.inputFor === 'chat') {
+            //new chat window new chat dialog show chat
+            if (KFK.APP.inputMsg.trim().length > 0) {
+                await KFK.ISayChatItem(KFK.APP.inputMsg);
+            }
+        }
+    }
+};
+
+KFK.placeNewTodoItem = async function(todoText){
                 let jqCocoTodo = $('#coco_todo');
                 if (jqCocoTodo.length < 1) {
                     jqCocoTodo = await KFK.placeNode(
@@ -9080,7 +8859,7 @@ KFK.onMsgInput = async function (evt) {
 
                         "<div id='coco_todo_title' class='coco_title'>待办事项</div>" +
                         "<div id='coco_todo_list' class='coco_list original'>" +
-                        "<div class='todo_item' prg='0' id='" + KFK.myuid() + "'><div class='todolabel'>" + KFK.APP.inputMsg + "</div><div class='prg'></div></div>" +
+                        "<div class='todo_item' prg='0' id='" + KFK.myuid() + "'><div class='todolabel'>" + todoText + "</div><div class='prg'></div></div>" +
                         "</div>",
 
                         '',
@@ -9090,22 +8869,26 @@ KFK.onMsgInput = async function (evt) {
                         "justify-content": 'flex-start',
                         "align-items": 'flex-start'
                     });
-                    KFK.APP.inputMsg = '';
                     await KFK.syncNodePut("C", jqCocoTodo, "todo", null, false, 0, 1);
                     KFK.setTodoItemEventHandler(jqCocoTodo);
                     KFK.scrollToNodeById('coco_todo');
                 } else {
-                    if (KFK.APP.inputMsg.trim().length > 0) {
-                        await KFK.addTodoItem(KFK.APP.inputMsg);
+                    if (todoText.length > 0) {
+                        await KFK.addTodoItem(todoText);
                     }
                 }
-            }
-        } else if (KFK.inputFor === 'chat') {
-            //new chat window new chat dialog show chat
-            if (KFK.APP.inputMsg.trim().length > 0) {
-                await KFK.ISayChatItem(KFK.APP.inputMsg);
-            }
-        }
+};
+
+KFK.copyToTodo = async function(){
+    let txt = "";
+    let jqDiv = KFK.getHoverFocusLastCreate();
+    try{
+        jqDiv = jqDiv.find('.innerobj');
+        txt = jqDiv.text();
+    }catch(error){}
+    if(txt.length>0){
+        await KFK.placeNewTodoItem(txt);
+        KFK.scrLog(txt + " 已经添加为待办事项，99g查看");
     }
 };
 
@@ -9235,6 +9018,11 @@ KFK.showChat = async () => {
     }
 };
 
+KFK.gotoTodo = ()=>{
+    console.log("gotoTodo");
+    $('.todolist').removeClass('noshow');
+    KFK.scrollToNodeById('coco_todo');
+};
 KFK.showTodo = () => {
     KFK.todoShown = true;
     $('.todolist').removeClass('noshow');
@@ -9711,7 +9499,7 @@ KFK.toggleNoControls = async function (evt) {
         KFK.show("#right");
         KFK.show("#docHeaderInfo");
         KFK.show("#toplogo");
-        KFK.shlow('#rtcontrol')
+        KFK.show('#rtcontrol')
         KFK.restoreDIVsWithStatus(['.msgInputWindow', '#coco_chat']);
     }
     KFK.keypool = "";
@@ -9931,27 +9719,47 @@ KFK.pasteContent = function () {
 KFK.showTextPasteDialog = async function (content) {
     if (KFK.anyLocked(KFK.hoverJqDiv())) return;
     let toDisplay = content.text;
+    let urlInHTML = null;
     let toAdd = content.text;
     let showbox = false;
     if (content.html !== "") {
         let tmpText = RegHelper.removeMeta(content.html);
-        toAdd = "<div>" + KFK.replaceHTMLTarget(tmpText) + "</div>";
+        tmpText = KFK.replaceHTMLTarget(tmpText);
+        let m = tmpText.match(
+            /^\s*<a\s+href\s*=\s*"([^"]*)".*<\/a>$/i
+        );
+        if(m){
+            urlInHTML = m[1]
+        }
+        toAdd = "<div>" + tmpText + "</div>";
         let tmp = $(toAdd);
         tmp.find("[style]").removeAttr("style");
         toAdd = "<div class='pastedHtml'>" + tmp.prop('innerHTML') + "</div>";
         showbox = KFK.hoverJqDiv() ? false : true;
         if (showbox) {
-            await KFK.mergeAppData("model", "paste", {
-                format: '粘贴内容格式为HTML',
-                showcontent: false,
-                showdisplay: false,
-                showbox: showbox,
-                content: toAdd,
-                displayBackup: toDisplay,
-                convertHTMLToText: true,
-                display: toDisplay,
-                ctype: "html",
-            });
+            if(urlInHTML){
+                await KFK.mergeAppData("model", "paste", {
+                    format: '粘贴内容格式为URL地址链接',
+                    showcontent: true,
+                    showdisplay: true,
+                    showbox: showbox,
+                    content: urlInHTML,
+                    display: urlInHTML,
+                    ctype: "url",
+                });
+            }else{
+                await KFK.mergeAppData("model", "paste", {
+                    format: '粘贴内容格式为HTML',
+                    showcontent: false,
+                    showdisplay: false,
+                    showbox: showbox,
+                    content: toAdd,
+                    displayBackup: toDisplay,
+                    convertHTMLToText: false,
+                    display: toDisplay,
+                    ctype: "html",
+                });
+            }
             KFK.showDialog({
                 pasteContentDialog: true
             });
@@ -10055,6 +9863,8 @@ KFK.placePastedContent = async function () {
             toAdd,
             ""
         );
+        if(ctype === 'url')
+            jBox.addClass('noedit');
         switch (box) {
             case "none":
                 jBox.css("background", "#FFFFFF00");

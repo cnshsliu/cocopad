@@ -872,25 +872,25 @@
                                 <p>对齐设置</p>
                                 <b-button-group class="d-flex w-100">
                                     <b-button variant="light" title="对齐左侧" class="flex-fill p-0"
-                                        @click="KFK.alignNodes('left')"><img :src="getImageSrc('align_left')"
+                                        @click="KFK.arrangeNodes('left')"><img :src="getImageSrc('align_left')"
                                             class="toolbar">
                                     </b-button>
                                     <b-button variant="light" title="对齐垂直中线" class="flex-fill p-0"
-                                        @click="KFK.alignNodes('center')"><img :src="getImageSrc('align_center')"
+                                        @click="KFK.arrangeNodes('center')"><img :src="getImageSrc('align_center')"
                                             class="toolbar"></b-button>
                                     <b-button variant="light" title="对齐右侧" class="flex-fill p-0"
-                                        @click="KFK.alignNodes('right')"><img :src="getImageSrc('align_right')"
+                                        @click="KFK.arrangeNodes('right')"><img :src="getImageSrc('align_right')"
                                             class="toolbar">
                                     </b-button>
                                     <b-button variant="light" title="对齐顶部" class="flex-fill p-0"
-                                        @click="KFK.alignNodes('top')"><img :src="getImageSrc('align_top')"
+                                        @click="KFK.arrangeNodes('top')"><img :src="getImageSrc('align_top')"
                                             class="toolbar">
                                     </b-button>
                                     <b-button variant="light" title="对齐水平中线" class="flex-fill p-0"
-                                        @click="KFK.alignNodes('middle')"><img :src="getImageSrc('align_middle')"
+                                        @click="KFK.arrangeNodes('middle')"><img :src="getImageSrc('align_middle')"
                                             class="toolbar"></b-button>
                                     <b-button variant="light" title="对齐底部" class="flex-fill p-0"
-                                        @click="KFK.alignNodes('bottom')"><img :src="getImageSrc('align_bottom')"
+                                        @click="KFK.arrangeNodes('bottom')"><img :src="getImageSrc('align_bottom')"
                                             class="toolbar"></b-button>
                                 </b-button-group>
                             </b-button-toolbar>
@@ -898,12 +898,23 @@
                                 class="w-100 justify-content-md-center">
                                 <b-button-group class="d-flex w-100">
                                     <b-button variant="light" class="flex-fill" title="横向均匀分布"
-                                        @click="KFK.alignNodes('hori')"><img :src="getImageSrc('align_hori')"
+                                        @click="KFK.arrangeNodes('hori')"><img :src="getImageSrc('align_hori')"
                                             class="toolbar">
                                     </b-button>
                                     <b-button variant="light" class="flex-fill" title="纵向均匀分布"
-                                        @click="KFK.alignNodes('vert')"><img :src="getImageSrc('align_vert')"
+                                        @click="KFK.arrangeNodes('vert')"><img :src="getImageSrc('align_vert')"
                                             class="toolbar">
+                                    </b-button>
+                                </b-button-group>
+                            </b-button-toolbar>
+                            <b-button-toolbar v-show="show.arrange_multi_nodes" key-nav
+                                class="w-100 justify-content-md-center">
+                                <b-button-group class="d-flex w-100">
+                                    <b-button variant="light" class="flex-fill" title="同宽"
+                                        @click="KFK.arrangeNodes('samewidth')">同宽
+                                    </b-button>
+                                    <b-button variant="light" class="flex-fill" title="同高"
+                                        @click="KFK.arrangeNodes('sameheight')">同高
                                     </b-button>
                                 </b-button-group>
                             </b-button-toolbar>

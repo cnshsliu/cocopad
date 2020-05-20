@@ -25,7 +25,7 @@ const config = {
         endpoint_local: { label: 'LOCAL', url: 'ws://localhost:5008/grume/wsquux' },
     },
     frontend: {
-        url: 'https://mlib.liuzijin.com/frontend',
+        url: 'http://localhost:8087',
         url_remote: 'https://mlib.liuzijin.com/frontend',
         url_local: 'http://localhost:8087',
     },
