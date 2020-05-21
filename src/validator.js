@@ -4,7 +4,7 @@ const Validator = {};
 
 Validator.validateDocName = function (str) {
     let regex =
-        /^[a-zA-Z0-9_\u4e00-\u9fa5]{3,20}$/;
+        /^[a-z A-Z0-9_\u4e00-\u9fa5]{3,20}$/;
     return str.match(regex) !== null;
 };
 
@@ -31,7 +31,7 @@ Validator.validateUserPassword = function (str) {
 
 Validator.validateOrgName = function (str) {
     const regex1 =
-        /^[a-zA-Z0-9_\u4e00-\u9fa5]{4,20}$/;
+        /^[a-z A-Z0-9_\u4e00-\u9fa5]{4,20}$/;
     const regex2 =
         /^[\u4e00-\u9fa5]{4,20}$/;
     if (str.match(regex1)) return true;
@@ -41,7 +41,7 @@ Validator.validateOrgName = function (str) {
 
 Validator.validateUserName = function (str) {
     const regex1 =
-        /^[a-zA-Z0-9_\u4e00-\u9fa5]{4,10}$/;
+        /^[a-z A-Z0-9_\u4e00-\u9fa5]{4,10}$/;
     const regex2 =
         /^[\u4e00-\u9fa5]{2,10}$/;
     if (str.match(regex1)) return true;
@@ -51,7 +51,7 @@ Validator.validateUserName = function (str) {
 
 Validator.validatePrjName = function (str) {
     const regex =
-        /^[a-zA-Z0-9_\u4e00-\u9fa5]{3,20}$/;
+        /^[a-z A-Z0-9_\u4e00-\u9fa5]{3,20}$/;
     return str.match(regex) !== null;
 };
 
