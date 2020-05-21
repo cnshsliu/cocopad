@@ -8,13 +8,6 @@ import Validator from "./validator";
 import { NodeController } from './nodeController';
 import { DocController } from './docController';
 
-if (module.hot) {
-    module.hot.dispose(() => {
-        window.location.reload();
-        throw 'whatever'
-    })
-}
-
 const app = new Vue({
 
     data: {
@@ -409,10 +402,6 @@ const app = new Vue({
     },
 }).$mount("#app");
 
-//To prevent listener number exceeds problems
-const emitter = new events.EventEmitter();
-emitter.setMaxListeners(0);
-// emitter.setMaxListeners(0);
 DocController.KFK = KFK;
 NodeController.KFK = KFK;
 KFK.DocController = DocController;
@@ -458,8 +447,7 @@ window.addEventListener("drop", async function (e) {
         e.preventDefault();
         e.dataTransfer.effectAllowed = "copy";
         e.dataTransfer.dropEffect = "copy";
-        await KFK.onD
-        KFK.onDropFiles(e.dataTransfer.files);
+        await KFK.onDropFiles(e.dataTransfer.files);
     } else {
         e.preventDefault();
         e.dataTransfer.effectAllowed = "none";

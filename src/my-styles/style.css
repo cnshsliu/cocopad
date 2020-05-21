@@ -686,7 +686,6 @@ svg path {
 .signinform{
     position: absolute;
     background-color: transparent;
-    z-index: 99999;
     width: 98%; height: 500px; top: 120px; left: 50%;
     border-radius: 20px;
     -webkit-transform: translate(-50%, 0%);
@@ -1328,8 +1327,8 @@ select:focus {
         transform: scale(1.2);
     }
     50% {
-        -webkit-transform: scale(0.8);
-        transform: scale(0.8);
+        -webkit-transform: scale(0.5);
+        transform: scale(0.5);
     }
     100% {
         -webkit-transform: scale(1.2);
@@ -1363,33 +1362,48 @@ select:focus {
     transform-origin: 90% 70%;
 }
 #demo_chat{
-    animation: demoshow2 3s;
+    animation: demochat 3s;
     animation-iteration-count: infinite; 
 }
 
-.demo-user-action1{
-    animation: demoshow1 5s;
+.demo-yellowtip1{
+    animation: yellowtip1 10s;
     animation-iteration-count: infinite; 
 }
-.demo-user-action2{
-    animation: demoshow2 5s;
+.demo-yellowtip2{
+    animation: yellowtip2 10s;
+    animation-iteration-count: infinite; 
+}
+.demo-yellowtip3{
+    animation: yellowtip3 10s;
     animation-iteration-count: infinite; 
 }
 .demo-user-action3{
     animation: demoshow3 5s;
     animation-iteration-count: infinite; 
 }
-.demo-user-action4{
-    animation: demoshow4 5s;
-    animation-iteration-count: infinite; 
-}
 
-@keyframes demoshow1 {
-    0% { opacity: 1; }
-    50% { opacity: 0; }
-    100% { opacity: 1; }
+@keyframes yellowtip1 {
+    0% { opacity: 0; }
+    10% { opacity: 1; }
+    99% { opacity: 1; }
+    100% { opacity: 0; }
 }
-@keyframes demoshow2 {
+@keyframes yellowtip2 {
+    0% { opacity: 0; }
+    40% { opacity: 0; }
+    41% { opacity: 1; }
+    99% { opacity: 1; }
+    100% { opacity: 0; }
+}
+@keyframes yellowtip3 {
+    0% { opacity: 0; }
+    80% { opacity: 0; }
+    80% { opacity: 1; }
+    99% { opacity: 1; }
+    100% { opacity: 0; }
+}
+@keyframes demochat {
     0% { opacity: 1; }
     50% { opacity: 0; }
     100% { opacity: 1; }
@@ -1397,12 +1411,6 @@ select:focus {
 @keyframes demoshow3 {
     0% { opacity: 0; }
     20% { opacity: 0; }
-    100% { opacity: 1; }
-}
-@keyframes demoshow4 {
-    0% { opacity: 1; }
-    50% { opacity: 0; }
-    80% { opacity: 1; }
     100% { opacity: 1; }
 }
 
@@ -1415,13 +1423,14 @@ select:focus {
     width: 100%; height: 300px;
 }
 .introduce_svg_inner{
-    animation: opacity1 5s;
+    position: relative; top: 85px;
+    animation: opacity1 10s;
     animation-iteration-count: infinite; 
 }
 @keyframes opacity1 {
-    0% { opacity: 0.1; }
-    50% { opacity: 0.4; }
-    100% { opacity: 0.1; }
+    0% { opacity: 0.2; }
+    50% { opacity: 0.1; }
+    100% { opacity: 0.2; }
 }
 
 .signinform-outer{
@@ -1443,9 +1452,11 @@ select:focus {
 .typewriter-follower{
     font-size:24px;
     white-space: nowrap; 
+    padding-bottom: 25px;
 }
 .typewriter span{
-  border-right: .05em solid;
+  border-right: .15em solid;
+  color: #007bff;
   animation: caret 1s steps(1) infinite;
 }
   
@@ -1587,7 +1598,7 @@ input {
     width: 100%;
     display: flex; flex-direction: column; 
     align-items: center;
-    font-size: xx-small;
+    font-size: small;
 }
 
 .docopmenu {

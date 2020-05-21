@@ -116,13 +116,17 @@
             </div>
         </div>
         <!-- leftbkg-->
-        <div id="waiting" v-show="show.waiting" class="waitinglogo">
+        <div id="waiting" class="waitinglogo noshow">
             <!-- connect to cloud waiting-->
             <img src="./cocopad.svg" class="logo d-inline-block align-top showAfterInit" alt="COLOBOD">
         </div>
         <!-- waiting-->
         <div id="registerform" class="registerform" v-show="show.section.register" style="display:none;">
             <b-form autocomplete="off" class="w-100 text-center px-2">
+                <div v-if="KFK.urlMode==='ivtcode'" class="mt-3">
+                    {{model.invitor.name}}<BR>
+                    邀请您使用即时协作平台
+                </div>
                 <div v-show="model.register.step==='reg'">
                     <b-row>
                         <b-col class="pb-4" style="font-size:28px">
@@ -192,9 +196,6 @@
                         </b-col>
                     </b-row>
                 </div>
-                <div v-if="KFK.urlMode==='ivtcode'" class="mt-3">
-                    {{model.invitor.name}} 邀请您使用彩板-多人协作网络白板
-                </div>
             </b-form>
         </div>
         <!-- signin form login form-->
@@ -226,7 +227,7 @@
                             <path
                                 d="M83.9,197.7c0,10,2.3,14.6,4.4,16.9c5.9,6.5,14.3,0.3,28.3,5.6c4.2,1.6,7.5,3.7,9.6,5.2"
                                 style="fill:none;stroke:#007fff;stroke-width:1.0026;stroke-miterlimit:10" />
-                            <g id='demo-yellowtip-1' class="demo-user-action1">
+                            <g id='demo-yellowtip-1' class="demo-yellowtip1">
                                 <path pointer-events="none" d="M41.7,42.4V12.3h33.4v35.1H46.4L41.7,42.4z"
                                     style="fill:#fff2cc;stroke:#039;stroke-width:.2447;stroke-miterlimit:10" />
                                 <path pointer-events="none" d="M46.4,47.4c-0.4-1.2,0.3-2.4,1.7-3.2l-6.4-1.8"
@@ -234,14 +235,7 @@
                                 <rect x="44.3" y="16.5" class="st19" width="10.1" height="3.2" />
                                 <rect x="57" y="16.5" class="st19" width="10.1" height="3.2" />
                             </g>
-                            <g id='demo-yellowtip-2' class="demo-user-action4">
-                                <path pointer-events="none" class="st9" d="M81.5,42.4V12.3h33.4v35.1H86.3L81.5,42.4z" />
-                                <path pointer-events="none" class="st9"
-                                    d="M86.3,47.4c-0.4-1.2,0.3-2.4,1.7-3.2l-6.5-1.8" />
-                                <rect x="86.6" y="28" width="23" height="4"
-                                    style="stroke:#039;stroke-width:.269;stroke-miterlimit:10" />
-                            </g>
-                            <g id='demo-yellowtip-3' class="demo-user-action2">
+                            <g id='demo-yellowtip-3' class="demo-yellowtip2">
                                 <path pointer-events="none" class="st10"
                                     d="M124.3,42.4V12.3h33.4v35.1h-28.6L124.3,42.4z" />
                                 <path pointer-events="none" class="st10"
@@ -249,6 +243,13 @@
                                 <rect x="126.6" y="17.2" class="st19" width="10.1" height="3.2" />
                                 <rect x="138.9" y="26.4" class="st19" width="10.1" height="3.2" />
                                 <rect x="130.5" y="38.8" class="st19" width="10.1" height="3.2" />
+                            </g>
+                            <g id='demo-yellowtip-2' class="demo-yellowtip3">
+                                <path pointer-events="none" class="st9" d="M81.5,42.4V12.3h33.4v35.1H86.3L81.5,42.4z" />
+                                <path pointer-events="none" class="st9"
+                                    d="M86.3,47.4c-0.4-1.2,0.3-2.4,1.7-3.2l-6.5-1.8" />
+                                <rect x="86.6" y="28" width="23" height="4"
+                                    style="stroke:#039;stroke-width:.269;stroke-miterlimit:10" />
                             </g>
                             <path d="M172.9,167.7" style="fill:#ffc" />
 
@@ -516,7 +517,7 @@
                         </svg>
                     </div>
                 </div>
-                <div class="typewriter">异地办公团队</div>
+                <div class="typewriter">异地办公团队</div>
                 <div class="typewriter-follower">如何像面对面一样高效协作</div>
                 <div class="signinform-outer">
                     <b-form v-if="model.signInButWaitVerify===false" autocomplete="off"
@@ -2429,7 +2430,6 @@
                 style="overflow:hidden;height:500px;width:100%"></iframe>
         </b-modal>
         <div class="footnote" v-show="!show.section.designer">
-            <a href="#" v-if="model.cocouser.ivtcode" @click="KFK.showIvtCodeDialog"> 邀请同事或好友使用 获奖操作积分</a>
             <a target="_blank" href='http://weibo.com/cocopad'>深圳市昆伦博德互联网科技有限公司 2020 {{model.endpoint}} </a>
             <a href="http://beian.miit.gov.cn" taget="_blank">粤ICP备17154503号</a>
         </div>

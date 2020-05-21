@@ -514,7 +514,7 @@ KFK.onWsMsg = async function (response) {
             KFK.APP.setData("model", "isDemoEnv", true);
             KFK.resetAllLocalData();
             setTimeout(() => {
-                KFK.checkSession();
+                KFK.checkSession(true);
             }, 500);
             break;
         case "C":
@@ -3864,7 +3864,7 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
     }
     //click node
     try {
-        jqNodeDIV.click((evt) => {
+        jqNodeDIV.click(async (evt) => {
             KFK.hide($('.clickOuterToHide'));
             if (KFK.inPresentingMode || KFK.inOverviewMode) return;
             if (KFK.isEditting && KFK.quillEdittingNode) {
@@ -3887,7 +3887,6 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
             KFK.afterResizing = false;
             evt.stopImmediatePropagation();
             evt.stopPropagation();
-            evt.preventDefault();
             KFK.focusOnNode(jqNodeDIV);
             let tmpIdx = KFK.jumpStack.indexOf(jqNodeDIV);
             if (tmpIdx < 0) {
@@ -3900,7 +3899,19 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
                 KFK.jumpStackPointer = tmpIdx;
             }
             if (KFK.mode === "pointer") {
-                KFK.selectNodeOnClick(jqNodeDIV, evt.shiftKey);
+                let innerLink = jqNodeDIV.attr("innerlink");
+                console.log(innerLink);
+                if(innerLink){
+                    evt.preventDefault();
+                    if(evt.shiftKey){
+                        if(innerLink.startsWith("dou=")){
+                            let dou = innerLink.substr(4);
+                            await KFK.sendCmd("OPENSHAREDDOC", { shareCode: dou });
+                        }else if(innerLink.match(/^[0-9a-fA-F]{24}$/)){
+                            await KFK.refreshDesignerWithDoc(innerLink, "");
+                        }
+                    }
+                }
                 KFK.resetPropertyOnMultipleNodesSelected();
             } else if (KFK.mode === "connect") {
                 if (KFK.afterDragging === false) {
@@ -5092,6 +5103,10 @@ KFK.init = async function () {
     KFK.checkBrowser();
     KFK.initTypeWriter();
     KFK.pickerMatlib = $(".matlib-topick");
+    console.log(KFK.urlBase);
+    //if (KFK.urlBase.indexOf('liuzijin')>0) {
+    //    KFK.hide(".introduce_svg_inner");
+    //}
 
     $('.showAfterInit').removeClass('showAfterInit');
     $("#minimap").removeClass("noshow");
@@ -5100,10 +5115,10 @@ KFK.init = async function () {
     KFK.initExplorer();
     if (KFK.urlMode === 'gotoSignin') {
         KFK.gotoSignin();
-        KFK.setAppData("show", "waiting", false);
-    } else if (KFK.urlMode == 'gotoRegister') {
+        KFK.hide("#waiting");
+    } else if (KFK.urlMode === 'gotoRegister') {
         KFK.gotoRegister();
-        KFK.setAppData("show", "waiting", false);
+        KFK.hide("#waiting");
     } else {
         await KFK.showSection({
             sigin: false,
@@ -5112,7 +5127,7 @@ KFK.init = async function () {
             designer: false,
         });
 
-        await KFK.checkSession();
+        await KFK.checkSession(false);
         setInterval(() => {
             KFK.AI('hover_c3');
         }, 10000);
@@ -5159,8 +5174,14 @@ KFK.initDesigner = async function () {
 };
 
 KFK.initTypeWriter = function () {
-    KFK.dataText = ["异地办公", "跨地域团队", "在家办公", "通过网络开展工作时", "出差在外", "需要远程工作时", "无法跟同事当面讨论时",
-        "订不到会议室时", "找不到可以一起写写画画的白板时"
+    KFK.dataText = [
+        "异地办公", 
+        "跨地域工作团队", 
+        "在家办公", 
+        "网络化沟通", 
+        "远程工作", 
+        "网络会议", 
+        "疫情期间减少接触",
     ];
 
     // type one text in the typwriter
@@ -5174,12 +5195,12 @@ KFK.initTypeWriter = function () {
             // wait for a while and call this function again for next character
             setTimeout(function () {
                 typeWriter(text, i + 1, fnCallback)
-            }, 150);
+            }, 200);
         }
         // text finished, call callback if there is a callback function
         else if (typeof fnCallback == 'function') {
             // call callback after timeout
-            setTimeout(fnCallback, 1000);
+            setTimeout(fnCallback, 2000);
         }
     }
     // start a typewriter animation for a text in the dataText array
@@ -5361,7 +5382,7 @@ KFK.connectToWS = async () => {
 
 //checkSesion有两个地方被调用,一个是在第一次进入, init 方法中, 一个是在OPENANN后
 //OPENANN后调用,会发生WS连接被第二次打开的情况,ws.js中使用了重用,杜绝发生连接两个websocket的情况
-KFK.checkSession = async function () {
+KFK.checkSession = async function (isOpenAnn) {
     KFK.info("...checkSession");
     //WSReconnectTime只用来记录在Designer使用过程中的网络断掉后的重连次数
     //那个是ws.js自动控制重连的,重连时,ws.js会调用KFK.onWSConnected, 在那里,对WSReconnectTime进行技术
@@ -5369,6 +5390,7 @@ KFK.checkSession = async function () {
 
     KFK.cocouser = null;
     await KFK.readLocalCocoUser();
+    let userMode = "NORMAL"; //Normal | DEMO | ANNONYMOUS
     if (KFK.cocouser) {
         KFK.debug("checksession: found KFK.cocouser" + KFK.cocouser.name);
         KFK.setAppData(
@@ -5376,57 +5398,83 @@ KFK.checkSession = async function () {
             "isDemoEnv",
             KFK.cocouser.userid.indexOf("@cocopad_demo.org") > 0
         );
+        if(KFK.cocouser.userid.indexOf("@cocopad_demo.org") > 0){
+            userMode = "DEMO";
+        }else{
+            userMode = "NORMAL";
+        }
+    }else{
+        userMode = "ANNONYMOUS";
     }
-    if (KFK.cocouser && KFK.cocouser.sessionToken) {
-        //匿名用户获得临时身份后,会重新进入CheckSession,就也会运行到这里
-        //这时,WS.ws已经是处于连接状态的,再次调用WS.start时, ws.js中会重用之前的连接,
-        //但是会充值WS.connectTimes为0
-        KFK.debug("checksession: LU yes, connect server");
-        await KFK.connectToWS();
-    } else if (KFK.shareCode) {
-        //没有localUser, but URL中有shareCode
-        //两种URL形式都连接WS
-        if (KFK.urlMode === "ivtcode") {
-            KFK.debug("checksession: LU no, ivtURL yes,  connect server");
-        } else {
-            KFK.debug("checksession: LU no, scURL yes, connect server");
-        }
-        await KFK.connectToWS();
-    } else {
-        //no local user, URL中无shareCode
-        //读本地存储shareCode
-        let localShareCode = localStorage.getItem("shareCode");
-        if (localShareCode === null) {
-            //no local user nor local sharecode
-            KFK.debug("checksession: LU no, SCURL no, LSC no, goto fresh register");
-            if (KFK.urlBase.indexOf('liuzijin') || KFK.urlBase.indexOf('localhost')) {
-                KFK.gotoSignin();
-                //KFK.gotoRegister();
-                KFK.setAppData("show", "waiting", false);
+    if(userMode === "NORMAL"){
+            //匿名用户获得临时身份后,会重新进入CheckSession,就也会运行到这里
+            //这时,WS.ws已经是处于连接状态的,再次调用WS.start时, ws.js中会重用之前的连接,
+            //但是会充值WS.connectTimes为0
+            KFK.debug("checksession: NORMAL, connect server");
+            await KFK.connectToWS();
+        return;
+    }
+    if(userMode === 'ANNONYMOUS'){
+        if (KFK.shareCode) {
+            //没有localUser, but URL中有shareCode
+            //两种URL形式都连接WS
+            if (KFK.urlMode === "ivtcode") {
+                KFK.debug("checksession: ANN ivtURL yes,  connect server");
             } else {
-                KFK.urlMode = 'sharecode';
-                KFK.shareCode = 'welcome_new_user';
-                await KFK.connectToWS();
+                KFK.debug("checksession: ANN scURL yes, connect server");
             }
-        } else {
-            //no local user but has local sharecode
-            if (localShareCode.length === 8) {
-                //local sharecode is a ivtcode
-                KFK.urlMode = "ivtcode";
-                KFK.shareCode = localShareCode;
-                KFK.debug(
-                    "checksession: LU no, SCURL no, LSC no, LIVT yes, goto register"
-                );
+            await KFK.connectToWS();
+        }else{
+            KFK.debug("checksession: ANN, goto signin");
+            KFK.gotoSignin();
+            //KFK.gotoRegister();
+            KFK.hide("#waiting");
+        }
+        return;
+    }
+    if(userMode === 'DEMO'){
+        KFK.debug("checksession: switch to DEMO");
+        if (KFK.shareCode) {
+            //没有localUser, but URL中有shareCode
+            //两种URL形式都连接WS
+            if (KFK.urlMode === "ivtcode") {
+                KFK.debug("checksession: DEMO, ivtURL yes,  connect server");
                 KFK.gotoRegister();
-                KFK.setAppData("show", "waiting", false);
+                KFK.hide("#waiting");
             } else {
-                //local sharecod is a sharecode
-                KFK.urlMode = "sharecode";
-                KFK.shareCode = localShareCode;
-                KFK.debug("checksession: LU no, SCURL no, LSC yes, connect server");
+                KFK.debug("checksession: DEMO, scURL yes, connect server");
                 await KFK.connectToWS();
             }
+        } else {
+            //no local user, URL中无shareCode
+            //读本地存储shareCode
+            let localShareCode = localStorage.getItem("shareCode");
+            if (localShareCode === null) {
+                //no local user nor local sharecode
+                KFK.debug("checksession: LU no, SCURL no, LSC no, goto fresh register");
+                KFK.gotoSignin();
+                KFK.hide("#waiting");
+            } else {
+                //no local user but has local sharecode
+                if (localShareCode.length === 8) {
+                    //local sharecode is a ivtcode
+                    KFK.urlMode = "ivtcode";
+                    KFK.shareCode = localShareCode;
+                    KFK.debug(
+                        "checksession: LU no, SCURL no, LSC no, LIVT yes, goto register"
+                    );
+                    KFK.gotoRegister();
+                    KFK.hide("#waiting");
+                } else {
+                    //local sharecod is a sharecode
+                    KFK.urlMode = "sharecode";
+                    KFK.shareCode = localShareCode;
+                    KFK.debug("checksession: LU no, SCURL no, LSC yes, connect server");
+                    await KFK.connectToWS();
+                }
+            }
         }
+        return;
     }
 };
 
@@ -5436,22 +5484,23 @@ KFK.onWsClosed = function () {
 
 KFK.onWsGiveup = function () {
     KFK.debug("WS connect giveup");
-    KFK.setAppData("show", "waiting", false);
+    KFK.hide('#waiting');
     $(".reconnect-mask").removeClass("nodisplay");
     $("#reconnect-warning").html("多次尝试后，网络依然无法连接, 请稍后刷新重试");
 };
 KFK.onWsReconnect = function () {
     $(".reconnect-mask").removeClass("nodisplay");
     $("#reconnect-warning").html("网络竟然开小差了，正在尝试重连。。。");
-    KFK.setAppData("show", "waiting", true);
+    KFK.show("#waiting");
     KFK.isTryingToReconnect = true;
 };
 KFK.onWsConnected = function () {
     KFK.WS = WS;
     KFK.debug("Connect Times", KFK.WS.connectTimes);
-    KFK.setAppData("show", "waiting", false);
+    KFK.hide('#waiting');
     $(".reconnect-mask").addClass("nodisplay");
     KFK.APP.setData("show", "wsready", true);
+                console.log("KFK.urlMode=", KFK.urlMode);
     //第一次连接，这条消息会被kj迎回来覆盖，正常
     if (KFK.isTryingToReconnect === undefined) {
         //The first time
@@ -5476,8 +5525,14 @@ KFK.onWsConnected = function () {
                     //这样,本地localStorage中的shareCode即可能是个shareCode, 也可能是个ivtcode
                     localStorage.setItem("shareCode", KFK.shareCode);
                 }
-                if (KFK.urlMode === "sharecode") KFK.openSharedDoc(KFK.shareCode);
-                else KFK.refreshProjectList();
+                if (KFK.urlMode === "sharecode") {
+                    KFK.openSharedDoc(KFK.shareCode);
+                } else if (KFK.urlMode ===  "directopen"){
+                    console.log('Open Doc Direclty', KFK.docToOpen);
+                    KFK.refreshDesignerWithDoc(KFK.docToOpen, "");
+                } else {
+                    KFK.refreshProjectList();
+                }
             }
         } else {
             //no local user
@@ -5487,7 +5542,13 @@ KFK.onWsConnected = function () {
             } else {
                 // has sharecode
                 localStorage.setItem("shareCode", KFK.shareCode);
-                if (KFK.urlMode === "sharecode") KFK.openSharedDoc(KFK.shareCode);
+                console.log("KFK.urlMode=", KFK.urlMode);
+                if (KFK.urlMode === "sharecode"){ 
+                    KFK.openSharedDoc(KFK.shareCode);
+                } else if (KFK.urlMode ===  "directopen"){
+                    console.log('Open Doc Direclty', KFK.docToOpen);
+                    KFK.refreshDesignerWithDoc(KFK.docToOpen, "");
+                }
                 else {
                     KFK.sendCmd("GETINVITOR", {});
                     KFK.gotoRegister();
@@ -6483,6 +6544,7 @@ KFK.sendCmd = async function (cmd, payload = {}) {
     } else await KFK.WS.put(cmd, payload);
 };
 
+//Click doc row to open, open doc opendoc 
 KFK.docRowClickHandler = async function (doc, index) {
     if (KFK.getAclAccessable(doc)) {
         if (doc.pwd === "*********") {
@@ -6613,6 +6675,8 @@ KFK._onDocFullyLoaded = async function () {
     KFK.show($("#docHeaderInfo"));
     KFK.docDuringLoading = null;
     // KFK.JC3.removeClass("noshow");
+    console.log("DOC ID:", KFK.APP.model.cocodoc.doc_id);
+    window.history.replaceState({}, null, KFK.urlBase + "/" + KFK.APP.model.cocodoc.doc_id);
     KFK.APP.setData("model", "docLoaded", true);
     if (KFK.APP.model.cocodoc.readonly) {
         $("#linetransformer").draggable("disable");
@@ -8807,22 +8871,23 @@ KFK.onMsgInput = async function (evt) {
     KFK.noCopyPaste = true;
     if (evt.keyCode === 27) { //ESC
         KFK.noCopyPaste = false;
-        if (KFK.inputFor === 'todo')
+        if (KFK.inputFor === "todo")
             KFK.stopTodoMode();
-        else if (KFK.inputFor === 'chat')
+        else if (KFK.inputFor === "chat")
             KFK.stopChatMode();
         return;
     } else if (evt.keyCode === 13) {
-        if (KFK.APP.inputMsg === 'todo') {
-            KFK.toggleInputFor('todo');
+        if (KFK.APP.inputMsg === "todo") {
+            KFK.toggleInputFor("todo");
+            KFK.scrollToNodeById("coco_todo");
             KFK.APP.inputMsg = "";
             return;
-        } else if (KFK.APP.inputMsg === 'chat') {
+        } else if (KFK.APP.inputMsg === "chat") {
             KFK.toggleInputFor('chat');
             KFK.APP.inputMsg = "";
             return;
         }
-        if (KFK.inputFor === 'todo') {
+        if (KFK.inputFor === "todo") {
             if (IsSet(KFK.modifyTodoText)) {
                 if (KFK.APP.inputMsg.trim().length > 0) {
                     KFK.selectedTodo.find('.todolabel').text(KFK.APP.inputMsg.trim());
@@ -8839,7 +8904,7 @@ KFK.onMsgInput = async function (evt) {
                     KFK.APP.inputMsg = "";
                 }
             }
-        } else if (KFK.inputFor === 'chat') {
+        } else if (KFK.inputFor === "chat") {
             //new chat window new chat dialog show chat
             if (KFK.APP.inputMsg.trim().length > 0) {
                 await KFK.ISayChatItem(KFK.APP.inputMsg);
@@ -9814,8 +9879,19 @@ KFK.placePastedContent = async function () {
     let toAdd = KFK.APP.model.paste.content;
     let display = KFK.APP.model.paste.display;
     let ctype = KFK.APP.model.paste.ctype;
+    let innerLink = null;
     if (ctype === "url") {
+        let theUrl = toAdd;
         toAdd = `<a href="${toAdd}" target="_blank">${display}</a>`;
+        try{
+            let m = theUrl.match(/(http|https):\/\/([^\/]*)\/(\??)(.*)/);
+            if(m[2].indexOf('localhost')>=0 ||
+               m[2].indexOf('colobod.com')>=0 ||
+               m[2].indexOf('weteam.work')>=0 ||
+               m[2].indexOf('liuzijin.com')>=0){
+               innerLink = m[4];
+            }
+        }catch(error){console.log(error);}
     } else if (ctype === "html" && KFK.APP.model.paste.convertHTMLToText === true) {
         let tmp = $(toAdd);
         toAdd = tmp.text();
@@ -9837,15 +9913,7 @@ KFK.placePastedContent = async function () {
                 newHtml = toAdd;
             }
             innerObj.html(newHtml);
-            await KFK.syncNodePut(
-                "U",
-                KFK.hoveredJQ,
-                "add text to hover div",
-                KFK.fromJQ,
-                false,
-                0,
-                1
-            );
+            await KFK.syncNodePut( "U", KFK.hoveredJQ, "add text to hover div", KFK.fromJQ, false, 0, 1);
         }
     } else {
         //box是在pad.js中定义的paste对象时，是否显示边框和背景色的配置信息
@@ -9878,6 +9946,12 @@ KFK.placePastedContent = async function () {
                 jBox.css("background", "#FFFFFFFF");
                 jBox.css("border-color", "#333333FF");
                 break;
+        }
+        //如果这个一个innerLink, 添加属性innerlink
+        //然后在click node的时候，再检查是否有innerlink属性，如果有，那么
+        //对event添加preventDefault(), 并根据innerlink打开文档
+        if(innerLink!==null){
+            jBox.attr("innerlink", innerLink);
         }
         await KFK.syncNodePut("C", jBox, "create text node", null, false, 0, 1);
     }
@@ -10599,10 +10673,10 @@ KFK.scrollToNodeById = function (nodeid) {
         return;
     }
     jqDIV = jqDIV.first();
-    KFK.scrollToNode(jqDIV);
+    KFK.scrollToNode(jqDIV, true);
 };
 
-KFK.scrollToNode = (jqDIV) => {
+KFK.scrollToNode = (jqDIV, nolog =false) => {
     let top = KFK.divTop(jqDIV);
     let left = KFK.divLeft(jqDIV);
     let width = KFK.divWidth(jqDIV);
@@ -10612,7 +10686,7 @@ KFK.scrollToNode = (jqDIV) => {
         y: top + height * 0.5
     };
 
-    KFK.scrollContainer = $("#S1");
+    KFK.lastPosition = {x: KFK.JS1.scrollLeft(), y: KFK.JS1.scrollTop()};
     let scrollX = pos.x * KFK.scaleRatio + KFK.LeftB - $(window).width() * 0.5;
     let scrollY = pos.y * KFK.scaleRatio + KFK.TopB - $(window).height() * 0.5;
     KFK.scrollToPos({
@@ -10620,13 +10694,12 @@ KFK.scrollToNode = (jqDIV) => {
         y: scrollY,
     });
 
-    if (KFK.lastActionLogJqDIV != null && KFK.lastActionLogJqDIV !== jqDIV)
-        KFK.lastActionLogJqDIV.removeClass("shadow1");
-    jqDIV.addClass("shadow1");
-    KFK.lastActionLogJqDIV = jqDIV;
-    // KFK.scrollContainer.animate({ // animate your right div
-    //     scrollTop: 300 // to the position of the target
-    // }, 400);
+    if(nolog === false){
+        if (KFK.lastActionLogJqDIV != null && KFK.lastActionLogJqDIV !== jqDIV)
+            KFK.lastActionLogJqDIV.removeClass("shadow1");
+        jqDIV.addClass("shadow1");
+        KFK.lastActionLogJqDIV = jqDIV;
+    }
 };
 
 KFK.upgradeToStartAccount = function () {
@@ -12240,6 +12313,7 @@ let protocol = $(location).attr("protocol");
 KFK.urlBase = protocol + "//" + host + cocoConfig.product.basedir;
 let urlSearch = window.location.search;
 let urlPath = window.location.pathname;
+console.log("URLPATH:", urlPath);
 WS.remoteEndpoint = cocoConfig.ws_server.endpoint.url;
 BossWS.remoteEndpoint = cocoConfig.ws_server.endpoint.url;
 if (urlSearch.startsWith("?dou=")) {
@@ -12258,6 +12332,11 @@ if (urlSearch.startsWith("?dou=")) {
 } else if (urlPath.startsWith("/signin")) {
     KFK.urlMode = "gotoSignin";
     window.history.replaceState({}, null, KFK.urlBase);
+} else if (urlPath.substr(1).match(/^[0-9a-fA-F]{24}$/)){
+    KFK.docToOpen=urlPath.substr(1);
+    KFK.urlMode = "directopen"; KFK.shareCode = KFK.docToOpen;
+    console.log('Open Doc Direclty', KFK.docToOpen);
+    //KFK.refreshDesignerWithDoc(KFK.docToOpen, "");
 } else {
     window.history.replaceState({}, null, KFK.urlBase);
 }
