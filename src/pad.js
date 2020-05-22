@@ -8,8 +8,9 @@ import Validator from "./validator";
 import { NodeController } from './nodeController';
 import { DocController } from './docController';
 
-const app = new Vue({
 
+
+const app = new Vue({
     data: {
         goodsSearchQ: '',
         goodsToBuy: { name: '', price1: 0, price2: 0 },
@@ -401,6 +402,9 @@ const app = new Vue({
         },
     },
 }).$mount("#app");
+
+//router.push("/foo");
+//router.push("/bar");
 
 DocController.KFK = KFK;
 NodeController.KFK = KFK;

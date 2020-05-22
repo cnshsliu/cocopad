@@ -79,6 +79,7 @@ ACM.resendVerifyCode = async function () {
         function () {
             let regtoken = sessionStorage.getItem("regtoken");
             BossWS.put("RESENDCODE", { regtoken: regtoken });
+            KFK.resendAfter15Seconds();
         },
         async function (response) {
             response = JSON.parse(response);
@@ -133,7 +134,7 @@ ACM.signin = function () {
         function () {
             BossWS.put("SIGNIN", { userid: userid, pwd: pwd });
         },
-        function (response) {
+        async function (response) {
             response = JSON.parse(response);
             try {
                 switch (response.cmd) {
@@ -153,12 +154,10 @@ ACM.signin = function () {
                         retuser = response.user;
                         KFK.setAppData('model', 'signInButWaitVerify', true);
                         KFK.setAppData('model', 'isMobile', response.isMobile);
+                        await KFK.mergeAppData('model', 'register', { step: 'code' });
                         KFK.updateCocouser(retuser);
-                        if (response.isMobile)
-                            KFK.scrLog("尚未验证手机号码，你可以继续使用，请在一周内完成手机验证");
-                        else
-                            KFK.scrLog("尚未验证邮箱地址，你可以继续使用，请在一周内完成邮箱验证");
                         sessionStorage.setItem('regtoken', response.user.sessionToken);
+                        KFK.setAppData('model', 'isMobile', response.isMobile);
                         break;
                 }
             } catch (error) { console.log(error); }

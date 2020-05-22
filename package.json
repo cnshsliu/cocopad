@@ -42,11 +42,13 @@
     "spectrum-colorpicker2": "^2.0.0",
     "utf-8-validate": "^5.0.2",
     "vue": "^2.6.11",
+    "vue-hot-reload-api": "^2.3.4",
     "vue-scrollto": "^2.17.1",
     "vue-template-compiler": "^2.6.11"
   },
   "devDependencies": {
     "@babel/core": "latest",
+    "@vue/component-compiler-utils": "^3.1.2",
     "babel-preset-env": "^1.7.0",
     "cssnano": "^4.1.10",
     "line-reader": "^0.4.0",

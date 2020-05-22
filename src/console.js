@@ -445,7 +445,6 @@ KFK.onWsMsg = async function (response) {
             KFK.gotoSignin();
             break;
         case "SIGNOUT":
-            KFK.scrLog("你已成功退出共创协同平台");
             KFK.removeCocouser("cocouser");
             KFK.resetAllLocalData();
             KFK.WS.keepFlag = "ONCE";
@@ -5200,7 +5199,7 @@ KFK.initTypeWriter = function () {
         // text finished, call callback if there is a callback function
         else if (typeof fnCallback == 'function') {
             // call callback after timeout
-            setTimeout(fnCallback, 2000);
+            setTimeout(fnCallback, 5000);
         }
     }
     // start a typewriter animation for a text in the dataText array
@@ -5698,6 +5697,7 @@ KFK.quickGlance = async (doc) => {
  * 如果doc_id, 只初始化,不载入文档. 在用户执行清除文档时,就执行这个操作
  */
 KFK.refreshDesignerWithDoc = async function (doc_id, docpwd, quickGlance = false, forceReadonly = false) {
+    //KFK.APP.$router.push("/designer");
     if (doc_id !== null) KFK.info(">>>>>>refereshDesigner for doc", doc_id);
     else KFK.info(">>>>>>refereshDesigner only, no doc will be load");
     if ($("#S1").length < 1) {
@@ -5721,12 +5721,14 @@ KFK.refreshDesignerWithDoc = async function (doc_id, docpwd, quickGlance = false
     KFK.opz = -1;
     KFK.setAppData("model", "actionlog", []);
 
+    console.log("show section");
     await KFK.showSection({
         signin: false,
         register: false,
         explorer: false,
         designer: true,
     });
+    console.log("show form");
     KFK.showForm({
         newdoc: false,
         newprj: false,
@@ -12269,7 +12271,7 @@ KFK.askVideoCall = async () => {
     });
 };
 KFK.stopVideoCall = async () => {
-    await KFK.RtcManager.stopVideoCall();
+    KFK.RtcManager && await KFK.RtcManager.stopVideoCall();
 }
 KFK.toggleScreenSharing = function () {
     KFK.RtcManager.toggleScreenSharing();
@@ -12286,6 +12288,22 @@ KFK.clickMainVideo = function () {
         return;
     }
     KFK.RtcManager.clickMainVideo();
+};
+KFK.resendAfter15Seconds = function(){
+    let resendCodeMsg = $('.resendCodeMsg');
+    resendCodeMsg.prop("innerHTML", "15 秒后可重新发送");
+    resendCodeMsg.show();
+    $('.resendCodeLink').hide();
+    let a = 15;
+    let timerId = setInterval(function(){
+        a = a - 1;
+        resendCodeMsg.prop("innerHTML", a + "秒后可重新发送");
+        if(a === 0){
+            clearInterval(timerId);
+            resendCodeMsg.hide();
+            $('.resendCodeLink').show();
+        }
+    }, 1000);
 };
 
 KFK.expandTool = function (evt, tool) {

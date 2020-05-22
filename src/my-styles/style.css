@@ -2038,3 +2038,10 @@ table.quick-help-table td:first-of-type {
 .inner_yellowtip{
     padding: 4px !important;
 }
+
+a {
+    color: #333366;
+}
+a:hover{
+    text-decoration: none;
+}
