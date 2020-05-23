@@ -2052,4 +2052,5 @@ a:hover{
     top:100px; left: 90px;
     background-color: white;
     border-radius: 10px;
+    box-shadow: 0px 1px 20px 2px #888888 !important;
 }

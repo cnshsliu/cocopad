@@ -98,6 +98,8 @@ KFK.isFreeHandDrawing = false;
 KFK.isShowingModal = false;
 KFK.jumpStackPointer = -1;
 KFK.wsTryTimesBeforeGiveup = 60;
+KFK.toolboxMouseDown = false;
+KFK.toolboxMouseDownOn = null;
 KFK.isZoomingShape = false;
 KFK.idRowMap = {};
 KFK.idSwitchMap = {};
@@ -499,10 +501,8 @@ KFK.onWsMsg = async function (response) {
             break;
         case "OPENDOC":
             if (response.demo) {
-                KFK.debug("set isDemoEnv to TRUE. after received OPENDOC");
                 KFK.APP.setData("model", "isDemoEnv", true);
             } else {
-                KFK.debug("set isDemoEnv to FALSE. after received OPENDOC");
                 KFK.APP.setData("model", "isDemoEnv", false);
             }
             KFK.recreateFullDoc(response.doc, KFK.checkLoading);
@@ -772,14 +772,12 @@ KFK.onWsMsg = async function (response) {
             KFK.NodeController.unlock($(`#${response.nodeid}`));
             break;
         case "LOCKLINE":
-            KFK.debug("------------GOT LOCKLINE, LOCK IT-----");
             KFK.NodeController.lockline(
                 KFK,
                 KFK.svgDraw.findOne(`.${response.nodeid}`)
             );
             break;
         case "UNLOCKLINE":
-            KFK.debug("------------GOT UNLOCKLINE, LOCK IT-----");
             KFK.NodeController.unlockline(
                 KFK,
                 KFK.svgDraw.findOne(`.${response.nodeid}`)
@@ -854,7 +852,6 @@ KFK.onWsMsg = async function (response) {
             KFK.refreshProjectList();
             break;
         case "LISTMYORG":
-            KFK.debug("got listmyorg", response);
             KFK.APP.model.myorgs = [];
             for (let i = 0; i < response.orgs.length; i++) {
                 KFK.APP.model.myorgs.push(Object.assign({}, response.orgs[i]));
@@ -862,7 +859,6 @@ KFK.onWsMsg = async function (response) {
             KFK.setAppData("model", "myorgs", KFK.APP.model.myorgs);
             break;
         case "LISTVORG":
-            KFK.debug("got listvorg", response);
             KFK.APP.model.vorgs = [];
             for (let i = 0; i < response.orgs.length; i++) {
                 KFK.APP.model.vorgs.push(Object.assign({}, response.orgs[i]));
@@ -870,7 +866,6 @@ KFK.onWsMsg = async function (response) {
             KFK.setAppData("model", "vorgs", KFK.APP.model.vorgs);
             break;
         case "ORGUSERLIST":
-            KFK.debug("got orguserlist", response);
             let tmp = KFK.APP.model.orgusers;
             tmp[response._id] = response.userids;
             KFK.setAppData("model", "orgusers", tmp);
@@ -1259,11 +1254,9 @@ KFK.procLinkNode = function (shiftKey, text) {
     let tmp3 = KFK.linkPosNode[0].attr("linkto");
     let tmp4 = KFK.linkPosNode[1].attr("linkto");
     if (tmp1 !== tmp3) {
-        KFK.debug("The first node linkto has been changed");
         KFK.syncNodePut("U", KFK.linkPosNode[0].clone(), "connect nodes", null, false, 0, 1);
     }
     if (tmp2 !== tmp4) {
-        KFK.debug("The second node linkto has been changed");
         KFK.syncNodePut("U", KFK.linkPosNode[1].clone(), "connect nodes", null, false, 0, 1);
     }
 
@@ -1531,7 +1524,7 @@ KFK.resetPropertyOnMultipleNodesSelected = function () {
 
 KFK.undo = async () => {
     if (KFK.opz < 0) {
-        KFK.debug("undo 到底了");
+        KFK.scrLog("undo 到底了");
         return;
     }
     let ope = KFK.opstack[KFK.opz];
@@ -1607,7 +1600,6 @@ KFK.undo = async () => {
                 }
             }
             if (ope.from.length > 1) {
-                KFK.debug("selected count after undo", KFK.selectedDIVs.length);
                 KFK.setSelectedNodesBoundingRect();
             }
         } else if (ope.etype === "SLINE") {
@@ -1645,7 +1637,7 @@ KFK.getLineIdFromString = function (str) {
 
 KFK.redo = async () => {
     if (KFK.opz >= KFK.opstack.length - 1) {
-        KFK.debug("redo 到头了");
+        KFK.scrLog("redo 到头了");
         return;
     }
     KFK.opz = KFK.opz + 1;
@@ -1835,9 +1827,12 @@ KFK.initC3 = function () {
             KFK.placeInterLinkDoc(evt);
             return;
         }
+        await KFK.placeNodeOnClick(evt);
+    });
+
+    KFK.placeNodeOnClick = async function(evt){
         if (KFK.isEditting && KFK.quillEdittingNode) {
             await KFK.finishQuillEditting();
-            return;
         } else if (KFK.isEditting && KFK.inlineEditor) {
             KFK.endInlineEditing();
         }
@@ -1919,7 +1914,7 @@ KFK.initC3 = function () {
         evt.stopImmediatePropagation();
         evt.stopPropagation();
         evt.preventDefault();
-    });
+    };
 
     KFK.JC3.mousedown(async (evt) => {
         if (KFK.mode === 'line' && KFK.drawMode === 'freehand' &&
@@ -1930,6 +1925,14 @@ KFK.initC3 = function () {
     });
     KFK.JC3.mouseup(async (evt) => {
         if (KFK.inDesigner() === false) return;
+        // 下面的尝试不起作用，在pad.js中的dropevent中是起作用的
+        // console.log('JC3 mouseup');
+        // if (KFK.toolboxMouseDown === true){
+        //     console.log("place", KFK.toolboxMouseDownOn);
+        //     KFK.placeNodeOnClick(evt);
+        //     KFK.toolboxMouseDown = false;
+        //     KFK.toolboxMouseDownOn = null;
+        // }
         if (KFK.mode === 'line' && KFK.drawMode === 'freehand' &&
             KFK.isFreeHandDrawing === true) {
             if (KFK.freeHandDrawing) {
@@ -2021,8 +2024,6 @@ KFK.initC3 = function () {
         if (KFK.isEditting || KFK.shapeDragging || KFK.lineTransfomerDragging || KFK.minimapMouseDown) {
             KFK.duringKuangXuan = false;
         }
-
-
 
         if (KFK.mode === "connect") {
             if (KFK.linkPosNode.length === 1) {
@@ -2338,12 +2339,10 @@ KFK.setSelectedNodesBoundingRect = function () {
     }
 };
 KFK.kuangXuan = function (pt1, pt2) {
-    KFK.debug("pt1", jstr(pt1), "pt2", jstr(pt2));
     let x1 = pt1.x + KFK.LeftB;
     let y1 = pt1.y + KFK.TopB;
     let x2 = pt2.x + KFK.LeftB;
     let y2 = pt2.y + KFK.TopB;
-    KFK.debug(x1, y1, x2, y2);
     if (Math.abs(x1 - x2) < 10 && Math.abs(y1 - y2) < 10) {
         //这里，如果滑动大小横向和纵向都小于10， 则不作为框选
         return;
@@ -5193,6 +5192,18 @@ KFK.initDesigner = async function () {
     }
 };
 
+KFK.onToolboxMouseDown = function(mode, evt){
+        KFK.toolboxMouseDown = true;
+        KFK.mode = mode;
+        KFK.debug("Set drop toolbox mode to ", KFK.mode);
+        console.log('mouse down on toolbox', mode);
+    };
+KFK.onToolboxMouseUp = function(mode, evt){
+        KFK.toolboxMouseDown = false;
+        KFK.toolboxMouseDownOn = null;
+        console.log('mouse up on toolbox', mode);
+};
+
 KFK.initTypeWriter = function () {
     KFK.dataText = [
         "异地办公", 
@@ -7934,6 +7945,12 @@ KFK.addDocumentEventHandler = function () {
             return;
         }
         if (KFK.inDesigner()) {
+            //禁止Ctrl-A  and Ctrl-S
+            if((evt.keyCode === 65 || evt.keyCode === 83) && (evt.ctrlKey || evt.metaKey)){
+                evt.stopPropagation();
+                evt.preventDefault();
+                return;
+            }
             if (
                 KFK.inPresentingMode &&
                 KFK.presentMaskMode &&
@@ -9818,7 +9835,6 @@ KFK.gotoExplorer = async function () {
 };
 
 KFK.gotoDesigner = async function () {
-    KFK.debug("...gotoDesigner");
     await KFK.showSection({
         explorer: false,
         designer: true
@@ -10196,7 +10212,6 @@ KFK.scrCenter = function () {
     };
 };
 KFK.showCenterIndicator = function (cx, cy) {
-    KFK.debug("...showCenterIndicator");
     let center = KFK.scrCenter();
     let centerX = cx ? cx : center.x;
     let centerY = cy ? cy : center.y;
@@ -10745,7 +10760,6 @@ KFK.showActionLog = function () {
 };
 
 KFK.getActionLog = function () {
-    KFK.debug("refresh actionlog now");
     KFK.sendCmd("GETBLKOPS", {
         doc_id: KFK.APP.model.cocodoc.doc_id
     });
@@ -10753,7 +10767,6 @@ KFK.getActionLog = function () {
 
 KFK.navActionLog = function (item, direction) {
     if (item.logs.length === 0) {
-        KFK.debug("no logs");
         return;
     }
     if (direction === "first") {
@@ -11127,7 +11140,6 @@ KFK._svgDrawNodesConnect = function (
         theConnect.attr("stroke-width", KFK.APP.model.svg.connect.width * 2);
         KFK.hoveredConnectId = theConnect.attr("id");
         KFK.AI('hover_connect');
-        KFK.debug("hover connect id", KFK.hoveredConnectId);
         KFK.onC3 = true;
     });
     theConnect.on("mouseout", () => {
@@ -11535,7 +11547,6 @@ KFK.svgDrawTmpLine = function (fx, fy, tx, ty, option) {
 
 KFK.svgConnectNode = function (fid, tid, fbp, tbp, fx, fy, tx, ty) {
     if (!(fid && tid)) {
-        //KFK.debug("svgConnectNode between, from", fid, "to", tid);
         return;
     }
     let lineClass = `connect_${fid}_${tid}`;
@@ -11901,7 +11912,9 @@ KFK.exportPDF2 = function () {
 };
 
 KFK.onDropFiles = async function (files) {
+    console.log(files, files.length);
     let aFile = files[0];
+    if(NotSet(aFile)) return;
     if (aFile.type !== "image/png" && aFile.type !== "image/jpeg") {
         await KFK.onDropDocFile(aFile);
     } else {
@@ -12462,6 +12475,7 @@ KFK.interLinkDocRowClickHandler = async function(doc, index){
 
 KFK.placeInterLinkDoc = async function(evt){
     let doc = KFK.interLinkDocToPlace;
+    if(NotSet(doc)) return;
     let toAdd = "<a href='#'>" + doc.name + "</a>";
     let innerLink = doc._id;
     let jBox = await KFK.placeNode(
@@ -12503,10 +12517,8 @@ BossWS.remoteEndpoint = cocoConfig.ws_server.endpoint.url;
 if (urlSearch.startsWith("?dou=")) {
     KFK.urlMode = "sharecode";
     KFK.shareCode = urlSearch.substr(5);
-    KFK.debug("Sharecode in URL", KFK.shareCode);
     // window.history.replaceState({}, null, KFK.urlBase);
 } else if (urlSearch.startsWith("?r=")) {
-    KFK.debug("Ivtcode in URL");
     KFK.urlMode = "ivtcode";
     KFK.shareCode = urlSearch.substr(3);
     window.history.replaceState({}, null, KFK.urlBase);

@@ -447,6 +447,11 @@ window.addEventListener("dragover", function (e) {
 
 window.addEventListener("drop", async function (e) {
     let jtarget = $(e.target);
+    if(KFK.toolboxMouseDown === true){
+        KFK.placeNodeOnClick(e);
+        KFK.toolboxMouseDown = false;
+        return;
+    }
     if (jtarget.hasClass('svgcanvas') || jtarget.hasClass("pageBoundingLine")) {
         KFK.dropAtPos = {
             x: KFK.scrXToJc3X(e.clientX),
