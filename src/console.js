@@ -2621,6 +2621,11 @@ KFK.editTextNodeWithTextArea = function (
     textarea.onpaste = function (evt) {
         evt.stopPropagation();
     };
+    textarea.oncut = function (evt) {
+        console.log('textarea oncut');
+        evt.stopPropagation();
+    };
+
 
     textarea.addEventListener("keydown", function (evt) {
 
@@ -3469,6 +3474,14 @@ KFK.updateNodeEvent = function (jqNode, action, cmd) {
         jqNode.draggable(cmd);
     }
 };
+
+KFK.updateable = function(jqNode){
+    if (KFK.isNotA(jqNode, "noedit") || jqNode.attr("innerlink")) {
+        return true;
+    }else{
+        return false;
+    }
+}
 KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
     let jqNodeType = jqNodeDIV.attr("nodetype");
     if (jqNodeType === undefined) {
@@ -3546,7 +3559,7 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
 
                     KFK.setSelectedNodesBoundingRect();
 
-                    if (KFK.isNotA(jqNodeDIV, "noedit")) {
+                    if (KFK.updateable(jqNodeDIV)){
                         await KFK.syncNodePut("U", jqNodeDIV.clone(), "resize node", KFK.fromJQ, false, 0, 1);
                     }
 
@@ -3723,7 +3736,7 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
                                 "top",
                                 KFK.divTop(KFK.selectedDIVs[i]) + delta.y
                             );
-                            if (KFK.isNotA(KFK.selectedDIVs[i], "noedit")) {
+                            if (KFK.updateable(KFK.selectedDIVs[i])){
                                 await KFK.syncNodePut(
                                     "U",
                                     KFK.selectedDIVs[i].clone(),
@@ -3755,7 +3768,7 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
                 //节点移动后，对连接到节点上的连接线重新划线
                 KFK.redrawLinkLines(jqNodeDIV, "after moving");
                 KFK.setSelectedNodesBoundingRect();
-                if (KFK.isNotA(jqNodeDIV, "noedit")) {
+                if (KFK.updateable(jqNodeDIV)){
                     await KFK.syncNodePut(
                         "U",
                         jqNodeDIV.clone(),
@@ -6469,6 +6482,29 @@ KFK.searchDoc = async function(){
     await KFK.sendCmd("SEARCHDOC", {name: KFK.APP.model.search.docName});
 };
 
+KFK.onSearchInput = async function (evt) {
+    evt.stopPropagation();
+    KFK.noCopyPaste = true;
+    if (evt.keyCode === 27) { //ESC
+        KFK.noCopyPaste = false;
+        return;
+    } else if (evt.keyCode === 13) {
+        evt.preventDefault();
+        KFK.searchDoc();
+    }
+};
+
+KFK.onSigninInput = async function (evt) {
+    evt.stopPropagation();
+    KFK.noCopyPaste = true;
+    if (evt.keyCode === 27) { //ESC
+        KFK.noCopyPaste = false;
+        return;
+    } else if (evt.keyCode === 13) {
+        ACM.signin();
+    }
+};
+
 
 KFK.gotoPrj = async function (prjid, name) {
     try {
@@ -8997,7 +9033,6 @@ KFK.onMsgInput = async function (evt) {
         }
     }
 };
-
 KFK.placeNewTodoItem = async function(todoText){
                 let jqCocoTodo = $('#coco_todo');
                 if (jqCocoTodo.length < 1) {
@@ -10049,6 +10084,7 @@ KFK.placePastedContent = async function () {
 
 KFK.onCut = async function (evt) {
     if (KFK.isShowingModal) return;
+    console.log("capture onCut");
     KFK.deleteHoverOrSelectedDiv(evt, true);
 };
 
@@ -12447,6 +12483,7 @@ KFK.placeInterLinkDoc = async function(evt){
     console.log('place interlink node, innerLink is [' + innerLink + ']');
     //interlink 的实现方法时检测到用户点击的taget.href不为空，表明点在了<a href>上，并且div有innerlink attr，
     //则载入innerLink，内容是doc_id, 并且 通过evt.preventDefault, 避免<a href>链接起作用
+    await KFK.syncNodePut("C", jBox, "place interlink", null, false, 0, 1);
 };
 
 

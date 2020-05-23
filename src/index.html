@@ -529,6 +529,7 @@
                         </b-input-group>
                         <b-input-group prepend="密码" class="mb-1">
                             <b-form-input tabindex="2" id="userPwd" trim :type="model.hidepassword?'password':'text'"
+                                v-on:keydown="KFK.onSigninInput($event)"
                                 v-model="model.signin.pwd" class="no-right-border" placeholder="你的密码"></b-form-input>
                             <span class="right-eye">
                                 <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword"
@@ -2529,7 +2530,9 @@
         <div id="interLinkDialog" class="noshow spaceToHide">
             <b-form class="office-form" autocomplete="off">
                 <b-input-group prepend="白板名称" class="pt-4 px-5">
-                    <b-form-input id="qbydocName" trim v-model="model.search.docName" placeholder="按名称搜索"></b-form-input>
+                    <b-form-input id="qbydocName" trim v-model="model.search.docName" 
+                    v-on:keydown="KFK.onSearchInput($event)"
+                    placeholder="按名称搜索" ></b-form-input>
                     <b-input-group-append>
                         <b-button href="#" tabindex="-1" @click="KFK.searchDoc">
                             <b-icon scale="1" icon="search"></b-icon>
