@@ -2045,6 +2045,10 @@ a {
 a:hover{
     text-decoration: none;
 }
+.btn-primary{
+    background-color: #4B92DB;
+    border-color: #4B92DB;
+}
 #interLinkDialog
 {
     z-index: 5000;

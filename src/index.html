@@ -1039,10 +1039,10 @@
             <!-- menu rtmenu -->
             <div id="rtcontrol" class="padlayout noshow spaceToHide">
                 <div>
-                    <b-button id='sharethisbutton' @click="SHARE.shareThisDoc" class="" variant="success">
+                    <b-button id='sharethisbutton' @click="SHARE.shareThisDoc" class="" variant="primary">
                         <b-icon icon="box-arrow-up"></b-icon>分享/邀请
                     </b-button>
-                    <b-button id="goto_explorer" variant="success" @click="KFK.gotoExplorer">
+                    <b-button id="goto_explorer" variant="primary" @click="KFK.gotoExplorer">
                         <b-icon icon="house"></b-icon>
                     </b-button>
 
@@ -1050,7 +1050,7 @@
             <template v-slot:button-content><b-icon icon="cloud-download"></b-icon>导出</template>
             <b-dropdown-item href="#" id="toggle_all" variant="success" @click="KFK.exportPDF"> 导出PDF </b-dropdown-item>
           </b-dropdown> -->
-                    <b-dropdown right variant="success" class="m-2" id='dropdown_help'>
+                    <b-dropdown right variant="primary" class="m-2" id='dropdown_help'>
                         <template v-slot:button-content>使用说明</template>
                         <b-dropdown-item href="#" id="toggle_all" variant="success" v-b-modal.modal-key-shortcut>
                             <img :src="getImageSrc('keyboard')" class="toolbar"
@@ -1061,7 +1061,7 @@
                                 style="width:24px; height:24px;"></img>&nbsp;帮助文档
                         </b-dropdown-item>
                     </b-dropdown>
-                    <b-dropdown right text="显示设置" variant="success" class="m-2">
+                    <b-dropdown right text="显示设置" variant="primary" class="m-2">
                         <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle_all" variant="success"
                             @click="KFK.toggleFullScreen">
                             <b-icon icon="arrows-fullscreen"></b-icon>&nbsp;全屏(fs)
@@ -1230,7 +1230,7 @@
                 <div class="explorer-content"
                     v-show="show.form.newdoc || show.form.newprj || show.form.doclist || show.form.prjlist">
                     <b-tabs card id="tabs-main" v-model="show.form.explorerTabIndex" vertical
-                        active-nav-item-class="font-weight-bold text-uppercase text-danger" active-tab-class="">
+                        active-nav-item-class="font-weight-bold text-uppercase text-danger myhovered" active-tab-class="">
 
                         <b-tab title="我的项目" @click="KFK.gotoPrjList">
                             <div v-show="show.form.newprj">
