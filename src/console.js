@@ -6731,11 +6731,29 @@ KFK._onDocFullyLoaded = async function () {
     //focusOnC3会导致C3居中
     KFK.focusOnC3();
     KFK.setTodoItemEventHandler();
+    //
+    //
+    //
+    //
     //因此,这里再重新滚动一下.这样保证在文档新导入时,可以滚动到第一屏
-    KFK.scrollToPos({
-        x: KFK.LeftB,
-        y: KFK.TopB
-    });
+    let docPos = {};
+    //从localStorage中读取docPos记录
+    let scrollPositionCache = localStorage.getItem("docPos");
+    if(scrollPositionCache){
+        docPos = JSON.parse(scrollPositionCache);
+    }
+    //如果有当前文档的滚动位置记录，则滚动到起位置去
+    if(docPos[KFK.APP.model.cocodoc.doc_id]){
+        KFK.scrollToPos(docPos[KFK.APP.model.cocodoc.doc_id]);
+    }else{
+        //如果没有，则滚动到第一屏
+        KFK.scrollToPos({ x: KFK.LeftB, y: KFK.TopB });
+    }
+    //
+    //
+    //
+    //
+    //检查这个白板中是否是空白板，如果是，则显示showFirstTimeHelp
     if (KFK.JC3.find(".kfknode").length === 0) {
         //YIQCooor要么是出black, 要么是white, 在style.css中放了color-dynamic-black和color-dynamic-white
         $(".showFirstTimeHelp").addClass(`color-dynamic-${KFK.YIQColor}`);
@@ -8643,7 +8661,7 @@ KFK.addDocumentEventHandler = function () {
         if (KFK.isDuringKuangXuan()) {
             KFK.kuangXuan(KFK.kuangXuanStartPoint, tmp);
         } else if (KFK.isZoomingShape) {
-            KFK.zoomShape(evt);
+            KFK.zoomShape(evt, KFK.shapeToZoom);
         }
     });
     $(document).on("mousedown", function (evt) {
@@ -8713,6 +8731,46 @@ KFK.addDocumentEventHandler = function () {
     // onscroll onScroll on scroll on Scroll
     $("#S1").scroll(() => {
         if (KFK.inDesigner() === false) return;
+        let sx = $("#S1").scrollLeft();
+        let sy = $("#S1").scrollTop();
+        try{
+            //不是每次滚动都记录，滚动停止一秒后再记录
+            if(KFK.scrollPosTimer){
+                clearTimeout(KFK.scrollPosTimer);
+                KFK.scrollPosTimer = undefined;
+            }
+            KFK.scrollPosTimer = setTimeout(function(){
+                let docPos = {};
+                let scrollPositionCache = localStorage.getItem("docPos");
+                if(scrollPositionCache){
+                    docPos = JSON.parse(scrollPositionCache);
+                }
+                if(docPos[KFK.APP.model.cocodoc.doc_id]){
+                    docPos[KFK.APP.model.cocodoc.doc_id] = {x: sx, y: sy};
+                }else{
+                    let keyCount = 0;
+                    for (key in docPos){
+                        keyCount ++;
+                    }
+                    if(keyCount > 30){
+                        let tmp = {};
+                        let j= 0;
+                        for(key in docPos){
+                            if(j>10){
+                                tmp[key] = docPos[key];
+                            }
+                            j++;
+                        }
+                        docPos = tmp;
+                    }
+                    docPos[KFK.APP.model.cocodoc.doc_id] = {x: sx, y: sy};
+                }
+                localStorage.setItem("docPos", JSON.stringify(docPos));
+            }, 1000);
+        }catch(error){
+            console.log("save docPos error", error);
+        }
+        
         /*
            let sx = $("#S1").scrollLeft();
            let sy = $("#S1").scrollTop();
@@ -9702,19 +9760,21 @@ KFK.gotoExplorer = async function () {
         explorer: true,
         designer: false
     });
-    let lastTabIndex = sessionStorage.getItem('leftTabIndex');
-    if (IsSet(lastTabIndex)) {
-        lastTabIndex = parseInt(lastTabIndex);
+    let lastLeftTabIndex = sessionStorage.getItem('leftTabIndex');
+    if (IsSet(lastLeftTabIndex)) {
+        lastLeftTabIndex = parseInt(lastLeftTabIndex);
     } else {
-        lastTabIndex = 1;
+        lastLeftTabIndex = 1; //如果是第一次，进入“我的白板”
     }
+    console.log("lastLeftTabIndex", lastLeftTabIndex);
     KFK.showForm({
         newdoc: false,
         newprj: false,
         prjlist: true,
         doclist: true,
         share: false,
-        explorerTabIndex: lastTabIndex,
+        //lastLeftTabIndex 记录着用户所选的左侧哪个TAB， 再次gotoExplorer时，切换过去
+        explorerTabIndex: lastLeftTabIndex,
     });
     $("#overallbackground").addClass("grid1");
     KFK.sendCmd("SETWSSEC", {
@@ -11112,7 +11172,6 @@ KFK.svgDrawPoly = function (shapeType, id, option) {
     try {
         theShape.remove();
     } catch (error) {
-        console.log(error);
     }
 
 
@@ -11264,6 +11323,9 @@ KFK.addShapeEventListner = function (theShape) {
         };
         if ((evt.ctrlKey || evt.metaKey)) {
             KFK.isZoomingShape = true;
+            //这里必须重新plot一遍，否则，在zoom时会出错
+            let arr= theShape.array();
+            theShape = theShape.plot(arr);
             KFK.shapeToZoom = theShape;
             KFK.setShapeToRemember(theShape);
             KFK.shapeSizeCenter = {
@@ -11336,7 +11398,7 @@ KFK.addShapeEventListner = function (theShape) {
     });
 };
 
-KFK.zoomShape = function (evt) {
+KFK.zoomShape = function (evt, shapeToZoom) {
     let zoomTo = {
         x: KFK.scalePoint(KFK.scrXToJc3X(evt.clientX)),
         y: KFK.scalePoint(KFK.scrYToJc3Y(evt.clientY)),
@@ -11344,10 +11406,10 @@ KFK.zoomShape = function (evt) {
     let dis_1 = KFK.distance(KFK.shapeZoomStartPoint, KFK.shapeSizeCenter);
     let dis_2 = KFK.distance(zoomTo, KFK.shapeSizeCenter);
     let delta = 3 * (dis_2 - dis_1);
-    KFK.DivStyler ? KFK.DivStyler.zoom('in', delta) :
+    KFK.DivStyler ? KFK.DivStyler.zoom('in', shapeToZoom, delta) :
         import('./divStyler').then((pack) => {
             KFK.DivStyler = pack.DivStyler;
-            KFK.DivStyler.zoom('in', delta);
+            KFK.DivStyler.zoom('in', shapeToZoom, delta);
         });
 };
 KFK.stopZoomShape = async function () {

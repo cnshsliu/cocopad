@@ -235,13 +235,9 @@ DivStyler.moveDIV = async function (keyCode, ctrlKey) {
     }
 };
 
-DivStyler.zoom = async function (direction, delta) {
+DivStyler.zoom = async function (direction, shapeToZoom, delta) {
     try {
-        if (!KFK.morphedShape) {
-            let shape = KFK.hoverSvgLine();
-            shape && (KFK.morphedShape = shape);
-        }
-        KFK.morphedShape && DivStyler.zoomShape(KFK.morphedShape, direction, delta);
+        DivStyler.zoomShape(shapeToZoom, direction, delta);
     } catch (error) {
         console.error(error);
     }
@@ -251,11 +247,13 @@ DivStyler.zoomShape = async function (shape, direction, delta) {
     // let rect = { w: shape.width(), h: shape.height() };
     // rect.w += delta;
     // rect.h += delta;
+    console.log("zoomShapeing...", shape);
     let tmpw = KFK.shapeSizeOrigin.w + delta;
     let tmph = KFK.shapeSizeOrigin.h + delta;
     tmpw = tmpw < 10 ? 10 : tmpw;
     tmph = tmph < 10 ? 10 : tmph;
     shape.size(tmpw, tmph);
+    console.log("after size");
     shape.center(KFK.shapeSizeCenter.x, KFK.shapeSizeCenter.y);
 };
 /**
