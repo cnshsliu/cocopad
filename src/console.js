@@ -702,6 +702,9 @@ KFK.onWsMsg = async function (response) {
             });
             KFK.APP.setData("model", "docs", docs);
             break;
+        case "SEARCHDOC":
+            KFK.APP.setData("model","interLinkDocs", response.docs);
+            break;
         case "LISTPUB":
             let pubs = response.pubs;
             pubs.forEach((pub) => {
@@ -1818,6 +1821,8 @@ KFK.initC3 = function () {
             x: evt.clientX,
             y: evt.clientY
         };
+        //KFK.pointAfterResize 记录着DIV重新拖动大小后，释放鼠标的一霎那间的鼠标位置
+        //这样，在鼠标释放同时，click事件发起时，下面的代码避免执行
         if (KFK.pointAfterResize) {
             if (KFK.distance(tmpPoint, KFK.pointAfterResize) < 10) {
                 KFK.pointAfterResize = undefined;
@@ -1825,6 +1830,10 @@ KFK.initC3 = function () {
             } else {
                 KFK.pointAfterResize = undefined;
             }
+        }
+        if(KFK.mode === "interlink"){
+            KFK.placeInterLinkDoc(evt);
+            return;
         }
         if (KFK.isEditting && KFK.quillEdittingNode) {
             await KFK.finishQuillEditting();
@@ -3414,7 +3423,6 @@ KFK.setShapeDynamicDefaultSize = function (nodeType, variant, width, height) {
 
 KFK.getShapeDynamicDefaultSize = function (nodeType, variant) {
     let ret = {};
-    console.log(nodeType, variant);
     //如果有 defaultSize[nodeType][variant]
     if (
         cocoConfig.defaultSize[nodeType] &&
@@ -3899,10 +3907,10 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
             }
             if (KFK.mode === "pointer") {
                 let innerLink = jqNodeDIV.attr("innerlink");
-                console.log(innerLink);
                 if(innerLink){
                     evt.preventDefault();
-                    if(evt.shiftKey){
+                    console.log(evt);
+                    if(evt.target.href){
                         if(innerLink.startsWith("dou=")){
                             let dou = innerLink.substr(4);
                             await KFK.sendCmd("OPENSHAREDDOC", { shareCode: dou });
@@ -3911,6 +3919,7 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
                         }
                     }
                 }
+                KFK.selectNodeOnClick(jqNodeDIV, evt.shiftKey);
                 KFK.resetPropertyOnMultipleNodesSelected();
             } else if (KFK.mode === "connect") {
                 if (KFK.afterDragging === false) {
@@ -5102,7 +5111,6 @@ KFK.init = async function () {
     KFK.checkBrowser();
     KFK.initTypeWriter();
     KFK.pickerMatlib = $(".matlib-topick");
-    console.log(KFK.urlBase);
     //if (KFK.urlBase.indexOf('liuzijin')>0) {
     //    KFK.hide(".introduce_svg_inner");
     //}
@@ -5499,7 +5507,7 @@ KFK.onWsConnected = function () {
     KFK.hide('#waiting');
     $(".reconnect-mask").addClass("nodisplay");
     KFK.APP.setData("show", "wsready", true);
-                console.log("KFK.urlMode=", KFK.urlMode);
+    //console.log("KFK.urlMode=", KFK.urlMode);
     //第一次连接，这条消息会被kj迎回来覆盖，正常
     if (KFK.isTryingToReconnect === undefined) {
         //The first time
@@ -5527,7 +5535,7 @@ KFK.onWsConnected = function () {
                 if (KFK.urlMode === "sharecode") {
                     KFK.openSharedDoc(KFK.shareCode);
                 } else if (KFK.urlMode ===  "directopen"){
-                    console.log('Open Doc Direclty', KFK.docToOpen);
+                    //console.log('Open Doc Direclty', KFK.docToOpen);
                     KFK.refreshDesignerWithDoc(KFK.docToOpen, "");
                 } else {
                     KFK.refreshProjectList();
@@ -5541,11 +5549,9 @@ KFK.onWsConnected = function () {
             } else {
                 // has sharecode
                 localStorage.setItem("shareCode", KFK.shareCode);
-                console.log("KFK.urlMode=", KFK.urlMode);
                 if (KFK.urlMode === "sharecode"){ 
                     KFK.openSharedDoc(KFK.shareCode);
                 } else if (KFK.urlMode ===  "directopen"){
-                    console.log('Open Doc Direclty', KFK.docToOpen);
                     KFK.refreshDesignerWithDoc(KFK.docToOpen, "");
                 }
                 else {
@@ -5721,14 +5727,12 @@ KFK.refreshDesignerWithDoc = async function (doc_id, docpwd, quickGlance = false
     KFK.opz = -1;
     KFK.setAppData("model", "actionlog", []);
 
-    console.log("show section");
     await KFK.showSection({
         signin: false,
         register: false,
         explorer: false,
         designer: true,
     });
-    console.log("show form");
     KFK.showForm({
         newdoc: false,
         newprj: false,
@@ -6461,6 +6465,10 @@ KFK.gotoMarketMostSubscribed = async function () {
     });
 };
 
+KFK.searchDoc = async function(){
+    await KFK.sendCmd("SEARCHDOC", {name: KFK.APP.model.search.docName});
+};
+
 
 KFK.gotoPrj = async function (prjid, name) {
     try {
@@ -6538,7 +6546,7 @@ KFK.paidPlsCheck = (goods, buymode) => {
 KFK.sendCmd = async function (cmd, payload = {}) {
     if (KFK.WS === null) {
         KFK.warn(
-            "sendCmcd when KFK.WS is null. cmd is",
+            "sendCmd when KFK.WS is null. cmd is",
             cmd,
             "payload is",
             payload
@@ -6677,7 +6685,6 @@ KFK._onDocFullyLoaded = async function () {
     KFK.show($("#docHeaderInfo"));
     KFK.docDuringLoading = null;
     // KFK.JC3.removeClass("noshow");
-    console.log("DOC ID:", KFK.APP.model.cocodoc.doc_id);
     window.history.replaceState({}, null, KFK.urlBase + "/" + KFK.APP.model.cocodoc.doc_id);
     KFK.APP.setData("model", "docLoaded", true);
     if (KFK.APP.model.cocodoc.readonly) {
@@ -7598,6 +7605,9 @@ KFK.setMode = function (mode, event) {
         console.warn(`APP.toolActiveState.${mode} does not exist`);
     else KFK.APP.toolActiveState[mode] = true;
 
+    if(oldMode === "interlink" && mode !== "interlink"){
+        KFK.hide(KFK.interLinkDialog);
+    }
     if (
         (oldMode === "line" && mode !== "line") ||
         (oldMode === "connect" && mode !== "connect")
@@ -7681,9 +7691,24 @@ KFK.setMode = function (mode, event) {
         KFK.setMode("pointer");
     } else if (KFK.mode === 'draw') {
         KFK.drawMode = 'polyline';
+    } else if (KFK.mode === 'interlink'){
+        KFK.showInterLinkDialog();
     }
 
     KFK.focusOnC3();
+};
+
+KFK.showInterLinkDialog = function(){
+    KFK.interLinkDialog || (KFK.interLinkDialog = $('#interLinkDialog'));
+    if(KFK.interLinkDialog.hasClass('noshow')){
+        KFK.show(KFK.interLinkDialog);
+        try{
+            KFK.interLinkDialog.draggable();
+        }catch(error){}
+    }else{
+        KFK.hide(KFK.interLinkDialog);
+        KFK.setMode("pointer");
+    }
 };
 
 KFK.showPickerMatlib = function (matid, url) {
@@ -9086,7 +9111,6 @@ KFK.showChat = async () => {
 };
 
 KFK.gotoTodo = ()=>{
-    console.log("gotoTodo");
     $('.todolist').removeClass('noshow');
     KFK.scrollToNodeById('coco_todo');
 };
@@ -9661,6 +9685,7 @@ KFK.gotoExplorer = async function () {
         });
     }
     KFK.cancelAlreadySelected();
+    KFK.closeTool();
     if (!KFK.isEditting && KFK.mode !== "line") KFK.setMode("pointer");
     KFK.cancelTempLine();
     KFK.setMode("pointer");
@@ -9890,6 +9915,7 @@ KFK.placePastedContent = async function () {
             if(m[2].indexOf('localhost')>=0 ||
                m[2].indexOf('colobod.com')>=0 ||
                m[2].indexOf('weteam.work')>=0 ||
+               m[2].indexOf('meetintune.com')>=0 ||
                m[2].indexOf('liuzijin.com')>=0){
                innerLink = m[4];
             }
@@ -12306,6 +12332,13 @@ KFK.resendAfter15Seconds = function(){
     }, 1000);
 };
 
+KFK.overTool = function (evt, tool) {
+    if(tool === 'line'){
+        KFK.expandTool(evt, tool);
+    }else{
+        KFK.closeTool();
+    }
+}
 KFK.expandTool = function (evt, tool) {
     let jTool = $(evt.target);
     if (jTool.hasClass('toolbox') === false) {
@@ -12318,6 +12351,40 @@ KFK.expandTool = function (evt, tool) {
         'top': top,
         'left': 65
     });
+};
+KFK.closeTool = function () {
+    let jExpand = $('#lineExpand');
+    jExpand.addClass('noshow');
+};
+
+KFK.interLinkDocRowClickHandler = async function(doc, index){
+    KFK.scrLog("点击空白处放置文档链接");
+    KFK.interLinkDocToPlace=doc;
+};
+
+KFK.placeInterLinkDoc = async function(evt){
+    let doc = KFK.interLinkDocToPlace;
+    let toAdd = "<a href='#'>" + doc.name + "</a>";
+    let innerLink = doc._id;
+    let jBox = await KFK.placeNode(
+        false, //shiftKey
+        KFK.myuid(),
+        "textblock",
+        "default",
+        KFK.scalePoint(KFK.scrXToJc3X(evt.clientX)),
+        KFK.scalePoint(KFK.scrYToJc3Y(evt.clientY)),
+        100,
+        100,
+        toAdd,
+        ""
+    );
+    jBox.addClass('noedit');
+    jBox.css("background", "#FFFFFF00");
+    jBox.css("border-color", "#33333300");
+    jBox.attr("innerlink", innerLink);
+    console.log('place interlink node, innerLink is [' + innerLink + ']');
+    //interlink 的实现方法时检测到用户点击的taget.href不为空，表明点在了<a href>上，并且div有innerlink attr，
+    //则载入innerLink，内容是doc_id, 并且 通过evt.preventDefault, 避免<a href>链接起作用
 };
 
 

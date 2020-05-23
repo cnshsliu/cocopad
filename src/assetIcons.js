@@ -22,6 +22,7 @@ const assetIcons = [
 'dot',
 'email',
 'eraser',
+'interlink',
 'grid1',
 'grid2',
 'group-task',

@@ -25,10 +25,8 @@ echo  "Begin build"
 npm run-script build
 echo  "Begin distribution to liuzijin.com"
 ./bin/distlzj.sh
-echo  "Begin distribution to colobod.com"
+echo  "Begin distribution to Shatian"
 ./bin/distshatian.sh
-echo  "Begin distribution to weteam.work"
-./bin/distwtw.sh
 
 echo "Done."
 echo "Check cococonfig.js, is endpoint okay or not"

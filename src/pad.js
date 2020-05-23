@@ -67,7 +67,7 @@ const app = new Vue({
             ],
         }
         ],
-        toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'richtext': false, 'lock': false, 'minimap': false, 'connect': false, 'material': false, 'clean': false, 'brain': false, 'todo': false, 'chat': false, 'draw':false },
+        toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'richtext': false, 'lock': false, 'minimap': false, 'connect': false, 'material': false, 'clean': false, 'brain': false, 'todo': false, 'chat': false, 'draw':false , 'interlink':false},
         docNavTabIndex: 0,
         show: {
             'loading': false,
@@ -220,6 +220,7 @@ const app = new Vue({
             docfields: [{ key: 'name', label: '文档名称' }, { key: 'owner', label: '发起人' }, { key: 'readonly_icon', label: '只读' }, { key: 'protect_icon', label: '密保' }, { key: 'acl', label: '权限范围' }, { key: 'operations', label: '其它', variant: 'danger' }],
             pubfields: [{ key: 'name', label: '文档名称' }, { key: 'tags_display', label: '标签' }, { key: 'price1', label: '阅读价格' }, { key: 'price2', label: '拷贝价格' }, { key: 'stop_pub', label: '下架' }],
             goodsfields: [{ key: 'name', label: '文档名称' }, { key: 'price1', label: '阅读价格' }, { key: 'price2', label: '拷贝价格' }, { key: 'preview', label: '预览' }, { key: 'buy1', label: '购买阅读版' }, { key: 'buy2', label: '购买拷贝版' }],
+            interlinkdocfields: [{ key: 'name', label: '文档名称' }, {key:'ownerName', label:'发起人'}],
             subsfields: [{ key: 'name', label: '文档名称' }, { key: 'show_details', label: '详情' }],
             vorgfields: [{ key: 'name', label: '名称' }, { key: 'owner', label: '发起人' }, { key: 'operations', label: '相关操作' }],
             myorgfields: [{ key: 'name', label: '名称' }, { key: 'grade', label: '等级' }, { key: 'operations', label: '相关操作' }],
@@ -284,6 +285,9 @@ const app = new Vue({
             isDemoEnv: true,
             svgs: {},
             svgsData: {},
+            search:{
+                docName: "",
+            }
         }
     },
     computed: {

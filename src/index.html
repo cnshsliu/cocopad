@@ -624,31 +624,37 @@
                 <b-list-group>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
                         v-on:mouseover="KFK.AI('tb_arrow')" v-on:click="setMode('pointer', $event);"
+                        @mouseover.native="KFK.overTool($event, 'pointer');" 
                         v-b-popover.hover.right title="点选" :active="toolActiveState['pointer']">
                         <b-img :src="getImageSrc('pointer')" fluid alt="" scale="2" class="cocotool"></b-img>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                        @mouseover.native="KFK.overTool($event, 'text');" 
                         v-on:mouseover="KFK.AI('tb_text')" v-on:click="setMode('text', $event);" v-b-popover.hover.right
                         title="单行文本" :active="toolActiveState['text']">
                         <b-img :src="getImageSrc('text')" fluid alt="" scale="2" class="cocotool"></b-img>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                        @mouseover.native="KFK.overTool($event, 'textblock');" 
                         v-on:mouseover="KFK.AI('tb_textblock')" v-on:click="setMode('textblock', $event);"
                         v-b-popover.hover.right title="复合文本" :active="toolActiveState['textblock']">
                         <b-img :src="getImageSrc('textblock')" fluid alt="" scale="2" class="cocotool"></b-img>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                        @mouseover.native="KFK.overTool($event, 'yellowtip');" 
                         v-on:mouseover="KFK.AI('tb_yellowtip')" v-on:click="setMode('yellowtip', $event);"
                         v-b-popover.hover.right title="小黄贴" :active="toolActiveState['yellowtip']">
                         <b-img :src="getImageSrc('tipbtn')" fluid alt="" scale="2" class="cocotool"></b-img>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                        @mouseover.native="KFK.overTool($event, 'richtext');" 
                         v-on:click="setMode('richtext', $event);" v-b-popover.hover.right title="格式文本"
                         v-on:mouseover="KFK.AI('tb_richtext')" :active="toolActiveState['richtext']">
                         <b-img :src="getImageSrc('richtext')" fluid alt="" scale="2" class="cocotool"></b-img>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
                         v-on:mouseover="KFK.AI('tb_material')" v-on:click="setMode('material', $event);"
+                        @mouseover.native="KFK.overTool($event, 'material');" 
                         v-b-popover.hover.right title="图片库" :active="toolActiveState['material']">
                         <b-img :src="getImageSrc('material')" fluid alt="" scale="2" class="cocotool"
                             id='tool_material'>
@@ -656,32 +662,44 @@
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
                         v-on:mouseover="KFK.AI('tb_line')" v-on:click="setMode('line', $event);"
-                        @mouseover.native="KFK.expandTool($event, 'line');" :active="toolActiveState['line']">
+                        @mouseover.native="KFK.overTool($event, 'line');" 
+                        :active="toolActiveState['line']">
                         <b-img :src="getImageSrc('line')" fluid alt="" scale="2" class="cocotool" id='tool_line'>
                         </b-img>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
                         v-on:mouseover="KFK.AI('tb_connect')" v-on:click="setMode('connect', $event);"
+                        @mouseover.native="KFK.overTool($event, 'connect');" 
                         v-b-popover.hover.right title="连接" :active="toolActiveState['connect']">
                         <b-img :src="getImageSrc('connect')" fluid alt="" scale="2" class="cocotool" id='tool_connect'>
                         </b-img>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                        @mouseover.native="KFK.overTool($event, 'lock');" 
                         v-on:mouseover="KFK.AI('tb_lock')" v-on:click="setMode('lock', $event);" v-b-popover.hover.right
                         title="锁定" :active="toolActiveState['lock']">
                         <b-img :src="getImageSrc('lock')" fluid alt="" scale="2" class="cocotool" id='tool_lock'>
                         </b-img>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                        @mouseover.native="KFK.overTool($event, 'brain');" 
                         v-on:mouseover="KFK.AI('tb_brain')" v-on:click="setMode('brain', $event);"
                         v-b-popover.hover.right title="脑图" :active="toolActiveState['brain']">
                         <b-img :src="getImageSrc('brain')" fluid alt="" scale="2" class="cocotool" id='tool_brain'>
+                        </b-img>
+                    </b-list-group-item>
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                        @mouseover.native="KFK.overTool($event, 'interlink');" 
+                        v-on:mouseover="KFK.AI('tb_interlink')" v-on:click="setMode('interlink', $event);"
+                        v-b-popover.hover.right title="跳转" :active="toolActiveState['interlink']">
+                        <b-img :src="getImageSrc('brain')" fluid alt="" scale="2" class="cocotool" id='tool_interlink'>
                         </b-img>
                     </b-list-group-item>
                     <b-list-group-item class="m-0 p-0">
                         <b-icon icon="blank" scale="0.3"></b-icon>
                     </b-list-group-item>
                     <b-list-group-item href="#" v-on:mouseover="KFK.AI('tb_eraser')" v-if="model.docLoaded"
+                        @mouseover.native="KFK.overTool($event, 'eraser');" 
                         class="d-flex align-items-center toolbox" @click="KFK.cleanAllNodes();" v-b-popover.hover.right
                         title="白板擦" :active="toolActiveState['clean']">
                         <b-img :src="getImageSrc('eraser')" fluid alt="" class="eraser" id='tool_clean'></b-img>
@@ -2508,6 +2526,28 @@
             <div id='shape_polygon' @click="KFK.setDrawMode('polygon')"></div>
             <div id='shape_freehand' @click="KFK.setDrawMode('freehand')"></div>
         </div>
+        <div id="interLinkDialog" class="noshow spaceToHide">
+            <b-form class="office-form" autocomplete="off">
+                <b-input-group prepend="白板名称" class="pt-4 px-5">
+                    <b-form-input id="qbydocName" trim v-model="model.search.docName" placeholder="按名称搜索"></b-form-input>
+                    <b-input-group-append>
+                        <b-button href="#" tabindex="-1" @click="KFK.searchDoc">
+                            <b-icon scale="1" icon="search"></b-icon>
+                        </b-button>
+                    </b-input-group-append>
+                </b-input-group>
+            </b-form>
+            <b-table hover :items="model.interLinkDocs" small striped :fields="model.interlinkdocfields"
+                     @row-clicked="KFK.interLinkDocRowClickHandler">
+                <template v-slot:cell()="aDoc">
+                    <b-col class="d-flex align-items-center">
+                        {{ aDoc.value }}
+                    </b-col>
+                </template>
+            </b-table>
+        </div> <!-- interlink -->
+
+
     </div>
     <!--app-->
 </body>

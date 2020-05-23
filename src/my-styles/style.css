@@ -2045,3 +2045,11 @@ a {
 a:hover{
     text-decoration: none;
 }
+#interLinkDialog
+{
+    z-index: 5000;
+    position: absolute;
+    top:100px; left: 90px;
+    background-color: white;
+    border-radius: 10px;
+}
