@@ -665,7 +665,7 @@
                         @mouseover.native="KFK.overTool($event, 'interlink');" 
                         v-on:mouseover="KFK.AI('tb_interlink')" v-on:click="setMode('interlink', $event);"
                         placeable="none"
-                        v-b-popover.hover.right title="跳转" :active="toolActiveState['interlink']">
+                        v-b-popover.hover.right title="白板间跳转" :active="toolActiveState['interlink']">
                         <b-img :src="getImageSrc('interlink')" fluid alt="" scale="2" class="cocotool" id='tool_interlink'>
                         </b-img>
                     </b-list-group-item>
@@ -2543,8 +2543,10 @@
             <div id='shape_freehand' @click="KFK.setDrawMode('freehand')"></div>
         </div>
         <div id="interLinkDialog" class="noshow spaceToHide">
-            <b-form class="office-form" autocomplete="off">
-                <b-input-group prepend="白板名称" class="pt-4 px-5">
+            <b-form class="office-form" autocomplete="off" class="p-1">
+                <div class="p-1">请输入名字检索要链接到的白板文档</div>
+                <div class="p-1">选择白板后，在空白处点击鼠标放置链接</div>
+                <b-input-group prepend="白板名称" class="p-1 px-0">
                     <b-form-input id="qbydocName" trim v-model="model.search.docName" 
                     v-on:keydown="KFK.onSearchInput($event)"
                     placeholder="按名称搜索" ></b-form-input>

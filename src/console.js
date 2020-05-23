@@ -12494,7 +12494,6 @@ KFK.placeInterLinkDoc = async function(evt){
     jBox.css("background", "#FFFFFF00");
     jBox.css("border-color", "#33333300");
     jBox.attr("innerlink", innerLink);
-    console.log('place interlink node, innerLink is [' + innerLink + ']');
     //interlink 的实现方法时检测到用户点击的taget.href不为空，表明点在了<a href>上，并且div有innerlink attr，
     //则载入innerLink，内容是doc_id, 并且 通过evt.preventDefault, 避免<a href>链接起作用
     await KFK.syncNodePut("C", jBox, "place interlink", null, false, 0, 1);
