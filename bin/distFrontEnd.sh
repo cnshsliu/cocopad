@@ -3,7 +3,6 @@ if [ ! -d ./dist ]; then
 	echo "Not in project folder";
 	exit;
 fi
-rm ./dist/* 1>/dev/null 2>/dev/null;
 echo -n "Make sure WS endpoint set to LZJ..."
 COCOCFG=./src/cococonfig.js
 LINENUMBER1=`awk '/endpoint: {/{ print NR; exit }' $COCOCFG`
@@ -21,12 +20,11 @@ if [[ $ENDPOINT_NEW =~ .*liuzijin.com.* ]]; then
 fi
 
 
-echo  "Begin build"
-npm run-script build
 echo  "Begin distribution to liuzijin.com"
 ./bin/distlzj.sh
 echo  "Begin distribution to Shatian"
 ./bin/distshatian.sh
+./bin/distAliyunHK.sh
 
 echo "Done."
 echo "Check cococonfig.js, is endpoint okay or not"
