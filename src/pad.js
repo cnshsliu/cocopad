@@ -53,7 +53,7 @@ const app = new Vue({
                 'tip_circle1', 'tip_circle2', 'tip_circle3', 'tip_circle4',
                 'tip_callout1', 'tip_callout2', 'tip_callout3', 'tip_callout4',
                 'tip_arrow1', 'tip_arrow2', 'tip_arrow3', 'tip_arrow4', 'tip_arrow5', 'tip_arrow6', 'tip_arrow7',
-                'tip_sig0', 'tip_sig1'
+                'tip_sig0', 'tip_sig1', 'tip_comment',
             ]
         },
         {
@@ -252,6 +252,7 @@ const app = new Vue({
                 enterWithChat: true,
                 enterToConfirmInput: false,
                 useAI: true,
+                showEditor: 'last',
             },
             dragToCreate: true,
             lineToggleMode: false,

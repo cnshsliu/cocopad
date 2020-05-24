@@ -1004,12 +1004,12 @@
                                 <b-col>显示编辑者</b-col>
                             </b-row>
                             <b-row class="mx-auto my-1">
-                                <b-form-radio v-model="model.showEditor" name="some-radios" value="none"
-                                    @change="showEditorChanged('none')">隐藏</b-form-radio>
-                                <b-form-radio v-model="model.showEditor" name="some-radios" value="last"
-                                    @change="showEditorChanged('last')">最近</b-form-radio>
-                                <b-form-radio v-model="model.showEditor" name="some-radios" value="all"
-                                    @change="showEditorChanged('all')">全部</b-form-radio>
+                                <b-form-radio v-model="model.viewConfig.showEditor" name="some-radios" value="none"
+                                    @change="KFK.onShowEditorChanged('none')">隐藏</b-form-radio>
+                                <b-form-radio v-model="model.viewConfig.showEditor" name="some-radios" value="last"
+                                    @change="KFK.onShowEditorChanged('last')">最近</b-form-radio>
+                                <b-form-radio v-model="model.viewConfig.showEditor" name="some-radios" value="all"
+                                    @change="KFK.onShowEditorChanged('all')">全部</b-form-radio>
                             </b-row>
                             <b-row class="mx-auto my-1">
                                 <b-col>摄像头选择</b-col>

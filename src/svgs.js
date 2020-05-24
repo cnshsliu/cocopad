@@ -32,8 +32,7 @@ const SVGs = {
     'tip_arrow7': '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" preserveAspectRatio="none" viewBox="-0.5 -0.5 54 54"><defs/><g><path class="svg_main_path" d="M 6.89 53.18 L -0.18 46.11 L 35.68 10.25 L 28.25 2.83 L 52.65 0.35 L 50.17 24.75 L 42.75 17.32 Z" fill="#f7f7c6" stroke="#000000" stroke-linejoin="round" stroke-miterlimit="10" pointer-events="all"/></g></svg>',
     'tip_sig0': '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" preserveAspectRatio="none" viewBox="-0.5 -0.5 70 55"><defs/><g><path class="svg_main_path" d="M 0 0 L 60 0 L 60 0 L 70 27 L 60 54 L 60 54 L 0 54 L 0 0 Z" fill="#f7f7c6" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/></g></svg>',
     'tip_sig1': '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" preserveAspectRatio="none" viewBox="-0.5 -0.5 70 55"><defs/><g><path class="svg_main_path" d="M 0 0 L 60 0 L 60 0 L 70 27 L 60 54 L 60 54 L 0 54 L 10 27 Z" fill="#f7f7c6" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/></g></svg>',
-
-
+    'tip_comment': '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" preserveAspectRatio="none" viewBox="0 0 70 55" ><g><path class="svg_main_path" d="M66.5,18H6.1c-1.6,0-2.8-1.3-2.8-2.8V7.1L1.1,3.4c-0.3-0.5,0.1-1,0.6-1h1.5h63c1.6,0,2.8,1.3,2.8,2.8v10.3 C69.1,16.9,67.9,18,66.5,18z" fill="#f7f7c6" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/></g></svg>',
 };
 
 export default SVGs;

@@ -5768,7 +5768,6 @@ KFK.refreshDesignerWithDoc = async function (doc_id, docpwd, quickGlance = false
     // KFK.APP.setData("model", "cocodoc", KFK.DocController.getDummyDoc());
     // localStorage.removeItem("cocodoc");
 
-    KFK.initShowEditors("none");
     KFK.addDocumentEventHandler();
     KFK.focusOnC3();
     KFK.cancelAlreadySelected();
@@ -6811,6 +6810,8 @@ KFK._onDocFullyLoaded = async function () {
     } else {
         KFK.setAppData("model", "firstTime", false);
     }
+
+    KFK.initShowEditors(KFK.APP.model.viewConfig.showEditor);
 };
 
 KFK.checkLoading = async function (num) { };
@@ -7129,8 +7130,9 @@ KFK.setWritingMode = async function (wmode) {
     });
 };
 KFK.initViewByLocalConfig = async function () {
+    console.log("initViewByLocalConfig");
     try {
-        let localViewConfigStr = localStorage.getItem('viewConfig');
+        let localViewConfigStr = localStorage.getItem("viewConfig");
         if (localViewConfigStr) {
             let viewConfig = JSON.parse(localViewConfigStr);
             //下面这个判断语句只是用于判断viewConfig是否合法
@@ -7481,20 +7483,27 @@ KFK.initPropertyForm = function () {
 };
 
 KFK.initShowEditors = function (show_editor) {
-    KFK.APP.setData("model", "showEditor", show_editor);
-    KFK.onShowEditorChanged(show_editor);
+    console.log("initShowEditor", show_editor);
+    KFK.onShowEditorChanged(show_editor, true);
 };
 
-KFK.onShowEditorChanged = function (show_editor) {
+KFK.onShowEditorChanged = async function (show_editor, isInit=false) {
+    console.log(show_editor);
+    KFK.APP.model.viewConfig.showEditor = show_editor;
+    if(isInit === false){
+        KFK.saveLocalViewConfig();
+    }
     if (show_editor === "none") {
         $(document).find(".cocoeditors").css("display", "none");
         $(document).find(".lastcocoeditor").css("display", "none");
     } else if (show_editor === "last") {
+        console.log(show_editor, " tollge show last");
         $(document).find(".cocoeditors").css("display", "none");
         $(document).find(".lastcocoeditor").css("display", "block");
     } else if (show_editor === "all") {
-        $(document).find(".cocoeditors").css("display", "block");
-        $(document).find(".lastcocoeditor").css("display", "none");
+        console.log(show_editor, " tollge show all");
+        await $(document).find(".cocoeditors").css("display", "block");
+        await $(document).find(".lastcocoeditor").css("display", "none");
     }
 };
 
