@@ -42,14 +42,6 @@ const config = {
         image: {
             resizable: true,
         },
-        start: {
-            width: 40,
-            height: 40,
-        },
-        end: {
-            width: 40,
-            height: 40,
-        },
         text: {
             edittable: true,
             resizable: false, droppable: false,
@@ -93,6 +85,33 @@ const config = {
                     'position': 'absolute', width: '100%', height: '100%', 'z-index': 1,
                     'justify-content': 'center',
                     'align-items': 'center',
+                },
+            }
+        },
+        comment: {
+            edittable: true,
+            resizable: true, droppable: false, defaultTip: 'comment',
+            defaultColor: '#93C47D',
+            minWidth: 150, minHeight: 20, //resize的最小高度和宽度
+            style: {
+                'width': '160', 'height': '50',
+                'display': 'flex',
+                'padding': "0px", 'margin': '0px',
+                'overflow': 'scroll',
+                'color': 'black',
+                'background-color': 'transparent',
+                'position': 'absolute',
+            },
+            inner: {
+                content: '',
+                style: {
+                    'display': 'flex',
+                    'font-size': '14px', 'color': 'black',
+                    'font-style': 'italic',
+                    'position': 'absolute', width: '100%', height: '100%', 'z-index': 1,
+                    'justify-content': 'flex-start',
+                    'align-items': 'flex-start',
+                    'padding-left': '15px',
                 },
             }
         },
@@ -193,7 +212,21 @@ const config = {
     },
     morph:{
         delta: 2,
-    }
+    },
+    connect:{
+        styles:{
+            style1:{
+                normal:{
+                    width: 2,
+                    color: "#4B92DB"
+                },
+                hover:{
+                    width: 4,
+                    color: "#4BDB92"
+                }
+            }
+        }
+    },
 };
 
 export default config;

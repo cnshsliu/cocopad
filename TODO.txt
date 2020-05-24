@@ -1,20 +1,12 @@
-//TODO: viewConfig add  show editors
-//TODO: add commenter
-//TODO：drag to select shape
+//TODO：line arrow style
 //TODO: Linkied: Iam happy to introudce weteam.work launched, though the UI may looks ugly at this moment the function is abudant, everyone seeking for high efficency in real-time team collaboaration should give it a try.   sync idea We also welcome opportunity to work with you to promote this product to broder market.
 //TODO: I18N
 //TODO: can't copy/paste among docs?
 //TODO: show tip with mouse move
-//TODO: waiting no show on signin, but shown in explorer or designer
 //TODO: 线段带箭头
-//TODO：Shape大小可变
-//TODO：同时改变所选中所有元素的属性， 粘贴格式时也一样
 //TODO: 根据grade设置 video时长
 //TODO: startup tempalte
 //TODO: tempaltes many templates
-//TODO: direct arrow
-//TODO: line with arrow
-//TODO: add hopper
 //TODO: 文档保护码加密
 //TODO: 备份加密secretkey到U盘
 //TODO: GROUP unGROUP解决解决jjjj解决解决解决?

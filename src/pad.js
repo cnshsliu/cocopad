@@ -53,7 +53,7 @@ const app = new Vue({
                 'tip_circle1', 'tip_circle2', 'tip_circle3', 'tip_circle4',
                 'tip_callout1', 'tip_callout2', 'tip_callout3', 'tip_callout4',
                 'tip_arrow1', 'tip_arrow2', 'tip_arrow3', 'tip_arrow4', 'tip_arrow5', 'tip_arrow6', 'tip_arrow7',
-                'tip_sig0', 'tip_sig1', 'tip_comment',
+                'tip_sig0', 'tip_sig1', 'comment',
             ]
         },
         {
@@ -67,7 +67,7 @@ const app = new Vue({
             ],
         }
         ],
-        toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'richtext': false, 'lock': false, 'minimap': false, 'connect': false, 'material': false, 'clean': false, 'brain': false, 'todo': false, 'chat': false, 'draw':false , 'interlink':false},
+        toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'richtext': false, 'lock': false, 'minimap': false, 'connect': false, 'material': false, 'clean': false, 'brain': false, 'todo': false, 'chat': false, 'draw':false , 'interlink':false, 'comment':false, 'clearfreehand':false},
         docNavTabIndex: 0,
         show: {
             'loading': false,
@@ -145,7 +145,7 @@ const app = new Vue({
                 },
                 line: {
                     color: '#306EF6',
-                    width: 6,
+                    width: 2,
                     linecap: true,
                     style: 'solid',
                     styles: [
@@ -161,16 +161,28 @@ const app = new Vue({
                 },
                 rectangle: {
                     color: '#303030',
-                    width: 1, fill: '#000000'
+                    width: 2, fill: '#000000'
                 },
                 ellipse: {
                     color: '#303030',
-                    width: 1, fill: '#000000'
+                    width: 2, fill: '#000000'
                 },
                 freehand: {
                     color: '#CC3030',
-                    width: 1, fill: '#000000',
+                    width: 2, fill: '#000000',
                     linecap: 'round'
+                },
+                polyline: {
+                    color: '#306EF6',
+                    width: 2,
+                    linecap: true,
+                    style: 'solid',
+                },
+                polygon:{
+                    color: '#306EF6',
+                    width: 2,
+                    linecap: true,
+                    style: 'solid',
                 }
             },
             paste: {

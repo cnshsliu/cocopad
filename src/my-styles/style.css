@@ -1356,12 +1356,12 @@ select:focus {
     animation: progress3 5s;
     animation-iteration-count: infinite; 
 }
-#demo_brain{
+.demo-brain{
     animation: jellomiddle 5s;
     animation-iteration-count: infinite; 
     transform-origin: 90% 70%;
 }
-#demo_chat{
+.demo-chat{
     animation: demochat 3s;
     animation-iteration-count: infinite; 
 }
@@ -1378,9 +1378,29 @@ select:focus {
     animation: yellowtip3 10s;
     animation-iteration-count: infinite; 
 }
+.demo-user-action1{
+    animation: demoshow1 5s;
+    animation-iteration-count: infinite; 
+}
+.demo-user-action2{
+    animation: demoshow2 5s;
+    animation-iteration-count: infinite; 
+}
 .demo-user-action3{
     animation: demoshow3 5s;
     animation-iteration-count: infinite; 
+}
+.demo-richtext{
+    animation: demorichtext 8s;
+    animation-iteration-count: infinite; 
+}
+@keyframes demorichtext{
+    0% { transform: translate(0%, 0%);}
+    25% { transform: translate(0%, 0%); opacity:0;}
+    50% { transform: translate(-10%, 0%);}
+    70% { transform: translate(-10%, 0%); opacity:0;}
+    71% { transform: translate(-10%, 0%); opacity:1;}
+    100% { transform: translate(0%, 0%);}
 }
 
 @keyframes yellowtip1 {
@@ -1407,6 +1427,20 @@ select:focus {
     0% { opacity: 1; }
     50% { opacity: 0; }
     100% { opacity: 1; }
+}
+@keyframes demoshow2 {
+    0% { opacity: 0; }
+    29% { opacity: 0; }
+    50% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { opacity: 0; }
+}
+@keyframes demoshow1 {
+    0% { opacity: 0; }
+    25% { opacity: 1; }
+    50% { opacity: 0; }
+    75% { opacity: 1; }
+    100% { opacity: 0; }
 }
 @keyframes demoshow3 {
     0% { opacity: 0; }
@@ -2057,4 +2091,29 @@ a:hover{
     background-color: white;
     border-radius: 10px;
     box-shadow: 0px 1px 20px 2px #888888 !important;
+}
+.commenter {
+    font-size: 10px;
+}
+.connect1_normal{
+    fill: none;
+    stroke-width: 2;
+    stroke: #4B92DB;
+}
+.connect1_hover{
+    fill: none;
+    stroke-width: 10;
+    stroke: #4BDB92;
+}
+.two-cols{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    padding: 0px;
+}
+.toolbox-half{
+    width:100px; 
+}
+.toolbox-half img{
+    width:100%;
 }
