@@ -1,2 +1,1 @@
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" preserveAspectRatio="none" viewBox="0 0 15 15"><defs/><g><ellipse cx="7.5" cy="7.5" rx="7" ry="7" fill="none" stroke="#6666f6" stroke-width="1" pointer-events="none"/><ellipse cx="7.5" cy="7.5" rx="1" ry="1" fill="#6666f6" stroke="#6666f6" stroke-width="6" pointer-events="none"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 15 15"><g stroke="#6666f6" pointer-events="none"><circle cx="7.5" cy="7.5" fill="none" r="7"/><circle cx="7.5" cy="7.5" fill="#6666f6" stroke-width="6" r="1"/></g></svg>

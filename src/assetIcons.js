@@ -23,6 +23,7 @@ const assetIcons = [
 'email',
 'clearfreehand',
 'eraser',
+'jump',
 'interlink',
 'grid1',
 'grid2',

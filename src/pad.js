@@ -67,7 +67,7 @@ const app = new Vue({
             ],
         }
         ],
-        toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'richtext': false, 'lock': false, 'minimap': false, 'connect': false, 'material': false, 'clean': false, 'brain': false, 'todo': false, 'chat': false, 'draw':false , 'interlink':false, 'comment':false, 'clearfreehand':false},
+        toolActiveState: { 'pointer': true, 'tip': false, 'blanket': false, 'p8star': false, 'pin': false, 'text': false, 'yellowtip': false, 'line': false, 'textblock': false, 'richtext': false, 'lock': false, 'minimap': false, 'connect': false, 'material': false, 'clean': false, 'brain': false, 'todo': false, 'chat': false, 'draw':false , 'interlink':false, 'comment':false, 'clearfreehand':false, 'jump':false},
         docNavTabIndex: 0,
         show: {
             'loading': false,
@@ -265,6 +265,7 @@ const app = new Vue({
                 enterToConfirmInput: false,
                 useAI: true,
                 showEditor: 'last',
+                nodemessage: true,
             },
             dragToCreate: true,
             lineToggleMode: false,

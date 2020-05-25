@@ -1,1 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" preserveAspectRatio="none" viewBox="-0.5 -0.5 121 81"><defs/><g><path class="svg_main_path" d="M 30 0 L 90 0 L 120 40 L 90 80 L 30 80 L 0 40 Z" fill="#f7f7c6" stroke="#000000" stroke-miterlimit="10" pointer-events="all"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="-0.5 -0.5 121 81"><path class="svg_main_path" d="M30 0h60l30 40-30 40H30L0 40z" fill="#f7f7c6" stroke="#000" stroke-miterlimit="10" pointer-events="all"/></svg>

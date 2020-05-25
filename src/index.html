@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>彩板-即时协作：多人交互 白板 脑图 演示 音视频通话</title>
+    <title>WeTeam.WORK-即时协作-白板-脑图-演示-音视频</title>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="/my-styles/room.css">
@@ -54,8 +54,6 @@
             <div v-show="!show.section.designer" class='left_top_logo showAfterInit'>
                 <img src="./cocopad.svg" />
                 <div>
-                    团队的实时网络白板<BR>
-                    多人即时交互协作平台
                 </div>
             </div>
         </div>
@@ -118,7 +116,8 @@
         <!-- leftbkg-->
         <div id="waiting" class="waitinglogo noshow">
             <!-- connect to cloud waiting-->
-            <img src="./cocopad.svg" class="logo d-inline-block align-top showAfterInit" alt="COLOBOD">
+            <img src="./cocopad2.svg" class="logo d-inline-block align-top showAfterInit" alt="COLOBOD">
+                <p id='reconnect-warning'>Reconnecting...</p>
         </div>
         <!-- waiting-->
         <div id="registerform" class="registerform" v-show="show.section.register" style="display:none;">
@@ -310,7 +309,7 @@
                 </div>
             </div>
             <div id="toplogo" class="padlayout spaceToHide" @click="KFK.gotoExplorer">
-                <img src="./cocopad.svg" class="logo d-inline-block align-top" alt="COLOBOD">
+                <img src="./cocopad2.svg" class="logo d-inline-block align-top" alt="COLOBOD">
             </div>
             <!-- left tool left menu toolbox left panel-->
             <div id="left" class="bg-white padlayout spaceToHide" v-on:click="KFK.clickOnLeftPanel">
@@ -360,6 +359,14 @@
                         v-on:mouseup="KFK.onToolboxMouseUp('comment', $event)" title="反馈点-可拖放"
                         :active="toolActiveState['comment']">
                         <b-img :src="getImageSrc('comment')" fluid alt="" scale="2" class="cocotool" id='tool_comment'>
+                        </b-img>
+                    </b-list-group-item>
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                        @mouseover.native="KFK.overTool($event, 'jump');" v-on:mouseover="KFK.AI('tb_jump')"
+                        v-on:click="setMode('jump', $event);" placeable="none" v-b-popover.hover.right
+                        title="节点间跳转" :active="toolActiveState['jump']">
+                        <b-img :src="getImageSrc('jump')" fluid alt="" scale="2" class="cocotool"
+                            id='tool_jump'>
                         </b-img>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
@@ -691,7 +698,10 @@
                                 自动显示对话框
                             </b-checkbox>
                             <b-checkbox v-model="model.viewConfig.useAI" switch @input="KFK.toggleUseAI">
-                                自动提示开关
+                                底部帮助提示开关
+                            </b-checkbox>
+                            <b-checkbox v-model="model.viewConfig.nodemessage" switch @input="KFK.toggleNodeMessage">
+                                节点提示开关
                             </b-checkbox>
                             <p> </p>
                             <b-row class="mx-auto my-1">
@@ -2162,9 +2172,6 @@
         <!-- screen center indicator center dot  -->
         <div id="centerpoint" class="centerpoint noshow"></div>
         <div class="reconnect-mask nodisplay">
-            <div class="reconnect-msg">
-                <p id='reconnect-warning'>Reconnecting...</p>
-            </div>
         </div>
         <div class="present-mask nodisplay">
         </div>
