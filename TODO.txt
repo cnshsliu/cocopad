@@ -1,3 +1,6 @@
+//TODO: ctrl+mousescroll to zoom
+//TODO: left-width-top-bottom padding
+//TODO: GROUP  usre contribute object
 //TODO：line arrow style
 //TODO: Linkied: Iam happy to introudce weteam.work launched, though the UI may looks ugly at this moment the function is abudant, everyone seeking for high efficency in real-time team collaboaration should give it a try.   sync idea We also welcome opportunity to work with you to promote this product to broder market.
 //TODO: I18N

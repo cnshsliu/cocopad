@@ -19,7 +19,7 @@ if [[ $ENDPOINT_NEW =~ .*liuzijin.com.* ]]; then
     mv /tmp/cococonfig.new $COCOCFG
 fi
 
-
+./bin/predist.sh
 echo  "Begin distribution to liuzijin.com"
 ./bin/distlzj.sh
 echo  "Begin distribution to Shatian"

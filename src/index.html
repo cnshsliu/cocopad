@@ -19,7 +19,7 @@
     <script src="https://cdn.staticfile.org/bootstrap-vue/2.12.0/bootstrap-vue-icons.min.js"></script>
     <script src="https://cdn.staticfile.org/jquery/3.5.0/jquery.min.js"></script>
     <script src="https://cdn.staticfile.org/jqueryui/1.12.1/jquery-ui.min.js"></script>
-    <script src="https://liuzijin.com/jslib/jquery-minimap.js"></script>
+    <!-- <script src="https://liuzijin.com/jslib/jquery-minimap.js"></script> -->
     <script src="https://liuzijin.com/jslib/jquery.fontpicker.js"></script>
     <!-- spectrum.min.js was patched. -->
     <!-- see: https://github.com/nguyenj/spectrum/commit/01fe88bc03355f854f5ba5ff711745ca235539b9 -->
@@ -136,7 +136,7 @@
                         <b-form-input id="regUserId" tabindex="1" trim v-model="model.register.userid"
                             :state="state.reg.userid" required placeholder="手机号或邮箱地址"></b-form-input>
                     </b-input-group>
-                    请使用邮箱地址注册，谢谢<BR>手机号码注册暂未上线
+                    请使用手机号码或邮箱地址注册
                     <!-- 虽然可以用邮箱注册，但如果你未来需要团队三人以上的团队协作时，还是需要用到手机号码<BR>
                     所以，请尽量使用手机号码来注册 -->
                     <b-input-group prepend="您的全称" class="mb-1">
@@ -319,6 +319,7 @@
                         @mouseover.native="KFK.overTool($event, 'pointer');" v-b-popover.hover.right title="点选"
                         :active="toolActiveState['pointer']">
                         <b-img :src="getImageSrc('pointer')" fluid alt="" scale="2" class="cocotool"></b-img>
+                        <div class="shortcutkey">ESC</div>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
                         @mouseover.native="KFK.overTool($event, 'text');"
@@ -327,6 +328,7 @@
                         v-on:click="setMode('text', $event);" v-b-popover.hover.right title="单行文本-可拖放"
                         :active="toolActiveState['text']">
                         <b-img :src="getImageSrc('text')" fluid alt="" scale="2" class="cocotool"></b-img>
+                        <div class="shortcutkey">1</div>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
                         @mouseover.native="KFK.overTool($event, 'textblock');" v-on:mouseover="KFK.AI('tb_textblock')"
@@ -335,6 +337,7 @@
                         v-on:mouseup="KFK.onToolboxMouseUp('textblock', $event)" v-b-popover.hover.right
                         title="复合文本-可拖放" :active="toolActiveState['textblock']">
                         <b-img :src="getImageSrc('textblock')" fluid alt="" scale="2" class="cocotool"></b-img>
+                        <div class="shortcutkey">2</div>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
                         @mouseover.native="KFK.overTool($event, 'yellowtip');" v-on:mouseover="KFK.AI('tb_yellowtip')"
@@ -343,6 +346,7 @@
                         v-on:mouseup="KFK.onToolboxMouseUp('yellowtip', $event)" v-b-popover.hover.right title="小黄贴-可拖放"
                         :active="toolActiveState['yellowtip']">
                         <b-img :src="getImageSrc('tipbtn')" fluid alt="" scale="2" class="cocotool"></b-img>
+                        <div class="shortcutkey">3</div>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
                         @mouseover.native="KFK.overTool($event, 'richtext');" v-on:click="setMode('richtext', $event);"
@@ -351,6 +355,7 @@
                         v-on:mouseup="KFK.onToolboxMouseUp('richtext', $event)" v-on:mouseover="KFK.AI('tb_richtext')"
                         :active="toolActiveState['richtext']">
                         <b-img :src="getImageSrc('richtext')" fluid alt="" scale="2" class="cocotool"></b-img>
+                        <div class="shortcutkey">4</div>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
                         @mouseover.native="KFK.overTool($event, 'comment');" v-on:mouseover="KFK.AI('tb_comment')"
@@ -360,6 +365,7 @@
                         :active="toolActiveState['comment']">
                         <b-img :src="getImageSrc('comment')" fluid alt="" scale="2" class="cocotool" id='tool_comment'>
                         </b-img>
+                        <div class="shortcutkey">5</div>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
                         @mouseover.native="KFK.overTool($event, 'jump');" v-on:mouseover="KFK.AI('tb_jump')"
@@ -368,6 +374,7 @@
                         <b-img :src="getImageSrc('jump')" fluid alt="" scale="2" class="cocotool"
                             id='tool_jump'>
                         </b-img>
+                        <div class="shortcutkey">6</div>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
                         @mouseover.native="KFK.overTool($event, 'interlink');" v-on:mouseover="KFK.AI('tb_interlink')"
@@ -376,6 +383,7 @@
                         <b-img :src="getImageSrc('interlink')" fluid alt="" scale="2" class="cocotool"
                             id='tool_interlink'>
                         </b-img>
+                        <div class="shortcutkey">7</div>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
                         v-on:mouseover="KFK.AI('tb_material')" v-on:click="setMode('material', $event);"
@@ -384,6 +392,7 @@
                         <b-img :src="getImageSrc('material')" fluid alt="" scale="2" class="cocotool"
                             id='tool_material'>
                         </b-img>
+                        <div class="shortcutkey">8</div>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
                         v-on:mouseover="KFK.AI('tb_line')" v-on:click="setMode('line', $event);"
@@ -391,6 +400,22 @@
                         :active="toolActiveState['line']">
                         <b-img :src="getImageSrc('shape')" fluid alt="" scale="2" class="cocotool" id='tool_line'>
                         </b-img>
+                        <div class="shortcutkey">9</div>
+                    </b-list-group-item>
+                    <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                        v-on:mouseover="KFK.AI('tb_freehand')" v-on:click="KFK.setMode('freehand', $event);"
+                        @mouseover.native="KFK.overTool($event, 'freehand');" placeable="none"
+                        :active="toolActiveState['freehand']">
+                        <b-img :src="getImageSrc('freehand')" fluid alt="" scale="2" class="cocotool" id='tool_freehand'>
+                        </b-img>
+                        <div class="shortcutkey">0</div>
+                    </b-list-group-item>
+                    <b-list-group-item href="#" v-on:mouseover="KFK.AI('tb_clearfreehand')" v-if="model.docLoaded"
+                        @mouseover.native="KFK.overTool($event, 'clearfreehand');" class="d-flex align-items-center toolbox"
+                        @click="KFK.clearFreeHand();" v-b-popover.hover.right placeable="none" title="删除我的手绘"
+                        :active="toolActiveState['clearfreehand']">
+                        <b-img :src="getImageSrc('clearfreehand')" fluid alt="" class="cocotool" id='tool_clearfreehand'></b-img>
+                        <div class="shortcutkey">Q</div>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
                         v-on:mouseover="KFK.AI('tb_connect')" v-on:click="setMode('connect', $event);"
@@ -398,6 +423,7 @@
                         title="连接" :active="toolActiveState['connect']">
                         <b-img :src="getImageSrc('connect')" fluid alt="" scale="2" class="cocotool" id='tool_connect'>
                         </b-img>
+                        <div class="shortcutkey">J</div>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
                         @mouseover.native="KFK.overTool($event, 'lock');" v-on:mouseover="KFK.AI('tb_lock')"
@@ -405,6 +431,7 @@
                         :active="toolActiveState['lock']">
                         <b-img :src="getImageSrc('lock')" fluid alt="" scale="2" class="cocotool" id='tool_lock'>
                         </b-img>
+                        <div class="shortcutkey">L</div>
                     </b-list-group-item>
                     <b-list-group-item href="#" class="d-flex align-items-center toolbox"
                         @mouseover.native="KFK.overTool($event, 'brain');" v-on:mouseover="KFK.AI('tb_brain')"
@@ -412,15 +439,10 @@
                         :active="toolActiveState['brain']">
                         <b-img :src="getImageSrc('brain')" fluid alt="" scale="2" class="cocotool" id='tool_brain'>
                         </b-img>
+                        <div class="shortcutkey">N</div>
                     </b-list-group-item>
                     <b-list-group-item class="m-0 p-0">
                         <b-icon icon="blank" scale="0.3"></b-icon>
-                    </b-list-group-item>
-                    <b-list-group-item href="#" v-on:mouseover="KFK.AI('tb_clearfreehand')" v-if="model.docLoaded"
-                        @mouseover.native="KFK.overTool($event, 'clearfreehand');" class="d-flex align-items-center toolbox"
-                        @click="KFK.clearFreeHand();" v-b-popover.hover.right placeable="none" title="删除我的手绘"
-                        :active="toolActiveState['clearfreehand']">
-                        <b-img :src="getImageSrc('clearfreehand')" fluid alt="" class="cocotool" id='tool_clearfreehand'></b-img>
                     </b-list-group-item>
                     <b-list-group-item href="#" v-on:mouseover="KFK.AI('tb_eraser')" v-if="model.docLoaded"
                         @mouseover.native="KFK.overTool($event, 'eraser');" class="d-flex align-items-center toolbox"
@@ -702,6 +724,9 @@
                             </b-checkbox>
                             <b-checkbox v-model="model.viewConfig.nodemessage" switch @input="KFK.toggleNodeMessage">
                                 节点提示开关
+                            </b-checkbox>
+                            <b-checkbox v-model="model.viewConfig.autoFollow" switch @input="KFK.toggleAutoFollow">
+                                自动聚焦到新建节点
                             </b-checkbox>
                             <p> </p>
                             <b-row class="mx-auto my-1">
@@ -1657,27 +1682,22 @@
                 <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" @ok="KFK.copyDoc"
                     v-model="show.dialog.copyDocDialog" title="复制白板" button-size="sm" centered size="md">
                     <b-form>
+                        <b-input-group prepend="" class="pt-2 px-5" label-cols="3" label-align="right" label="">
+                                <b-form-radio v-model="model.copydoc.op" name="some-radios" value="rename">改名</b-form-radio>
+                                <b-form-radio v-model="model.copydoc.op" name="some-radios" value="copy">复制</b-form-radio>
+                                <b-form-radio v-model="model.copydoc.op" name="some-radios" value="move">移动</b-form-radio>
+                        </b-input-group>
                         <b-input-group prepend="新白板名" class="pt-2 px-5">
-                            <b-form-input id="docName" trim v-model="model.copyToDocName" :state="copyToDocNameState"
+                            <b-form-input id="docName" trim v-model="model.copydoc.copyToDocName" :state="copyToDocNameState"
                                 class="mb-2 mr-sm-2 mb-sm-0" placeholder=""></b-form-input>
                             <b-form-invalid-feedback id="docName-feedback">
                                 名称为3个以上英文或中文字符，不超过20个
                             </b-form-invalid-feedback>
                         </b-input-group>
                         <!-- move doc  copy doc-->
-                        <b-input-group prepend="拷贝到哪" class="pt-2 px-5">
-                            <b-form-select id="docPrj" v-model="model.copyToPrjId" :options="prjListOptions">
-                                <template v-slot:first>
-                                    <b-form-select-option :value="null" disabled>-- 请选择项目 --</b-form-select-option>
-                                </template>
+                        <b-input-group v-if="model.copydoc.op !== 'rename'" :prepend="model.copydoc.op==='copy'?'复制到哪':'移动到哪'" class="pt-2 px-5">
+                            <b-form-select id="docPrj" v-model="model.copydoc.copyToPrjId" :options="prjListOptions">
                             </b-form-select>
-                        </b-input-group>
-                        <b-input-group prepend="是否移动" class="pt-2 px-5" v-if="model.showCopyOrMove" label-cols="3"
-                            label-align="right" label="" label-for="checkbox-1">
-                            <b-form-checkbox id="checkbox-1" v-model="model.check.copyOrMove" name="checkbox-1"
-                                value="move" unchecked-value="copy">
-                                移动文档到新项目
-                            </b-form-checkbox>
                         </b-input-group>
                     </b-form>
                     <b-button variant="outline-none" v-b-popover.hover.top="model.showInModalMiniHelp?'':'点击查看帮助说明'"
@@ -1966,6 +1986,12 @@
                             rows="8" v-on:keydown="KFK.onImportBrKeyDown($event)"> ></b-form-textarea>
                     </div>
                 </b-modal>
+                <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" v-model="show.dialog.channelDialog"
+                    title="申请专栏号" button-size="sm" centered size="md">
+                    申请专栏号
+                    <b-form-input v-on:keydown="KFK.onNormalInput($event)">
+                    </b-form-input>
+                </b-modal>
                 <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" v-model="model.isNotValidBrowser"
                     title="友情提醒" centered>
                     我们尚没有对您当前使用的浏览进行完整的兼容性匹配，<BR>
@@ -2181,8 +2207,8 @@
             <iframe id="iframe0" :src="KFK.getFrontEndUrl('keyshortcut.html')" frameborder="0"
                 style="overflow:hidden;height:500px;width:100%"></iframe>
         </b-modal>
-        <div class="footnote" v-show="!show.section.designer">
-            <a target="_blank" href='http://weibo.com/cocopad'>深圳市昆伦博德互联网科技有限公司 2020 {{model.endpoint}} </a>
+        <div class="footnote" v-if="show.section.signin || show.section.register">
+            <a target="_blank" href='http://weibo.com/cocopad'>深圳市昆伦博德互联网科技有限公司 2020 <span class="showAfterInit">{{model.endpoint}}</span></a>
             <a href="http://beian.miit.gov.cn" taget="_blank">粤ICP备17154503号</a>
         </div>
         <div id="system_message" class="noshow spaceToHide" @click="KFK.showRechargeDialog">
@@ -2249,7 +2275,6 @@
             <div id='shape_ellipse' @click="KFK.setDrawMode('ellipse')"></div>
             <div id='shape_polyline' @click="KFK.setDrawMode('polyline')"></div>
             <div id='shape_polygon' @click="KFK.setDrawMode('polygon')"></div>
-            <div id='shape_freehand' @click="KFK.setDrawMode('freehand')"></div>
         </div>
         <div id="interLinkDialog" class="noshow spaceToHide">
             <b-form class="office-form" autocomplete="off" class="p-1">

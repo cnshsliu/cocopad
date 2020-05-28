@@ -92,6 +92,7 @@ KFK.showStatus = {};
 KFK.QUICKGLANCE = false;
 KFK.svgDraw = null; //画svg的画布
 KFK.jumpStack = [];
+KFK.presentMaskMode = false;
 KFK.isFreeHandDrawing = false;
 KFK.isShowingModal = false;
 KFK.jumpStackPointer = -1;
@@ -100,6 +101,7 @@ KFK.toolboxMouseDown = false;
 KFK.toolboxMouseDownOn = null;
 KFK.isZoomingShape = false;
 KFK.idRowMap = {};
+KFK.dynamicSize = {};
 KFK.idSwitchMap = {};
 KFK.FROM_SERVER = true; //三个常量
 KFK.FROM_CLIENT = false;
@@ -107,12 +109,13 @@ KFK.NO_SHIFT = false;
 KFK.badgeTimers = {}; //用于存放用户badge显示间隔控制的timer，这样，不是每一个mousemove都要上传，在Timer内，只上传最后一次mouse位置
 KFK.updateReceived = 0; //记录接收到的其他用户的改动次数，在startActiveLogWatcher中，使用这个数字来控制是否到服务器端去拉取更新列表
 KFK.tempSvgLine = null; //这条线是在划线或者链接node时，那条随着鼠标移动的线
+KFK.LOGLEVEL_NOTHING = 0;
 KFK.LOGLEVEL_ERROR = 1;
 KFK.LOGLEVEL_WARN = 2;
 KFK.LOGLEVEL_INFO = 3;
 KFK.LOGLEVEL_DEBUG = 4;
 KFK.LOGLEVEL_DETAIL = 5;
-KFK.LOGLEVEL_NOTHING = 0;
+KFK.LOGLEVEL_KEY = 6;
 KFK.autoScroll = {};
 KFK.loglevel = KFK.LOGLEVEL_DETAIL; //控制log的等级, 级数越小，显示信息越少
 //在designer页面输入logerror, logwarn, loginfo, lodebug...
@@ -355,12 +358,11 @@ class Node {
     this.id = id;
     this.type = type;
     this.variant = variant;
-    let dds = KFK.getShapeDynamicDefaultSize(type, variant);
-    this.width = w ? w : dds.w;
-    this.height = h ? h : dds.h;
     this.iconscale = 0.8;
     this.x = x;
     this.y = y;
+    this.width = w;
+    this.height = h;
     this.attach = attach;
     this.attach2 = attach2;
     if (
@@ -1080,9 +1082,8 @@ KFK.debug = function(...info) {
 KFK.detail = function(...info) {
   if (KFK.loglevel >= KFK.LOGLEVEL_DETAIL) console.log("DETAL>", ...info);
 };
-
 KFK.logKey = function(...info) {
-  // KFK.scrLog(...info);
+  if (KFK.loglevel >= KFK.LOGLEVEL_KEY) console.log("KEY>", ...info);
 };
 
 KFK.keepLog = function(msg = "", staytime = 30000) {
@@ -1283,6 +1284,8 @@ KFK.procLinkNode = function(shiftKey, text) {
   //没有变化的情况：之前就有从linkPosNode[0]到 linkPosNode[1]的链接存在
   //有变化的情况：1. 之前不存在； 2. 之前存在方向相反的链接，从linkPosNode[1]到linkPosNode[0]的
   //以上两种情况中，1会只导致只U第一个； 2会导致U；两端两个节点
+  let oldNode0 = KFK.linkPosNode[0].clone();
+  let oldNode1 = KFK.linkPosNode[1].clone();
   let tmp1 = KFK.linkPosNode[0].attr("linkto");
   let tmp2 = KFK.linkPosNode[1].attr("linkto");
   KFK.buildConnectionBetween(KFK.linkPosNode[0], KFK.linkPosNode[1]);
@@ -1293,7 +1296,7 @@ KFK.procLinkNode = function(shiftKey, text) {
       "U",
       KFK.linkPosNode[0].clone(),
       "connect nodes",
-      null,
+      oldNode0,
       false,
       0,
       1
@@ -1304,7 +1307,7 @@ KFK.procLinkNode = function(shiftKey, text) {
       "U",
       KFK.linkPosNode[1].clone(),
       "connect nodes",
-      null,
+      oldNode1,
       false,
       0,
       1
@@ -1609,7 +1612,6 @@ KFK.setZIndex = function(jqDiv, zz) {
 };
 //unselect all, deselect all
 KFK.cancelAlreadySelected = function() {
-  console.log("cancelAlreadySelected...");
   while (KFK.selectedDIVs.length > 0) {
     KFK.deselectNode(KFK.selectedDIVs[0]);
   }
@@ -1672,8 +1674,6 @@ KFK.undo = async () => {
               KFK.updateNodeEvent(jqFrom, "draggable", "destroy");
               KFK.updateNodeEvent(jqFrom, "resizable", "destroy");
               KFK.updateNodeEvent(jqFrom, "droppable", "destroy");
-            } else {
-              KFK.debug(nodeid, "NOT hasclass lock");
             }
             //对TODO/CHAT要做如下修复
             if (KFK.isTodoListOrChatListDIV(jqFrom)) {
@@ -1899,7 +1899,6 @@ KFK.initC3 = function() {
     evt.stopImmediatePropagation();
     evt.stopPropagation();
   });
-  //click c3
   KFK.JC1.on("click", async function(evt) {
     if (IsSet(KFK.selectedTodo)) {
       KFK.selectedTodo.removeClass("current");
@@ -1916,6 +1915,7 @@ KFK.initC3 = function() {
       KFK.closePolyPoint();
     }
   });
+  //click c3
   KFK.JC3.on("click", async function(evt) {
     if (KFK.inDesigner() === false) return;
     let tmpPoint = {
@@ -1939,6 +1939,7 @@ KFK.initC3 = function() {
     await KFK.placeNodeOnClick(evt);
   });
 
+  //place node on click
   KFK.placeNodeOnClick = async function(evt) {
     if (KFK.isEditting && KFK.quillEdittingNode) {
       await KFK.finishQuillEditting();
@@ -2007,7 +2008,6 @@ KFK.initC3 = function() {
       return;
     } else {
       if (KFK.selectedDIVs.length > 0 || KFK.selectedShapes.length > 0) {
-        console.log("cancelAlreadySelected here1");
         if (KFK.duringKuangXuan === false) KFK.cancelAlreadySelected();
       }
       if (cocoConfig.node[KFK.mode]) {
@@ -2041,7 +2041,7 @@ KFK.initC3 = function() {
 
   KFK.JC3.mousedown(async (evt) => {
     if (
-      KFK.mode === "line" &&
+      KFK.mode === "freehand" &&
       KFK.drawMode === "freehand" &&
       KFK.shapeDragging === false &&
       KFK.isZoomingShape === false
@@ -2061,7 +2061,7 @@ KFK.initC3 = function() {
     //     KFK.toolboxMouseDownOn = null;
     // }
     if (
-      KFK.mode === "line" &&
+      KFK.mode === "freehand" &&
       KFK.drawMode === "freehand" &&
       KFK.isFreeHandDrawing === true
     ) {
@@ -2069,8 +2069,10 @@ KFK.initC3 = function() {
         KFK.simplifyPoints(KFK.freeHandDrawing, KFK.freeHandPoints, 5);
         let shapeId = "shape_" + KFK.myuid();
         KFK.freeHandDrawing.attr("id", shapeId);
+        let lineColor = KFK.APP.model.svg.freehand.color;
+        if (KFK.dynamicLineStroke) lineColor = KFK.dynamicLineStroke;
         let option = {
-          color: KFK.YIQColorAux || KFK.APP.model.svg.freehand.color,
+          color: lineColor,
           width: KFK.APP.model.svg.freehand.width,
           linecap: KFK.APP.model.svg.freehand.linecap ? "round" : "square",
         };
@@ -2293,7 +2295,7 @@ KFK.zoomInOut = function(direction) {
     }
   } catch (error) {
   } finally {
-    KFK.C3.dispatchEvent(KFK.refreshC3event);
+    KFK.C3.dispatchEvent(KFK.refreshC3Event);
   }
 };
 
@@ -2341,9 +2343,14 @@ KFK.isDuringKuangXuan = function() {
 };
 
 KFK.addMinimap = function() {
-  KFK.refreshC3event = new CustomEvent("refreshC3");
+  KFK.refreshC3Event = new CustomEvent("refreshC3");
   KFK.zoomEvent = new CustomEvent("zoomC3");
-  $("#minimap").minimap(KFK, KFK.JS1, KFK.JC3, KFK.JC1);
+  //$("#minimap").minimap(KFK, KFK.JS1, KFK.JC3, KFK.JC1);
+  import("./minimap/jquery-minimap").then((pack) => {
+    KFK.MiniMap = pack.MiniMap;
+    KFK.MiniMap.minimap($("#minimap"), KFK);
+    KFK.MiniMap.init();
+  });
 };
 
 KFK.get13Number = function(str) {
@@ -2870,7 +2877,6 @@ KFK.editTextNodeWithTextArea = function(
     evt.stopPropagation();
   };
   textarea.oncut = function(evt) {
-    console.log("textarea oncut");
     evt.stopPropagation();
   };
 
@@ -2889,11 +2895,11 @@ KFK.editTextNodeWithTextArea = function(
         finishEdit = true;
       }
       if (finishEdit) {
+        console.log("finishEdit now");
+        innerNode.innerText = textarea.value;
         if (jDIV.attr("nodetype") === "comment") {
           innerNode.innerHTML =
             textarea.value + "<BR>---" + KFK.APP.model.cocouser.name;
-        } else {
-          innerNode.innerHTML = textarea.value;
         }
         removeTextarea(textarea.value !== oldText);
         KFK.focusOnC3();
@@ -2926,8 +2932,6 @@ KFK.editTextNodeWithTextArea = function(
       if (jDIV.attr("nodetype") === "comment") {
         innerNode.innerHTML =
           textarea.value + "<BR>---" + KFK.APP.model.cocouser.name;
-      } else {
-        innerNode.innerHTML = textarea.value;
       }
       removeTextarea(textarea.value !== oldText);
       KFK.focusOnC3();
@@ -3073,6 +3077,19 @@ KFK.placeNode = async function(
   attach,
   attach2
 ) {
+  if (w === undefined || h === undefined) {
+    console.log(w, h);
+    let dds = { w: 100, h: 40 };
+    if (shiftKey) {
+      dds = KFK.getNodeDynamicDefaultSize(type, variant);
+    } else {
+      dds = KFK.getNodeDefaultSize(type, variant);
+    }
+    w = dds.w;
+    h = dds.h;
+  }
+  console.log(w, h);
+  console.log(isNaN(w));
   let aNode = new Node(id, type, variant, x, y, w, h, attach, attach2);
 
   let nodeDIV = await KFK._createNode(aNode);
@@ -3127,7 +3144,6 @@ KFK._createNode = async function(node) {
     KFK.debug(`${node.type} is not supported`);
     return;
   }
-  console.log("here1");
   innerObj.innerHTML = node.attach
     ? node.attach
     : cocoConfig.node[node.type].inner.content;
@@ -3163,18 +3179,12 @@ KFK._createNode = async function(node) {
   //click时，切换selected状态
   if (node.type === "yellowtip") {
     //create tip
-    let rect = KFK.getShapeDynamicDefaultSize(
-      "yellowtip",
-      cocoConfig.node.yellowtip.defaultTip
-    );
     KFK._setTipBkgImage(
       jqNodeDIV,
       cocoConfig.node.yellowtip.defaultTip,
       cocoConfig.node.yellowtip.defaultColor
     );
     jqNodeDIV.attr("variant", cocoConfig.node.yellowtip.defaultTip);
-    jqNodeDIV.css("width", rect.w);
-    jqNodeDIV.css("height", rect.h);
     jqNodeDIV.addClass("yellowtip");
   } else if (node.type === "comment") {
     KFK._setTipBkgImage(
@@ -3220,7 +3230,7 @@ KFK._createNode = async function(node) {
   );
   if (node.type === "yellowtip") {
     //设置图形的缺省颜色
-    KFK.setTipBkgColor(jqNodeDIV, cocoConfig.node.yellwtip.defaultColor);
+    KFK.setTipBkgColor(jqNodeDIV, cocoConfig.node.yellowtip.defaultColor);
   } else if (node.type === "comment") {
     KFK.setTipBkgColor(jqNodeDIV, cocoConfig.node.comment.defaultColor);
   }
@@ -3399,7 +3409,7 @@ KFK.syncNodePut = async function(
   } catch (err) {
     KFK.debug(err);
   } finally {
-    KFK.C3.dispatchEvent(KFK.refreshC3event);
+    KFK.C3.dispatchEvent(KFK.refreshC3Event);
   }
 };
 
@@ -3473,7 +3483,7 @@ KFK.syncLinePut = async function(cmd, svgLine, reason, svgFrom, isUndoRedo) {
   } catch (err) {
     KFK.debug(err);
   } finally {
-    KFK.C3.dispatchEvent(KFK.refreshC3event);
+    KFK.C3.dispatchEvent(KFK.refreshC3Event);
   }
 };
 
@@ -3763,45 +3773,66 @@ KFK.redrawLinkLines = function(
 };
 
 //resize node时，记下当前shape variant的size，下次创建同样shape时，使用这个size
-KFK.setShapeDynamicDefaultSize = function(nodeType, variant, width, height) {
-  if (cocoConfig.defaultSize[nodeType] === undefined)
-    cocoConfig.defaultSize[nodeType] = {};
-  if (cocoConfig.defaultSize[nodeType][variant] === undefined)
-    cocoConfig.defaultSize[nodeType][variant] = {};
-  cocoConfig.defaultSize[nodeType][variant].width = width;
-  cocoConfig.defaultSize[nodeType][variant].height = height;
-  cocoConfig.defaultSize[nodeType].width = width;
-  cocoConfig.defaultSize[nodeType].height = height;
+KFK.setNodeDynamicDefaultSize = function(nodeType, variant, width, height) {
+  if (KFK.dynamicSize[nodeType] === undefined) KFK.dynamicSize[nodeType] = {};
+  if (KFK.dynamicSize[nodeType][variant] === undefined)
+    KFK.dynamicSize[nodeType][variant] = {};
+  KFK.dynamicSize[nodeType][variant].width = width;
+  KFK.dynamicSize[nodeType][variant].height = height;
+  KFK.dynamicSize[nodeType].width = width;
+  KFK.dynamicSize[nodeType].height = height;
 };
 
-KFK.getShapeDynamicDefaultSize = function(nodeType, variant) {
+KFK.getNodeDynamicDefaultSize = function(nodeType, variant) {
   let ret = {};
   //如果有 defaultSize[nodeType][variant]
   if (
-    cocoConfig.defaultSize[nodeType] &&
-    cocoConfig.defaultSize[nodeType][variant] &&
-    cocoConfig.defaultSize[nodeType][variant].width &&
-    cocoConfig.defaultSize[nodeType][variant].height
+    KFK.dynamicSize[nodeType] &&
+    KFK.dynamicSize[nodeType][variant] &&
+    KFK.dynamicSize[nodeType][variant].width &&
+    KFK.dynamicSize[nodeType][variant].height
   ) {
     ret = {
-      w: cocoConfig.defaultSize[nodeType][variant].width,
-      h: cocoConfig.defaultSize[nodeType][variant].height,
+      w: KFK.dynamicSize[nodeType][variant].width,
+      h: KFK.dynamicSize[nodeType][variant].height,
     };
   } else if (
-    cocoConfig.defaultSize[nodeType] &&
-    cocoConfig.defaultSize[nodeType].width &&
-    cocoConfig.defaultSize[nodeType].height
+    KFK.dynamicSize[nodeType] &&
+    KFK.dynamicSize[nodeType].width &&
+    KFK.dynamicSize[nodeType].height
   ) {
     //如果有 defaultSize[nodeType]
     ret = {
-      w: cocoConfig.defaultSize[nodeType].width,
-      h: cocoConfig.defaultSize[nodeType].height,
+      w: KFK.dynamicSize[nodeType].width,
+      h: KFK.dynamicSize[nodeType].height,
     };
-  } else if (cocoConfig.node[nodeType] && cocoConfig.node[nodeType].style) {
-    //如果上面两个都没有，则用style的定义
+  } else {
+    //如果上面两个都没有，则调用getNodeDefaultSize
+    ret = KFK.getNodeDefaultSize(nodeType, variant);
+  }
+  return ret;
+};
+
+KFK.getNodeDefaultSize = function(nodeType, variant) {
+  if (
+    KFK.config.defaultSize[nodeType] &&
+    KFK.config.defaultSize[nodeType][variant] &&
+    KFK.config.defaultSize[nodeType][variant].width &&
+    KFK.config.defaultSize[nodeType][variant].height
+  ) {
     ret = {
-      w: cocoConfig.node[nodeType].style.width,
-      h: cocoConfig.node[nodeType].style.height,
+      w: KFK.config.defaultSize[nodeType][variant].width,
+      h: KFK.config.defaultSize[nodeType][variant].height,
+    };
+  } else if (
+    KFK.config.node[nodeType] &&
+    KFK.config.node[nodeType].style &&
+    KFK.config.node[nodeType].style.width &&
+    KFK.config.node[nodeType].style.height
+  ) {
+    ret = {
+      w: KFK.config.node[nodeType].style.width,
+      h: KFK.config.node[nodeType].style.height,
     };
   } else {
     ret = {
@@ -3829,6 +3860,9 @@ KFK.updateNodeEvent = function(jqNode, action, cmd) {
   }
 };
 
+/**
+ * 只是检查是否不包含“noedit" class, 以及是否有innerlink属性
+ */
 KFK.updateable = function(jqNode) {
   if (KFK.isNotA(jqNode, "noedit") || jqNode.attr("innerlink")) {
     return true;
@@ -3896,7 +3930,7 @@ KFK.setNodeEventHandler = async function(jqNodeDIV, callback) {
               KFK.divHeight(jqNodeDIV) + (newBottom - tmpBottom)
             );
           }
-          KFK.setShapeDynamicDefaultSize(
+          KFK.setNodeDynamicDefaultSize(
             jqNodeType,
             jqNodeDIV.attr("variant"),
             KFK.divWidth(jqNodeDIV),
@@ -4895,6 +4929,20 @@ KFK.divRect = function(jqDiv) {
     height: KFK.divHeight(jqDiv),
   };
 };
+KFK.divMove = function(jqDiv, left, top) {
+  jqDiv.css({
+    left: left,
+    top: top,
+  });
+};
+KFK.divDMove = function(jqDiv, deltaX, deltaY) {
+  let left = KFK.divLeft(jqDiv);
+  let top = KFK.divTop(jqDiv);
+  jqDiv.css({
+    left: left + deltaX,
+    top: top + deltaY,
+  });
+};
 
 /**
  * 得到所选DIVS中没有被锁定的div的个数
@@ -5670,11 +5718,16 @@ KFK.toggleUseAI = function(checked) {
   KFK.saveLocalViewConfig();
   if (KFK.APP.model.viewConfig.useAI === false) {
     KFK.scrLog("如果您初次使用，强烈建议打开自动提示");
+    KFK.hide(KFK.SYSMSG);
   } else {
     KFK.scrLog("自动提示已打开，请稍候");
+    KFK.show(KFK.SYSMSG);
   }
 };
 KFK.toggleNodeMessage = function(checked) {
+  KFK.saveLocalViewConfig();
+};
+KFK.toggleAutoFollow = function(checked) {
   KFK.saveLocalViewConfig();
 };
 
@@ -5758,14 +5811,33 @@ KFK.initDesigner = async function() {
     //KFK.initColorPicker();
     KFK.showCenterIndicator();
     KFK.initPropertySvgGroup();
+    $("#right").draggable();
     await KFK.initCocoChat();
     await KFK.initVideoRoom();
     KFK.designerInitialized = true;
     KFK.debug("[Initialized] designer");
+    KFK.initLeftRightPanelEventHandler();
   } catch (error) {
     console.error("Designer initialization error");
     console.error(error);
   }
+};
+
+KFK.initLeftRightPanelEventHandler = function() {
+  $("#left").on("click", function(evt) {
+    console.log("left click");
+    evt.stopPropagation();
+  });
+  $("#right").on("click", function(evt) {
+    console.log("right click");
+    evt.stopPropagation();
+  });
+  $("#left").on("mousedown", function(evt) {
+    evt.stopPropagation();
+  });
+  $("#right").on("mousedown", function(evt) {
+    evt.stopPropagation();
+  });
 };
 
 KFK.onToolboxMouseDown = function(mode, evt) {
@@ -6401,6 +6473,10 @@ KFK.refreshDesignerWithDoc = async function(
   KFK.currentView = "designer";
   if (doc_id !== null)
     await KFK.loadDoc(doc_id, docpwd, quickGlance, forceReadonly);
+  if (KFK.APP.model.viewConfig.hideRight) KFK.hide("#right");
+  else {
+    console.log(KFK.APP.model.viewConfig);
+  }
 };
 
 KFK.loadDoc = async function(
@@ -7405,7 +7481,7 @@ KFK._onDocFullyLoaded = async function() {
     //cleanup linkto
   });
   // KFK.info('ondocFullyLoaded, doc is', KFK.APP.model.cocodoc);
-  KFK.C3.dispatchEvent(KFK.refreshC3event);
+  KFK.C3.dispatchEvent(KFK.refreshC3Event);
   KFK.myFadeOut($(".loading"));
   KFK.myFadeIn(KFK.JC3, 100);
   $("#overallbackground").removeClass("grid1");
@@ -7517,7 +7593,6 @@ KFK.recreateDoc = function(obj, callback) {
     KFK.jumpStackPointer = -1;
     let docRet = obj.content;
     docRet.ownerAvatar_src = KFK.avatars[docRet.ownerAvatar].src;
-    KFK.debug("recreateDoc()", docRet);
     KFK.APP.setData("model", "cocodoc", docRet);
     KFK.setAppData(
       "model",
@@ -7584,7 +7659,6 @@ KFK.recreateNode = async function(obj, callback) {
     let isALockedNode = obj.lock;
 
     html = await KFK.gzippedContentToString(obj.content);
-    // console.log('html = ', html);
 
     let jqDIV = $($.parseHTML(html));
     let nodeid = jqDIV.attr("id");
@@ -7621,7 +7695,7 @@ KFK.recreateNode = async function(obj, callback) {
     KFK.error(error);
   } finally {
     if (callback) callback(1);
-    KFK.C3.dispatchEvent(KFK.refreshC3event);
+    KFK.C3.dispatchEvent(KFK.refreshC3Event);
   }
 };
 
@@ -7691,7 +7765,7 @@ KFK.deleteObject_for_Response = async function(obj) {
       }
     }
   } finally {
-    KFK.C3.dispatchEvent(KFK.refreshC3event);
+    KFK.C3.dispatchEvent(KFK.refreshC3Event);
   }
 };
 
@@ -7756,7 +7830,6 @@ KFK.setWritingMode = async function(wmode) {
   });
 };
 KFK.initViewByLocalConfig = async function() {
-  console.log("initViewByLocalConfig");
   try {
     let localViewConfigStr = localStorage.getItem("viewConfig");
     if (localViewConfigStr) {
@@ -8111,6 +8184,7 @@ KFK.initPropertyForm = function() {
         let theShape = KFK.getPropertyApplyToShape();
         KFK.selectShape(theShape);
       }
+      KFK.dynamicLineStroke = hex;
 
       await KFK.updateMultiShapes(KFK.selectedShapes, async function(theShape) {
         theShape.attr("stroke", hex);
@@ -8339,7 +8413,13 @@ KFK.setDrawMode = function(mode, event) {
   let jExpand = $("#lineExpand");
   jExpand.addClass("noshow");
   KFK.drawMode = mode;
-  $("#tool_line").src = KFK.getFrontEndUrl("assets/" + mode + ".svg");
+  if (mode !== "freehand") {
+    $("#tool_line").attr("src", KFK.getFrontEndUrl("assets/" + mode + ".svg"));
+  }
+  $("#modeIndicatorImg").attr(
+    "src",
+    KFK.getFrontEndUrl("assets/" + mode + ".svg")
+  );
 };
 KFK.setMode = function(mode, event) {
   if (KFK.docIsReadOnly()) mode = "pointer";
@@ -8385,6 +8465,13 @@ KFK.setMode = function(mode, event) {
       KFK.setModeIndicatorForYellowTip(cocoConfig.node.yellowtip.defaultTip);
       $("#modeIndicatorImg").hide();
       $("#modeIndicatorDiv").show();
+    } else if (KFK.mode === "line") {
+      $("#modeIndicatorImg").attr(
+        "src",
+        KFK.getFrontEndUrl("assets/" + KFK.drawMode + ".svg")
+      );
+      $("#modeIndicatorImg").show();
+      $("#modeIndicatorDiv").hide();
     } else {
       $("#modeIndicatorImg").attr("src", KFK.images[KFK.mode].src);
       $("#modeIndicatorImg").show();
@@ -8424,7 +8511,8 @@ KFK.setMode = function(mode, event) {
     KFK.APP.setData("show", "customfont", false);
     KFK.APP.setData("show", "layercontrol", false);
     KFK.APP.setData("show", "customline", true);
-    // KFK.setRightTabIndex(0);
+  } else if (KFK.mode === "freehand") {
+    KFK.drawMode = KFK.mode;
   } else if (KFK.mode === "material") {
     KFK.materialUpdated || KFK.loadMatLibForMyself();
     if (KFK.pickerMatlib.hasClass("noshow")) {
@@ -8520,7 +8608,7 @@ KFK.doCleanUp = async function() {
   await KFK.refreshDesignerWithDoc(KFK.APP.model.cocodoc.doc_id, "");
   KFK.scrLog("白板已被发起人擦除");
   KFK.stopBrainstorm();
-  KFK.C3.dispatchEvent(KFK.refreshC3event);
+  KFK.C3.dispatchEvent(KFK.refreshC3Event);
 };
 
 KFK.toggleMinimap = async function() {
@@ -8630,48 +8718,101 @@ KFK.addDocumentEventHandler = function() {
   //document keydown
   $(document).keydown(async function(evt) {
     if (KFK.isShowingModal === true) return;
+    if (KFK.inDesigner() === false) return;
     if (KFK.onC3 === false) return;
+    if (KFK.isEditting) return;
     if (evt.keyCode === 16) KFK.KEYDOWN.shift = true;
     else if (evt.keyCode === 17) KFK.KEYDOWN.ctrl = true;
     else if (evt.keyCode === 18) KFK.KEYDOWN.alt = true;
     else if (evt.keyCode === 91) KFK.KEYDOWN.meta = true;
     //如果正处于编辑状态，则不做处理
-    if (KFK.inDesigner() && KFK.isEditting) {
+    //禁止Ctrl-A  and Ctrl-S
+    if (
+      (evt.keyCode === 65 || evt.keyCode === 83) &&
+      (evt.ctrlKey || evt.metaKey)
+    ) {
+      evt.stopPropagation();
+      evt.preventDefault();
       return;
     }
-    if (KFK.inDesigner()) {
-      //禁止Ctrl-A  and Ctrl-S
-      if (
-        (evt.keyCode === 65 || evt.keyCode === 83) &&
-        (evt.ctrlKey || evt.metaKey)
-      ) {
-        evt.stopPropagation();
-        evt.preventDefault();
-        return;
-      }
-      if (
-        KFK.inPresentingMode &&
-        KFK.presentMaskMode &&
-        evt.keyCode !== 66 &&
-        evt.keyCode != 87
-      ) {
-        KFK.presentNoneMask();
-      }
-      if (
-        (evt.keyCode >= 48 && evt.keyCode <= 57) ||
-        (evt.keyCode >= 65 && evt.keyCode <= 90) ||
-        evt.keyCode === 32
-      ) {
-        KFK.keypool += evt.key;
-        // KFK.scrLog(KFK.keypool);
-        KFK.keypool = KFK.keypool.toLowerCase();
+    //key pool
+    if (
+      (evt.keyCode >= 48 && evt.keyCode <= 57) ||
+      (evt.keyCode >= 65 && evt.keyCode <= 90) ||
+      evt.keyCode === 32 ||
+      evt.keyCode === 186
+    ) {
+      KFK.keypool += evt.key;
+      // KFK.scrLog(KFK.keypool);
+      KFK.keypool = KFK.keypool.toLowerCase();
+      KFK.logKey(KFK.keypool);
+
+      if (KFK.inPresentingMode) {
         if (
           KFK.keypool.endsWith("haola") ||
           KFK.keypool.endsWith("hl") ||
           KFK.keypool.endsWith("pr")
         ) {
-          if (KFK.inPresentingMode === false) KFK.startPresentation();
-          else KFK.endPresentation();
+          KFK.endPresentation();
+          KFK.keypool = "";
+          return;
+        } else if (KFK.keypool.endsWith("b")) {
+          if (KFK.presentMaskMode === true) {
+            KFK.presentNoneMask();
+          } else {
+            KFK.presentBlackMask();
+          }
+          KFK.keypool = "";
+          return;
+        } else if (KFK.keypool.endsWith("w")) {
+          if (KFK.presentMaskMode === true) {
+            KFK.presentNoneMask();
+          } else {
+            KFK.presentWhiteMask();
+          }
+          KFK.keypool = "";
+          return;
+        } else if (
+          KFK.keypool.endsWith("first") ||
+          KFK.keypool.endsWith("home")
+        ) {
+          KFK.presentFirstPage();
+          KFK.keypool = "";
+          return;
+        } else if (
+          KFK.keypool.endsWith("last") ||
+          KFK.keypool.endsWith("end")
+        ) {
+          KFK.presentLastPage();
+          KFK.keypool = "";
+          return;
+        } else if (KFK.keypool.endsWith("prev")) {
+          KFK.presentPrevPage();
+          KFK.keypool = "";
+          return;
+        } else if (KFK.keypool.endsWith("next")) {
+          KFK.presentNextPage();
+          KFK.keypool = "";
+          return;
+        } else if (KFK.keypool.match(/([0-9]+)g$/)) {
+          let m = KFK.keypool.match(/([0-9]+)g$/);
+          let pindex = parseInt(m[1]) - 1;
+          pindex = Math.max(
+            0,
+            Math.min(pindex, KFK.pageBounding.Pages.length - 1)
+          );
+          KFK.presentAnyPage(pindex);
+          KFK.keypool = "";
+          return;
+        }
+      } // inPresentingMode
+      else {
+        if (
+          KFK.keypool.endsWith("haola") ||
+          KFK.keypool.endsWith("hl") ||
+          KFK.keypool.endsWith("pr")
+        ) {
+          KFK.startPresentation();
           KFK.keypool = "";
           return;
         } else if (KFK.keypool.endsWith("ctl")) {
@@ -8723,19 +8864,19 @@ KFK.addDocumentEventHandler = function() {
           return;
         } else if (KFK.keypool.endsWith("1tr")) {
           KFK.keypool = "";
-          await KFK.toggleRightPanel(0, true);
+          KFK.toggleRightPanel(0, true);
           return;
         } else if (KFK.keypool.endsWith("2tr")) {
           KFK.keypool = "";
-          await KFK.toggleRightPanel(1, true);
+          KFK.toggleRightPanel(1, true);
           return;
         } else if (KFK.keypool.endsWith("3tr")) {
           KFK.keypool = "";
-          await KFK.toggleRightPanel(2, true);
+          KFK.toggleRightPanel(2, true);
           return;
         } else if (KFK.keypool.endsWith("tr")) {
           KFK.keypool = "";
-          await KFK.toggleRightPanel(-1, false);
+          KFK.toggleRightPanel(-1, false);
           return;
         } else if (KFK.keypool.endsWith("jl")) {
           //jump to last created
@@ -8755,16 +8896,6 @@ KFK.addDocumentEventHandler = function() {
         } else if (KFK.keypool.endsWith("ul")) {
           //link to brain
           await KFK.removeNodeConnections();
-          KFK.keypool = "";
-          return;
-        } else if (KFK.keypool.endsWith("sc1")) {
-          //link to brain
-          KFK.scale(1);
-          KFK.keypool = "";
-          return;
-        } else if (KFK.keypool.endsWith("sc5")) {
-          //link to brain
-          KFK.scale(0.5);
           KFK.keypool = "";
           return;
         } else if (KFK.keypool.endsWith("rl")) {
@@ -8832,6 +8963,11 @@ KFK.addDocumentEventHandler = function() {
           console.log("log level", KFK.loglevel);
           KFK.keypool = "";
           return;
+        } else if (KFK.keypool.endsWith("logkey")) {
+          KFK.loglevel = KFK.LOGLEVEL_KEY;
+          console.log("log level", KFK.loglevel);
+          KFK.keypool = "";
+          return;
         } else if (KFK.keypool.endsWith("logdebug")) {
           KFK.loglevel = KFK.LOGLEVEL_DEBUG;
           console.log("log level", KFK.loglevel);
@@ -8844,17 +8980,17 @@ KFK.addDocumentEventHandler = function() {
           return;
         } else if (
           KFK.keypool.endsWith("done") ||
-          KFK.keypool.endsWith("t90") ||
-          KFK.keypool.endsWith("t80") ||
-          KFK.keypool.endsWith("t70") ||
-          KFK.keypool.endsWith("t60") ||
-          KFK.keypool.endsWith("t50") ||
-          KFK.keypool.endsWith("t40") ||
-          KFK.keypool.endsWith("t30") ||
-          KFK.keypool.endsWith("t20") ||
-          KFK.keypool.endsWith("t10") ||
+          KFK.keypool.endsWith("d90") ||
+          KFK.keypool.endsWith("d80") ||
+          KFK.keypool.endsWith("d70") ||
+          KFK.keypool.endsWith("d60") ||
+          KFK.keypool.endsWith("d50") ||
+          KFK.keypool.endsWith("d40") ||
+          KFK.keypool.endsWith("d30") ||
+          KFK.keypool.endsWith("d20") ||
+          KFK.keypool.endsWith("d10") ||
           KFK.keypool.endsWith("start") ||
-          KFK.keypool.endsWith("t0")
+          KFK.keypool.endsWith("d0")
         ) {
           let progress = 0;
           if (KFK.keypool.endsWith("done")) {
@@ -8877,46 +9013,28 @@ KFK.addDocumentEventHandler = function() {
           } else {
             KFK.toggleOverview();
           }
-        } else if (KFK.inPresentingMode && KFK.keypool.endsWith("stop")) {
-          KFK.endPresentation();
           KFK.keypool = "";
           return;
         } else if (
           KFK.keypool.endsWith("first") ||
           KFK.keypool.endsWith("home")
         ) {
-          if (KFK.inPresentingMode) {
-            KFK.presentFirstPage();
-          } else {
-            KFK.gotoFirstPage();
-          }
+          KFK.gotoFirstPage();
           KFK.keypool = "";
           return;
         } else if (
           KFK.keypool.endsWith("last") ||
           KFK.keypool.endsWith("end")
         ) {
-          if (KFK.inPresentingMode) {
-            KFK.presentLastPage();
-          } else {
-            KFK.gotoLastPage();
-          }
+          KFK.gotoLastPage();
           KFK.keypool = "";
           return;
         } else if (KFK.keypool.endsWith("prev")) {
-          if (KFK.inPresentingMode) {
-            KFK.presentPrevPage();
-          } else {
-            KFK.gotoPrevPage();
-          }
+          KFK.gotoPrevPage();
           KFK.keypool = "";
           return;
         } else if (KFK.keypool.endsWith("next")) {
-          if (KFK.inPresentingMode) {
-            KFK.presentNextPage();
-          } else {
-            KFK.gotoNextPage();
-          }
+          KFK.gotoNextPage();
           KFK.keypool = "";
           return;
         } else if (KFK.keypool.match(/([0-9]+)g$/)) {
@@ -8930,11 +9048,8 @@ KFK.addDocumentEventHandler = function() {
               0,
               Math.min(pindex, KFK.pageBounding.Pages.length - 1)
             );
-            if (KFK.inPresentingMode) {
-              KFK.presentAnyPage(pindex);
-            } else {
-              KFK.gotoAnyPage(pindex);
-            }
+            KFK.gotoAnyPage(pindex);
+            KFK.zoomInOut("page");
             KFK.keypool = "";
           }
           return;
@@ -8948,14 +9063,6 @@ KFK.addDocumentEventHandler = function() {
           KFK.ZiToLower();
         } else if (KFK.keypool.endsWith("lk") || KFK.keypool.endsWith("lock")) {
           KFK.tryToLockUnlock();
-        } else if (KFK.inPresentingMode && KFK.keypool.endsWith("b")) {
-          KFK.presentBlackMask();
-          KFK.keypool = "";
-          return;
-        } else if (KFK.inPresentingMode && KFK.keypool.endsWith("w")) {
-          KFK.presentWhiteMask();
-          KFK.keypool = "";
-          return;
         } else if (
           KFK.keypool.endsWith(" f") ||
           KFK.keypool.endsWith(" v") ||
@@ -8967,226 +9074,320 @@ KFK.addDocumentEventHandler = function() {
           KFK.keypool.endsWith(" r")
         ) {
           KFK.placeFollowerNode(
-            KFK.getFocusHoverLastCreate(),
+            KFK.getHoverFocusLastCreate(),
             KFK.keypool.substr(-1)
           );
           KFK.keypool = "";
           return;
+        } else if (KFK.keypool.endsWith(" 1")) {
+          KFK.setMode("text");
+          KFK.toggleRightPanel(0, true);
+          KFK.keypool = "";
+          return;
+        } else if (KFK.keypool.endsWith(" 2")) {
+          KFK.setMode("textblock");
+          KFK.toggleRightPanel(0, true);
+          KFK.keypool = "";
+          return;
+        } else if (KFK.keypool.endsWith(" 3")) {
+          KFK.setMode("yellowtip");
+          KFK.toggleRightPanel(0, true);
+          KFK.keypool = "";
+          return;
+        } else if (KFK.keypool.endsWith(" 4")) {
+          KFK.setMode("richtext");
+          KFK.toggleRightPanel(0, true);
+          KFK.keypool = "";
+          return;
+        } else if (KFK.keypool.endsWith(" 5")) {
+          KFK.setMode("comment");
+          KFK.toggleRightPanel(0, true);
+          KFK.keypool = "";
+          return;
+        } else if (KFK.keypool.endsWith(" 6")) {
+          KFK.setMode("jump");
+          KFK.toggleRightPanel(0, true);
+          KFK.keypool = "";
+          return;
+        } else if (KFK.keypool.endsWith(" 7")) {
+          KFK.setMode("interlink");
+          KFK.toggleRightPanel(0, true);
+          KFK.keypool = "";
+          return;
+        } else if (KFK.keypool.endsWith(" 8")) {
+          KFK.setMode("material");
+          KFK.toggleRightPanel(0, true);
+          KFK.keypool = "";
+          return;
+        } else if (KFK.keypool.endsWith(" 9")) {
+          KFK.setMode("line");
+          KFK.toggleRightPanel(0, true);
+          KFK.keypool = "";
+          return;
+        } else if (KFK.keypool.endsWith(" 0")) {
+          KFK.setMode("freehand");
+          KFK.toggleRightPanel(0, true);
+          KFK.keypool = "";
+          return;
+        } else if (KFK.keypool.endsWith(" j")) {
+          KFK.setMode("connect");
+          KFK.toggleRightPanel(0, true);
+          KFK.keypool = "";
+          return;
+        } else if (KFK.keypool.endsWith(" l")) {
+          KFK.setMode("lock");
+          KFK.toggleRightPanel(0, true);
+          KFK.keypool = "";
+          return;
+        } else if (KFK.keypool.endsWith(" n")) {
+          KFK.setMode("brain");
+          KFK.toggleRightPanel(0, true);
+          KFK.keypool = "";
+          return;
         } else if (KFK.keypool.length > 10) {
           KFK.keypool = KFK.keypool.substr(-9);
+        } else if (KFK.keypool.match(/mv([0-9]{2})$/)) {
+          let m = KFK.keypool.match(/mv([0-9]{2})$/);
+          let pindex = parseInt(m[1]) - 1;
+          pindex = Math.max(
+            0,
+            Math.min(pindex, KFK.pageBounding.Pages.length - 1)
+          );
+          KFK.AdvOps
+            ? KFK.AdvOps.moveSingleElement(pindex)
+            : import("./advOps").then((pack) => {
+                KFK.AdvOps = pack.AdvOps;
+                KFK.AdvOps.moveSingleElement(pindex);
+              });
+          KFK.keypool = "";
+          return;
+        } else if (KFK.keypool.match(/ma([0-9]{2})$/)) {
+          let m = KFK.keypool.match(/ma([0-9]{2})$/);
+          let pindex = parseInt(m[1]) - 1;
+          pindex = Math.max(
+            0,
+            Math.min(pindex, KFK.pageBounding.Pages.length - 1)
+          );
+          KFK.AdvOps
+            ? KFK.AdvOps.moveAllElements(pindex)
+            : import("./advOps").then((pack) => {
+                KFK.AdvOps = pack.AdvOps;
+                KFK.AdvOps.moveAllElements(pindex);
+              });
+          KFK.keypool = "";
+          return;
+        }
+      } //Not inPresentingMode
+    } else {
+      KFK.keypool = "";
+    }
+
+    //Special keys
+    if (KFK.inPresentingMode === true) {
+      if (evt.keyCode === 33) {
+        //Page Up
+        KFK.presentPrevPage();
+        evt.preventDefault();
+        evt.stopPropagation();
+      } else if (evt.keyCode === 34) {
+        //Page Down
+        KFK.presentNextPage();
+        evt.preventDefault();
+        evt.stopPropagation();
+      } else if (evt.keyCode === 35) {
+        //End
+        KFK.presentLastPage();
+        evt.preventDefault();
+        evt.stopPropagation();
+      } else if (evt.keyCode === 36) {
+        //Home
+        KFK.presentFirstPage();
+        evt.preventDefault();
+        evt.stopPropagation();
+      } else if (evt.keyCode === 37) {
+        //Left
+        KFK.presentLeftPage();
+        evt.preventDefault();
+        evt.stopPropagation();
+      } else if (evt.keyCode === 38) {
+        //Top
+        KFK.presentUpperPage();
+        evt.preventDefault();
+        evt.stopPropagation();
+      } else if (evt.keyCode === 39) {
+        //Right
+        KFK.presentRightPage();
+        evt.preventDefault();
+        evt.stopPropagation();
+      } else if (evt.keyCode === 40) {
+        //Down
+        KFK.presentLowerPage();
+        evt.preventDefault();
+        evt.stopPropagation();
+      }
+      // in presentation mode
+    } else {
+      // not in presentation mode
+      if (evt.keyCode === 33) {
+        //Page Up
+        KFK.gotoPrevPage();
+        evt.preventDefault();
+        evt.stopPropagation();
+      } else if (evt.keyCode === 34) {
+        //Page Down
+        KFK.gotoNextPage();
+        evt.preventDefault();
+        evt.stopPropagation();
+      } else if (evt.keyCode === 35) {
+        //END
+        KFK.gotoLastPage();
+        evt.preventDefault();
+        evt.stopPropagation();
+      } else if (evt.keyCode === 36) {
+        //HOME
+        KFK.gotoFirstPage();
+        evt.preventDefault();
+        evt.stopPropagation();
+      } else if (evt.keyCode === 37) {
+        //Left
+        if (evt.shiftKey) {
+          let delta = evt.ctrlKey
+            ? KFK.config.morph.delta * 3
+            : KFK.config.morph.delta;
+          KFK.DivStyler
+            ? KFK.DivStyler.horiSizeSmaller(delta)
+            : import("./divStyler").then((pack) => {
+                KFK.DivStyler = pack.DivStyler;
+                KFK.DivStyler.horiSizeSmaller(delta);
+              });
+        } else if (
+          evt.shiftKey === false &&
+          evt.altKey === false &&
+          evt.ctrlKey === false &&
+          evt.metaKey === false
+        ) {
+          KFK.DivStyler
+            ? KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey)
+            : import("./divStyler").then((pack) => {
+                KFK.DivStyler = pack.DivStyler;
+                KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey);
+              });
+        }
+        // else KFK.gotoLeftPage();
+        KFK.holdEvent(evt);
+      } else if (evt.keyCode === 38) {
+        //UP
+        if (evt.shiftKey) {
+          let delta = evt.ctrlKey
+            ? KFK.config.morph.delta * 3
+            : KFK.config.morph.delta;
+          KFK.DivStyler
+            ? KFK.DivStyler.vertSizeBigger(delta)
+            : import("./divStyler").then((pack) => {
+                KFK.DivStyler = pack.DivStyler;
+                KFK.DivStyler.vertSizeBigger(delta);
+              });
+        } else if (
+          evt.shiftKey === false &&
+          evt.altKey === false &&
+          evt.ctrlKey === false &&
+          evt.metaKey === false
+        ) {
+          KFK.DivStyler
+            ? KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey)
+            : import("./divStyler").then((pack) => {
+                KFK.DivStyler = pack.DivStyler;
+                KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey);
+              });
+        }
+        // else KFK.gotoUpperPage();
+        KFK.holdEvent(evt);
+      } else if (evt.keyCode === 39) {
+        //Right
+        if (evt.shiftKey) {
+          let delta = evt.ctrlKey
+            ? KFK.config.morph.delta * 3
+            : KFK.config.morph.delta;
+          KFK.DivStyler
+            ? KFK.DivStyler.horiSizeBigger(delta)
+            : import("./divStyler").then((pack) => {
+                KFK.DivStyler = pack.DivStyler;
+                KFK.DivStyler.horiSizeBigger(delta);
+              });
+        } else if (
+          evt.shiftKey === false &&
+          evt.altKey === false &&
+          evt.ctrlKey === false &&
+          evt.metaKey === false
+        ) {
+          KFK.DivStyler
+            ? KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey)
+            : import("./divStyler").then((pack) => {
+                KFK.DivStyler = pack.DivStyler;
+                KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey);
+              });
+        }
+        // else KFK.gotoRightPage();
+        KFK.holdEvent(evt);
+      } else if (evt.keyCode === 40) {
+        //Down
+        if (evt.shiftKey) {
+          let delta = evt.ctrlKey
+            ? KFK.config.morph.delta * 3
+            : KFK.config.morph.delta;
+          KFK.DivStyler
+            ? KFK.DivStyler.vertSizeSmaller(delta)
+            : import("./divStyler").then((pack) => {
+                KFK.DivStyler = pack.DivStyler;
+                KFK.DivStyler.vertSizeSmaller(delta);
+              });
+        } else if (
+          evt.shiftKey === false &&
+          evt.altKey === false &&
+          evt.ctrlKey === false &&
+          evt.metaKey === false
+        ) {
+          KFK.DivStyler
+            ? KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey)
+            : import("./divStyler").then((pack) => {
+                KFK.DivStyler = pack.DivStyler;
+                KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey);
+              });
+        }
+        // else KFK.gotoLowerPage();
+        KFK.holdEvent(evt);
+      } else if (evt.keyCode === 32) {
+        //space
+        //浏览器中按空格时，浏览器会滚动， 这里把它屏蔽掉
+        evt.preventDefault();
+        evt.stopPropagation();
+        //如果coco_chat显示着，就尝试把它隐藏，相应的，在space keyup时，再显示出来
+        $(".spaceToHide").stop();
+        $(".spaceToHide").animate(
+          {
+            opacity: 0,
+          },
+          500
+        );
+      } else if (evt.keyCode === 9) {
+        // key TAB
+        let jdiv = KFK.getHoverFocusLastCreate();
+        if (IsSet(jdiv)) {
+          if (evt.shiftKey) {
+            evt.stopPropagation();
+            evt.preventDefault();
+            let newdiv = await KFK.placeFollowerNode(jdiv, "s");
+            KFK.jumpToNode(newdiv);
+          } else {
+            evt.stopPropagation();
+            evt.preventDefault();
+            let newdiv = await KFK.placeFollowerNode(jdiv, "f");
+            KFK.jumpToNode(newdiv);
+          }
         }
       }
-      if (KFK.inPresentingMode === true) {
-        if (evt.keyCode === 33) {
-          //Page Up
-          KFK.presentPrevPage();
-          evt.preventDefault();
-          evt.stopPropagation();
-        } else if (evt.keyCode === 34) {
-          //Page Down
-          KFK.presentNextPage();
-          evt.preventDefault();
-          evt.stopPropagation();
-        } else if (evt.keyCode === 35) {
-          //End
-          KFK.presentLastPage();
-          evt.preventDefault();
-          evt.stopPropagation();
-        } else if (evt.keyCode === 36) {
-          //Home
-          KFK.presentFirstPage();
-          evt.preventDefault();
-          evt.stopPropagation();
-        } else if (evt.keyCode === 37) {
-          //Left
-          KFK.presentLeftPage();
-          evt.preventDefault();
-          evt.stopPropagation();
-        } else if (evt.keyCode === 38) {
-          //Top
-          KFK.presentUpperPage();
-          evt.preventDefault();
-          evt.stopPropagation();
-        } else if (evt.keyCode === 39) {
-          //Right
-          KFK.presentRightPage();
-          evt.preventDefault();
-          evt.stopPropagation();
-        } else if (evt.keyCode === 40) {
-          //Down
-          KFK.presentLowerPage();
-          evt.preventDefault();
-          evt.stopPropagation();
-        }
-        // in presentation mode
-      } else {
-        // not in presentation mode
-        if (evt.keyCode === 33) {
-          //Page Up
-          KFK.gotoPrevPage();
-          evt.preventDefault();
-          evt.stopPropagation();
-        } else if (evt.keyCode === 34) {
-          //Page Down
-          KFK.gotoNextPage();
-          evt.preventDefault();
-          evt.stopPropagation();
-        } else if (evt.keyCode === 35) {
-          //END
-          KFK.gotoLastPage();
-          evt.preventDefault();
-          evt.stopPropagation();
-        } else if (evt.keyCode === 36) {
-          //HOME
-          KFK.gotoFirstPage();
-          evt.preventDefault();
-          evt.stopPropagation();
-        } else if (evt.keyCode === 37) {
-          //Left
-          if (evt.shiftKey) {
-            if (evt.altKey) {
-              KFK.DivStyler
-                ? KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey)
-                : import("./divStyler").then((pack) => {
-                    KFK.DivStyler = pack.DivStyler;
-                    KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey);
-                  });
-            } else {
-              let delta = evt.ctrlKey
-                ? KFK.config.morph.delta * 3
-                : KFK.config.morph.delta;
-              KFK.DivStyler
-                ? KFK.DivStyler.horiSizeSmaller(delta)
-                : import("./divStyler").then((pack) => {
-                    KFK.DivStyler = pack.DivStyler;
-                    KFK.DivStyler.horiSizeSmaller(delta);
-                  });
-            }
-          }
-          // else KFK.gotoLeftPage();
-          KFK.holdEvent(evt);
-        } else if (evt.keyCode === 38) {
-          //UP
-          if (evt.shiftKey) {
-            if (evt.altKey) {
-              KFK.DivStyler
-                ? KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey)
-                : import("./divStyler").then((pack) => {
-                    KFK.DivStyler = pack.DivStyler;
-                    KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey);
-                  });
-            } else {
-              let delta = evt.ctrlKey
-                ? KFK.config.morph.delta * 3
-                : KFK.config.morph.delta;
-              KFK.DivStyler
-                ? KFK.DivStyler.vertSizeBigger(delta)
-                : import("./divStyler").then((pack) => {
-                    KFK.DivStyler = pack.DivStyler;
-                    KFK.DivStyler.vertSizeBigger(delta);
-                  });
-            }
-          }
-          // else KFK.gotoUpperPage();
-          KFK.holdEvent(evt);
-        } else if (evt.keyCode === 39) {
-          //Right
-          if (evt.altKey) {
-            KFK.DivStyler
-              ? KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey)
-              : import("./divStyler").then((pack) => {
-                  KFK.DivStyler = pack.DivStyler;
-                  KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey);
-                });
-          } else {
-            if (evt.shiftKey) {
-              let delta = evt.ctrlKey
-                ? KFK.config.morph.delta * 3
-                : KFK.config.morph.delta;
-              KFK.DivStyler
-                ? KFK.DivStyler.horiSizeBigger(delta)
-                : import("./divStyler").then((pack) => {
-                    KFK.DivStyler = pack.DivStyler;
-                    KFK.DivStyler.horiSizeBigger(delta);
-                  });
-            }
-          }
-          // else KFK.gotoRightPage();
-          KFK.holdEvent(evt);
-        } else if (evt.keyCode === 40) {
-          //Down
-          if (evt.altKey) {
-            KFK.DivStyler
-              ? KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey)
-              : import("./divStyler").then((pack) => {
-                  KFK.DivStyler = pack.DivStyler;
-                  KFK.DivStyler.moveDIV(evt.keyCode, evt.ctrlKey);
-                });
-          } else {
-            if (evt.shiftKey) {
-              let delta = evt.ctrlKey
-                ? KFK.config.morph.delta * 3
-                : KFK.config.morph.delta;
-              KFK.DivStyler
-                ? KFK.DivStyler.vertSizeSmaller(delta)
-                : import("./divStyler").then((pack) => {
-                    KFK.DivStyler = pack.DivStyler;
-                    KFK.DivStyler.vertSizeSmaller(delta);
-                  });
-            }
-          }
-          // else KFK.gotoLowerPage();
-          KFK.holdEvent(evt);
-        } else if (evt.keyCode === 32) {
-          //space
-          //浏览器中按空格时，浏览器会滚动， 这里把它屏蔽掉
-          evt.preventDefault();
-          evt.stopPropagation();
-          //如果coco_chat显示着，就尝试把它隐藏，相应的，在space keyup时，再显示出来
-          $(".spaceToHide").stop();
-          $(".spaceToHide").animate(
-            {
-              opacity: 0,
-            },
-            500
-          );
-        } else if (evt.keyCode === 9) {
-          //TAB
-          let jdiv = KFK.getHoverFocusLastCreate();
-          if (IsSet(jdiv)) {
-            if (evt.shiftKey) {
-              evt.stopPropagation();
-              evt.preventDefault();
-              let newdiv = await KFK.placeFollowerNode(jdiv, "s");
-              KFK.jumpToNode(newdiv);
-            } else {
-              evt.stopPropagation();
-              evt.preventDefault();
-              let newdiv = await KFK.placeFollowerNode(jdiv, "f");
-              KFK.jumpToNode(newdiv);
-            }
-          }
-        }
-      } // not in presentation mode
-    } // inDesigner
+    } // not in presentation mode
 
-    // if (evt.keyCode === 69 && evt.shiftKey && (evt.ctrlKey || evt.metaKey)) {
-    //     KFK.logKey("CTRL-SHIFT-E");
-    //     if (KFK.inDesigner())
-    //         //在Desinger中时，可切换到explorer
-    //         KFK.gotoExplorer();
-    //     else if (KFK.currentView === "explorer") KFK.gotoDesigner();
-    //     //这里不能用 KFK.inDesigner===false来判断
-    //     //因为即便不在designer中，如果designer没有被显示过，不能切换过去
-    //     //因为不知道designer中显示什么，只有designer打开过一次后，才能切换过去
-    //     //程序中， KFK.currentView的初始值为unknown, 当第一次显示designer后，
-    //     //KFK.currentView的值变为designer, 切换回到explorer时，KFK.currentView的值是explorer
-    //     //这时，用KFK.currentView === 'explorer'进行判断是可以的
-    //     return
-    // }
-
-    if (KFK.inDesigner() === false) return;
-    if (KFK.isEditting) return;
     switch (evt.keyCode) {
       case 13:
         //回车进入编辑 回车编辑
@@ -9319,7 +9520,7 @@ KFK.addDocumentEventHandler = function() {
           KFK.editFocusedThenHoveredObject(evt, true);
         }
         break;
-      case 27: //ESC
+      case 27: // key ESC
         if (KFK.inFullScreenMode === true) {
           evt.preventDefault();
           evt.stopPropagation();
@@ -9339,7 +9540,7 @@ KFK.addDocumentEventHandler = function() {
         if (KFK.tempShape) KFK.tempShape.hide();
         KFK.hidePickerMatlib();
         break;
-      case 90:
+      case 90: //key z
         //不要移动META-Z代码，一定要在document的key-down里面，
         //否则，在其他地方没有用。这个问题花了我三个小时时间，FX
         if ((evt.metaKey || evt.ctrlKey) && evt.shiftKey) {
@@ -9351,9 +9552,9 @@ KFK.addDocumentEventHandler = function() {
           KFK.undo();
         }
         break;
-      case 69: //E
-      case 76: //L
-      case 82: //R
+      case 69: // key E
+      case 76: // key L
+      case 82: // key R
       case 66: // key B
       case 73: //key I
         if (
@@ -9369,6 +9570,15 @@ KFK.addDocumentEventHandler = function() {
                 KFK.DivStyler = pack.DivStyler;
                 KFK.DivStyler.alignInnerContent(evt.keyCode);
               });
+        }
+        break;
+      case 81: //key q key mode clearfreehand
+        if (evt.ctrlKey === false && evt.metaKey === false) {
+          let oldMode = KFK.mode;
+          KFK.setMode("clearfreehand");
+          KFK.clearFreeHand();
+          KFK.setMode(oldMode);
+          return;
         }
         break;
       case 8: //Backspace
@@ -9612,13 +9822,8 @@ KFK.addDocumentEventHandler = function() {
         }
         let beforeSaveWidth = aShape.attr("stroke-width");
         let beforeSaveColor = aShape.attr("stroke");
-        aShape.attr({
-          "stroke-width": aShape.attr("origin-width"),
-          stroke: aShape.attr("origin-color"),
-        });
-        KFK.shapeToRemember.attr({
-          "stroke-width": KFK.shapeToRemember.attr("origin-width"),
-        });
+        KFK.resetShapeStyleToOrigin(aShape);
+        KFK.resetShapeStyleToOrigin(KFK.shapeToRemember);
         await KFK.syncLinePut(
           "U",
           aShape,
@@ -9677,8 +9882,40 @@ KFK.addDocumentEventHandler = function() {
       $(document.body).css("cursor", "default");
     }
   });
+  /*
+  function pinchStart(evt) {
+    console.log("pinch Start");
+  }
+  function pinchMove(evt) {
+    console.log("pinch Move");
+  }
+  function pinchEnd(evt) {
+    console.log("pinch End");
+  }
+  $(document).on("touchstart", async function(evt) {
+    if (KFK.inDesigner() === false) return;
+    console.log("touchstart");
+    if (evt.touches.length === 2) {
+      KFK.pinching = true;
+      pinchStart(evt);
+    }
+  });
 
-  let timer = null;
+  $(document).on("touchmove", async function(evt) {
+    if (KFK.inDesigner() === false) return;
+    if (KFK.pinching) {
+      pinchMove(evt);
+    }
+  });
+
+  $(document).on("touchend", async function(evt) {
+    if (KFK.pinching) {
+      pinchEnd(evt);
+      KFK.pinching = undefined;
+    }
+  });
+  */
+
   // onscroll onScroll on scroll on Scroll
   $("#S1").scroll(() => {
     if (KFK.inDesigner() === false) return;
@@ -9768,6 +10005,12 @@ KFK.toggleTodoMode = async function() {
   }
 };
 
+KFK.resetShapeStyleToOrigin = function(shape) {
+  shape.attr({
+    "stroke-width": shape.attr("origin-width"),
+    stroke: shape.attr("origin-color"),
+  });
+};
 KFK.beginTodoMode = async function() {
   KFK.toggleInputFor("todo");
   KFK.APP.inputMsg = "";
@@ -9905,7 +10148,7 @@ KFK.onMsgInput = async function(evt) {
   evt.stopPropagation();
   KFK.noCopyPaste = true;
   if (evt.keyCode === 27) {
-    //ESC
+    //key ESC
     KFK.noCopyPaste = false;
     if (KFK.inputFor === "todo") KFK.stopTodoMode();
     else if (KFK.inputFor === "chat") KFK.stopChatMode();
@@ -10548,12 +10791,18 @@ KFK.toggleRightPanel = function(tab = -1, flag = false) {
   if (flag === false) {
     if ($("#right").hasClass("noshow")) {
       KFK.show($("#right"));
+      KFK.APP.model.viewConfig.hideRight = false;
+      KFK.saveLocalViewConfig();
     } else {
       KFK.hide($("#right"));
+      KFK.APP.model.viewConfig.hideRight = true;
+      KFK.saveLocalViewConfig();
     }
     return;
   } else {
     KFK.show($("#right"));
+    KFK.APP.model.viewConfig.hideRight = false;
+    KFK.saveLocalViewConfig();
   }
   if (tab < 0) {
     let tabstr = localStorage.getItem("righttabindex");
@@ -11275,26 +11524,17 @@ KFK.gotoRightPage = function() {
   KFK.___gotoPage(KFK.currentPage);
 };
 KFK.___gotoPage = function(pageIndex) {
-  // KFK.scrLog(`goto page ${pageIndex + 1}`);
-  let main = $("#C1");
-  let scroller = $("#S1");
-  let scrCenter = KFK.scrCenter();
-  let window_width = scrCenter.x * 2;
-  let window_height = scrCenter.y * 2;
+  let pos = {
+    x: KFK.pageBounding.Pages[pageIndex].left + KFK.PageWidth * 0.5,
+    y: KFK.pageBounding.Pages[pageIndex].top + KFK.PageHeight * 0.5,
+  };
 
-  let pageCenterX =
-    (KFK.currentPage % KFK.PageNumberHori) * KFK.PageWidth +
-    KFK.PageWidth * 0.5;
-  let pageCenterY =
-    Math.floor(KFK.currentPage / KFK.PageNumberHori) * KFK.PageHeight +
-    KFK.PageHeight * 0.5;
-
-  toLeft = pageCenterX + KFK.LeftB - scrCenter.x;
-  toTop = pageCenterY + KFK.TopB - scrCenter.y;
-
+  KFK.lastPosition = { x: KFK.JS1.scrollLeft(), y: KFK.JS1.scrollTop() };
+  let scrollX = pos.x * KFK.scaleRatio + KFK.LeftB - $(window).width() * 0.5;
+  let scrollY = pos.y * KFK.scaleRatio + KFK.TopB - $(window).height() * 0.5;
   KFK.scrollToPos({
-    x: toLeft,
-    y: toTop,
+    x: scrollX,
+    y: scrollY,
   });
 };
 
@@ -11804,6 +12044,9 @@ KFK.scrollToNodeById = function(nodeid) {
   KFK.scrollToNode(jqDIV, true);
 };
 
+/**
+ * 滚动到一个DIV， DIV位于屏幕中心
+ */
 KFK.scrollToNode = (jqDIV, nolog = false) => {
   let top = KFK.divTop(jqDIV);
   let left = KFK.divLeft(jqDIV);
@@ -11812,6 +12055,31 @@ KFK.scrollToNode = (jqDIV, nolog = false) => {
   let pos = {
     x: left + width * 0.5,
     y: top + height * 0.5,
+  };
+
+  KFK.lastPosition = { x: KFK.JS1.scrollLeft(), y: KFK.JS1.scrollTop() };
+  let scrollX = pos.x * KFK.scaleRatio + KFK.LeftB - $(window).width() * 0.5;
+  let scrollY = pos.y * KFK.scaleRatio + KFK.TopB - $(window).height() * 0.5;
+  KFK.scrollToPos({
+    x: scrollX,
+    y: scrollY,
+  });
+
+  if (nolog === false) {
+    if (KFK.lastActionLogJqDIV != null && KFK.lastActionLogJqDIV !== jqDIV)
+      KFK.lastActionLogJqDIV.removeClass("shadow1");
+    jqDIV.addClass("shadow1");
+    KFK.lastActionLogJqDIV = jqDIV;
+  }
+};
+/**
+ * 滚动到一个Shape的位置，Shape位于屏幕中心
+ */
+KFK.scrollToShape = (aShape, nolog = false) => {
+  let rect = KFK.getShapeRect(aShape);
+  let pos = {
+    x: rect.left + rect.width * 0.5,
+    y: rect.top + rect.height * 0.5,
   };
 
   KFK.lastPosition = { x: KFK.JS1.scrollLeft(), y: KFK.JS1.scrollTop() };
@@ -11842,13 +12110,10 @@ KFK.isMyDoc = () => {
 };
 
 KFK.showCopyDocDialog = (doc) => {
-  KFK.tobeCopyDocId = doc._id;
-  KFK.setAppData("model", "copyToDocName", doc.name);
-  KFK.setAppData(
-    "model",
-    "showCopyOrMove",
-    doc.owner === KFK.APP.model.cocouser.userid
-  );
+  KFK.tobeCopyDoc = doc;
+  KFK.APP.model.copydoc.copyToDocName = doc.name;
+  KFK.APP.model.copydoc.showCopyOrMove =
+    doc.owner === KFK.APP.model.cocouser.userid;
   KFK.showDialog({
     copyDocDialog: true,
   });
@@ -11910,14 +12175,21 @@ KFK.setAcl = async () => {
 };
 
 KFK.copyDoc = () => {
-  let newname = KFK.APP.model.copyToDocName;
+  let newname = KFK.APP.model.copydoc.copyToDocName;
   if (Validator.validateDocName(newname)) {
     let payload = {
-      fromDocId: KFK.tobeCopyDocId,
-      toPrjId: KFK.APP.model.copyToPrjId,
-      toName: KFK.APP.model.copyToDocName,
-      copyOrMove: KFK.APP.model.check.copyOrMove,
+      fromDocId: KFK.tobeCopyDoc._id,
+      toPrjId: KFK.APP.model.copydoc.copyToPrjId,
+      toName: KFK.APP.model.copydoc.copyToDocName,
     };
+    if (KFK.APP.model.copydoc.op === "rename") {
+      payload.toPrjId = KFK.tobeCopyDoc.prjid;
+      payload.copyOrMove = "move";
+    } else if (KFK.APP.model.copydoc.op === "copy") {
+      payload.copyOrMove = "copy";
+    } else if (KFK.APP.model.copydoc.op === "move") {
+      payload.copyOrMove = "move";
+    }
     KFK.sendCmd("COPYDOC", payload);
     KFK.APP.state.copydoc.name = true;
   } else {
@@ -12055,7 +12327,6 @@ KFK.restoreShape = function(shape_id, html) {
     aLine = KFK.svgDraw.line();
   }
   let parent = aLine.svg(html, true);
-  console.log(html);
   aLine = parent.findOne(selector);
   KFK.addShapeEventListner(aLine);
   return aLine;
@@ -13257,6 +13528,12 @@ KFK.placeFollowerNode = async (jdiv, direction) => {
   });
   KFK.justCreatedJqNode = newDIV;
   KFK.lastCreatedJqNode = newDIV;
+  if (KFK.APP.model.viewConfig.autoFollow) {
+    console.log("auto jump");
+    await KFK.addToStackThenJumpTo(KFK.lastCreatedJqNode, false, false);
+  } else {
+    console.log("no auto jump");
+  }
   return newDIV;
 };
 
@@ -13373,7 +13650,7 @@ KFK.jumpToNode = (jdiv, takeBrain, iamBrain = false) => {
 KFK.flushJumpStack = async () => {
   // console.log("flushJumpStack", KFK.jumpStack.length);
   KFK.jumpStack = KFK.jumpStack.filter((jdiv) => {
-    if ($("#" + jdiv.attr("id")).length > 0) {
+    if (jdiv && $("#" + jdiv.attr("id")).length > 0) {
       return true;
     } else {
       return false;
@@ -13502,6 +13779,7 @@ KFK.AI = (idx) => {
   if (KFK.APP.model.viewConfig.useAI === false) return;
   let msg = AIXJ.getMsg(idx, KFK.APP.model.osName);
   if (IsSet(msg)) {
+    KFK.show(KFK.SYSMSG);
     KFK.SYSMSG.prop("innerHTML", msg);
   }
 };

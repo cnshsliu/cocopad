@@ -335,7 +335,7 @@ input::placeholder {
   top: 100px;
   left: 10px;
   width: 50px;
-  height: calc(100vh - 200px);
+  height: calc(100vh - 250px);
   box-shadow: 0 4px 8px 0 #000000cc, 0 6px 20px 0 #000000cc;
   border-radius: 15px;
 }
@@ -358,7 +358,7 @@ input::placeholder {
   top: 100px;
   right: 5px;
   width: 240px;
-  height: calc(100vh - 200px);
+  height: calc(100vh - 250px);
   border: 1px solid #0000004c;
 }
 
@@ -744,7 +744,7 @@ svg path {
 }
 
 .showAfterInit {
-  visibility: hidden;
+  display: none;
 }
 .registerform-outer {
   width: 100%;
@@ -1291,7 +1291,7 @@ select:focus {
 
 #minimap {
   position: absolute;
-  width: 168px;
+  width: 240px;
   height: 120px;
   /* 20% of A4*/
   bottom: 5px;
@@ -2356,4 +2356,10 @@ a:hover {
   white-space: nowrap;
   width: fit-content;
   padding: 0px 5px 0px 5px;
+}
+.shortcutkey {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  font-size: 10px;
 }
