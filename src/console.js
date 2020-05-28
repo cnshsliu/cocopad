@@ -9882,6 +9882,26 @@ KFK.addDocumentEventHandler = function() {
       $(document.body).css("cursor", "default");
     }
   });
+  window.addEventListener(
+    "wheel",
+    function(evt) {
+      if (evt.ctrlKey) {
+        evt.preventDefault();
+        if (evt.wheelDelta / 120 > 0) {
+          console.log("scrolling up !");
+          evt.preventDefault();
+          evt.stopPropagation();
+          KFK.zoomInOut("zoomin");
+        } else {
+          console.log("scrolling down !");
+          evt.preventDefault();
+          evt.stopPropagation();
+          KFK.zoomInOut("zoomout");
+        }
+      }
+    },
+    { passive: false }
+  );
   /*
   function pinchStart(evt) {
     console.log("pinch Start");
