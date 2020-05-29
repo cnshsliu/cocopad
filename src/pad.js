@@ -494,6 +494,19 @@ const app = new Vue({
       shapeBkgColor: "#ffffff",
       lineColor: "#000000",
       lineWidth: 1,
+      property: {
+        connect: {
+          line: {
+            width: 2,
+            color: "#000000",
+            style: "solid",
+            styles: [
+              { value: "solid", text: "实线" },
+              { value: "dash", text: "虚线" },
+            ],
+          },
+        },
+      },
       padbkgcolor: [
         "#C2FFFB",
         "#D0C8E8",

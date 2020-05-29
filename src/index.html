@@ -13,7 +13,7 @@
         href="https://cdn.staticfile.org/bootstrap-vue/2.12.0/bootstrap-vue.min.css" />
     <!-- Load Vue followed by BootstrapVue, and BootstrapVueIcons -->
     <link rel="stylesheet" href="/my-styles/style.css">
-    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <!-- <script src="https://unpkg.com/@popperjs/core@2"></script> -->
     <script src="https://cdn.staticfile.org/vue/2.6.11/vue.min.js"></script>
     <script src="https://cdn.staticfile.org/bootstrap-vue/2.12.0/bootstrap-vue.min.js"></script>
     <script src="https://cdn.staticfile.org/bootstrap-vue/2.12.0/bootstrap-vue-icons.min.js"></script>
@@ -692,6 +692,29 @@
                                     </b-button>
                                 </b-button-group>
                             </b-button-toolbar>
+                        </b-container>
+                        <b-container  class="no-padding">
+                            <b-button v-b-toggle.collapse-customconnect class="mb-1 p-0 w-100" variant='primary'>
+                                连接线样式</b-button>
+                            <b-collapse visible id="collapse-customconnect" class="property-content">
+                                <b-row class="mx-auto my-1">
+                                    <b-col>连接线颜色</b-col>
+                                    <b-col class='coco'><input name="spectrum_connect_line_color" id="spectrum_connect_line_color" /></b-col>
+                                </b-row>
+                                <b-row class="mx-auto my-1">
+                                    <b-col>线条样式</b-col>
+                                    <b-col class='coco'>
+                                        <b-form-select v-model="model.property.connect.line.style" :options="model.property.connect.line.styles"
+                                            @input="KFK.changeConnectStyle">
+                                        </b-form-select>
+                                    </b-col>
+                                </b-row>
+                                <b-row class="mx-auto my-1">
+                                    <b-col>连接线粗细</b-col>
+                                    <b-col class='coco'><input class='selector' size=3 id="spinner_connect_line_width"
+                                            name="value_connect_lw" /></b-col>
+                                </b-row>
+                            </b-collapse>
                         </b-container>
                     </b-tab>
                     <b-tab title="通用" active class='cocoproperty'>

@@ -52,6 +52,8 @@ jstr = function(obj) {
   return JSON.stringify(obj);
 };
 
+const KFK = {};
+
 const NotSetOrFalse = function(val) {
   return NotSet(val) || val === false;
 };
@@ -59,9 +61,11 @@ const NotSet = function(val) {
   if (val === undefined || val === null) return true;
   else return false;
 };
+KFK.NotSet = NotSet;
 const IsSet = function(val) {
   return !NotSet(val);
 };
+KFK.IsSet = IsSet;
 const IsBlank = function(val) {
   if (val === undefined || val === null || val === "") return true;
   else return false;
@@ -74,7 +78,13 @@ const IsFalse = function(val) {
   else return false;
 };
 
-const KFK = {};
+KFK.dynamic = {
+  connect: {
+    width: 2,
+    color: "#0000ff",
+    style: "solid",
+  },
+};
 KFK.config = cocoConfig;
 KFK.duringVideo = false;
 KFK.pct = 1; //Peers count;
@@ -117,7 +127,7 @@ KFK.LOGLEVEL_DEBUG = 4;
 KFK.LOGLEVEL_DETAIL = 5;
 KFK.LOGLEVEL_KEY = 6;
 KFK.autoScroll = {};
-KFK.loglevel = KFK.LOGLEVEL_DETAIL; //控制log的等级, 级数越小，显示信息越少
+KFK.loglevel = KFK.LOGLEVEL_INFO; //控制log的等级, 级数越小，显示信息越少
 //在designer页面输入logerror, logwarn, loginfo, lodebug...
 KFK.designerConf = {
   scale: 1,
@@ -1062,6 +1072,10 @@ KFK.updatePropertyFormWithNode = function(jqNodeDIV) {
     KFK.APP.setData("model", "textAlign", textAlign);
     KFK.APP.setData("model", "vertAlign", vertAlign);
   }
+
+  $("#spectrum_connect_line_color").spectrum("set", jqNodeDIV.attr("cncolor"));
+  $("#spinner_connect_line_width").spinner("value", jqNodeDIV.attr("cnwidth"));
+  KFK.APP.model.property.connect.line.style = jqNodeDIV.attr("cnstyle");
 };
 
 KFK.log = function(...info) {
@@ -1680,7 +1694,13 @@ KFK.undo = async () => {
               jqFrom.find(".coco_list").addClass("original");
               if (KFK.isTodoListDIV(jqFrom)) {
                 jqFrom.addClass("todolist");
-                KFK.setTodoItemEventHandler(jqFrom);
+                KFK.setTodoItemEventHandler
+                  ? KFK.setTodoItemEventHandler(jqFrom)
+                  : import("./todo").then((pack) => {
+                      KFK.setTodoItemEventHandler =
+                        pack.Todo.setTodoItemEventHandler;
+                      KFK.setTodoItemEventHandler(jqFrom);
+                    });
               } else if (KFK.isChatListDIV(jqFrom)) {
                 jqFrom.addClass("chatlist");
               }
@@ -3174,6 +3194,9 @@ KFK._createNode = async function(node) {
   jqNodeDIV.css("width", KFK.px(node.width));
   jqNodeDIV.css("height", KFK.px(node.height));
   jqNodeDIV.css("z-index", `${nodeCount + 1}`);
+  jqNodeDIV.attr("cnwidth", KFK.dynamic.connect.width);
+  jqNodeDIV.attr("cncolor", KFK.dynamic.connect.color);
+  jqNodeDIV.attr("cnstyle", KFK.dynamic.connect.style);
   //default padding for all
   $(nodeDIV).attr("variant", "default");
   //click时，切换selected状态
@@ -3580,14 +3603,17 @@ KFK.setModeIndicatorForYellowTip = function(tipvariant) {
     return;
   }
   $("#modeIndicatorDiv").empty();
+  console.log(tipvariant);
   let svg = $(SVGs[tipvariant]);
   if (NotSet(svg)) {
     svg = $(
       "<img src='" + cocoConfig.frontend.url + "/svgs/" + tipvariant + ".svg'/>"
     );
+    console.log("use div");
   }
   svg.css("width", "18px");
   svg.css("height", "18px");
+  console.log(svg);
   svg.appendTo($("#modeIndicatorDiv"));
 };
 
@@ -3596,7 +3622,7 @@ KFK.setTipVariant = async function(tipvariant, shiftKey = false) {
     await KFK.updateSelectedDIVs("set tip variant", async function(jqNode) {
       let oldColor = KFK.getTipBkgColor(jqNode);
       jqNode.attr("variant", tipvariant);
-      await KFK.setTipBkgImage(jqNode, tipvariant, oldColor);
+      KFK._setTipBkgImage(jqNode, tipvariant, oldColor);
     });
   } else {
     cocoConfig.node.yellowtip.defaultTip = tipvariant;
@@ -3607,19 +3633,7 @@ KFK.setTipVariant = async function(tipvariant, shiftKey = false) {
     }
   }
 };
-KFK.setTipBkgImage = async function(jqDIV, svgid, svgcolor) {
-  KFK.fromJQ = jqDIV.clone();
-  KFK._setTipBkgImage(jqDIV, svgid, svgcolor);
-  await KFK.syncNodePut(
-    "U",
-    jqDIV,
-    "change bkg image",
-    KFK.fromJQ,
-    false,
-    0,
-    1
-  );
-};
+
 KFK._setTipBkgImage = function(jqDIV, svgid, svgcolor) {
   jqDIV.find(".tip_bkg").remove();
   let bkg = undefined;
@@ -5627,7 +5641,6 @@ KFK.jc1YToScrY = function(y) {
 };
 
 KFK.saveLocalViewConfig = function() {
-  jlog(KFK.APP.model.viewConfig);
   localStorage.setItem("viewConfig", JSON.stringify(KFK.APP.model.viewConfig));
 };
 
@@ -5806,12 +5819,22 @@ KFK.initDesigner = async function() {
     KFK.initLayout();
     KFK.initQuillFonts();
     KFK.initC3();
-    KFK.initPropertyForm();
+    KFK.initPropertyForm
+      ? KFK.initPropertyForm()
+      : import("./propSetting").then((pack) => {
+          KFK.initPropertyForm = pack.PropSetting.initPropertyForm;
+          KFK.initPropertyForm();
+        });
     KFK.initLineTransformer();
     //KFK.initColorPicker();
     KFK.showCenterIndicator();
-    KFK.initPropertySvgGroup();
-    $("#right").draggable();
+    KFK.initPropertySvgGroup
+      ? KFK.initPropertySvgGroup()
+      : import("./propSetting").then((pack) => {
+          KFK.initPropertySvgGroup = pack.PropSetting.initPropertySvgGroup;
+          KFK.initPropertySvgGroup();
+        });
+    //$("#right").draggable();
     await KFK.initCocoChat();
     await KFK.initVideoRoom();
     KFK.designerInitialized = true;
@@ -5829,7 +5852,6 @@ KFK.initLeftRightPanelEventHandler = function() {
     evt.stopPropagation();
   });
   $("#right").on("click", function(evt) {
-    console.log("right click");
     evt.stopPropagation();
   });
   $("#left").on("mousedown", function(evt) {
@@ -6000,55 +6022,6 @@ KFK.initVideoRoom = async function() {
    }
    };
    */
-
-KFK.initPropertySvgGroup = function() {
-  //在pad.js中的tip_groups中定义了要用到的svgs。
-  //如果这些svgts在svgs.js中被定义的话，则表示这是一个内建svg，支持对其属性进行操作
-  //如果在svgs。js中没有定义，则表示是一个需要从云端加载的image，且不支持属性修改
-  $.each(KFK.APP.tip_groups, async (index, group) => {
-    let title = group.title;
-    let svgHolder = $(group.div);
-    let svgs = group.svgs;
-    for (let i = 0; i < svgs.length; i++) {
-      let span = document.createElement("span");
-      let jspan = $(span);
-      let name = svgs[i];
-      let svgImg = undefined;
-      //在SVGS中定义的svg, 是内建svg对象，可以修改它的属性
-      //从云端加载的img不支持修改svg属性
-      if (NotSet(SVGs[name])) {
-        svgImg = $(`<img src='${cocoConfig.frontend.url}/svgs/${name}.svg'/>"`);
-      } else {
-        svgImg = $(SVGs[name]);
-      }
-      svgImg.css("width", "36px");
-      svgImg.css("height", "36px");
-      svgImg.css("padding", "2px");
-      jspan.css("width", "36px");
-      jspan.css("height", "36px");
-      jspan.css("padding", "2px");
-      jspan.on("mouseover", (evt) => {
-        let target = svgImg;
-        let svgMainPath = target.find(".svg_main_path");
-        if (svgMainPath.length > 0) svgMainPath.attr("fill", "#E5DBFF");
-        else jspan.css("background-color", "#E5DBFF");
-      });
-      jspan.on("mouseout", (evt) => {
-        let target = svgImg;
-        let svgMainPath = target.find(".svg_main_path");
-        if (svgMainPath.length > 0) svgMainPath.attr("fill", "#F7F7C6");
-        else jspan.css("background-color", "#FFFFFF");
-      });
-      svgImg.on("click", async (evt) => {
-        KFK.justCreatedJqNode = null;
-        //KFK.setMode("yellowtip");
-        await this.setTipVariant(name, evt.shiftKey);
-      });
-      svgImg.appendTo(jspan);
-      jspan.appendTo(svgHolder);
-    }
-  });
-};
 
 KFK.connectToWS = async () => {
   await WS.start(
@@ -6474,9 +6447,6 @@ KFK.refreshDesignerWithDoc = async function(
   if (doc_id !== null)
     await KFK.loadDoc(doc_id, docpwd, quickGlance, forceReadonly);
   if (KFK.APP.model.viewConfig.hideRight) KFK.hide("#right");
-  else {
-    console.log(KFK.APP.model.viewConfig);
-  }
 };
 
 KFK.loadDoc = async function(
@@ -7487,7 +7457,12 @@ KFK._onDocFullyLoaded = async function() {
   $("#overallbackground").removeClass("grid1");
   //focusOnC3会导致C3居中
   KFK.focusOnC3();
-  KFK.setTodoItemEventHandler();
+  KFK.setTodoItemEventHandler
+    ? KFK.setTodoItemEventHandler()
+    : import("./todo").then((pack) => {
+        KFK.setTodoItemEventHandler = pack.Todo.setTodoItemEventHandler;
+        KFK.setTodoItemEventHandler();
+      });
   //
   //
   //
@@ -7688,7 +7663,12 @@ KFK.recreateNode = async function(obj, callback) {
       KFK.redrawLinkLines(jqDIV, "server update");
       //如果是todolist， 则需要设置里面的todoitem的eventhandler
       if (jqDIV.hasClass("todolist")) {
-        KFK.setTodoItemEventHandler(jqDIV);
+        KFK.setTodoItemEventHandler
+          ? KFK.setTodoItemEventHandler(jqDIV)
+          : import("./todo").then((pack) => {
+              KFK.setTodoItemEventHandler = pack.Todo.setTodoItemEventHandler;
+              KFK.setTodoItemEventHandler(jqDIV);
+            });
       }
     }
   } catch (error) {
@@ -7860,6 +7840,21 @@ KFK.changeShapeStyle = async () => {
   });
 };
 
+KFK.changeConnectStyle = async () => {
+  if (KFK.selectedDIVs.length === 0) {
+    let theDiv = KFK.getHoverFocusLastCreate();
+    if (NotSet(theDIV)) return;
+    KFK.selectNode(theDiv);
+  }
+  KFK.dynamic.connect.style = KFK.APP.model.property.connect.line.style;
+
+  await KFK.updateSelectedDIVs("set connect width", async function(theDiv) {
+    theDiv.attr("cnstyle", KFK.APP.model.property.connect.line.style);
+    KFK.redrawLinkLines(theDiv, "property change", false);
+    return theDiv;
+  });
+};
+
 /**
  * 改变多个元素,
  * 先对所有选择的对象进行处理，如果没有选定对象，则使用当前的hover，selecte， justcreated对象
@@ -7889,10 +7884,15 @@ KFK.updateSelectedDIVs = async function(reason, callback) {
     let jqDIV = divs[i];
     let jqOld = jqDIV.clone();
     if (KFK.anyLocked(jqDIV) === false) {
+      //let isBrainstorm = KFK.isBrainstormNode(jqDIV);
+      //console.log(isBrainstorm);
       await callback(jqDIV);
+      //if (isBrainstorm) {
+      //KFK.startBrainstorm(jqDIV);
+      //}
       await KFK.syncNodePut(
         "U",
-        jqDIV,
+        jqDIV.clone(),
         reason,
         jqOld,
         false,
@@ -7931,298 +7931,6 @@ KFK.updateMultiShapes = async function(shapes, worker) {
     );
     movedSer = movedSer + 1;
   }
-};
-
-KFK.initPropertyForm = function() {
-  KFK.debug("...initPropertyForm");
-  let spinnerFontSize = $("#spinner_font_size").spinner({
-    min: 8,
-    max: 100,
-    step: 1,
-    start: 18,
-    spin: async function(evt, ui) {
-      await KFK.updateSelectedDIVs("set font size", async function(jqNode) {
-        await jqNode.find(".innerobj").css("font-size", KFK.px(ui.value));
-      });
-    },
-  });
-  spinnerFontSize.spinner("value", 18);
-  $("#spinner_font_size").height("6px");
-  let spinnerBorderWidth = $("#spinner_border_width").spinner({
-    min: 0,
-    max: 20,
-    step: 1,
-    start: 1,
-    spin: async function(evt, ui) {
-      await KFK.updateSelectedDIVs("set border width", async function(jqNode) {
-        await jqNode.css("border-width", ui.value);
-        await jqNode.css("border-style", "solid");
-      });
-    },
-  });
-  spinnerBorderWidth.spinner("value", 0);
-  $("#spinner_border_width").height("6px");
-
-  let spinnerBorderRadius = $("#spinner_border_radius").spinner({
-    min: 0,
-    max: 200,
-    step: 1,
-    start: 20,
-    spin: async function(evt, ui) {
-      await KFK.updateSelectedDIVs("set border width", async function(jqNode) {
-        await jqNode.css("border-radius", ui.value);
-      });
-    },
-  });
-  spinnerBorderRadius.spinner("value", 20);
-  $("#spinner_border_radius").height("6px");
-
-  //set shape line width, set line width
-  let spinnerLineWidth = $("#spinner_line_width").spinner({
-    min: 1,
-    max: 1000,
-    step: 1,
-    start: 1,
-    spin: async function(evt, ui) {
-      if (KFK.selectedShapes.length === 0) {
-        let theShape = KFK.getPropertyApplyToShape();
-        KFK.selectShape(theShape);
-      }
-
-      await KFK.updateMultiShapes(KFK.selectedShapes, async function(theShape) {
-        KFK.setShapeLineModel(theShape.attr("shapetype"), {
-          width: ui.value,
-        });
-        theShape.attr({
-          "stroke-width": ui.value,
-          "origin-width": ui.value,
-        });
-        return theShape;
-      });
-    },
-  });
-  spinnerLineWidth.spinner("value", 1);
-  $("#spinner_line_width").height("2px");
-
-  $("input.fonts-selector")
-    .fontpicker({
-      lang: "zh-CN",
-      variants: true,
-      lazyload: true,
-      nrRecents: 3,
-      googleFonts: "Alegreya,Boogaloo,Coiny,Dosis,Emilys Candy,Faster One,Galindo".split(
-        ","
-      ),
-      localFonts: {
-        // Default: web safe fonts
-        Arial: {
-          category: "sans-serif",
-          variants: "400,400i,600,600i,900,900i",
-        },
-        "Courier New": {
-          category: "monospace",
-          variants: "400,400i,600,600i,900,900i",
-        },
-        Georgia: {
-          category: "serif",
-          variants: "400,400i,600,600i,900,900i",
-        },
-        Tahoma: {
-          category: "sans-serif",
-          variants: "400,400i,600,600i,900,900i",
-        },
-        "Times New Roman": {
-          category: "serif",
-          variants: "400,400i,600,600i,900,900i",
-        },
-        "Trebuchet MS": {
-          category: "sans-serif",
-          variants: "400,400i,600,600i,900,900i",
-        },
-        Verdana: {
-          category: "sans-serif",
-          variants: "400,400i,600,600i,900,900i",
-        },
-        SimSun: {
-          label: "宋体简",
-          category: "sans-serif",
-          variants: "400,400i,600,600i,900,900i",
-        },
-        SimHei: {
-          label: "黑体简",
-          category: "sans-serif",
-          variants: "400,400i,600,600i,900,900i",
-        },
-        "Microsoft Yahei": {
-          label: "微软雅黑",
-          category: "sans-serif",
-          variants: "400,400i,600,600i,900,900i",
-        },
-        KaiTi: {
-          label: "楷体",
-          category: "sans-serif",
-          variants: "400,400i,600,600i,900,900i",
-        },
-        FangSong: {
-          label: "仿宋",
-          category: "sans-serif",
-          variants: "400,400i,600,600i,900,900i",
-        },
-        STHeiti: {
-          label: "黑体繁",
-          category: "sans-serif",
-          variants: "400,400i,600,600i,900,900i",
-        },
-        "Hanzipen SC": {
-          label: "钢笔手写体",
-          category: "sans-serif",
-          variants: "400,400i,600,600i,900,900i",
-        },
-        "Hannotate SC": {
-          label: "手札体",
-          category: "sans-serif",
-          variants: "400,400i,600,600i,900,900i",
-        },
-        "Xingkai SC": {
-          label: "行楷",
-          category: "sans-serif",
-          variants: "400,400i,600,600i,900,900i",
-        },
-        "Yuanti SC": {
-          label: "圆体",
-          category: "sans-serif",
-          variants: "400,400i,600,600i,900,900i",
-        },
-      },
-    })
-    .on("change", async function() {
-      // Split font into family and weight/style
-      var fontInfo = $("input.fonts-selector")
-          .val()
-          .split(":"),
-        family = fontInfo[0],
-        variant = fontInfo[1] || "400",
-        weight = parseInt(variant, 10),
-        italic = /i$/.test(variant);
-
-      // Set selected font on body
-      var css = {
-        fontFamily: "'" + family + "'",
-        fontWeight: weight,
-        fontStyle: italic ? "italic" : "normal",
-      };
-
-      //set font
-
-      await KFK.updateSelectedDIVs("set font", async function(jqNode) {
-        await jqNode.find(".innerobj").css(css);
-      });
-    });
-  $("input.fonts-selector").height(12);
-
-  KFK.debug("...initColorPicker");
-  $("#cocoBkgColor").spectrum({
-    color: "#f00",
-    type: "color",
-    hideAfterPaletteSelect: "true",
-    chooseText: "选定",
-    cancelText: "放弃",
-    change: function(color) {
-      //发起人可以设置所有人的bgcolor
-      try {
-        var hex = color.toHexString();
-        if (KFK.APP.model.cocodoc.owner === KFK.APP.model.cocouser.userid)
-          KFK.sendCmd("SETBGCOLOR", {
-            doc_id: KFK.APP.model.cocodoc.doc_id,
-            bgcolor: hex,
-          });
-        else {
-          //非发起人只能设置当前自己的
-          KFK.setBGColorTo(hex);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    },
-  });
-  $("#shapeBkgColor").spectrum({
-    color: "#f00",
-    type: "color",
-    hideAfterPaletteSelect: "true",
-    chooseText: "选定",
-    cancelText: "放弃",
-    change: async function(color) {
-      var hex = color.toHexString();
-      KFK.APP.setData("model", "shapeBkgColor", hex);
-      await KFK.updateSelectedDIVs("set border width", async function(jqNode) {
-        await jqNode.css("background-color", hex);
-      });
-    },
-  });
-  $("#shapeBorderColor").spectrum({
-    color: "#f00",
-    type: "color",
-    hideAfterPaletteSelect: "true",
-    chooseText: "选定",
-    cancelText: "放弃",
-    change: async function(color) {
-      var hex = color.toHexString();
-      await KFK.updateSelectedDIVs("set border width", async function(jqNode) {
-        await jqNode.css("border-color", hex);
-      });
-    },
-  });
-  $("#lineColor").spectrum({
-    color: "#f00",
-    type: "color",
-    hideAfterPaletteSelect: "true",
-    chooseText: "选定",
-    cancelText: "放弃",
-    change: async function(color) {
-      var hex = color.toHexString();
-      if (KFK.selectedShapes.length === 0) {
-        let theShape = KFK.getPropertyApplyToShape();
-        KFK.selectShape(theShape);
-      }
-      KFK.dynamicLineStroke = hex;
-
-      await KFK.updateMultiShapes(KFK.selectedShapes, async function(theShape) {
-        theShape.attr("stroke", hex);
-        theShape.attr("origin-color", hex);
-        KFK.setShapeLineModel(theShape.attr("shapetype"), {
-          color: hex,
-        });
-        return theShape;
-      });
-    },
-  });
-  $("#fontColor").spectrum({
-    color: "#f00",
-    type: "color",
-    hideAfterPaletteSelect: "true",
-    chooseText: "选定",
-    cancelText: "放弃",
-    change: async function(color) {
-      var hex = color.toHexString();
-      await KFK.updateSelectedDIVs("set border width", async function(jqNode) {
-        await jqNode.find(".innerobj").css("color", hex);
-      });
-    },
-  });
-  $("#tipBkgColor").spectrum({
-    color: "#f00",
-    type: "color",
-    hideAfterPaletteSelect: "true",
-    chooseText: "选定",
-    cancelText: "放弃",
-    change: async function(color) {
-      var hex = color.toHexString();
-      KFK.APP.setData("model", "tipBkgColor", hex);
-      await KFK.updateSelectedDIVs("set border width", async function(jqNode) {
-        KFK.setTipBkgColor(jqNode, hex);
-      });
-    },
-  });
 };
 
 KFK.initShowEditors = function(show_editor) {
@@ -8624,10 +8332,7 @@ KFK.toggleMinimap = async function() {
 };
 
 KFK.toggleBrainstorm = function() {
-  let jqNodeDIV = KFK.hoverJqDiv();
-  if (NotSet(jqNodeDIV)) {
-    jqNodeDIV = KFK.lastFocusOnJqNode;
-  }
+  let jqNodeDIV = KFK.getHoverFocusLastCreate();
   if (NotSet(jqNodeDIV)) return;
 
   if (KFK.anyLocked(jqNodeDIV)) return;
@@ -8639,6 +8344,9 @@ KFK.toggleBrainstorm = function() {
   }
 };
 
+KFK.isBrainstormNode = function(jqDiv) {
+  return jqDiv.find(".brsnode").length > 1;
+};
 KFK.stopBrainstorm = function() {
   KFK.brainstormMode = false;
   KFK.brainstormFocusNode = undefined;
@@ -8836,7 +8544,12 @@ KFK.addDocumentEventHandler = function() {
           KFK.keypool = "";
           return;
         } else if (KFK.keypool.endsWith("ttd")) {
-          await KFK.copyToTodo();
+          KFK.copyToTodo
+            ? await KFK.copyToTodo()
+            : import("./todo").then(async (pack) => {
+                KFK.copyToTodo = pack.Todo.copyToTodo;
+                await KFK.copyToTodo();
+              });
           KFK.keypool = "";
           return;
         } else if (KFK.keypool.endsWith("td") || KFK.keypool.endsWith("todo")) {
@@ -8893,7 +8606,7 @@ KFK.addDocumentEventHandler = function() {
           await KFK.linkToBrain();
           KFK.keypool = "";
           return;
-        } else if (KFK.keypool.endsWith("ul")) {
+        } else if (KFK.keypool.endsWith("uj")) {
           //link to brain
           await KFK.removeNodeConnections();
           KFK.keypool = "";
@@ -9357,7 +9070,7 @@ KFK.addDocumentEventHandler = function() {
         // else KFK.gotoLowerPage();
         KFK.holdEvent(evt);
       } else if (evt.keyCode === 32) {
-        //space
+        //space key space
         //浏览器中按空格时，浏览器会滚动， 这里把它屏蔽掉
         evt.preventDefault();
         evt.stopPropagation();
@@ -9532,13 +9245,8 @@ KFK.addDocumentEventHandler = function() {
           KFK.presentNoneMask();
           KFK.endPresentation();
         }
+        KFK.onESC();
 
-        KFK.cancelAlreadySelected();
-        if (!KFK.isEditting && KFK.mode !== "line") KFK.setMode("pointer");
-        KFK.cancelTempLine();
-        KFK.setMode("pointer");
-        if (KFK.tempShape) KFK.tempShape.hide();
-        KFK.hidePickerMatlib();
         break;
       case 90: //key z
         //不要移动META-Z代码，一定要在document的key-down里面，
@@ -10016,6 +9724,15 @@ KFK.executeFunctionByName = function(functionName, context) {
   return context[func].apply(context, args);
 };
 
+KFK.onESC = function() {
+  KFK.cancelAlreadySelected();
+  if (!KFK.isEditting && KFK.mode !== "line") KFK.setMode("pointer");
+  KFK.cancelTempLine();
+  KFK.setMode("pointer");
+  if (KFK.tempShape) KFK.tempShape.hide();
+  KFK.hidePickerMatlib();
+};
+
 KFK.toggleTodoMode = async function() {
   KFK.jInputMsgDlg || (KFK.jInputMsgDlg = $(".msgInputWindow"));
   if (KFK.jInputMsgDlg.hasClass("noshow")) {
@@ -10197,7 +9914,12 @@ KFK.onMsgInput = async function(evt) {
         KFK.APP.inputMsg = "";
       } else {
         if (KFK.APP.inputMsg.trim().length > 0) {
-          await KFK.placeNewTodoItem(KFK.APP.inputMsg);
+          KFK.placeNewTodoItem
+            ? await KFK.placeNewTodoItem(KFK.APP.inputMsg)
+            : import("./todo").then(async (pack) => {
+                KFK.placeNewTodoItem = pack.Todo.placeNewTodoItem;
+                await KFK.placeNewTodoItem(KFK.APP.inputMsg);
+              });
           KFK.APP.inputMsg = "";
         }
       }
@@ -10207,57 +9929,6 @@ KFK.onMsgInput = async function(evt) {
         await KFK.ISayChatItem(KFK.APP.inputMsg);
       }
     }
-  }
-};
-KFK.placeNewTodoItem = async function(todoText) {
-  let jqCocoTodo = $("#coco_todo");
-  if (jqCocoTodo.length < 1) {
-    jqCocoTodo = await KFK.placeNode(
-      false,
-      "coco_todo",
-      "textblock",
-      "default",
-      150,
-      -480,
-      400,
-      400,
-
-      "<div id='coco_todo_title' class='coco_title'>待办事项</div>" +
-        "<div id='coco_todo_list' class='coco_list original'>" +
-        "<div class='todo_item' prg='0' id='" +
-        KFK.myuid() +
-        "'><div class='todolabel'>" +
-        todoText +
-        "</div><div class='prg'></div></div>" +
-        "</div>",
-
-      ""
-    );
-    jqCocoTodo.addClass("todolist noedit");
-    jqCocoTodo.find(".innerobj").css({
-      "justify-content": "flex-start",
-      "align-items": "flex-start",
-    });
-    await KFK.syncNodePut("C", jqCocoTodo, "todo", null, false, 0, 1);
-    KFK.setTodoItemEventHandler(jqCocoTodo);
-    KFK.scrollToNodeById("coco_todo");
-  } else {
-    if (todoText.length > 0) {
-      await KFK.addTodoItem(todoText);
-    }
-  }
-};
-
-KFK.copyToTodo = async function() {
-  let txt = "";
-  let jqDiv = KFK.getHoverFocusLastCreate();
-  try {
-    jqDiv = jqDiv.find(".innerobj");
-    txt = jqDiv.text();
-  } catch (error) {}
-  if (txt.length > 0) {
-    await KFK.placeNewTodoItem(txt);
-    KFK.scrLog(txt + " 已经添加为待办事项，99g查看");
   }
 };
 
@@ -10318,28 +9989,6 @@ KFK.beginChatMode = async function() {
   await KFK.showMsgInputDlg();
 };
 
-KFK.setTodoItemEventHandler = function(jqDIV = undefined) {
-  let theItem = null;
-  if (jqDIV) theItem = jqDIV.find(".todo_item");
-  else theItem = $(".todo_item");
-  theItem.on("click", function(evt) {
-    evt.stopPropagation();
-    KFK.hoveredTodo = $(this);
-    let x = KFK.scrXToJc1X(evt.clientX) + 30;
-    let y = KFK.scrYToJc1Y(evt.clientY) + 5;
-    $("#todo_option").css("left", KFK.px(x));
-    $("#todo_option").css("top", KFK.px(y));
-    KFK.show($("#todo_option"));
-    $(".todo_item.current").removeClass("current");
-    KFK.selectedTodo = $(this);
-    $(this).addClass("current");
-  });
-  theItem.on("mouseover", function() {
-    KFK.hoveredTodo = $(this);
-    KFK.AI("hover_todoitem");
-  });
-};
-
 KFK.setChatItemEventHandler = function(theItem) {
   theItem.on("click", function(evt) {
     evt.stopPropagation();
@@ -10375,7 +10024,12 @@ KFK.addTodoItem = async function(label) {
       "</div><div class='prg'></div></div>"
   );
   newItem.prependTo(todo_list);
-  KFK.setTodoItemEventHandler($("#coco_todo"));
+  KFK.setTodoItemEventHandler
+    ? KFK.setTodoItemEventHandler($("#coco_todo"))
+    : import("./todo").then((pack) => {
+        KFK.setTodoItemEventHandler = pack.Todo.setTodoItemEventHandler;
+        KFK.setTodoItemEventHandler($("#coco_todo"));
+      });
 
   //todo 节点的update不做undo/redo记录，所以，只需要传递最新节点数据
   await KFK.syncNodePut("U", $("#coco_todo"), "todo", undefined, false, 0, 1);
@@ -12376,13 +12030,18 @@ KFK._svgDrawNodesConnect = function(
   triangle
 ) {
   let theConnect = null;
+  let fromDIV = $(`#${fid}`);
+  let toDIV = $(`#${tid}`);
+  let cnColor = fromDIV.attr("cncolor");
+  let cnWidth = fromDIV.attr("cnwidth");
+  let cnStyle = fromDIV.attr("cnstyle");
   let reverseLine = KFK.svgDraw.findOne(`.${lineClassReverse}`);
   let oldLine = KFK.svgDraw.findOne(`.${lineClass}`);
   let reverseTriangle = KFK.svgDraw.findOne(`.${lineClassReverse}_triangle`);
   let oldTriangle = KFK.svgDraw.findOne(`.${lineClass}_triangle`);
   if (oldLine) {
     oldLine.plot(pstr);
-    oldTriangle.plot(triangle);
+    oldTriangle && oldTriangle.plot(triangle);
     theConnect = oldLine;
   } else {
     if (reverseLine) {
@@ -12401,17 +12060,24 @@ KFK._svgDrawNodesConnect = function(
         .attr("styleid", "style1")
         .fill("none")
         .stroke({
-          width: KFK.config.connect.styles.style1.normal.width,
+          width: cnWidth || KFK.config.connect.styles.style1.normal.width,
           color:
-            KFK.YIQColorAux || KFK.config.connect.styles.style1.normal.color,
+            cnColor ||
+            KFK.YIQColorAux ||
+            KFK.config.connect.styles.style1.normal.color,
         });
+      if (cnStyle === "solid") {
+        theConnect.css("stroke-dasharray", "");
+      } else {
+        theConnect.css("stroke-dasharray", `${cnWidth * 3} ${cnWidth}`);
+      }
       KFK.svgDraw
         .polygon(triangle)
         .addClass(lineClass + "_triangle")
-        .fill(KFK.YIQColorAux)
+        .fill(cnColor)
         .stroke({
           width: KFK.APP.model.svg.connect.triangle.width,
-          color: KFK.APP.model.svg.connect.triangle.color,
+          color: cnColor || KFK.APP.model.svg.connect.triangle.color,
         });
       theConnect.attr({
         id: lineClass,
@@ -12437,12 +12103,16 @@ KFK._svgDrawNodesConnect = function(
   theConnect.on("mouseout", () => {
     let styleid = theConnect.attr("styleid");
     theConnect.stroke({
-      width: KFK.config.connect.styles[styleid].normal.width,
-      color: KFK.YIQColorAux || KFK.config.connect.styles[styleid].normal.color,
+      width: cnWidth || KFK.config.connect.styles[styleid].normal.width,
+      color:
+        cnColor ||
+        KFK.YIQColorAux ||
+        KFK.config.connect.styles[styleid].normal.color,
     });
     KFK.hoveredConnectId = null;
   });
 };
+
 KFK.lockLine = function(line, lock = true) {
   if (lock) {
     let arr = line.array();
@@ -12924,12 +12594,15 @@ KFK.svgConnectNode = function(fid, tid, fbp, tbp, fx, fy, tx, ty) {
   if (!(fid && tid)) {
     return;
   }
+  let fromDIV = $(`#${fid}`);
   let lineClass = `connect_${fid}_${tid}`;
   let lineClassReverse = `connect_${tid}_${fid}`;
   let pstr = "";
   let triangle = [];
   let rad = 20;
   let tri = 10;
+  if (fromDIV.attr("cnwidth"))
+    tri = Math.max(parseInt(fromDIV.attr("cnwidth")) * 2, 10);
   let tri_half = tri * 0.5;
   let tri_height = 17.3;
   let tsx = tx,
@@ -12954,6 +12627,20 @@ KFK.svgConnectNode = function(fid, tid, fbp, tbp, fx, fy, tx, ty) {
       tsx = tx;
       tsy = ty + tri_height;
       triangle = [tsx - tri_half, tsy, tx, ty, tsx + tri_half, tsy];
+      break;
+  }
+  switch (tbp) {
+    case 0:
+      tx = tx - tri_height;
+      break;
+    case 1:
+      ty = ty - tri_height;
+      break;
+    case 2:
+      tx = tx + tri_height;
+      break;
+    case 3:
+      ty = ty + tri_height;
       break;
   }
   switch (fbp) {
