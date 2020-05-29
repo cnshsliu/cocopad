@@ -141,10 +141,12 @@
                     所以，请尽量使用手机号码来注册 -->
                     <b-input-group prepend="您的全称" class="mb-1">
                         <b-form-input id="regUserName" tabindex="2" trim v-model="model.register.name"
+                                                       autocomplete = "username"
                             :state="state.reg.name" required placeholder="2个以上汉字或4个以上英文"></b-form-input>
                     </b-input-group>
                     <b-input-group prepend="您的密码" class="mb-1">
                         <b-form-input id="regUserPwd" tabindex="3" trim :type="model.hidepassword?'password':'text'"
+                                                       autocomplete = "new-password"
                             v-model="model.register.pwd" :state="state.reg.pwd" class="no-right-border" required
                             placeholder="8个以上字母数字特殊字符">
                         </b-form-input>
@@ -157,6 +159,7 @@
                     </b-input-group>
                     <b-input-group prepend="再次录入" class="mb-1">
                         <b-form-input id="regUserPwd2" tabindex="4" trim :type="model.hidepassword?'password':'text'"
+                                                       autocomplete = "new-password"
                             v-model="model.register.pwd2" :state="state.reg.pwd2" class="no-right-border" required
                             placeholder="两次密码输入需要一致"></b-form-input>
                         <span class="right-eye">
@@ -212,11 +215,13 @@
                         class="text-center signinform-innerform">
                         <b-input-group prepend="账号" class="mb-1">
                             <b-form-input tabindex="1" id="userId" trim v-model="model.signin.userid"
+                                                                        autocomplete="username"
                                 placeholder="你的用户名">
                             </b-form-input>
                         </b-input-group>
                         <b-input-group prepend="密码" class="mb-1">
                             <b-form-input tabindex="2" id="userPwd" trim :type="model.hidepassword?'password':'text'"
+                                                       autocomplete = "current-password"
                                 v-on:keydown="KFK.onSigninInput($event)" v-model="model.signin.pwd"
                                 class="no-right-border" placeholder="你的密码"></b-form-input>
                             <span class="right-eye">
@@ -1056,6 +1061,7 @@
                                     <b-form class="office-form" autocomplete="off">
                                         <b-input-group prepend="白板名称" class="pt-4 px-5">
                                             <b-form-input id="docName" trim v-model="model.newdocname"
+                                                                            autocomplete = "docname"
                                                 :state="state.newdoc.name" placeholder="请输入白板名称"></b-form-input>
                                             <b-form-invalid-feedback id="prjName-feedback">
                                                 名称为3个以上英文或中文字符，不超过20个
@@ -1063,6 +1069,7 @@
                                         </b-input-group>
                                         <b-input-group prepend="访问密码" class="pt-2 px-5">
                                             <b-form-input id="docPwd" :type="model.hidepassword?'password':'text'" trim
+                                                          autocomplete = "current-password"
                                                 v-model="model.newdocpwd" placeholder="保持为空，则为不需要密码即可打开"></b-form-input>
                                             <span class="right-eye">
                                                 <b-button href="#" tabindex="-1" class="show-password"

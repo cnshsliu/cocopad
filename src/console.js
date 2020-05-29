@@ -1919,10 +1919,17 @@ KFK.initC3 = function() {
     evt.stopImmediatePropagation();
     evt.stopPropagation();
   });
+  KFK.JC1.on("contextmenu", function(evt) {
+    evt.preventDefault();
+    KFK.kuangXuanMouseIsDown = false;
+    KFK.panStartAt = undefined;
+  });
   KFK.JC1.on("click", async function(evt) {
     if (IsSet(KFK.selectedTodo)) {
       KFK.selectedTodo.removeClass("current");
     }
+    KFK.kuangXuanMouseIsDown = false;
+    KFK.panStartAt = undefined;
     KFK.hide($(".clickOuterToHide"));
   });
   KFK.JC3.keydown(function(evt) {
@@ -1936,8 +1943,20 @@ KFK.initC3 = function() {
     }
   });
   //click c3
+  KFK.JC3.on("contextmenu", function(evt) {
+    evt.preventDefault();
+    evt.stopPropagation();
+    KFK.kuangXuanMouseIsDown = false;
+    KFK.panStartAt = { x: evt.clientX, y: evt.clientY };
+  });
   KFK.JC3.on("click", async function(evt) {
     if (KFK.inDesigner() === false) return;
+    if (evt.ctrlKey) {
+      evt.stopPropagation();
+      evt.preventDefault();
+      return;
+    }
+
     let tmpPoint = {
       x: evt.clientX,
       y: evt.clientY,
@@ -2072,6 +2091,7 @@ KFK.initC3 = function() {
   });
   KFK.JC3.mouseup(async (evt) => {
     if (KFK.inDesigner() === false) return;
+    KFK.panStartAt = undefined;
     // 下面的尝试不起作用，在pad.js中的dropevent中是起作用的
     // console.log('JC3 mouseup');
     // if (KFK.toolboxMouseDown === true){
@@ -2140,6 +2160,18 @@ KFK.initC3 = function() {
     if (KFK.inDesigner() === false) return;
     if (KFK.inPresentingMode || KFK.inOverviewMode) return;
     KFK.upateUserMousePos(KFK.APP.model.cocouser, evt.clientX, evt.clientY);
+
+    if (KFK.panStartAt) {
+      let delta = {
+        x: evt.clientX - KFK.panStartAt.x,
+        y: evt.clientY - KFK.panStartAt.y,
+      };
+      KFK.JS1.scrollLeft(KFK.JS1.scrollLeft() - delta.x * 3);
+      KFK.JS1.scrollTop(KFK.JS1.scrollTop() - delta.y * 3);
+      KFK.panStartAt.x = evt.clientX;
+      KFK.panStartAt.y = evt.clientY;
+      return;
+    }
 
     KFK.currentMousePos.x = evt.clientX;
     KFK.currentMousePos.y = evt.clientY;
@@ -9438,6 +9470,7 @@ KFK.addDocumentEventHandler = function() {
   });
   $(document).on("mouseup", async function(evt) {
     if (KFK.inDesigner() === false) return;
+    KFK.panStartAt = undefined;
     if (KFK.mode === "pointer" && KFK.docIsReadOnly() === false) {
       KFK.kuangXuanMouseIsDown = false;
       KFK.kuangXuanEndPoint = {
@@ -10904,12 +10937,15 @@ KFK.showTextPasteDialog = async function(content) {
 
 KFK.placePastedContent = async function() {
   let toAdd = KFK.APP.model.paste.content;
+  console.log("toAdd ", toAdd.length);
   let display = KFK.APP.model.paste.display;
   let ctype = KFK.APP.model.paste.ctype;
   let innerLink = null;
+  let contentLength = 0;
   if (ctype === "url") {
     let theUrl = toAdd;
     toAdd = `<a href="${toAdd}" target="_blank">${display}</a>`;
+    contentLength = display.length;
     try {
       let m = theUrl.match(/(http|https):\/\/([^\/]*)\/(\??)(.*)/);
       if (
@@ -10930,6 +10966,10 @@ KFK.placePastedContent = async function() {
   ) {
     let tmp = $(toAdd);
     toAdd = tmp.text();
+    contentLength = toAdd.length;
+  } else {
+    let tmp = $(toAdd);
+    contentLength = tmp.text().length;
   }
   //paste image or paste text
   let hoveredJQ = KFK.hoverJqDiv();
@@ -10962,15 +11002,22 @@ KFK.placePastedContent = async function() {
     //box是在pad.js中定义的paste对象时，是否显示边框和背景色的配置信息
     //paste image in a new node
     let box = KFK.APP.model.paste.box;
+    let width = undefined;
+    let height = undefined;
+    //估算所需的文本框大小, 不会精确，用户需要继续手工调整
+    if (contentLength > 100) {
+      width = (contentLength / 6) * 18;
+      height = width * 0.6;
+    }
     let jBox = await KFK.placeNode(
       false, //shiftKey
       KFK.myuid(),
       "textblock",
       "default",
-      KFK.scalePoint(KFK.scrXToJc3X(KFK.currentMousePos.x)),
-      KFK.scalePoint(KFK.scrYToJc3Y(KFK.currentMousePos.y)),
-      100,
-      100,
+      KFK.scalePoint(KFK.scrXToJc3X(KFK.pasteAt.x)),
+      KFK.scalePoint(KFK.scrYToJc3Y(KFK.pasteAt.y)),
+      width,
+      height,
       toAdd,
       ""
     );
@@ -11027,6 +11074,10 @@ KFK.onPaste = async function(evt) {
   if (KFK.inDesigner() === false) return;
   if (KFK.noCopyPaste) return;
   if (KFK.docIsReadOnly()) return;
+  KFK.pasteAt = {
+    x: KFK.globalMouseX,
+    y: KFK.globalMouseY,
+  };
   let content = {
     html: "",
     text: "",
@@ -12029,88 +12080,95 @@ KFK._svgDrawNodesConnect = function(
   pstr,
   triangle
 ) {
-  let theConnect = null;
-  let fromDIV = $(`#${fid}`);
-  let toDIV = $(`#${tid}`);
-  let cnColor = fromDIV.attr("cncolor");
-  let cnWidth = fromDIV.attr("cnwidth");
-  let cnStyle = fromDIV.attr("cnstyle");
-  let reverseLine = KFK.svgDraw.findOne(`.${lineClassReverse}`);
-  let oldLine = KFK.svgDraw.findOne(`.${lineClass}`);
-  let reverseTriangle = KFK.svgDraw.findOne(`.${lineClassReverse}_triangle`);
-  let oldTriangle = KFK.svgDraw.findOne(`.${lineClass}_triangle`);
-  if (oldLine) {
-    oldLine.plot(pstr);
-    oldTriangle && oldTriangle.plot(triangle);
-    theConnect = oldLine;
-  } else {
-    if (reverseLine) {
-      reverseLine.removeClass(lineClassReverse);
-      reverseLine.addClass(lineClass);
-      reverseLine.plot(pstr);
-      reverseTriangle.removeClass(lineClassReverse + "_triangle");
-      reverseTriangle.addClass(lineClass + "_triangle");
-      reverseTriangle.plot(triangle);
-      theConnect = reverseLine;
+  try {
+    let theConnect = null;
+    let fromDIV = $(`#${fid}`);
+    let toDIV = $(`#${tid}`);
+    let cnColor = fromDIV.attr("cncolor");
+    let cnWidth = fromDIV.attr("cnwidth");
+    let cnStyle = fromDIV.attr("cnstyle");
+    let reverseLine = KFK.svgDraw.findOne(`.${lineClassReverse}`);
+    let oldLine = KFK.svgDraw.findOne(`.${lineClass}`);
+    let reverseTriangle = KFK.svgDraw.findOne(`.${lineClassReverse}_triangle`);
+    let oldTriangle = KFK.svgDraw.findOne(`.${lineClass}_triangle`);
+    if (oldLine) {
+      oldLine.plot(pstr);
+      oldTriangle && oldTriangle.plot(triangle);
+      theConnect = oldLine;
     } else {
-      theConnect = KFK.svgDraw.path(pstr);
-      theConnect
-        .addClass(lineClass)
-        .addClass("connect")
-        .attr("styleid", "style1")
-        .fill("none")
-        .stroke({
-          width: cnWidth || KFK.config.connect.styles.style1.normal.width,
-          color:
-            cnColor ||
-            KFK.YIQColorAux ||
-            KFK.config.connect.styles.style1.normal.color,
-        });
-      if (cnStyle === "solid") {
-        theConnect.css("stroke-dasharray", "");
+      if (reverseLine) {
+        reverseLine.removeClass(lineClassReverse);
+        reverseLine.addClass(lineClass);
+        reverseLine.plot(pstr);
+        reverseTriangle.removeClass(lineClassReverse + "_triangle");
+        reverseTriangle.addClass(lineClass + "_triangle");
+        reverseTriangle.plot(triangle);
+        theConnect = reverseLine;
       } else {
-        theConnect.css("stroke-dasharray", `${cnWidth * 3} ${cnWidth}`);
-      }
-      KFK.svgDraw
-        .polygon(triangle)
-        .addClass(lineClass + "_triangle")
-        .fill(cnColor)
+        theConnect = KFK.svgDraw.path(pstr);
+        theConnect
+          .addClass(lineClass)
+          .addClass("connect")
+          .attr("styleid", "style1")
+          .fill("none")
+          .stroke({
+            width: cnWidth || KFK.config.connect.styles.style1.normal.width,
+            color:
+              cnColor ||
+              KFK.YIQColorAux ||
+              KFK.config.connect.styles.style1.normal.color,
+          });
+        if (cnStyle === "solid") {
+          theConnect.css("stroke-dasharray", "");
+        } else {
+          theConnect.css("stroke-dasharray", `${cnWidth * 3} ${cnWidth}`);
+        }
+        KFK.svgDraw
+          .polygon(triangle)
+          .addClass(lineClass + "_triangle")
+          .fill(cnColor);
+        /*
         .stroke({
           width: KFK.APP.model.svg.connect.triangle.width,
           color: cnColor || KFK.APP.model.svg.connect.triangle.color,
         });
-      theConnect.attr({
-        id: lineClass,
-        "origin-width": KFK.APP.model.svg.connect.width,
-      });
+        */
+        theConnect.attr({
+          id: lineClass,
+          "origin-width": KFK.APP.model.svg.connect.width,
+        });
+      }
     }
+    theConnect.attr({
+      fid: fid,
+      tid: tid,
+    });
+    theConnect.off("mouseover mouseout");
+    theConnect.on("mouseover", () => {
+      let styleid = theConnect.attr("styleid");
+      theConnect.stroke({
+        width: KFK.config.connect.styles[styleid].hover.width,
+        color:
+          KFK.YIQColorAux || KFK.config.connect.styles[styleid].hover.color,
+      });
+      KFK.hoveredConnectId = theConnect.attr("id");
+      KFK.AI("hover_connect");
+      KFK.onC3 = true;
+    });
+    theConnect.on("mouseout", () => {
+      let styleid = theConnect.attr("styleid");
+      theConnect.stroke({
+        width: cnWidth || KFK.config.connect.styles[styleid].normal.width,
+        color:
+          cnColor ||
+          KFK.YIQColorAux ||
+          KFK.config.connect.styles[styleid].normal.color,
+      });
+      KFK.hoveredConnectId = null;
+    });
+  } catch (error) {
+    console.error(error);
   }
-  theConnect.attr({
-    fid: fid,
-    tid: tid,
-  });
-  theConnect.off("mouseover mouseout");
-  theConnect.on("mouseover", () => {
-    let styleid = theConnect.attr("styleid");
-    theConnect.stroke({
-      width: KFK.config.connect.styles[styleid].hover.width,
-      color: KFK.YIQColorAux || KFK.config.connect.styles[styleid].hover.color,
-    });
-    KFK.hoveredConnectId = theConnect.attr("id");
-    KFK.AI("hover_connect");
-    KFK.onC3 = true;
-  });
-  theConnect.on("mouseout", () => {
-    let styleid = theConnect.attr("styleid");
-    theConnect.stroke({
-      width: cnWidth || KFK.config.connect.styles[styleid].normal.width,
-      color:
-        cnColor ||
-        KFK.YIQColorAux ||
-        KFK.config.connect.styles[styleid].normal.color,
-    });
-    KFK.hoveredConnectId = null;
-  });
 };
 
 KFK.lockLine = function(line, lock = true) {
