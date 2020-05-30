@@ -2465,6 +2465,8 @@ KFK.showOtherUserMovingBadge = function(mouse) {
 
   let wwidth = window.innerWidth;
   let wheight = window.innerHeight;
+  wwidth = KFK.scalePoint(wwidth);
+  wheight = KFK.scalePoint(wheight);
   let x = KFK.jc1XToJc3X(pos.x);
   let y = KFK.jc1YToJc3Y(pos.y);
   let sc = $("#S1");
@@ -2570,6 +2572,9 @@ KFK.scaleRect = (rect) => {
 };
 KFK.scalePoint = (pt) => {
   return pt / KFK.scaleRatio;
+};
+KFK.unScalePoint = (pt) => {
+  return pt * KFK.scaleRatio;
 };
 KFK.endKuangXuan = function(pt1, pt2, shiftKey) {
   pt1.x = KFK.scalePoint(pt1.x);
