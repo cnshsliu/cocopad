@@ -744,7 +744,11 @@ svg path {
 }
 
 .showAfterInit {
-  display: none;
+  visibility: hidden;
+}
+
+.showAfterColumnLoad {
+  visibility: hidden;
 }
 .registerform-outer {
   width: 100%;
@@ -915,8 +919,14 @@ input#regUserCode {
   top: 120px;
   left: 100px;
 }
-#columndocs img {
+.column_doc img {
   width: 100%;
+}
+.mycolumn .column_name {
+  font-size: 24px;
+}
+.column_owner_avatar {
+  width: 48px;
 }
 .explorer {
   position: absolute;
@@ -2383,4 +2393,7 @@ a:hover {
   bottom: 0px;
   right: 0px;
   font-size: 10px;
+}
+.clickable {
+  cursor: pointer;
 }

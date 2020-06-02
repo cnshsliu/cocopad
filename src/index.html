@@ -61,11 +61,18 @@
                 <a href="/"><img src="./cocopad.svg"></img></a>
             </div>
         </div>
-        <div v-if="model.column !== 'no'" class="columnpage">
+        <div v-if="model.column !== 'no'" class="columnpage showAfterColumnLoad">
             <b-container id="columndocs">
-                <b-row v-for="i in Math.ceil(model.chdocs.length/4)" class="w-100">
+                <b-row class="mycolumn mb-2">
+                    <b-col class="column_name">
+                        {{model.columndoclist.cname}}
+                    </b-col>
+                    <b-col><img :src="model.columndoclist.owner.avatar" class="column_owner_avatar">
+                        专栏作者: {{model.columndoclist.owner.name}}</b-col>
+                </b-row>
+                <b-row v-for="i in Math.ceil(model.chdocs.length/4)" class="w-100 column_doc">
                     <b-col v-for="(aDoc, index) in model.chdocs.slice((i-1)*4, i*4)" class="d-flex align-items-center">
-                        <b-container @click="KFK.gotoDocById(aDoc._id)">
+                        <b-container @click="KFK.gotoDocById(aDoc._id)" class="clickable">
                             <b-row>
                                 <div :style="aDoc.bkgstyle"></div>
                             </b-row>

@@ -237,7 +237,7 @@ KFK.originZIndex = 1;
 KFK.lastActionLogJqDIV = null;
 
 KFK.brainstormMode = true;
-KFK.brainstormFocusNode = undefined;
+KFK.brNodeId = undefined;
 
 KFK.JC1 = $("#C1");
 KFK.C1 = el(KFK.JC1);
@@ -725,11 +725,21 @@ KFK.onWsMsg = async function(response) {
       KFK.APP.setData("model", "docs", docs);
       break;
     case "LISTCH":
+      console.log(response);
       KFK.APP.setData("model", "listcolumnoption", response.option);
+      KFK.APP.model.columndoclist.cname = response.cname;
+      KFK.APP.model.columndoclist.owner.name = response.owner.name;
+      try {
+        KFK.APP.model.columndoclist.owner.avatar =
+          KFK.avatars[response.owner.avatar].src;
+      } catch (error) {
+        KFK.debug("set column avatar src failed", error.message);
+        KFK.debug("column.ownerAvatar is", response.owner.avatar);
+      }
       docs = response.docs;
       docs.forEach((doc) => {
         doc.thumbnail = "https://liuzijin.com/scr/" + doc._id + ".png";
-        doc.bkgstyle = `background-image: url('${doc.thumbnail}'); background-repeat: no-repeat; background-size: 100% 100%; height: 100px; width:100%`;
+        doc.bkgstyle = `background-image: url('${doc.thumbnail}'); background-repeat: no-repeat; background-size: 100% 100%; height: 100px; width:100%; max-width:200px`;
         if (doc.ownerAvatar !== "") {
           try {
             doc.ownerAvatarSrc = KFK.avatars[doc.ownerAvatar].src;
@@ -740,6 +750,7 @@ KFK.onWsMsg = async function(response) {
         }
       });
       KFK.APP.setData("model", "chdocs", docs);
+      $(".showAfterColumnLoad").removeClass("showAfterColumnLoad");
       break;
     case "SEARCHDOC":
       KFK.APP.setData("model", "interLinkDocs", response.docs);
@@ -3248,15 +3259,16 @@ KFK.setMarkdownWithPreview = function(jqDIV) {
 };
 
 KFK.LinkFromBrainCenter = async function(jqNode) {
-  if (KFK.brainstormMode && KFK.brainstormFocusNode) {
-    let divBefore = KFK.brainstormFocusNode.clone();
+  if (KFK.brainstormMode && KFK.brNodeId) {
+    let brNode = KFK.getNodeById(KFK.brNodeId);
+    let divBefore = brNode.clone();
     divBefore.find(".brsnode").remove();
-    KFK.drawConnect(KFK.brainstormFocusNode, jqNode);
-    KFK.buildConnectionBetween(KFK.brainstormFocusNode, jqNode);
+    KFK.drawConnect(brNode, jqNode);
+    KFK.buildConnectionBetween(brNode, jqNode);
 
     await KFK.syncNodePut(
       "U",
-      KFK.brainstormFocusNode.clone(),
+      brNode.clone(),
       "brainstorm",
       divBefore,
       false,
@@ -6029,7 +6041,6 @@ KFK.init = async function() {
   //    KFK.hide(".introduce_svg_inner");
   //}
 
-  $(".showAfterInit").removeClass("showAfterInit");
   $("#minimap").removeClass("noshow");
   $("#left_scenarios").removeClass("noshow");
   //先不做重新载入,每次进入使用缺省配置可能对培养用户习惯更合适一些
@@ -6053,6 +6064,7 @@ KFK.init = async function() {
       KFK.AI("hover_c3");
     }, 10000);
   }
+  $(".showAfterInit").removeClass("showAfterInit");
 };
 
 KFK.initExplorer = function() {
@@ -6307,6 +6319,11 @@ KFK.checkSession = async function(isOpenAnn) {
   KFK.cocouser = null;
   await KFK.readLocalCocoUser();
   let userMode = "NORMAL"; //Normal | DEMO | ANNONYMOUS
+  console.log("KFK.urlMode", KFK.urlMode);
+  if (KFK.urlMode === "column") {
+    //await KFK.connectToWS();
+    //return;
+  }
   if (KFK.cocouser) {
     KFK.debug("checksession: found KFK.cocouser" + KFK.cocouser.name);
     KFK.setAppData(
@@ -7936,10 +7953,21 @@ KFK.recreateNode = async function(obj, callback) {
       //需要先清理，否则在替换已有node时，会导致无法resize
       KFK.cleanNodeEventFootprint(jqDIV);
       KFK.setNodeShowEditor(jqDIV);
-      if ($(`#${nodeid}`).length > 0) {
+      let existingNode = KFK.getNodeById(nodeid);
+      if (existingNode.length > 0) {
         //节点存在，需要刷新
-        $(`#${nodeid}`).prop("outerHTML", jqDIV.prop("outerHTML"));
-        jqDIV = $(`#${nodeid}`);
+        let isBrNode = false;
+        console.log(existingNode.prop("outerHTML"));
+        if (existingNode.find(".brsnode").length > 0) {
+          isBrNode = true;
+        }
+        console.log("isBrNode", isBrNode);
+        existingNode.prop("outerHTML", jqDIV.prop("outerHTML"));
+        console.log(existingNode.prop("outerHTML"));
+        if (isBrNode) {
+          KFK.startBrainstorm(existingNode);
+        }
+        jqDIV = existingNode;
         if (KFK.isA(jqDIV, "kfk_md")) {
           KFK.setMarkdownWithPreview(jqDIV);
         }
@@ -7951,7 +7979,7 @@ KFK.recreateNode = async function(obj, callback) {
           KFK.setMarkdownWithPreview(jqDIV);
         }
       }
-      jqDIV = $(`#${nodeid}`);
+      jqDIV = KFK.getNodeById(nodeid);
       if (KFK.APP.model.cocodoc.readonly === false) {
         await KFK.setNodeEventHandler(jqDIV, async function() {
           if (isALockedNode) {
@@ -8184,8 +8212,6 @@ KFK.updateSelectedDIVs = async function(reason, callback) {
     let jqDIV = divs[i];
     let jqOld = jqDIV.clone();
     if (KFK.anyLocked(jqDIV) === false) {
-      //let isBrainstorm = KFK.isBrainstormNode(jqDIV);
-      //console.log(isBrainstorm);
       await callback(jqDIV);
       //if (isBrainstorm) {
       //KFK.startBrainstorm(jqDIV);
@@ -8666,30 +8692,31 @@ KFK.toggleBrainstorm = function() {
   if (NotSet(jqNodeDIV)) return;
 
   if (KFK.anyLocked(jqNodeDIV)) return;
-  if (KFK.brainstormFocusNode === jqNodeDIV) {
-    KFK.brainstormFocusNode = undefined;
+  if (KFK.brNodeId && KFK.brNodeId === jqNodeDIV.attr("id")) {
+    KFK.brNodeId = undefined;
     KFK.stopBrainstorm();
   } else {
     KFK.startBrainstorm(jqNodeDIV);
   }
 };
 
-KFK.isBrainstormNode = function(jqDiv) {
-  return jqDiv.find(".brsnode").length > 1;
-};
 KFK.stopBrainstorm = function() {
   KFK.brainstormMode = false;
-  KFK.brainstormFocusNode = undefined;
+  KFK.brNodeId = undefined;
   $(".brsnode").remove();
 };
 
 KFK.startBrainstorm = function(jqNode) {
   if (NotSet(jqNode)) return;
-  KFK.brainstormFocusNode = jqNode;
+  KFK.brNodeId = jqNode.attr("id");
   KFK.brainstormMode = true;
   $(".brsnode").remove();
   let jBrsNode = $("<div class='brsnode' style='z-index:-1'></div>");
-  jBrsNode.appendTo(KFK.brainstormFocusNode);
+  jBrsNode.appendTo(KFK.getNodeById(KFK.brNodeId));
+};
+
+KFK.getNodeById = function(nodeId) {
+  return $("#" + nodeId);
 };
 
 //用在index.js中的boostrapevue
@@ -13644,7 +13671,7 @@ KFK.nodeNotExist = (jqdiv) => {
  * 跳到当前脑图中心节点上
  */
 KFK.jumpToBrain = async () => {
-  await KFK.addToStackThenJumpTo(KFK.brainstormFocusNode, false, true);
+  await KFK.addToStackThenJumpTo(KFK.getNodeById(KFK.brNodeId), false, true);
 };
 KFK.addFromTo = async function(fDiv, tDiv) {
   await KFK.flushJumpStack();
@@ -13683,7 +13710,7 @@ KFK.addToStackThenJumpTo = async function(
     }
   }
   if (found === false) {
-    KFK.jumpStack.push(KFK.brainstormFocusNode);
+    KFK.jumpStack.push(KFK.getNodeById(KFK.brNodeId));
     tmpIdx = KFK.jumpStack.length - 1;
     KFK.jumpStackPointer = tmpIdx;
   } else {
@@ -13694,7 +13721,7 @@ KFK.addToStackThenJumpTo = async function(
 
 KFK.linkToBrain = async () => {
   //rr
-  if (NotSet(KFK.brainstormFocusNode)) {
+  if (NotSet(KFK.brNodeId)) {
     // console.log("brain not set, just return");
     return;
   }
@@ -14050,6 +14077,8 @@ if (urlSearch.startsWith("?dou=")) {
 } else if (urlPath.match(/@(.*)$/)) {
   console.log("Column", urlPath.substr(2));
   KFK.column = urlPath.substr(2);
+  KFK.urlMode = "column";
+  KFK.shareCode = urlPath.substr(2);
   // } else {
   //   window.history.replaceState({}, null, KFK.urlBase);
 }

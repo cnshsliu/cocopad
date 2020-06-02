@@ -26,7 +26,10 @@ const config = {
     basedir: "",
   },
   ws_server: {
-    endpoint: { label: "LOCAL", url: "ws://localhost:5008/grume/wsquux" },
+    endpoint: {
+      label: "LZJ",
+      url: "wss://liuzijin.com/clbdapi/grume/wsquux",
+    },
     endpoint_lzj: {
       label: "LZJ",
       url: "wss://liuzijin.com/clbdapi/grume/wsquux",

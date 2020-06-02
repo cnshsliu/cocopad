@@ -259,6 +259,10 @@ const app = new Vue({
         id: "",
         name: "",
       },
+      columndoclist: {
+        cname: "",
+        owner: { name: "", avatar: "" },
+      },
       osName: "",
       endpoint: "",
       publish: {
