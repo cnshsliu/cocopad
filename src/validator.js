@@ -7,6 +7,16 @@ Validator.validateDocName = function(str) {
   if (str.match(regex) && str.trim().length >= 3) return true;
   else return false;
 };
+Validator.validateColumnId = function(str) {
+  let regex = /^[a-zA-Z][a-zA-Z0-9_]{7,19}$/;
+  if (str.match(regex) && str.trim().length >= 8) return true;
+  else return false;
+};
+Validator.validateColumnName = function(str) {
+  let regex = /^[a-z A-Z0-9_\u4e00-\u9fa5]{3,20}$/;
+  if (str.match(regex) && str.trim().length >= 3) return true;
+  else return false;
+};
 
 Validator.validateUserId = function(str) {
   let regex = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;

@@ -50,6 +50,7 @@ const assetIcons = [
   "pointer",
   "pwd",
   "richtext",
+  "md",
   "rtcontrol",
   "rtcontrol_fill",
   "share",

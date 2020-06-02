@@ -1,4 +1,4 @@
-import events from "events";
+//import events from "events";
 import "../scss/custom.scss";
 import KFK from "./console";
 import ACM from "./accountmanage";
@@ -7,8 +7,23 @@ import SHARE from "./sharemanage";
 import Validator from "./validator";
 import { NodeController } from "./nodeController";
 import { DocController } from "./docController";
+import Column from "./components/column.vue";
 
+const Foo = { template: "<div>foo</div>" };
+const Bar = { template: "<div>bar</div>" };
 const app = new Vue({
+  router: new VueRouter({
+    mode: "history",
+    routes: [
+      {
+        path: "/@*",
+        component: Column,
+        props: { KFK: KFK },
+      },
+      { path: "/foo", component: Foo },
+      { path: "/bar", component: Bar },
+    ],
+  }),
   data: {
     goodsSearchQ: "",
     goodsToBuy: { name: "", price1: 0, price2: 0 },
@@ -175,6 +190,7 @@ const app = new Vue({
       line: false,
       textblock: false,
       richtext: false,
+      md: false,
       lock: false,
       minimap: false,
       connect: false,
@@ -234,9 +250,15 @@ const app = new Vue({
         importbr: false,
         buy1Dialog: false,
         buy2Dialog: false,
+        prjToColumnDialog: false,
       },
     },
     model: {
+      column: "no",
+      toColumn: {
+        id: "",
+        name: "",
+      },
       osName: "",
       endpoint: "",
       publish: {
@@ -380,6 +402,7 @@ const app = new Vue({
         owner: "dummydocnotallowed",
         readonly: false,
         ownerAvatar_src: undefined,
+        pms: 0,
       },
       cocouser: { userid: "", name: "", avatar: "avatar-0", avatar_src: null },
       cocoorg: {
@@ -451,6 +474,7 @@ const app = new Vue({
       ],
       prjfields: [
         { key: "name", label: "项目名称" },
+        { key: "column", label: "专栏" },
         { key: "operations", label: "相关操作" },
       ],
       matfields: [
@@ -459,6 +483,7 @@ const app = new Vue({
       ],
       prjwarning: "",
       docs: [],
+      chdocs: [],
       pubs: [],
       goods: [],
       subs: [],
@@ -486,6 +511,7 @@ const app = new Vue({
         nodemessage: true,
         autoFollow: true,
         hideRight: true,
+        docAcl: 0,
       },
       dragToCreate: true,
       lineToggleMode: false,
@@ -669,8 +695,10 @@ KFK.NodeController = NodeController;
 window.Buffer = window.Buffer || require("buffer").Buffer;
 KFK.APP = app;
 app.model.endpoint = KFK.config.ws_server.endpoint.label;
+app.model.column = KFK.column;
 
-const dropZoneId = "C3";
+console.log("app.model.column=", app.model.column);
+
 window.addEventListener(
   "dragenter",
   function(e) {

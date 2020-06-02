@@ -26,7 +26,7 @@ const config = {
     basedir: "",
   },
   ws_server: {
-    endpoint: { label: "LZJ", url: "wss://liuzijin.com/clbdapi/grume/wsquux" },
+    endpoint: { label: "LOCAL", url: "ws://localhost:5008/grume/wsquux" },
     endpoint_lzj: {
       label: "LZJ",
       url: "wss://liuzijin.com/clbdapi/grume/wsquux",
@@ -218,6 +218,37 @@ const config = {
         },
       },
     },
+    md: {
+      edittable: false,
+      resizable: true,
+      droppable: true,
+      customshape: true,
+      style: {
+        width: "460",
+        height: "400",
+        minHeight: "400px",
+        display: "block",
+        padding: "0px",
+        margin: "0px",
+        overflow: "show",
+        color: "black",
+        "background-color": "#FFFFFF",
+        "border-color": "#333333",
+        "border-width": "1px",
+        "border-style": "solid",
+        "border-radius": "0px",
+        position: "absolute",
+      },
+      inner: {
+        content: "",
+        style: {
+          display: "block",
+          position: "absolute",
+          width: "100%",
+          height: "100%",
+        },
+      },
+    },
   },
   defaultSize: {
     yellowtip: {
@@ -247,6 +278,9 @@ const config = {
     },
     richtext: {
       default: { width: 400, height: 200 },
+    },
+    md: {
+      default: { width: 460, height: 400 },
     },
   },
   layout: {

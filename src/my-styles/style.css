@@ -901,6 +901,23 @@ input#regUserCode {
   text-align: center;
 }
 
+.columnpage {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  overflow: scroll;
+}
+.columnpage #columndocs {
+  position: absolute;
+  top: 120px;
+  left: 100px;
+}
+#columndocs img {
+  width: 100%;
+}
 .explorer {
   position: absolute;
   top: 0px;
@@ -1805,6 +1822,10 @@ input {
   overflow: auto;
   white-space: nowrap;
   padding-right: 0px;
+}
+
+.doc-name-inner {
+  height: 60px !important;
 }
 
 .doc-acl-width {

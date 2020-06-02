@@ -1,163 +1,7 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-    <title>WeTeam.WORK-即时协作-白板-脑图-演示-音视频</title>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="/my-styles/room.css">
-    <link rel="shortcut icon" href="./favicon.png" />
-    <link type="text/css" rel="stylesheet"
-        href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
-    <link type="text/css" rel="stylesheet"
-        href="https://cdn.staticfile.org/bootstrap-vue/2.12.0/bootstrap-vue.min.css" />
-    <!-- Load Vue followed by BootstrapVue, and BootstrapVueIcons -->
-    <link rel="stylesheet" href="/my-styles/style.css">
-    <!-- <script src="https://unpkg.com/@popperjs/core@2"></script> -->
-    <script src="https://cdn.staticfile.org/vue/2.6.11/vue.min.js"></script>
-    <script src="https://cdn.staticfile.org/vue-router/3.2.0/vue-router.min.js"></script>
-    <script src="https://cdn.staticfile.org/bootstrap-vue/2.12.0/bootstrap-vue.min.js"></script>
-    <script src="https://cdn.staticfile.org/bootstrap-vue/2.12.0/bootstrap-vue-icons.min.js"></script>
-    <script src="https://cdn.staticfile.org/jquery/3.5.0/jquery.min.js"></script>
-    <script src="https://cdn.staticfile.org/jqueryui/1.12.1/jquery-ui.min.js"></script>
-    <!-- <script src="https://liuzijin.com/jslib/jquery-minimap.js"></script> -->
-    <script src="https://liuzijin.com/jslib/jquery.fontpicker.js"></script>
-    <!-- spectrum.min.js was patched. -->
-    <!-- see: https://github.com/nguyenj/spectrum/commit/01fe88bc03355f854f5ba5ff711745ca235539b9 -->
-    <script src="https://liuzijin.com/jslib/spectrum.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="https://liuzijin.com/jslib/spectrum.min.css">
-    <script src="https://liuzijin.com/jslib/cos-js-sdk-v5.min.js"></script>
-    <!-- <script type="text/javascript" src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.js"></script> -->
-    <link rel="stylesheet" href="/my-styles/qlviewer.css">
-    <link rel="stylesheet" href="https://cdn.staticfile.org/quill/2.0.0-dev.3/quill.snow.min.css">
-    <script type="text/javascript" src="https://cdn.staticfile.org/svg.js/3.0.16/svg.min.js"></script>
-    <script type="text/javascript" src="https://cdn.staticfile.org/quill/2.0.0-dev.3/quill.min.js"></script>
-    <script type="text/javascript" src="https://liuzijin.com/jslib/quill2html.js"></script>
-    <script type="text/javascript"
-        src="https://cdn.jsdelivr.net/npm/browser-image-compression@1.0.9/dist/browser-image-compression.js"></script>
-    <link rel="stylesheet" href="/my-styles/demo_svg.css">
-</head>
-
-<body>
-    <img style="display:none;" id='defaultavatar' :src="KFK.getFrontEndUrl('avatars/avatar-0.svg')" />
-    <div id="overallbackground" class="grid1"></div>
-    <div id='app' class='fontFancyColor'>
-        <div id="waiting" class="waitinglogo noshow">
-            <!-- connect to cloud waiting-->
-            <img src="./cocopad2.svg" class="logo d-inline-block align-top showAfterInit" alt="COLOBOD">
-                <p id='reconnect-warning'>Reconnecting...</p>
-        </div>
-        <div id="firstpage">
-            <div class="showAfterInit"
-                v-show="!show.section.designer && (show.section.signin || show.section.register)">
-                <b-button pill variant='success' class='signin-button-tr' :size="show.section.register?'sm':'md'"
-                    @click="KFK.gotoRegister">注 册</b-button>
-                <b-button pill variant='success' class='register-button-tr' :size="show.section.signin?'sm':'md'"
-                    @click="KFK.gotoSignin">登 录</b-button>
-            </div>
-            <div class="text-center msgarea  noshow spaceToHide" id="MSG">
-            </div>
-            <div v-show="!show.section.designer" class='left_top_logo showAfterInit'>
-                <a href="/"><img src="./cocopad.svg"></img></a>
-            </div>
-        </div>
-        <div v-if="model.column !== 'no'" class="columnpage">
-            <b-container id="columndocs">
-                <b-row v-for="i in Math.ceil(model.chdocs.length/4)" class="w-100">
-                    <b-col v-for="(aDoc, index) in model.chdocs.slice((i-1)*4, i*4)" class="d-flex align-items-center">
-                        <b-container @click="KFK.gotoDocById(aDoc._id)">
-                            <b-row>
-                                <div :style="aDoc.bkgstyle"></div>
-                            </b-row>
-                            <b-row>
-                                    {{aDoc.name}}
-                            </b-row>
-                        </b-container>
-                    </b-col>
-                </b-row>
-            </b-container>
-        </div>
-        <div v-else id="cocomain">
-        <div id="registerform" class="registerform" v-show="show.section.register" style="display:none;">
-            <b-form autocomplete="off" class="w-100 text-center px-2">
-                <div v-if="KFK.urlMode==='ivtcode'" class="mt-3">
-                    {{model.invitor.name}}<BR>
-                    邀请您使用即时协作平台
-                </div>
-                <div v-show="model.register.step==='reg'">
-                    <b-row>
-                        <b-col class="pb-4" style="font-size:28px">
-                            新用户注册
-                        </b-col>
-                    </b-row>
-                    <b-input-group prepend="注册账号" class="mb-1">
-                        <b-form-input id="regUserId" tabindex="1" trim v-model="model.register.userid"
-                            :state="state.reg.userid" required placeholder="手机号或邮箱地址"></b-form-input>
-                    </b-input-group>
-                    请使用手机号码或邮箱地址注册
-                    <!-- 虽然可以用邮箱注册，但如果你未来需要团队三人以上的团队协作时，还是需要用到手机号码<BR>
-                    所以，请尽量使用手机号码来注册 -->
-                    <b-input-group prepend="您的全称" class="mb-1">
-                        <b-form-input id="regUserName" tabindex="2" trim v-model="model.register.name"
-                                                       autocomplete = "username"
-                            :state="state.reg.name" required placeholder="2个以上汉字或4个以上英文"></b-form-input>
-                    </b-input-group>
-                    <b-input-group prepend="您的密码" class="mb-1">
-                        <b-form-input id="regUserPwd" tabindex="3" trim :type="model.hidepassword?'password':'text'"
-                                                       autocomplete = "new-password"
-                            v-model="model.register.pwd" :state="state.reg.pwd" class="no-right-border" required
-                            placeholder="8个以上字母数字特殊字符">
-                        </b-form-input>
-                        <span class="right-eye">
-                            <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword"
-                                variant="outline-none">
-                                <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
-                            </b-button>
-                        </span>
-                    </b-input-group>
-                    <b-input-group prepend="再次录入" class="mb-1">
-                        <b-form-input id="regUserPwd2" tabindex="4" trim :type="model.hidepassword?'password':'text'"
-                                                       autocomplete = "new-password"
-                            v-model="model.register.pwd2" :state="state.reg.pwd2" class="no-right-border" required
-                            placeholder="两次密码输入需要一致"></b-form-input>
-                        <span class="right-eye">
-                            <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword"
-                                variant="outline-none">
-                                <b-icon scale="1.5" :icon="model.hidepassword?'eye':'eye-slash'" />
-                            </b-button>
-                        </span>
-                    </b-input-group>
-                    <div class="bg-none">
-                    </div>
-                    <div class="bg-none mt-3 login-button-area">
-                        <b-button @click="ACM.registerUser" tabindex="5" variant="primary">注册 &gt;&gt;</b-button>
-                        <a href="/?dou=welcome_new_user">先不注册，直接体验</a>
-                        <a href="#" @click="KFK.gotoSignin">我已有账号，请登录</a>
-                    </div>
-                </div>
-                <div v-show="model.register.step==='code'">
-                    <b-row>
-                        <b-col class="pb-4" style="font-size:28px">
-                            新用户注册
-                        </b-col>
-                    </b-row>
-                    <b-form-group>
-                        <b-form-input id="regUserCode" tabindex="10" trim v-model="model.register.code"
-                            class="mb-2 mr-sm-2 mb-sm-0" required placeholder="请输入六位验证码"></b-form-input>
-                    </b-form-group>
-                    <b-row>
-                        <b-col class="bg-none mt-3">
-                            <b-button @click="ACM.verifyRegCode" tabindex="11" variant="primary">验证 &gt;&gt;</b-button>
-                        </b-col>
-                    </b-row>
-                    <b-row>
-                        <b-col class="bg-none">
-                            <a href="#" class="card-link" @click="ACM.resendVerifyCode">没有收到验证码？点这里重新发送</a>
-                        </b-col>
-                    </b-row>
-                </div>
-            </b-form>
-        </div>
+<div v-if="true">
+        <!-- first page-->
+        <!-- leftbkg-->
+        <!-- waiting-->
         <!-- signin form login form-->
         <div id="signinform" class="signinform" v-show="show.section.signin" style="display:none;">
             <div class="introduce">
@@ -998,16 +842,7 @@
                                 <b-table hover id="my-prj-table" :items="model.prjs" :per-page="model.perPage"
                                     :current-page="model.currentPrjPage" small :fields="model.prjfields"
                                     @row-clicked="KFK.prjRowClickHandler">
-                                    <template v-slot:cell(column)="aPrj">
-                                        <b-link v-if="aPrj.item.cid !== aPrj.item.prjid" :href="'/@' + aPrj.item.cid">{{aPrj.item.cname}}</b-link>
-                                    </template>
                                     <template v-slot:cell(operations)="aPrj">
-                                        <b-button v-if="aPrj.item.prjid === aPrj.item.cid" size="sm"
-                                            @click="KFK.setToColumn(aPrj.item, aPrj.index, $event.target)"
-                                            class="m-0 p-0 myhovered" variant="outline-none">
-                                                <b-icon icon="book"></b-icon> 设为专栏
-                                        </b-button>
-                                        <div size="sm"></div>
                                         <b-button size="sm"
                                             @click="KFK.deletePrjItem(aPrj.item, aPrj.index, $event.target)"
                                             class="m-0 p-0 myhovered" variant="outline-none">
@@ -1188,7 +1023,7 @@
                                     </template>
                                     <template v-slot:cell(name)="aDoc">
                                         <b-col class="d-flex align-items-center doc-name-width">
-                                            <div class="doc-name-inner" :style="aDoc.item.bkgstyle">
+                                            <div class="doc-name-inner">
                                                 {{aDoc.item.name}}
                                             </div>
                                         </b-col>
@@ -1885,18 +1720,6 @@
                         v-on:keydown="KFK.onNormalInput($event)">
                     </b-form-input>
                 </b-modal>
-                <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" v-model="show.dialog.prjToColumnDialog"
-                    @ok="KFK.createColumnFromProject"
-                    title="请选择专栏的iD和名称" button-size="sm" centered size="md">
-                            <b-input-group prepend="专栏ID" class="mb-1">
-                                <b-form-input trim v-model="model.toColumn.id"  required v-on:keydown="KFK.onNormalInput($event)">
-                                </b-form-input>
-                            </b-input-group>
-                            <b-input-group prepend="专栏名称" class="mb-1">
-                                <b-form-input trim v-model="model.toColumn.name"  required v-on:keydown="KFK.onNormalInput($event)">
-                                </b-form-input>
-                            </b-input-group>
-                </b-modal>
                 <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" v-model="show.dialog.buy1Dialog"
                     button-size="sm" centered size="md" :hide-footer="true" title="扫码付费">
                     <b-container class="w-100 m-0 p-1">
@@ -2318,10 +2141,3 @@
             </b-table>
         </div> <!-- interlink -->
     </div>
-
-    </div>
-    <!--app-->
-</body>
-<script src="./pad.js"></script>
-
-</html>
