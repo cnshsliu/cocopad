@@ -7,23 +7,23 @@ import SHARE from "./sharemanage";
 import Validator from "./validator";
 import { NodeController } from "./nodeController";
 import { DocController } from "./docController";
-import Column from "./components/column.vue";
+import homePage from "./components/home.vue";
 
 const Foo = { template: "<div>foo</div>" };
 const Bar = { template: "<div>bar</div>" };
+const router = new VueRouter({
+  mode: "history",
+  routes: [
+    {
+      path: "/home",
+      component: homePage,
+    },
+    { path: "/foo", component: Foo },
+    { path: "/bar", component: Bar },
+  ],
+});
 const app = new Vue({
-  router: new VueRouter({
-    mode: "history",
-    routes: [
-      {
-        path: "/@*",
-        component: Column,
-        props: { KFK: KFK },
-      },
-      { path: "/foo", component: Foo },
-      { path: "/bar", component: Bar },
-    ],
-  }),
+  router: router,
   data: {
     goodsSearchQ: "",
     goodsToBuy: { name: "", price1: 0, price2: 0 },
@@ -688,8 +688,6 @@ const app = new Vue({
     },
   },
 }).$mount("#app");
-
-//router.push("/foo");
 //router.push("/bar");
 
 DocController.KFK = KFK;
