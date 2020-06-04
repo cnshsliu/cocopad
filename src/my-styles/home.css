@@ -2,3 +2,12 @@
   width: 100%;
   background-color: cyan;
 }
+#highlight {
+  background-color: transparent;
+}
+#highlight-1 {
+  height: 100px;
+}
+.tst1 {
+  background-color: #cccccc;
+}

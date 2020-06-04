@@ -6040,6 +6040,8 @@ KFK.init = async function() {
   //if (KFK.urlBase.indexOf('liuzijin')>0) {
   //    KFK.hide(".introduce_svg_inner");
   //}
+  //
+  $("body").css("overflow", "scroll");
 
   $("#minimap").removeClass("noshow");
   $("#left_scenarios").removeClass("noshow");
@@ -6618,6 +6620,7 @@ KFK.refreshDesignerWithDoc = async function(
   quickGlance = false,
   forceReadonly = false
 ) {
+  $("body").css("overflow", "hidden");
   //KFK.APP.$router.push("/designer");
   if (doc_id !== null) KFK.info(">>>>>>refreshDesigner for doc", doc_id);
   else KFK.info(">>>>>>refreshDesigner only, no doc will be load");
@@ -6850,7 +6853,7 @@ KFK.gotoSignin = async function() {
     designer: false,
   });
   KFK.startTypeWriter();
-  KFK.APP.$router.push("/home");
+  KFK.APP.$router.push("/signin");
   console.log("old");
   console.log($("body").css("overflow"));
   $("body").css("overflow", "scroll");
@@ -6870,9 +6873,9 @@ KFK.startTypeWriter = function() {
     ["网络教学云白板", "真正把教室搬到互联网上"],
     ["即时·协作·云同步", "云白板革命性的办公协作方式"],
     ["文本·框图·图片·手绘", "多方实时同步、即时协作"],
-    ["富文本·MarkDown", "满足不同编辑需求"],
+    ["富文本·MarkDown", "满足不同内容形式需求"],
     ["内置文字·音视频聊天", "一块云白板满足全部会议所需"],
-    ["大企业、小团队、个人", "都需要拥有一块云白板"],
+    ["企业·团队·个人", "节省运营成本，提高产出效率"],
   ];
 
   // type one text in the typwriter
@@ -11087,6 +11090,7 @@ KFK.showNotAclAccessable = function(doc) {
 };
 
 KFK.gotoExplorer = async function() {
+  $("body").css("overflow", "scroll");
   if (KFK.APP.model.cocoprj.name === "") {
     KFK.setAppData("model", "cocoprj", {
       prjid: "all",
@@ -11135,6 +11139,7 @@ KFK.gotoExplorer = async function() {
 };
 
 KFK.gotoDesigner = async function() {
+  $("body").css("overflow", "hidden");
   await KFK.showSection({
     explorer: false,
     designer: true,

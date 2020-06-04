@@ -1683,27 +1683,25 @@ select:focus {
   align-items: center;
   justify-content: center;
 }
-#theboard {
-  width: 100%;
-  height: 200px;
-}
 .introduce_svg_inner {
   width: 100%;
   height: 200px;
-  position: relative;
-  animation: opacity1 10s;
+  animation: opacity1 20s;
   animation-iteration-count: infinite;
-  border-radius: 10px;
+}
+#theboard {
+  width: 100%;
+  height: 100%;
 }
 @keyframes opacity1 {
   0% {
-    opacity: 0.1;
+    opacity: 0;
   }
   50% {
-    opacity: 0.2;
+    opacity: 0.3;
   }
   100% {
-    opacity: 0.1;
+    opacity: 0;
   }
 }
 
@@ -1727,10 +1725,10 @@ select:focus {
   width: 50%;
 }
 #typeslogan {
-  position: absolute;
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: absolute;
 }
 .typewriter {
   font-size: 48px;
@@ -1901,6 +1899,12 @@ input {
   font-size: small;
 }
 
+.footnote1 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: small;
+}
 .docopmenu {
   position: absolute;
   z-index: 999999;

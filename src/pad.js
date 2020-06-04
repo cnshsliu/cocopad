@@ -15,7 +15,7 @@ const router = new VueRouter({
   mode: "history",
   routes: [
     {
-      path: "/home",
+      path: "/signin",
       component: homePage,
     },
     { path: "/foo", component: Foo },
