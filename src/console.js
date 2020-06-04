@@ -107,6 +107,7 @@ KFK.showStatus = {};
 KFK.QUICKGLANCE = false;
 KFK.svgDraw = null; //画svg的画布
 KFK.jumpStack = [];
+KFK.duplicateBrNode = false;
 KFK.presentMaskMode = false;
 KFK.isFreeHandDrawing = false;
 KFK.isShowingModal = false;
@@ -3233,7 +3234,8 @@ KFK.placeNode = async function(
   }
 
   //如果在脑图模式下，则自动建立脑图链接
-  await KFK.LinkFromBrainCenter(KFK.justCreatedJqNode);
+  if (KFK.duplicateBrNode === false)
+    await KFK.LinkFromBrainCenter(KFK.justCreatedJqNode);
 
   return jqDIV;
 };
@@ -3434,6 +3436,9 @@ KFK.cleanNodeEventFootprint = function(jqNodeDIV) {
 KFK.cleanTodoChatForBackup = function(jqNodeDIV) {
   jqNodeDIV.find(".original").removeClass("original");
   jqNodeDIV.removeClass("chatlist todolist");
+};
+KFK.cleanLinkto = function(jqNodeDIV) {
+  jqNodeDIV.attr("linkto", "");
 };
 
 KFK.syncNodeContentPut = async function(nodeID, content) {
@@ -5764,6 +5769,7 @@ KFK.makeCloneDIV = function(orig, newid, newcss) {
   if (newcss) ret.css(newcss);
   KFK.cleanNodeEventFootprint(ret);
   KFK.cleanTodoChatForBackup(ret);
+  KFK.cleanLinkto(ret);
 
   return ret;
 };
@@ -9044,6 +9050,18 @@ KFK.addDocumentEventHandler = function() {
           await KFK.flushJumpStack(); // no take brain
           KFK.keypool = "";
           return;
+        } else if (KFK.keypool.endsWith("gp")) {
+          let theDIV = KFK.getHoverFocusLastCreate();
+          let parents = KFK.getParent(theDIV);
+          if (parents.length > 0) {
+            let parent = parents[parents.length - 1];
+            KFK.scrollToNode(parent);
+            KFK.focusOnNode(parent);
+          } else {
+            console.log("parent not found");
+          }
+          KFK.keypool = "";
+          return;
         } else if (KFK.keypool.endsWith("imp")) {
           KFK.keypool = "";
           KFK.showDialog({
@@ -9518,7 +9536,12 @@ KFK.addDocumentEventHandler = function() {
           //如果按住了shift，则在其上下放置sibling
           //如果有脑图中心节点
           let theDIV = KFK.getFocusHoverLastCreate();
-          if (IsSet(theDIV) && theDIV.find(".brsnode").length < 1) {
+          if (IsSet(theDIV)) {
+            if (theDIV.find(".brsnode").length > 0) {
+              KFK.duplicateBrNode = true;
+            } else {
+              KFK.duplicateBrNode = false;
+            }
             let parents = KFK.getParent(theDIV);
             if (parents.length > 0) {
               let parent = parents[parents.length - 1];
@@ -9561,33 +9584,36 @@ KFK.addDocumentEventHandler = function() {
               let brPosY = KFK.divMiddle(parent);
               let accumulatedHeight = 0;
               //移动所有已存在节点
-              for (let i = 0; i < sameSideChildren.length; i++) {
-                let newY = brPosY - tmpHeight * 0.5 + accumulatedHeight;
-                let old = sameSideChildren[i].clone();
-                sameSideChildren[i].css("top", newY);
-                accumulatedHeight +=
-                  KFK.divHeight(sameSideChildren[i]) + divSpacing;
-                if (i === myIndex) {
+
+              if (evt.ctrlKey === true) {
+                for (let i = 0; i < sameSideChildren.length; i++) {
+                  let newY = brPosY - tmpHeight * 0.5 + accumulatedHeight;
+                  let old = sameSideChildren[i].clone();
+                  sameSideChildren[i].css("top", newY);
                   accumulatedHeight +=
                     KFK.divHeight(sameSideChildren[i]) + divSpacing;
+                  if (i === myIndex) {
+                    accumulatedHeight +=
+                      KFK.divHeight(sameSideChildren[i]) + divSpacing;
+                  }
+                  //作为父节点，可连接左右中点，其子节点可连接打开左右中点；
+                  //作为子节点，父节点可任意中点，但自身只能连接到左右中点；
+                  KFK.redrawLinkLines(sameSideChildren[i], "move", true, [
+                    [0, 2],
+                    [0, 2],
+                    [0, 1, 2, 3],
+                    [0, 2],
+                  ]);
+                  KFK.syncNodePut(
+                    "U",
+                    sameSideChildren[i].clone(),
+                    "new child",
+                    old,
+                    false,
+                    i,
+                    sameSideChildren.length
+                  );
                 }
-                //作为父节点，可连接左右中点，其子节点可连接打开左右中点；
-                //作为子节点，父节点可任意中点，但自身只能连接到左右中点；
-                KFK.redrawLinkLines(sameSideChildren[i], "move", true, [
-                  [0, 2],
-                  [0, 2],
-                  [0, 1, 2, 3],
-                  [0, 2],
-                ]);
-                KFK.syncNodePut(
-                  "U",
-                  sameSideChildren[i].clone(),
-                  "new child",
-                  old,
-                  false,
-                  i,
-                  sameSideChildren.length
-                );
               }
               //插入新节点
               let newNode = await KFK.placeNode(
@@ -9601,7 +9627,7 @@ KFK.addDocumentEventHandler = function() {
                   KFK.divHeight(sameSideChildren[myIndex]),
                 KFK.divWidth(sameSideChildren[myIndex]),
                 KFK.divHeight(sameSideChildren[myIndex]),
-                "",
+                "新节点",
                 ""
               );
 
@@ -9635,6 +9661,11 @@ KFK.addDocumentEventHandler = function() {
                 1
               );
               KFK.jumpToNode(newNode);
+              if (KFK.duplicateBrNode) {
+                KFK.startBrainstorm(newNode);
+                KFK.duplicateBrNode = false;
+              }
+              KFK.startNodeEditing(newNode, false);
             } //parents.lenth > 0
           } //IsSet (theDIV)
           //evt.shiftKey === true;
@@ -9839,11 +9870,15 @@ KFK.addDocumentEventHandler = function() {
     console.log("document.mousedown");
     if (KFK.inDesigner() === false) return;
     if (KFK.mode === "pointer" && KFK.docIsReadOnly() === false) {
-      KFK.kuangXuanMouseIsDown = true;
-      KFK.kuangXuanStartPoint = {
-        x: KFK.scrXToJc3X(evt.clientX),
-        y: KFK.scrYToJc3Y(evt.clientY),
-      };
+      if (evt.shiftKey) {
+        KFK.kuangXuanMouseIsDown = true;
+        KFK.kuangXuanStartPoint = {
+          x: KFK.scrXToJc3X(evt.clientX),
+          y: KFK.scrYToJc3Y(evt.clientY),
+        };
+      } else {
+        KFK.panStartAt = { x: evt.clientX, y: evt.clientY };
+      }
     }
   });
   $(document).on("mouseup", async function(evt) {
@@ -11452,10 +11487,22 @@ KFK.onCopy = async function(evt) {
 };
 
 KFK.onPaste = async function(evt) {
-  if (KFK.isShowingModal) return;
-  if (KFK.inDesigner() === false) return;
-  if (KFK.noCopyPaste) return;
-  if (KFK.docIsReadOnly()) return;
+  if (KFK.isShowingModal) {
+    console.log("paste ignored since isShowingModal");
+    return;
+  }
+  if (KFK.inDesigner() === false) {
+    console.log("paste ignored since inDesigner is false");
+    return;
+  }
+  if (KFK.noCopyPaste) {
+    console.log("paste ignored since noCopyPaste is true");
+    return;
+  }
+  if (KFK.docIsReadOnly()) {
+    console.log("paste ignored since docIsReadOnly");
+    return;
+  }
   KFK.pasteAt = {
     x: KFK.globalMouseX,
     y: KFK.globalMouseY,
@@ -13635,6 +13682,7 @@ KFK.placeFollowerNode = async (jdiv, direction) => {
     KFK.warn("placeFollowerNode for undefined node, just return");
     return;
   }
+  KFK.startBrainstorm(jdiv);
   let cx = KFK.divCenter(jdiv);
   let cy = KFK.divMiddle(jdiv);
   let width = KFK.divWidth(jdiv);
@@ -13683,6 +13731,7 @@ KFK.placeFollowerNode = async (jdiv, direction) => {
   } else {
     console.log("no auto jump");
   }
+  KFK.startNodeEditing(newDIV, true);
   return newDIV;
 };
 
