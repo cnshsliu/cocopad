@@ -1,2 +1,2 @@
-ssh colobod@weteam.work -t rm -rf /home/colobod/www/weteam.work/*
-scp ./dist/* colobod@weteam.work:/home/colobod/www/weteam.work/
+ssh ubuntu@weteam.work -t rm -rf /home/ubuntu/www/weteam.work/*
+scp ./dist/* ubuntu@weteam.work:/home/ubuntu/www/weteam.work/

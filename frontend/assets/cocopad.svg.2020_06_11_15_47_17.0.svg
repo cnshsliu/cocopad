@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generator: Adobe Illustrator 24.0.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="Layer_1"
+   x="0px"
+   y="0px"
+   viewBox="0 0 73.166616 84.958327"
+   xml:space="preserve"
+   sodipodi:docname="cocopad.svg"
+   width="73.166618"
+   height="84.958328"
+   inkscape:version="1.0 (4035a4f, 2020-05-01)"
+   inkscape:dataloss="true"
+   inkscape:export-filename="/Users/lucas/dev/cocopad/frontend/images/cocopad2.png"
+   inkscape:export-xdpi="57.142857"
+   inkscape:export-ydpi="57.142857"><metadata
+   id="metadata110"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /><dc:title></dc:title></cc:Work></rdf:RDF></metadata><defs
+   id="defs108" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="1792"
+   inkscape:window-height="998"
+   id="namedview106"
+   showgrid="false"
+   inkscape:zoom="3.1119162"
+   inkscape:cx="36.583309"
+   inkscape:cy="46.806047"
+   inkscape:window-x="0"
+   inkscape:window-y="23"
+   inkscape:window-maximized="0"
+   inkscape:current-layer="Layer_1" />
+<style
+   type="text/css"
+   id="style79">
+	.st0{fill:#F0FFFF;stroke:#4B92DB;stroke-width:3.3885;stroke-miterlimit:10.0003;}
+	.st1{fill:#007FFF;stroke:#F0FFFF;stroke-width:1.9419;stroke-miterlimit:10.0003;}
+	.st2{display:none;}
+	.st3{display:inline;}
+	.st4{font-family:'ArialRoundedMTBold';}
+	.st5{font-size:18px;}
+	.st6{display:inline;fill:#4B92DB;}
+	.st7{fill:#4B92DB;stroke:#4B92DB;stroke-width:0.7421;stroke-miterlimit:10.0003;}
+	.st8{font-size:16.2945px;}
+</style>
+<ellipse
+   transform="rotate(-62.433054)"
+   class="st0"
+   cx="-16.268379"
+   cy="59.706001"
+   rx="24.100798"
+   ry="24.300802"
+   id="ellipse81" />
+<ellipse
+   transform="rotate(-62.433054)"
+   class="st1"
+   cx="-33.249073"
+   cy="34.197605"
+   rx="13.800456"
+   ry="14.000463"
+   id="ellipse83" />
+<ellipse
+   transform="rotate(-62.433054)"
+   class="st1"
+   cx="-35.229931"
+   cy="84.089043"
+   rx="13.800456"
+   ry="14.000463"
+   id="ellipse85" />
+<ellipse
+   transform="rotate(-62.433054)"
+   class="st1"
+   cx="13.746608"
+   cy="58.340023"
+   rx="13.800456"
+   ry="14.000463"
+   id="ellipse87" />
+<g
+   id="Layer_4"
+   class="st2"
+   transform="translate(0.02534294,-0.3939534)">
+</g>
+<g
+   id="Layer_2_1_"
+   class="st2"
+   transform="translate(0.02534294,-0.3939534)">
+	<text
+   transform="translate(56.9185,15.5519)"
+   class="st3 st4 st5"
+   id="text90">WE</text>
+	<text
+   transform="translate(45.7653,53.2448)"
+   class="st3 st4 st5"
+   id="text92">TEAM</text>
+	<text
+   transform="translate(42.5485,90.5792)"
+   class="st3 st4 st5"
+   id="text94">WORK</text>
+	<circle
+   class="st6"
+   cx="72.800003"
+   cy="51.599998"
+   r="17.6"
+   id="circle96" />
+	<circle
+   class="st6"
+   cx="128.7"
+   cy="46.200001"
+   r="17.6"
+   id="circle98" />
+</g>
+<circle
+   transform="rotate(-62.433054)"
+   class="st7"
+   cx="-16.268379"
+   cy="59.706001"
+   id="ellipse101"
+   r="5.3001752" />
+
+</svg>

@@ -2020,7 +2020,10 @@ KFK.initC3 = function() {
     evt.preventDefault();
     evt.stopPropagation();
     KFK.kuangXuanMouseIsDown = false;
-    KFK.panStartAt = { x: evt.clientX, y: evt.clientY };
+    KFK.panStartAt = {
+      x: evt.clientX,
+      y: evt.clientY,
+    };
   });
   KFK.JC3.on("click", async function(evt) {
     if (KFK.inDesigner() === false) return;
@@ -3206,7 +3209,10 @@ KFK.placeNode = async function(
 ) {
   if (w === undefined || h === undefined) {
     console.log(w, h);
-    let dds = { w: 100, h: 40 };
+    let dds = {
+      w: 100,
+      h: 40,
+    };
     if (shiftKey) {
       dds = KFK.getNodeDynamicDefaultSize(type, variant);
     } else {
@@ -4625,7 +4631,9 @@ KFK.setNodeEventHandler = async function(jqNodeDIV, callback) {
           if (evt.target.href) {
             if (innerLink.startsWith("dou=")) {
               let dou = innerLink.substr(4);
-              await KFK.sendCmd("OPENSHAREDDOC", { shareCode: dou });
+              await KFK.sendCmd("OPENSHAREDDOC", {
+                shareCode: dou,
+              });
             } else if (innerLink.match(/^[0-9a-fA-F]{24}$/)) {
               await KFK.refreshDesignerWithDoc(innerLink, "");
             }
@@ -6858,101 +6866,7 @@ KFK.gotoSignin = async function() {
     explorer: false,
     designer: false,
   });
-  KFK.startTypeWriter();
-  KFK.APP.$router.push("/signin");
-  console.log("old");
-  console.log($("body").css("overflow"));
   $("body").css("overflow", "scroll");
-  console.log("new");
-  console.log($("body").css("overflow"));
-  console.log("body overflow");
-};
-
-KFK.startTypeWriter = function() {
-  if (KFK.typewriting) return;
-  KFK.typewriting = true;
-  KFK.dataText = [
-    ["云白板", "远程会议·异地协作再无障碍"],
-    ["云白板会议", "随时跟团队一起写写画画"],
-    ["异地办公团队", "也能像面对面一样高效协作"],
-    ["在家办公", "与现场办公再无差别"],
-    ["网络教学云白板", "真正把教室搬到互联网上"],
-    ["即时·协作·云同步", "云白板革命性的办公协作方式"],
-    ["文本·框图·图片·手绘", "多方实时同步、即时协作"],
-    ["富文本·MarkDown", "满足不同内容形式需求"],
-    ["内置文字·音视频聊天", "一块云白板满足全部会议所需"],
-    ["企业·团队·个人", "节省运营成本，提高产出效率"],
-  ];
-
-  // type one text in the typwriter
-  // keeps calling itself until the text is finished
-  function typeWriter(jText, jAux, text, i, fnCallback) {
-    if (i === 0) jAux.prop("innerHTML", "&nbsp;");
-    // chekc if text isn't finished yet
-    if (i < text[0].length) {
-      // add next character to h1
-      if (i < text[0].length - 1) {
-        jText.prop(
-          "innerHTML",
-          text[0].substring(0, i + 1) + '<span aria-hidden="true"></span>'
-        );
-      } else {
-        jText.prop("innerHTML", text[0].substring(0, i + 1));
-      }
-
-      // wait for a while and call this function again for next character
-      setTimeout(function() {
-        typeWriter(jText, jAux, text, i + 1, fnCallback);
-      }, 200);
-    }
-    // text finished, call callback if there is a callback function
-    else {
-      // call callback after timeout
-      setTimeout(function() {
-        auxWriter(jAux, text, 0, fnCallback);
-      }, 200);
-    }
-  }
-  function auxWriter(jAux, text, i, fnCallback) {
-    // chekc if text isn't finished yet
-    if (i < text[1].length) {
-      // add next character to h1
-      jAux.prop(
-        "innerHTML",
-        text[1].substring(0, i + 1) + '<span aria-hidden="true"></span>'
-      );
-
-      // wait for a while and call this function again for next character
-      setTimeout(function() {
-        auxWriter(jAux, text, i + 1, fnCallback);
-      }, 100);
-    }
-    // text finished, call callback if there is a callback function
-    else if (typeof fnCallback == "function") {
-      // call callback after timeout
-      setTimeout(fnCallback, 5000);
-    }
-  }
-  // start a typewriter animation for a text in the dataText array
-  function StartTextAnimation(jText, jAux, i) {
-    if (i >= KFK.dataText.length) {
-      if (KFK.APP.show.section.signin) {
-        setTimeout(function() {
-          StartTextAnimation(jText, jAux, 0);
-        }, 1000);
-      } else {
-        KFK.typewriting = false;
-      }
-    } else {
-      // text exists! start typewriter animation
-      typeWriter(jText, jAux, KFK.dataText[i], 0, function() {
-        // after callback (and whole text has been animated), start next text
-        StartTextAnimation(jText, jAux, i + 1);
-      });
-    }
-  }
-  // start the text animation
-  StartTextAnimation($(".typewriter"), $(".typewriter-follower"), 0);
 };
 
 KFK.gotoRegister = async function() {
@@ -7506,12 +7420,15 @@ KFK.gotoMarketMostSubscribed = async function() {
 };
 
 KFK.searchDoc = async function() {
-  await KFK.sendCmd("SEARCHDOC", { name: KFK.APP.model.search.docName });
+  await KFK.sendCmd("SEARCHDOC", {
+    name: KFK.APP.model.search.docName,
+  });
 };
 
 KFK.onSearchInput = async function(evt) {
   evt.stopPropagation();
   KFK.noCopyPaste = true;
+  console.log("onCopyPaste to true in onSearchInput");
   if (evt.keyCode === 27) {
     //ESC
     KFK.noCopyPaste = false;
@@ -7525,6 +7442,7 @@ KFK.onSearchInput = async function(evt) {
 KFK.onSigninInput = async function(evt) {
   evt.stopPropagation();
   KFK.noCopyPaste = true;
+  console.log("onCopyPaste to true in onSigninInput");
   if (evt.keyCode === 27) {
     //ESC
     KFK.noCopyPaste = false;
@@ -7830,7 +7748,10 @@ KFK._onDocFullyLoaded = async function() {
     KFK.scrollToPos(docPos[KFK.APP.model.cocodoc.doc_id]);
   } else {
     //如果没有，则滚动到第一屏
-    KFK.scrollToPos({ x: KFK.LeftB, y: KFK.TopB });
+    KFK.scrollToPos({
+      x: KFK.LeftB,
+      y: KFK.TopB,
+    });
   }
   //
   //
@@ -9020,6 +8941,7 @@ KFK.addDocumentEventHandler = function() {
           //link to brain
           await KFK.removeNodeConnections();
           KFK.keypool = "";
+          KFK.setMode("connect");
           return;
         } else if (KFK.keypool.endsWith("rl")) {
           //brain to last created
@@ -9877,7 +9799,10 @@ KFK.addDocumentEventHandler = function() {
           y: KFK.scrYToJc3Y(evt.clientY),
         };
       } else {
-        KFK.panStartAt = { x: evt.clientX, y: evt.clientY };
+        KFK.panStartAt = {
+          x: evt.clientX,
+          y: evt.clientY,
+        };
       }
     }
   });
@@ -10054,41 +9979,43 @@ KFK.addDocumentEventHandler = function() {
         }
       }
     },
-    { passive: false }
+    {
+      passive: false,
+    }
   );
   /*
-  function pinchStart(evt) {
-    console.log("pinch Start");
-  }
-  function pinchMove(evt) {
-    console.log("pinch Move");
-  }
-  function pinchEnd(evt) {
-    console.log("pinch End");
-  }
-  $(document).on("touchstart", async function(evt) {
-    if (KFK.inDesigner() === false) return;
-    console.log("touchstart");
-    if (evt.touches.length === 2) {
-      KFK.pinching = true;
-      pinchStart(evt);
+    function pinchStart(evt) {
+      console.log("pinch Start");
     }
-  });
+    function pinchMove(evt) {
+      console.log("pinch Move");
+    }
+    function pinchEnd(evt) {
+      console.log("pinch End");
+    }
+    $(document).on("touchstart", async function(evt) {
+      if (KFK.inDesigner() === false) return;
+      console.log("touchstart");
+      if (evt.touches.length === 2) {
+        KFK.pinching = true;
+        pinchStart(evt);
+      }
+    });
 
-  $(document).on("touchmove", async function(evt) {
-    if (KFK.inDesigner() === false) return;
-    if (KFK.pinching) {
-      pinchMove(evt);
-    }
-  });
+    $(document).on("touchmove", async function(evt) {
+      if (KFK.inDesigner() === false) return;
+      if (KFK.pinching) {
+        pinchMove(evt);
+      }
+    });
 
-  $(document).on("touchend", async function(evt) {
-    if (KFK.pinching) {
-      pinchEnd(evt);
-      KFK.pinching = undefined;
-    }
-  });
-  */
+    $(document).on("touchend", async function(evt) {
+      if (KFK.pinching) {
+        pinchEnd(evt);
+        KFK.pinching = undefined;
+      }
+    });
+    */
 
   // onscroll onScroll on scroll on Scroll
   $("#S1").scroll(() => {
@@ -10108,7 +10035,10 @@ KFK.addDocumentEventHandler = function() {
           docPos = JSON.parse(scrollPositionCache);
         }
         if (docPos[KFK.APP.model.cocodoc.doc_id]) {
-          docPos[KFK.APP.model.cocodoc.doc_id] = { x: sx, y: sy };
+          docPos[KFK.APP.model.cocodoc.doc_id] = {
+            x: sx,
+            y: sy,
+          };
         } else {
           let keyCount = 0;
           for (key in docPos) {
@@ -10125,7 +10055,10 @@ KFK.addDocumentEventHandler = function() {
             }
             docPos = tmp;
           }
-          docPos[KFK.APP.model.cocodoc.doc_id] = { x: sx, y: sy };
+          docPos[KFK.APP.model.cocodoc.doc_id] = {
+            x: sx,
+            y: sy,
+          };
         }
         localStorage.setItem("docPos", JSON.stringify(docPos));
       }, 1000);
@@ -10134,27 +10067,27 @@ KFK.addDocumentEventHandler = function() {
     }
 
     /*
-           let sx = $("#S1").scrollLeft();
-           let sy = $("#S1").scrollTop();
-           if (KFK.scrollBugPatched === false) {
-           KFK.scrollContainer = $("#S1");
-           KFK.scrollBugPatched = true;
-           }
-        // $("#linetransformer").css("visibility", "hidden");
-        if (timer === null) {
-        timer = setTimeout(() => {
-        let pt = KFK.getNearGridPoint(
-        KFK.scrollContainer.scrollLeft(),
-        KFK.scrollContainer.scrollTop()
-        );
-        let deltaX = pt.x - KFK.scrollContainer.scrollLeft();
-        let deltaY = pt.y - KFK.scrollContainer.scrollTop();
-        KFK.JCBKG.css('background-position-x', deltaX);
-        KFK.JCBKG.css('background-position-y', deltaY);
-        timer = null;
-        }, 500);
-        }
-        */
+               let sx = $("#S1").scrollLeft();
+               let sy = $("#S1").scrollTop();
+               if (KFK.scrollBugPatched === false) {
+               KFK.scrollContainer = $("#S1");
+               KFK.scrollBugPatched = true;
+               }
+            // $("#linetransformer").css("visibility", "hidden");
+            if (timer === null) {
+            timer = setTimeout(() => {
+            let pt = KFK.getNearGridPoint(
+            KFK.scrollContainer.scrollLeft(),
+            KFK.scrollContainer.scrollTop()
+            );
+            let deltaX = pt.x - KFK.scrollContainer.scrollLeft();
+            let deltaY = pt.y - KFK.scrollContainer.scrollTop();
+            KFK.JCBKG.css('background-position-x', deltaX);
+            KFK.JCBKG.css('background-position-y', deltaY);
+            timer = null;
+            }, 500);
+            }
+            */
   });
 
   KFK.documentEventHandlerSet = true;
@@ -10177,6 +10110,10 @@ KFK.onESC = function() {
   KFK.setMode("pointer");
   if (KFK.tempShape) KFK.tempShape.hide();
   KFK.hidePickerMatlib();
+  if (KFK.noCopyPaste) {
+    KFK.noCopyPaste = false;
+    console.log("set noCopyPaste to false");
+  }
 };
 
 KFK.toggleTodoMode = async function() {
@@ -10330,6 +10267,7 @@ KFK.onNormalInput = async function(evt) {
 KFK.onMsgInput = async function(evt) {
   evt.stopPropagation();
   KFK.noCopyPaste = true;
+  console.log("onCopyPaste to true in onMsgInput");
   if (evt.keyCode === 27) {
     //key ESC
     KFK.noCopyPaste = false;
@@ -10946,17 +10884,17 @@ KFK.toggleFullScreen = function(evt) {
   KFK.inFullScreenMode = !KFK.inFullScreenMode;
   if (KFK.inFullScreenMode === true) {
     /*
-           if (KFK.inOverviewMode === false) {
-           KFK.setLayoutDisplay({ minimap: false, toplogo: false, docHeaderInfo: false, rtcontrol: true, left: true, right: true, });
-           }
-           */
+               if (KFK.inOverviewMode === false) {
+               KFK.setLayoutDisplay({ minimap: false, toplogo: false, docHeaderInfo: false, rtcontrol: true, left: true, right: true, });
+               }
+               */
     KFK.scrLog("进入全屏模式: 输入fs退出");
   } else {
     KFK.scrLog("");
     /*
-           if (KFK.inOverviewMode === false)
-           KFK.restoreLayoutDisplay();
-           */
+               if (KFK.inOverviewMode === false)
+               KFK.restoreLayoutDisplay();
+               */
   }
   KFK.APP.setData("show", "actionlog", false);
   if (KFK.inFullScreenMode === true) {
@@ -11683,7 +11621,10 @@ KFK.___gotoPage = function(pageIndex) {
     y: KFK.pageBounding.Pages[pageIndex].top + KFK.PageHeight * 0.5,
   };
 
-  KFK.lastPosition = { x: KFK.JS1.scrollLeft(), y: KFK.JS1.scrollTop() };
+  KFK.lastPosition = {
+    x: KFK.JS1.scrollLeft(),
+    y: KFK.JS1.scrollTop(),
+  };
   let scrollX = pos.x * KFK.scaleRatio + KFK.LeftB - $(window).width() * 0.5;
   let scrollY = pos.y * KFK.scaleRatio + KFK.TopB - $(window).height() * 0.5;
   KFK.scrollToPos({
@@ -12211,7 +12152,10 @@ KFK.scrollToNode = (jqDIV, nolog = false) => {
     y: top + height * 0.5,
   };
 
-  KFK.lastPosition = { x: KFK.JS1.scrollLeft(), y: KFK.JS1.scrollTop() };
+  KFK.lastPosition = {
+    x: KFK.JS1.scrollLeft(),
+    y: KFK.JS1.scrollTop(),
+  };
   let scrollX = pos.x * KFK.scaleRatio + KFK.LeftB - $(window).width() * 0.5;
   let scrollY = pos.y * KFK.scaleRatio + KFK.TopB - $(window).height() * 0.5;
   KFK.scrollToPos({
@@ -12236,7 +12180,10 @@ KFK.scrollToShape = (aShape, nolog = false) => {
     y: rect.top + rect.height * 0.5,
   };
 
-  KFK.lastPosition = { x: KFK.JS1.scrollLeft(), y: KFK.JS1.scrollTop() };
+  KFK.lastPosition = {
+    x: KFK.JS1.scrollLeft(),
+    y: KFK.JS1.scrollTop(),
+  };
   let scrollX = pos.x * KFK.scaleRatio + KFK.LeftB - $(window).width() * 0.5;
   let scrollY = pos.y * KFK.scaleRatio + KFK.TopB - $(window).height() * 0.5;
   KFK.scrollToPos({
@@ -12557,11 +12504,11 @@ KFK._svgDrawNodesConnect = function(
           .addClass(lineClass + "_triangle")
           .fill(cnColor);
         /*
-        .stroke({
-          width: KFK.APP.model.svg.connect.triangle.width,
-          color: cnColor || KFK.APP.model.svg.connect.triangle.color,
-        });
-        */
+                .stroke({
+                  width: KFK.APP.model.svg.connect.triangle.width,
+                  color: cnColor || KFK.APP.model.svg.connect.triangle.color,
+                });
+                */
         theConnect.attr({
           id: lineClass,
           "origin-width": KFK.APP.model.svg.connect.width,
@@ -14148,8 +14095,11 @@ let protocol = $(location).attr("protocol");
 KFK.urlBase = protocol + "//" + host + cocoConfig.product.basedir;
 let urlSearch = window.location.search;
 let urlPath = window.location.pathname;
+let padUrl = urlPath.substr(1);
+console.log("URLBASE:", KFK.urlBase);
 console.log("URLSEARCH:", urlSearch);
 console.log("URLPATH:", urlPath);
+console.log("PADURL:", padUrl);
 WS.remoteEndpoint = cocoConfig.ws_server.endpoint.url;
 BossWS.remoteEndpoint = cocoConfig.ws_server.endpoint.url;
 if (urlSearch.startsWith("?dou=")) {
@@ -14159,24 +14109,22 @@ if (urlSearch.startsWith("?dou=")) {
 } else if (urlSearch.startsWith("?r=")) {
   KFK.urlMode = "ivtcode";
   KFK.shareCode = urlSearch.substr(3);
-  window.history.replaceState({}, null, KFK.urlBase);
-} else if (urlPath.startsWith("/reg0") || urlPath.startsWith("/signup")) {
+  window.history.replaceState({}, null, KFK.urlBase + "/");
+} else if (padUrl.startsWith("register")) {
   KFK.urlMode = "gotoRegister";
-  window.history.replaceState({}, null, KFK.urlBase);
-} else if (urlPath.startsWith("/signin")) {
+} else if (padUrl.startsWith("signin")) {
   KFK.urlMode = "gotoSignin";
-  window.history.replaceState({}, null, KFK.urlBase);
-} else if (urlPath.substr(1).match(/^[0-9a-fA-F]+$/)) {
-  KFK.docToOpen = urlPath.substr(1);
+} else if (padUrl.match(/^[0-9a-fA-F]+$/)) {
+  KFK.docToOpen = padUrl;
   KFK.urlMode = "directopen";
   KFK.shareCode = KFK.docToOpen;
   console.log("Open Doc Direclty", KFK.docToOpen);
   //KFK.refreshDesignerWithDoc(KFK.docToOpen, "");
-} else if (urlPath.match(/@(.*)$/)) {
-  console.log("Column", urlPath.substr(2));
-  KFK.column = urlPath.substr(2);
+} else if (padUrl.match(/@(.*)$/)) {
+  console.log("Column", padUrl.substr(1));
+  KFK.column = padUrl.substr(1);
   KFK.urlMode = "column";
-  KFK.shareCode = urlPath.substr(2);
+  KFK.shareCode = padUrl.substr(1);
   // } else {
   //   window.history.replaceState({}, null, KFK.urlBase);
 }

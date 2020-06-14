@@ -1,3 +1,5 @@
+//TODO: index.html调整， pad.html登录页面恢复原样
+//TODO: 临时用户不能创建项目或白板
 //TODO: 举手
 //TODO: ctrl+mousescroll to zoom
 //TODO: left-width-top-bottom padding

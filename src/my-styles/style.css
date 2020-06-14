@@ -312,12 +312,113 @@ input::placeholder {
   right: 10px;
   z-index: 100;
 }
+.signin-button {
+  width: 50%;
+}
+.signinform {
+  position: absolute;
+  width: 98%;
+  height: 500px;
+  top: 120px;
+  left: 50%;
+  -webkit-transform: translate(-50%, 0%);
+  -moz-transform: translate(-50%, 0%);
+  -ms-transform: translate(-50%, 0%);
+  -o-transform: translate(-50%, 0%);
+  transform: translate(-50%, 0%);
+}
+
+.signinform input,
+.registerform input {
+  font-family: monospace;
+  font-size: 20px;
+  border-radius: 20px;
+  background-color: #c2eebfd9;
+}
+
+.signinform {
+  position: absolute;
+  width: 400px;
+  height: 500px;
+  top: 120px;
+  left: 50%;
+  -webkit-transform: translate(-50%, 0%);
+  -moz-transform: translate(-50%, 0%);
+  -ms-transform: translate(-50%, 0%);
+  -o-transform: translate(-50%, 0%);
+  transform: translate(-50%, 0%);
+}
+
+.signinform input,
+.registerform input {
+  font-family: monospace;
+  font-size: 20px;
+  border-radius: 20px;
+  background-color: #c2eebfd9;
+}
 
 .register-button-tr {
   position: absolute;
   top: 10px;
   right: 80px;
   z-index: 100;
+}
+.signinform input::-webkit-input-placeholder {
+  /* Edge */
+  color: #b8b3d3c9;
+  font-size: 18px;
+}
+
+.signinform input::-ms-input-placeholder {
+  /* Internet Explorer 10-11 */
+  color: #b8b3d3c9;
+  font-size: 18px;
+}
+
+.signinform input::placeholder {
+  color: #b8b3d3c9;
+  font-size: 18px;
+}
+
+.registerform input::-webkit-input-placeholder {
+  /* Edge */
+  color: #b8b3d3c9;
+  font-size: 18px;
+}
+
+.registerform input::-ms-input-placeholder {
+  /* Internet Explorer 10-11 */
+  color: #b8b3d3c9;
+  font-size: 18px;
+}
+
+.registerform input::placeholder {
+  color: #b8b3d3c9;
+  font-size: 18px;
+}
+
+/* 
+.registerform input#regUserId{
+  background-image: url("https://mlib.liuzijin.com/frontend/assets/email.svg");
+}
+.registerform input#regUserName{
+  background-image: url("https://mlib.liuzijin.com/frontend/assets/name-tag.svg");
+}
+.registerform input#regUserPwd{
+  background-image: url("https://mlib.liuzijin.com/frontend/assets/pwd.svg");
+}
+.registerform input#regUserPwd2{
+  background-image: url("https://mlib.liuzijin.com/frontend/assets/pwd.svg");
+}  */
+
+.signinform .right-eye,
+.registerform .right-eye {
+  border-radius: 20px;
+  border: 1px solid #ced4da;
+  border-left: 0px;
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
+  background-color: #c2eebfd9;
 }
 
 .fontFancyColor {
@@ -786,103 +887,6 @@ svg path {
   -ms-transform: translate(-50%, -50%);
   -o-transform: translate(-50%, -50%);
   transform: translate(-50%, -50%);
-}
-
-.signinform {
-  position: absolute;
-  width: 98%;
-  height: 500px;
-  top: 120px;
-  left: 50%;
-  -webkit-transform: translate(-50%, 0%);
-  -moz-transform: translate(-50%, 0%);
-  -ms-transform: translate(-50%, 0%);
-  -o-transform: translate(-50%, 0%);
-  transform: translate(-50%, 0%);
-}
-
-.signinform input,
-.registerform input {
-  font-family: monospace;
-  font-size: 20px;
-  border-radius: 20px;
-  background-color: #c2eebfd9;
-}
-
-.profileform input {
-  font-family: monospace;
-  font-size: 20px;
-  background-color: #c2eebfd9;
-  overflow-y: auto;
-}
-
-.show-password svg {
-  width: 12px;
-}
-
-/* .signinform input#userId{
-  background-image: url("https://mlib.liuzijin.com/frontend/assets/email.svg");
-}
-.signinform input#userPwd{
-  background-image: url("https://mlib.liuzijin.com/frontend/assets/pwd.svg");
-} */
-
-.signinform input::-webkit-input-placeholder {
-  /* Edge */
-  color: #b8b3d3c9;
-  font-size: 18px;
-}
-
-.signinform input::-ms-input-placeholder {
-  /* Internet Explorer 10-11 */
-  color: #b8b3d3c9;
-  font-size: 18px;
-}
-
-.signinform input::placeholder {
-  color: #b8b3d3c9;
-  font-size: 18px;
-}
-
-.registerform input::-webkit-input-placeholder {
-  /* Edge */
-  color: #b8b3d3c9;
-  font-size: 18px;
-}
-
-.registerform input::-ms-input-placeholder {
-  /* Internet Explorer 10-11 */
-  color: #b8b3d3c9;
-  font-size: 18px;
-}
-
-.registerform input::placeholder {
-  color: #b8b3d3c9;
-  font-size: 18px;
-}
-
-/* 
-.registerform input#regUserId{
-  background-image: url("https://mlib.liuzijin.com/frontend/assets/email.svg");
-}
-.registerform input#regUserName{
-  background-image: url("https://mlib.liuzijin.com/frontend/assets/name-tag.svg");
-}
-.registerform input#regUserPwd{
-  background-image: url("https://mlib.liuzijin.com/frontend/assets/pwd.svg");
-}
-.registerform input#regUserPwd2{
-  background-image: url("https://mlib.liuzijin.com/frontend/assets/pwd.svg");
-}  */
-
-.signinform .right-eye,
-.registerform .right-eye {
-  border-radius: 20px;
-  border: 1px solid #ced4da;
-  border-left: 0px;
-  border-top-left-radius: 0px;
-  border-bottom-left-radius: 0px;
-  background-color: #c2eebfd9;
 }
 
 .no-right-border {
@@ -1446,20 +1450,6 @@ select:focus {
   width: 100%;
   height: 100%;
 }
-@keyframes jellomiddle {
-  0% {
-    -webkit-transform: scale(1.2);
-    transform: scale(1.2);
-  }
-  50% {
-    -webkit-transform: scale(0.5);
-    transform: scale(0.5);
-  }
-  100% {
-    -webkit-transform: scale(1.2);
-    transform: scale(1.2);
-  }
-}
 @keyframes progress1 {
   from {
     width: 0;
@@ -1484,279 +1474,6 @@ select:focus {
     width: 10px;
   }
 }
-.demo-progress1 {
-  animation: progress1 5s steps(10, end);
-  animation-iteration-count: infinite;
-}
-.demo-progress2 {
-  animation: progress2 10s;
-  animation-iteration-count: infinite;
-}
-.demo-progress3 {
-  animation: progress3 5s;
-  animation-iteration-count: infinite;
-}
-.demo-brain {
-  animation: jellomiddle 5s;
-  animation-iteration-count: infinite;
-  transform-origin: 90% 70%;
-}
-.demo-chat {
-  animation: demochat 3s;
-  animation-iteration-count: infinite;
-}
-
-.demo-yellowtip1 {
-  animation: yellowtip1 10s;
-  animation-iteration-count: infinite;
-}
-.demo-yellowtip2 {
-  animation: yellowtip2 10s;
-  animation-iteration-count: infinite;
-}
-.demo-yellowtip3 {
-  animation: yellowtip3 10s;
-  animation-iteration-count: infinite;
-}
-.demo-user-action1 {
-  animation: demoshow1 5s;
-  animation-iteration-count: infinite;
-}
-.demo-user-action2 {
-  animation: demoshow2 5s;
-  animation-iteration-count: infinite;
-}
-.demo-user-action3 {
-  animation: demoshow3 5s;
-  animation-iteration-count: infinite;
-}
-.demo-richtext {
-  animation: demorichtext 8s;
-  animation-iteration-count: infinite;
-}
-@keyframes demorichtext {
-  0% {
-    transform: translate(0%, 0%);
-  }
-  25% {
-    transform: translate(0%, 0%);
-    opacity: 0;
-  }
-  50% {
-    transform: translate(-10%, 0%);
-  }
-  70% {
-    transform: translate(-10%, 0%);
-    opacity: 0;
-  }
-  71% {
-    transform: translate(-10%, 0%);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(0%, 0%);
-  }
-}
-
-@keyframes yellowtip1 {
-  0% {
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-  }
-  99% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-@keyframes yellowtip2 {
-  0% {
-    opacity: 0;
-  }
-  40% {
-    opacity: 0;
-  }
-  41% {
-    opacity: 1;
-  }
-  99% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-@keyframes yellowtip3 {
-  0% {
-    opacity: 0;
-  }
-  80% {
-    opacity: 0;
-  }
-  80% {
-    opacity: 1;
-  }
-  99% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-@keyframes demochat {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-@keyframes demoshow2 {
-  0% {
-    opacity: 0;
-  }
-  29% {
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-@keyframes demoshow1 {
-  0% {
-    opacity: 0;
-  }
-  25% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
-  75% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-@keyframes demoshow3 {
-  0% {
-    opacity: 0;
-  }
-  20% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-.introduce {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  background-color: white;
-  padding-top: 20px;
-  padding-left: 10px;
-  padding-right: 10px;
-  padding-bottom: 20px;
-}
-
-.introduce_svg {
-  z-index: 1;
-  width: 100%;
-  height: 200px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-.introduce_svg_inner {
-  width: 100%;
-  height: 200px;
-  animation: opacity1 20s;
-  animation-iteration-count: infinite;
-}
-#theboard {
-  width: 100%;
-  height: 100%;
-}
-@keyframes opacity1 {
-  0% {
-    opacity: 0;
-  }
-  50% {
-    opacity: 0.3;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-.signinform-outer {
-  margin-left: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-  height: 200px;
-  border-radius: 10px;
-  border: 1px solid #666666;
-  box-shadow: 0 4px 8px 0;
-  padding: 10px 10px 10px 10px;
-}
-.signinform-innerform {
-  width: 300px;
-}
-.signin-button {
-  width: 50%;
-}
-#typeslogan {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: absolute;
-}
-.typewriter {
-  font-size: 48px;
-  white-space: nowrap;
-}
-.typewriter-follower {
-  font-size: 24px;
-  white-space: nowrap;
-  padding-bottom: 25px;
-}
-.typewriter span {
-  border-right: 0.15em solid;
-  color: #007bff;
-  animation: caret 1s steps(1) infinite;
-}
-.typewriter-follower span {
-  border-right: 0.15em solid;
-  color: #007bff;
-  animation: caret 1s steps(1) infinite;
-}
-
-/* The typing effect */
-@keyframes caret {
-  50% {
-    border-color: transparent;
-  }
-}
-
 .selectingrect {
   z-index: 3;
   border-radius: 0px;
@@ -1889,22 +1606,6 @@ input {
   background-color: #ffc107;
 }
 
-.footnote {
-  position: absolute;
-  bottom: 20px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: small;
-}
-
-.footnote1 {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: small;
-}
 .docopmenu {
   position: absolute;
   z-index: 999999;
