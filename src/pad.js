@@ -9,8 +9,12 @@ import { NodeController } from "./nodeController";
 import { DocController } from "./docController";
 import homePage from "./components/home.vue";
 
-const Foo = { template: "<div>foo</div>" };
-const Bar = { template: "<div>bar</div>" };
+const Foo = {
+  template: "<div>foo</div>",
+};
+const Bar = {
+  template: "<div>bar</div>",
+};
 const router = new VueRouter({
   mode: "history",
   routes: [
@@ -18,24 +22,51 @@ const router = new VueRouter({
       path: "/signin",
       component: homePage,
     },
-    { path: "/foo", component: Foo },
-    { path: "/bar", component: Bar },
+    {
+      path: "/foo",
+      component: Foo,
+    },
+    {
+      path: "/bar",
+      component: Bar,
+    },
   ],
 });
 const app = new Vue({
   router: router,
   data: {
     goodsSearchQ: "",
-    goodsToBuy: { name: "", price1: 0, price2: 0 },
+    goodsToBuy: {
+      name: "",
+      price1: 0,
+      price2: 0,
+    },
     inputMsgIcon: "arrow-return-left",
     selected: "A",
     inputMsg: "",
     state: {
-      profile: { name: null, oldpwd: null, newpwd: null, newpwd2: null },
-      reg: { userid: null, name: null, pwd: null, pwd2: null },
-      newdoc: { name: null, pwd: null },
-      newprj: { name: null },
-      copydoc: { name: null },
+      profile: {
+        name: null,
+        oldpwd: null,
+        newpwd: null,
+        newpwd2: null,
+      },
+      reg: {
+        userid: null,
+        name: null,
+        pwd: null,
+        pwd2: null,
+      },
+      newdoc: {
+        name: null,
+        pwd: null,
+      },
+      newprj: {
+        name: null,
+      },
+      copydoc: {
+        name: null,
+      },
     },
     RegUserIdState: null,
     RegUserNameState: null,
@@ -261,7 +292,10 @@ const app = new Vue({
       },
       columndoclist: {
         cname: "",
-        owner: { name: "", avatar: "" },
+        owner: {
+          name: "",
+          avatar: "",
+        },
       },
       osName: "",
       endpoint: "",
@@ -277,10 +311,17 @@ const app = new Vue({
       isValidBrowser: true,
       isNotValidBrowser: false,
       readonlyDesc: "只读",
-      currentDoc: { acl: "O" },
-      invitor: { usrid: "", name: "" },
+      currentDoc: {
+        acl: "O",
+      },
+      invitor: {
+        usrid: "",
+        name: "",
+      },
       showInModalMiniHelp: false,
-      accordion: { myorg: true },
+      accordion: {
+        myorg: true,
+      },
       org: {
         neworg: {
           name: "",
@@ -304,7 +345,10 @@ const app = new Vue({
       isMobile: false,
       regForShared: false, //是否是接受到分享链接的用户来注册？
       loading_value: 0,
-      msgbox: { title: "", content: "" },
+      msgbox: {
+        title: "",
+        content: "",
+      },
       svg: {
         connect: {
           color: "red",
@@ -321,14 +365,29 @@ const app = new Vue({
           linecap: true,
           style: "solid",
           styles: [
-            { value: "solid", text: "实线" },
-            { value: "dash", text: "虚线" },
+            {
+              value: "solid",
+              text: "实线",
+            },
+            {
+              value: "dash",
+              text: "虚线",
+            },
           ],
           arrow: "arrow0",
           arrows: [
-            { value: "arrow0", text: "无箭头" },
-            { value: "arrow1", text: "形状一" },
-            { value: "arrow2", text: "形状二" },
+            {
+              value: "arrow0",
+              text: "无箭头",
+            },
+            {
+              value: "arrow1",
+              text: "形状一",
+            },
+            {
+              value: "arrow2",
+              text: "形状二",
+            },
           ],
         },
         rectangle: {
@@ -369,9 +428,18 @@ const app = new Vue({
         showdisplay: false,
         showbox: false,
         options: [
-          { item: "none", name: "无" },
-          { item: "border", name: "仅边框" },
-          { item: "all", name: "边框和底色" },
+          {
+            item: "none",
+            name: "无",
+          },
+          {
+            item: "border",
+            name: "仅边框",
+          },
+          {
+            item: "all",
+            name: "边框和底色",
+          },
         ],
       },
       actionlog: [],
@@ -397,8 +465,14 @@ const app = new Vue({
       newdocpwd: "",
       opendocpwd: "",
       docLoaded: false,
-      cocoprj: { prjid: "all", name: "我最近使用过的白板" },
-      lastrealproject: { prjid: "", name: "" },
+      cocoprj: {
+        prjid: "all",
+        name: "我最近使用过的白板",
+      },
+      lastrealproject: {
+        prjid: "",
+        name: "",
+      },
       cocodoc: {
         doc_id: "dummydocnotallowed",
         name: "",
@@ -408,7 +482,12 @@ const app = new Vue({
         ownerAvatar_src: undefined,
         pms: 0,
       },
-      cocouser: { userid: "", name: "", avatar: "avatar-0", avatar_src: null },
+      cocouser: {
+        userid: "",
+        name: "",
+        avatar: "avatar-0",
+        avatar_src: null,
+      },
       cocoorg: {
         orgid: "ORGID",
         name: "ORGNAME",
@@ -430,60 +509,167 @@ const app = new Vue({
         step: "reg",
         code: "",
       },
-      signin: { userid: "", pwd: "" },
+      signin: {
+        userid: "",
+        pwd: "",
+      },
       docfields: [
-        { key: "name", label: "文档名称" },
-        { key: "owner", label: "发起人" },
-        { key: "readonly_icon", label: "只读" },
-        { key: "protect_icon", label: "密保" },
-        { key: "acl", label: "权限范围" },
-        { key: "operations", label: "其它", variant: "danger" },
+        {
+          key: "name",
+          label: "文档名称",
+        },
+        {
+          key: "owner",
+          label: "发起人",
+        },
+        {
+          key: "readonly_icon",
+          label: "只读",
+        },
+        {
+          key: "protect_icon",
+          label: "密保",
+        },
+        {
+          key: "acl",
+          label: "权限范围",
+        },
+        {
+          key: "operations",
+          label: "其它",
+          variant: "danger",
+        },
       ],
       pubfields: [
-        { key: "name", label: "文档名称" },
-        { key: "tags_display", label: "标签" },
-        { key: "price1", label: "阅读价格" },
-        { key: "price2", label: "拷贝价格" },
-        { key: "stop_pub", label: "下架" },
+        {
+          key: "name",
+          label: "文档名称",
+        },
+        {
+          key: "tags_display",
+          label: "标签",
+        },
+        {
+          key: "price1",
+          label: "阅读价格",
+        },
+        {
+          key: "price2",
+          label: "拷贝价格",
+        },
+        {
+          key: "stop_pub",
+          label: "下架",
+        },
       ],
       goodsfields: [
-        { key: "name", label: "文档名称" },
-        { key: "price1", label: "阅读价格" },
-        { key: "price2", label: "拷贝价格" },
-        { key: "preview", label: "预览" },
-        { key: "buy1", label: "购买阅读版" },
-        { key: "buy2", label: "购买拷贝版" },
+        {
+          key: "name",
+          label: "文档名称",
+        },
+        {
+          key: "price1",
+          label: "阅读价格",
+        },
+        {
+          key: "price2",
+          label: "拷贝价格",
+        },
+        {
+          key: "preview",
+          label: "预览",
+        },
+        {
+          key: "buy1",
+          label: "购买阅读版",
+        },
+        {
+          key: "buy2",
+          label: "购买拷贝版",
+        },
       ],
       interlinkdocfields: [
-        { key: "name", label: "文档名称" },
-        { key: "ownerName", label: "发起人" },
+        {
+          key: "name",
+          label: "文档名称",
+        },
+        {
+          key: "ownerName",
+          label: "发起人",
+        },
       ],
       subsfields: [
-        { key: "name", label: "文档名称" },
-        { key: "show_details", label: "详情" },
+        {
+          key: "name",
+          label: "文档名称",
+        },
+        {
+          key: "show_details",
+          label: "详情",
+        },
       ],
       vorgfields: [
-        { key: "name", label: "名称" },
-        { key: "owner", label: "发起人" },
-        { key: "operations", label: "相关操作" },
+        {
+          key: "name",
+          label: "名称",
+        },
+        {
+          key: "owner",
+          label: "发起人",
+        },
+        {
+          key: "operations",
+          label: "相关操作",
+        },
       ],
       myorgfields: [
-        { key: "name", label: "名称" },
-        { key: "grade", label: "等级" },
-        { key: "operations", label: "相关操作" },
+        {
+          key: "name",
+          label: "名称",
+        },
+        {
+          key: "grade",
+          label: "等级",
+        },
+        {
+          key: "operations",
+          label: "相关操作",
+        },
       ],
       useridfields: [
-        { key: "userid", label: "用户ID" },
-        { key: "operations", label: "操作", variant: "danger" },
+        {
+          key: "userid",
+          label: "用户ID",
+        },
+        {
+          key: "operations",
+          label: "操作",
+          variant: "danger",
+        },
       ],
       prjfields: [
-        { key: "name", label: "项目名称" },
-        { key: "column", label: "专栏" },
-        { key: "operations", label: "相关操作" },
+        {
+          key: "name",
+          label: "项目名称",
+        },
+        {
+          key: "column",
+          label: "专栏",
+        },
+        {
+          key: "operations",
+          label: "相关操作",
+        },
       ],
       matfields: [
-        { key: "thumbnail", label: "缩略图" },
-        { key: "operations", label: "相关操作" },
+        {
+          key: "thumbnail",
+          label: "缩略图",
+        },
+        {
+          key: "operations",
+          label: "相关操作",
+        },
       ],
       prjwarning: "",
       docs: [],
@@ -516,6 +702,7 @@ const app = new Vue({
         autoFollow: true,
         hideRight: true,
         docAcl: 0,
+        drawOnTop: true,
       },
       dragToCreate: true,
       lineToggleMode: false,
@@ -531,8 +718,14 @@ const app = new Vue({
             color: "#000000",
             style: "solid",
             styles: [
-              { value: "solid", text: "实线" },
-              { value: "dash", text: "虚线" },
+              {
+                value: "solid",
+                text: "实线",
+              },
+              {
+                value: "dash",
+                text: "虚线",
+              },
             ],
           },
         },
@@ -551,21 +744,48 @@ const app = new Vue({
       ],
       textAlign: "center",
       textAlignOptions: [
-        { value: "flex-start", text: "靠左" },
-        { value: "center", text: "居中" },
-        { value: "flex-end", text: "靠右" },
+        {
+          value: "flex-start",
+          text: "靠左",
+        },
+        {
+          value: "center",
+          text: "居中",
+        },
+        {
+          value: "flex-end",
+          text: "靠右",
+        },
       ],
       vertAlign: "center",
       vertAlignOptions: [
-        { value: "flex-start", text: "顶部" },
-        { value: "center", text: "中部" },
-        { value: "flex-end", text: "底部" },
+        {
+          value: "flex-start",
+          text: "顶部",
+        },
+        {
+          value: "center",
+          text: "中部",
+        },
+        {
+          value: "flex-end",
+          text: "底部",
+        },
       ],
       showEditor: "last",
       showEditors: [
-        { value: "none", text: "不显示" },
-        { value: "last", text: "最后一个" },
-        { value: "all", text: "列出全部" },
+        {
+          value: "none",
+          text: "不显示",
+        },
+        {
+          value: "last",
+          text: "最后一个",
+        },
+        {
+          value: "all",
+          text: "列出全部",
+        },
       ],
       isDemoEnv: true,
       svgs: {},
