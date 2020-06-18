@@ -121,7 +121,7 @@ const config = {
       resizable: true,
       droppable: false,
       defaultTip: "comment",
-      defaultColor: "#93C47D",
+      defaultColor: "#93C47D99",
       minWidth: 150,
       minHeight: 20, //resize的最小高度和宽度
       style: {

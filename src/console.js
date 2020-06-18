@@ -132,7 +132,7 @@ KFK.LOGLEVEL_INFO = 3;
 KFK.LOGLEVEL_DEBUG = 4;
 KFK.LOGLEVEL_DETAIL = 5;
 KFK.LOGLEVEL_KEY = 6;
-KFK.loglevel = KFK.LOGLEVEL_DETAIL; //控制log的等级, 级数越小，显示信息越少
+KFK.loglevel = KFK.LOGLEVEL_INFO; //控制log的等级, 级数越小，显示信息越少
 //在designer页面输入logerror, logwarn, loginfo, lodebug...
 KFK.designerConf = {
   scale: 1,
@@ -2012,10 +2012,6 @@ KFK.initC3 = function() {
     evt.preventDefault();
     evt.stopPropagation();
     KFK.kuangXuanMouseIsDown = false;
-    KFK.panStartAt = {
-      x: evt.clientX,
-      y: evt.clientY,
-    };
   });
   KFK.JC3.on("click", async function(evt) {
     if (KFK.inDesigner() === false) return;
@@ -2655,7 +2651,6 @@ KFK.endKuangXuan = function(pt1, pt2, shiftKey) {
     }
   }
   //为防止混乱，框选只对node div有效果
-  console.log(rect);
   KFK.JC3.find(".kfknode").each((index, div) => {
     let jqDiv = $(div);
     let divRect = KFK.divRect(jqDiv);
@@ -2679,7 +2674,6 @@ KFK.endKuangXuan = function(pt1, pt2, shiftKey) {
       rect.bottom > shapeRect.top
     ) {
       KFK.selectShape(svgShape);
-      console.log(svgShape.attr("id"));
     }
   });
   if (KFK.selectedDIVs.length > 1) {
@@ -2724,7 +2718,6 @@ KFK.isShapeSelected = function(theShape) {
 };
 KFK.deselectShape = function(theShape) {
   let color = theShape.attr("origin-color");
-  console.log("deselectShape", theShape, "origin-color", color);
   theShape.removeClass("selected");
   KFK.shapeOriginColor = color;
   let originWidth = theShape.attr("origin-width");
@@ -3004,7 +2997,6 @@ KFK.editTextNodeWithTextArea = function(
         finishEdit = true;
       }
       if (finishEdit) {
-        console.log("finishEdit now");
         innerNode.innerText = textarea.value;
         if (jDIV.attr("nodetype") === "comment") {
           innerNode.innerHTML =
@@ -3187,7 +3179,6 @@ KFK.placeNode = async function(
   attach2
 ) {
   if (w === undefined || h === undefined) {
-    console.log(w, h);
     let dds = {
       w: 100,
       h: 40,
@@ -3212,7 +3203,6 @@ KFK.placeNode = async function(
   KFK.justCreatedJqNode = jqDIV;
   KFK.lastCreatedJqNode = jqDIV;
   if (type === "md") {
-    console.log("Cretaed node is a MD, set preview now");
     KFK.setMarkdownWithPreview(jqDIV);
   } else {
     console.log("Cretaed node is not a MD");
@@ -3230,7 +3220,6 @@ KFK.setMarkdownWithPreview = function(jqDIV) {
   if (KFK.addEasyMDE) {
     KFK.addEasyMDE(textAreaId);
     setTimeout(() => {
-      console.log("preview", textAreaId);
       KFK.MDEs[textAreaId].togglePreview();
     }, 2);
   } else {
@@ -3239,7 +3228,6 @@ KFK.setMarkdownWithPreview = function(jqDIV) {
       KFK.addEasyMDE = pack.MyMDE.addEasyMDE;
       KFK.addEasyMDE(textAreaId);
       setTimeout(() => {
-        console.log("preview", textAreaId);
         KFK.MDEs[textAreaId].togglePreview();
       }, 2);
     });
@@ -3500,7 +3488,6 @@ KFK.syncNodePut = async function(
     }
 
     let htmlContent = tobeSync.prop("outerHTML");
-    console.log("PUT", htmlContent);
     let gzipped = await gzip(htmlContent);
     let payload = {
       doc_id: KFK.APP.model.cocodoc.doc_id,
@@ -3601,8 +3588,6 @@ KFK.syncNodePut = async function(
       onP1New = true;
     }
     payload.onp1 = onP1Before || onP1New;
-
-    console.log("onP1", payload.onp1);
 
     let result = await KFK.sendCmd(cmd, payload);
     //TODO: 仔细考虑离线处理策略
@@ -3714,7 +3699,6 @@ KFK.syncLinePut = async function(cmd, svgLine, reason, svgFrom, isUndoRedo) {
       onP1New = true;
     }
     payload.onp1 = onP1Before || onP1New;
-    console.log("onP1", payload.onp1);
     let result = await KFK.sendCmd(cmd, payload);
     if (result === false) {
       svgLine.addClass("offline");
@@ -3819,17 +3803,14 @@ KFK.setModeIndicatorForYellowTip = function(tipvariant) {
     return;
   }
   $("#modeIndicatorDiv").empty();
-  console.log(tipvariant);
   let svg = $(SVGs[tipvariant]);
   if (NotSet(svg)) {
     svg = $(
       "<img src='" + cocoConfig.frontend.url + "/svgs/" + tipvariant + ".svg'/>"
     );
-    console.log("use div");
   }
   svg.css("width", "18px");
   svg.css("height", "18px");
-  console.log(svg);
   svg.appendTo($("#modeIndicatorDiv"));
 };
 
@@ -4564,11 +4545,6 @@ KFK.setNodeEventHandler = async function(jqNodeDIV, callback) {
       if (KFK.waitForJumpDotDIV) {
         let oldDIV = KFK.waitForJumpDotDIV.clone();
         KFK.waitForJumpDotDIV.attr("jump", jqNodeDIV.attr("id"));
-        console.log(
-          KFK.waitForJumpDotDIV.attr("id"),
-          "jump to ",
-          jqNodeDIV.attr("id")
-        );
         await KFK.syncNodePut(
           "U",
           KFK.waitForJumpDotDIV.clone(),
@@ -4606,7 +4582,6 @@ KFK.setNodeEventHandler = async function(jqNodeDIV, callback) {
         let innerLink = jqNodeDIV.attr("innerlink");
         if (innerLink) {
           evt.preventDefault();
-          console.log(evt);
           if (evt.target.href) {
             if (innerLink.startsWith("dou=")) {
               let dou = innerLink.substr(4);
@@ -4715,7 +4690,6 @@ KFK.cancelMdEditting = function(nodeid) {
  */
 KFK.tryToJump = async function(jqDIV) {
   if (NotSet(jqDIV)) jqDIV = KFK.getFocusHoverLastCreate();
-  console.log("tryToJump at ", jqDIV.text());
   if (jqDIV && jqDIV.attr("jump")) {
     let followDIV = $(`#${jqDIV.attr("jump")}`);
     if (followDIV.length <= 0) {
@@ -4723,7 +4697,6 @@ KFK.tryToJump = async function(jqDIV) {
     }
     followDIV = followDIV.first();
     await KFK.addFromTo(jqDIV, followDIV);
-    console.log(jqDIV.text(), " jump to ", followDIV.text());
     KFK.scrollToNode(followDIV);
   }
 };
@@ -6114,7 +6087,6 @@ KFK.initDesigner = async function() {
 
 KFK.initLeftRightPanelEventHandler = function() {
   $("#left").on("click", function(evt) {
-    console.log("left click");
     evt.stopPropagation();
   });
   $("#right").on("click", function(evt) {
@@ -6132,12 +6104,10 @@ KFK.onToolboxMouseDown = function(mode, evt) {
   KFK.toolboxMouseDown = true;
   KFK.mode = mode;
   KFK.debug("Set drop toolbox mode to ", KFK.mode);
-  console.log("mouse down on toolbox", mode);
 };
 KFK.onToolboxMouseUp = function(mode, evt) {
   KFK.toolboxMouseDown = false;
   KFK.toolboxMouseDownOn = null;
-  console.log("mouse up on toolbox", mode);
 };
 
 KFK.initCocoChat = async function() {
@@ -6263,7 +6233,6 @@ KFK.checkSession = async function(isOpenAnn) {
   KFK.cocouser = null;
   await KFK.readLocalCocoUser();
   let userMode = "NORMAL"; //Normal | DEMO | ANNONYMOUS
-  console.log("KFK.urlMode", KFK.urlMode);
   if (KFK.urlMode === "column") {
     //await KFK.connectToWS();
     //return;
@@ -6366,7 +6335,6 @@ KFK.onWsGiveup = function() {
   $("#reconnect-warning").html("多次尝试后，网络依然无法连接, 请稍后刷新重试");
 };
 KFK.onWsReconnect = function() {
-  console.log("onWsReconnect");
   $(".reconnect-mask").removeClass("nodisplay");
   $("#reconnect-warning").html("服务器竟然开小差了，正在尝试重连。。。");
   KFK.show("#waiting");
@@ -6382,7 +6350,6 @@ KFK.onWsConnected = function() {
   //第一次连接，这条消息会被kj迎回来覆盖，正常
   if (KFK.isTryingToReconnect === undefined) {
     if (KFK.column !== "no") {
-      console.log("KFK.column = ", KFK.column);
       KFK.refreshColumn();
     } else {
       //The first time
@@ -6393,7 +6360,6 @@ KFK.onWsConnected = function() {
       if (KFK.cocouser && KFK.cocouser.sessionToken) {
         KFK.sendCmd("UPDMYORG", {});
         if (KFK.shareCode === null) {
-          console.log("refereshProjectList in onWsConnected 1");
           KFK.refreshProjectList();
         } else {
           //URL中有shareCode或者ivtCode
@@ -6414,7 +6380,6 @@ KFK.onWsConnected = function() {
             //console.log('Open Doc Direclty', KFK.docToOpen);
             KFK.refreshDesignerWithDoc(KFK.docToOpen, "");
           } else {
-            console.log("refreshProjectList in onWsConnected 2");
             KFK.refreshProjectList();
           }
         }
@@ -6720,7 +6685,6 @@ KFK.loadDoc = async function(
 };
 
 KFK.refreshProjectList = async function() {
-  console.log("refreshProjectList");
   await KFK.sendCmd("LISTPRJ", {
     skip: 0,
   });
@@ -6729,7 +6693,6 @@ KFK.refreshProjectList = async function() {
 
 KFK.refreshColumn = async function(cid = undefined) {
   if (!cid) cid = KFK.column;
-  console.log("refreshColumn", cid);
   await KFK.sendCmd("LISTCH", {
     cid: cid,
     skip: 0,
@@ -7407,7 +7370,6 @@ KFK.searchDoc = async function() {
 KFK.onSearchInput = async function(evt) {
   evt.stopPropagation();
   KFK.noCopyPaste = true;
-  console.log("onCopyPaste to true in onSearchInput");
   if (evt.keyCode === 27) {
     //ESC
     KFK.noCopyPaste = false;
@@ -7421,7 +7383,6 @@ KFK.onSearchInput = async function(evt) {
 KFK.onSigninInput = async function(evt) {
   evt.stopPropagation();
   KFK.noCopyPaste = true;
-  console.log("onCopyPaste to true in onSigninInput");
   if (evt.keyCode === 27) {
     //ESC
     KFK.noCopyPaste = false;
@@ -7910,13 +7871,10 @@ KFK.recreateNode = async function(obj, callback) {
       if (existingNode.length > 0) {
         //节点存在，需要刷新
         let isBrNode = false;
-        console.log(existingNode.prop("outerHTML"));
         if (existingNode.find(".brsnode").length > 0) {
           isBrNode = true;
         }
-        console.log("isBrNode", isBrNode);
         existingNode.prop("outerHTML", jqDIV.prop("outerHTML"));
-        console.log(existingNode.prop("outerHTML"));
         if (isBrNode) {
           KFK.startBrainstorm(existingNode);
         }
@@ -7928,7 +7886,6 @@ KFK.recreateNode = async function(obj, callback) {
         //新载入
         KFK.JC3.append(jqDIV);
         if (KFK.isA(jqDIV, "kfk_md")) {
-          console.log("recreate a MD", jqDIV.prop("outerHTML"));
           KFK.setMarkdownWithPreview(jqDIV);
         }
       }
@@ -8569,7 +8526,6 @@ KFK.isDocOwner = function() {
 };
 
 KFK.pmsOk = function(action, jdiv) {
-  console.log(typeof KFK.APP.model.cocodoc.pms);
   if (KFK.APP.model.cocodoc.pms === 0) return true;
   if (KFK.isDocOwner()) return true;
 
@@ -8580,12 +8536,10 @@ KFK.pmsOk = function(action, jdiv) {
       if (jdiv.attr("creator") === KFK.APP.model.cocouser.userid) {
         return true;
       } else {
-        console.log(action, jdiv, KFK.APP.model.cocodoc.pms);
         return false;
       }
     }
   } else {
-    console.log(action, jdiv, KFK.APP.model.cocodoc.pms);
     return false;
   }
 };
@@ -8986,32 +8940,26 @@ KFK.addDocumentEventHandler = function() {
           return;
         } else if (KFK.keypool.endsWith("logerror")) {
           KFK.loglevel = KFK.LOGLEVEL_ERROR;
-          console.log("log level", KFK.loglevel);
           KFK.keypool = "";
           return;
         } else if (KFK.keypool.endsWith("logwarn")) {
           KFK.loglevel = KFK.LOGLEVEL_WARN;
-          console.log("log level", KFK.loglevel);
           KFK.keypool = "";
           return;
         } else if (KFK.keypool.endsWith("loginfo")) {
           KFK.loglevel = KFK.LOGLEVEL_INFO;
-          console.log("log level", KFK.loglevel);
           KFK.keypool = "";
           return;
         } else if (KFK.keypool.endsWith("logkey")) {
           KFK.loglevel = KFK.LOGLEVEL_KEY;
-          console.log("log level", KFK.loglevel);
           KFK.keypool = "";
           return;
         } else if (KFK.keypool.endsWith("logdebug")) {
           KFK.loglevel = KFK.LOGLEVEL_DEBUG;
-          console.log("log level", KFK.loglevel);
           KFK.keypool = "";
           return;
         } else if (KFK.keypool.endsWith("logdetail")) {
           KFK.loglevel = KFK.LOGLEVEL_DETAIL;
-          console.log("log level", KFK.loglevel);
           KFK.keypool = "";
           return;
         } else if (
@@ -9765,7 +9713,11 @@ KFK.addDocumentEventHandler = function() {
       KFK.kuangXuan(KFK.kuangXuanStartPoint, tmp);
     } else if (KFK.isZoomingShape) {
       KFK.zoomShape(evt, KFK.shapeToZoom);
-    } else if (KFK.panStartAt) {
+    } else if (
+      KFK.panStartAt &&
+      NotSet(KFK.shapeToDrag) &&
+      KFK.lineTransfomerDragging !== true
+    ) {
       let delta = {
         x: evt.clientX - KFK.panStartAt.x,
         y: evt.clientY - KFK.panStartAt.y,
@@ -9778,7 +9730,6 @@ KFK.addDocumentEventHandler = function() {
     }
   });
   $(document).on("mousedown", function(evt) {
-    console.log("document.mousedown");
     if (KFK.inDesigner() === false) return;
     if (KFK.mode === "pointer" && KFK.docIsReadOnly() === false) {
       if (evt.shiftKey) {
@@ -9851,8 +9802,6 @@ KFK.addDocumentEventHandler = function() {
       if (alreadySelected === false) {
         KFK.selectedShapes.push(KFK.shapeToDrag);
       }
-      console.log("mouseup, end drag");
-      console.log("selectedShapes", KFK.selectedShapes.length);
       let unlockedShapeCount = 0;
       for (let i = 0; i < KFK.selectedShapes.length; i++) {
         if (KFK.lineLocked(KFK.selectedShapes[i]) === false) {
@@ -9879,13 +9828,11 @@ KFK.addDocumentEventHandler = function() {
         if (aShape.attr("id") === KFK.shapeToDrag.attr("id")) {
           let deltaX = pt.x - KFK.shapeDraggingStartPoint.x;
           let deltaY = pt.y - KFK.shapeDraggingStartPoint.y;
-          console.log("self dmove", deltaX, deltaY);
           //aShape.dmove(deltaX, deltaY);
         } else {
           //其它对象要从原始位置计算位移
           let deltaX = pt.x - KFK.shapeFirstDraggingStartPoint.x;
           let deltaY = pt.y - KFK.shapeFirstDraggingStartPoint.y;
-          console.log(aShape.attr("shapetype"), "dmove", deltaX, deltaY);
           await aShape.dmove(deltaX, deltaY);
         }
         let beforeSaveWidth = aShape.attr("stroke-width");
@@ -9956,12 +9903,10 @@ KFK.addDocumentEventHandler = function() {
       if (evt.ctrlKey) {
         evt.preventDefault();
         if (evt.wheelDelta / 120 > 0) {
-          console.log("scrolling up !");
           evt.preventDefault();
           evt.stopPropagation();
           KFK.zoomInOut("zoomin");
         } else {
-          console.log("scrolling down !");
           evt.preventDefault();
           evt.stopPropagation();
           KFK.zoomInOut("zoomout");
@@ -10101,7 +10046,6 @@ KFK.onESC = function() {
   KFK.hidePickerMatlib();
   if (KFK.noCopyPaste) {
     KFK.noCopyPaste = false;
-    console.log("set noCopyPaste to false");
   }
 };
 
@@ -10256,7 +10200,6 @@ KFK.onNormalInput = async function(evt) {
 KFK.onMsgInput = async function(evt) {
   evt.stopPropagation();
   KFK.noCopyPaste = true;
-  console.log("onCopyPaste to true in onMsgInput");
   if (evt.keyCode === 27) {
     //key ESC
     KFK.noCopyPaste = false;
@@ -11070,7 +11013,6 @@ KFK.gotoExplorer = async function() {
   //只在首次切换到explorer时，拉取数据。
   //其他时候，在creaeproject等操作的地方，会调用refreshProjectList重新拉取数据，在那时，Projects发生了变化，重新拉取是有必要的。
   if (KFK.explorerRefreshed === false) {
-    console.log("refereshProjectList in gotoExplorer");
     KFK.refreshProjectList();
   }
   KFK.currentView = "explorer";
@@ -11084,7 +11026,6 @@ KFK.gotoExplorer = async function() {
   } else {
     lastLeftTabIndex = 1; //如果是第一次，进入“我的白板”
   }
-  console.log("lastLeftTabIndex", lastLeftTabIndex);
   KFK.showForm({
     newdoc: false,
     newprj: false,
@@ -11280,7 +11221,6 @@ KFK.showTextPasteDialog = async function(content) {
 
 KFK.placePastedContent = async function() {
   let toAdd = KFK.APP.model.paste.content;
-  console.log("toAdd ", toAdd.length);
   let display = KFK.APP.model.paste.display;
   let ctype = KFK.APP.model.paste.ctype;
   let innerLink = null;
@@ -11392,7 +11332,6 @@ KFK.placePastedContent = async function() {
 
 KFK.onCut = async function(evt) {
   if (KFK.isShowingModal) return;
-  console.log("capture onCut");
   KFK.deleteObjects(evt, true);
 };
 
@@ -12854,12 +12793,6 @@ KFK.addShapeEventListner = function(theShape) {
         x: KFK.scalePoint(KFK.scrXToJc3X(evt.clientX)),
         y: KFK.scalePoint(KFK.scrYToJc3Y(evt.clientY)),
       };
-      console.log(
-        "shapeToDrag",
-        KFK.shapeToDrag.attr("shapetype"),
-        "mousedown, set shapeFirstDraggingStartPoint to",
-        KFK.shapeFirstDraggingStartPoint
-      );
     }
   });
   //stop zoom shape
@@ -13405,7 +13338,6 @@ KFK.exportPDF2 = function() {
 };
 
 KFK.onDropFiles = async function(files) {
-  console.log(files, files.length);
   let aFile = files[0];
   if (NotSet(aFile)) return;
   if (aFile.type !== "image/png" && aFile.type !== "image/jpeg") {
@@ -13662,10 +13594,7 @@ KFK.placeFollowerNode = async (jdiv, direction) => {
   KFK.justCreatedJqNode = newDIV;
   KFK.lastCreatedJqNode = newDIV;
   if (KFK.APP.model.viewConfig.autoFollow) {
-    console.log("auto jump");
     await KFK.addToStackThenJumpTo(KFK.lastCreatedJqNode, false, false);
-  } else {
-    console.log("no auto jump");
   }
   KFK.startNodeEditing(newDIV, true);
   return newDIV;
@@ -14085,10 +14014,10 @@ KFK.urlBase = protocol + "//" + host + cocoConfig.product.basedir;
 let urlSearch = window.location.search;
 let urlPath = window.location.pathname;
 let padUrl = urlPath.substr(1);
-console.log("URLBASE:", KFK.urlBase);
-console.log("URLSEARCH:", urlSearch);
-console.log("URLPATH:", urlPath);
-console.log("PADURL:", padUrl);
+// console.log("URLBASE:", KFK.urlBase);
+// console.log("URLSEARCH:", urlSearch);
+// console.log("URLPATH:", urlPath);
+// console.log("PADURL:", padUrl);
 WS.remoteEndpoint = cocoConfig.ws_server.endpoint.url;
 BossWS.remoteEndpoint = cocoConfig.ws_server.endpoint.url;
 if (urlSearch.startsWith("?dou=")) {
@@ -14107,10 +14036,8 @@ if (urlSearch.startsWith("?dou=")) {
   KFK.docToOpen = padUrl;
   KFK.urlMode = "directopen";
   KFK.shareCode = KFK.docToOpen;
-  console.log("Open Doc Direclty", KFK.docToOpen);
   //KFK.refreshDesignerWithDoc(KFK.docToOpen, "");
 } else if (padUrl.match(/@(.*)$/)) {
-  console.log("Column", padUrl.substr(1));
   KFK.column = padUrl.substr(1);
   KFK.urlMode = "column";
   KFK.shareCode = padUrl.substr(1);
