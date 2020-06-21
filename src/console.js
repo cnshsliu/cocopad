@@ -106,6 +106,7 @@ KFK.keypool = "";
 KFK.showStatus = {};
 KFK.QUICKGLANCE = false;
 KFK.svgDraw = null; //画svg的画布
+KFK.freeDraw = null; //画svg的画布
 KFK.jumpStack = [];
 KFK.duplicateBrNode = false;
 KFK.presentMaskMode = false;
@@ -116,6 +117,7 @@ KFK.wsTryTimesBeforeGiveup = 60;
 KFK.toolboxMouseDown = false;
 KFK.toolboxMouseDownOn = null;
 KFK.isZoomingShape = false;
+KFK.ctrlMouseToPan = false;
 KFK.idRowMap = {};
 KFK.dynamicSize = {};
 KFK.idSwitchMap = {};
@@ -132,7 +134,7 @@ KFK.LOGLEVEL_INFO = 3;
 KFK.LOGLEVEL_DEBUG = 4;
 KFK.LOGLEVEL_DETAIL = 5;
 KFK.LOGLEVEL_KEY = 6;
-KFK.loglevel = KFK.LOGLEVEL_INFO; //控制log的等级, 级数越小，显示信息越少
+KFK.loglevel = KFK.LOGLEVEL_DETAIL; //控制log的等级, 级数越小，显示信息越少
 //在designer页面输入logerror, logwarn, loginfo, lodebug...
 KFK.designerConf = {
   scale: 1,
@@ -1137,6 +1139,10 @@ KFK.updatePropertyFormWithNode = function(jqNodeDIV) {
   $("#spectrum_connect_line_color").spectrum("set", jqNodeDIV.attr("cncolor"));
   $("#spinner_connect_line_width").spinner("value", jqNodeDIV.attr("cnwidth"));
   KFK.APP.model.property.connect.line.style = jqNodeDIV.attr("cnstyle");
+
+  if (nodeType === "freehand") {
+    KFK.APP.setData("show", "customline", true);
+  }
 };
 
 KFK.log = function(...info) {
@@ -1477,6 +1483,7 @@ KFK.closePolyPoint = function(x, y, shiftKey) {
   KFK.polyShape.attr("creator", KFK.APP.model.cocouser.userid);
   KFK.syncLinePut("C", KFK.polyShape, "create new", null, false);
 };
+
 KFK.yarkShapePoint = function(x, y, shiftKey) {
   if (KFK.shapeDragging) return;
   if (KFK.isFreeHandDrawing) return;
@@ -1949,6 +1956,14 @@ KFK.initC3 = function() {
     left: KFK.px(KFK.LeftB),
     top: KFK.px(KFK.TopB),
   });
+  KFK.JC9 = $("#C9");
+  KFK.C9 = el(KFK.JC9);
+  KFK.JC9.css({
+    width: KFK.px(KFK.PageWidth * KFK.PageNumberHori),
+    height: KFK.px(KFK.PageHeight * KFK.PageNumberVert),
+    left: KFK.px(KFK.LeftB),
+    top: KFK.px(KFK.TopB),
+  });
   // KFK.JC3.focus((evt) => { KFK.debug("JC3 got focus"); })
   KFK.JCBKG = $("#containerbkg");
   KFK.SYSMSG = $("#system_message");
@@ -2012,6 +2027,12 @@ KFK.initC3 = function() {
     evt.preventDefault();
     evt.stopPropagation();
     KFK.kuangXuanMouseIsDown = false;
+    if (KFK.ctrlMouseToPan === true) {
+      KFK.panStartAt = {
+        x: evt.clientX,
+        y: evt.clientY,
+      };
+    }
   });
   KFK.JC3.on("click", async function(evt) {
     if (KFK.inDesigner() === false) return;
@@ -2020,6 +2041,7 @@ KFK.initC3 = function() {
       evt.preventDefault();
       return;
     }
+    KFK.focusOnNode(null);
 
     if (evt.target.getAttribute("id") === "D3") {
       if (KFK.isEditting && KFK.mdEdittingNode) {
@@ -2166,6 +2188,138 @@ KFK.initC3 = function() {
     ) {
       KFK.isFreeHandDrawing = true;
       KFK.freeHandPoints = [];
+      KFK.JC9.css({
+        "z-index": 10,
+      });
+    }
+  });
+  KFK.JC9.on("mousemove", function(evt) {
+    KFK.upateUserMousePos(KFK.APP.model.cocouser, evt.clientX, evt.clientY);
+
+    KFK.currentMousePos.x = evt.clientX;
+    KFK.currentMousePos.y = evt.clientY;
+
+    let indicatorX = KFK.scrXToJc1X(KFK.currentMousePos.x);
+    let indicatorY = KFK.scrYToJc1Y(KFK.currentMousePos.y);
+
+    $("#modeIndicator").css("left", indicatorX + 10);
+    $("#modeIndicator").css("top", indicatorY + 10);
+    // KFK.kuangXuanEndPoint = {
+    //   x: KFK.scrXToJc3X(evt.clientX),
+    //   y: KFK.scrYToJc3Y(evt.clientY)
+    // };
+
+    if (KFK.docIsReadOnly()) return;
+
+    let tmpPoint = {
+      x: KFK.scalePoint(KFK.scrXToJc3X(KFK.currentMousePos.x)),
+      y: KFK.scalePoint(KFK.scrYToJc3Y(KFK.currentMousePos.y)),
+    };
+    if (KFK.isFreeHandDrawing && KFK.pmsOk("C") === true) {
+      KFK.addFreeHandPoint(tmpPoint);
+      return;
+    }
+  });
+
+  KFK.JC9.mouseup(async (evt) => {
+    if (
+      KFK.mode === "freehand" &&
+      KFK.drawMode === "freehand" &&
+      KFK.isFreeHandDrawing === true
+    ) {
+      KFK.JC9.css({
+        "z-index": -1,
+      });
+      if (KFK.freeHandDrawing && KFK.pmsOk("C") === true) {
+        KFK.simplifyPoints(KFK.freeHandDrawing, KFK.freeHandPoints, 5);
+        let shapeId = "shape_" + KFK.myuid();
+        KFK.freeHandDrawing.attr("id", shapeId);
+        let lineColor = KFK.APP.model.svg.freehand.color;
+        if (KFK.dynamicLineStroke) lineColor = KFK.dynamicLineStroke;
+        let option = {
+          color: lineColor,
+          width: KFK.APP.model.svg.freehand.width,
+          linecap: KFK.APP.model.svg.freehand.linecap ? "round" : "square",
+        };
+        KFK.freeHandDrawing
+          .addClass("kfkshape")
+          .addClass(shapeId)
+          .addClass("kfkfreehand")
+          .stroke(option);
+        KFK.freeHandDrawing.attr("origin-width", option.width);
+        KFK.freeHandDrawing.attr("origin-color", option.color);
+        KFK.freeHandDrawing.attr("lasteditorid", KFK.APP.model.cocouser.userid);
+        KFK.addShapeEventListner(KFK.freeHandDrawing);
+        KFK.freeHandDrawing.attr("creator", KFK.APP.model.cocouser.userid);
+        if (KFK.APP.model.viewConfig.drawOnTop) {
+          let tmpRect = KFK.getShapeRect(KFK.freeHandDrawing);
+          console.log(tmpRect);
+          let ll = KFK.freeHandPoints[0].x;
+          let tt = KFK.freeHandPoints[0].y;
+          let rr = KFK.freeHandPoints[0].x;
+          let bb = KFK.freeHandPoints[0].y;
+
+          for (let i = 0; i < KFK.freeHandPoints.length; i++) {
+            if (KFK.freeHandPoints[i].x < ll) {
+              ll = KFK.freeHandPoints[i].x;
+            }
+            if (KFK.freeHandPoints[i].x > rr) {
+              rr = KFK.freeHandPoints[i].x;
+            }
+            if (KFK.freeHandPoints[i].y < tt) {
+              tt = KFK.freeHandPoints[i].y;
+            }
+            if (KFK.freeHandPoints[i].y > bb) {
+              bb = KFK.freeHandPoints[i].y;
+            }
+          }
+          ll = Math.round(ll) - 5;
+          rr = Math.round(rr) + 5;
+          tt = Math.round(tt) - 5;
+          bb = Math.round(bb) + 5;
+          let cx = Math.round((ll + rr) * 0.5);
+          let cy = Math.round((tt + bb) * 0.5);
+          let arr = [];
+          for (let i = 0; i < KFK.freeHandPoints.length; i++) {
+            arr.push([
+              Math.round(KFK.freeHandPoints[i].x - ll - 2.5),
+              Math.round(KFK.freeHandPoints[i].y - tt),
+            ]);
+          }
+          let myid = KFK.myuid();
+          console.log(
+            `freehand ll:${ll}, tt:${tt}, w:${rr - ll}, h:${bb - tt}`
+          );
+          let freeHandNode = await KFK.placeNode(
+            false,
+            myid,
+            "freehand",
+            "default",
+            cx,
+            cy,
+            rr - ll,
+            bb - tt,
+            arr,
+            ""
+          );
+          await KFK.syncNodePut(
+            "C",
+            freeHandNode,
+            "new node",
+            null,
+            false,
+            0,
+            1
+          );
+        }
+        //KFK.syncLinePut("C", KFK.freeHandDrawing, "create new", null, false);
+      }
+      KFK.freeHandDrawing = null;
+      KFK.freeHandPoints = [];
+      KFK.isFreeHandDrawing = false;
+      evt.stopPropagation();
+      evt.preventDefault();
+      KFK.ignoreClick = true;
     }
   });
   KFK.JC3.mouseup(async (evt) => {
@@ -2213,6 +2367,9 @@ KFK.initC3 = function() {
       evt.stopPropagation();
       evt.preventDefault();
       KFK.ignoreClick = true;
+      KFK.JC9.css({
+        "z-index": -1,
+      });
     } else {
       KFK.ignoreClick = false;
     }
@@ -2402,7 +2559,7 @@ KFK.zoomInOut = function(direction) {
 KFK.addFreeHandPoint = function(point) {
   KFK.freeHandPoints.push(point);
   if (KFK.freeHandPoints.length === 2) {
-    KFK.freeHandDrawing = KFK.svgDraw
+    KFK.freeHandDrawing = KFK.freeDraw
       .polyline([
         [KFK.freeHandPoints[0].x, KFK.freeHandPoints[0].y],
         [KFK.freeHandPoints[1].x, KFK.freeHandPoints[1].y],
@@ -3253,7 +3410,7 @@ KFK.LinkFromBrainCenter = async function(jqNode) {
     );
   }
 };
-KFK._createNode = async function(node) {
+KFK.___createNode = async function(node) {
   let nodeCount = KFK.getKFKNodeNumber();
   KFK.debug("createNode ", JSON.stringify(node));
   var innerObj = null;
@@ -3391,6 +3548,182 @@ KFK._createNode = async function(node) {
   await KFK.setNodeEventHandler(jqNodeDIV);
 
   return nodeDIV;
+};
+
+KFK._createNode = async function(node) {
+  let nodeDIV = document.createElement("div");
+  let jqNodeDIV = $(nodeDIV);
+  jqNodeDIV.attr("id", node.id);
+  KFK.C3.appendChild(nodeDIV);
+  let nodeCount = KFK.getKFKNodeNumber();
+  KFK.debug("createNode ", JSON.stringify(node));
+  var innerObj = null;
+  if (node.type === "image") {
+    innerObj = document.createElement("img");
+    innerObj.src = node.attach;
+    innerObj.style.width = KFK.px(node.width);
+    innerObj.style.height = KFK.px(node.height);
+  } else if (node.type === "text") {
+    innerObj = document.createElement("div");
+  } else if (node.type === "yellowtip") {
+    innerObj = document.createElement("span");
+  } else if (node.type === "textblock") {
+    innerObj = document.createElement("div");
+  } else if (node.type === "richtext") {
+    innerObj = document.createElement("div");
+  } else if (node.type === "md") {
+    innerObj = document.createElement("div");
+  } else if (node.type === "comment") {
+    innerObj = document.createElement("div");
+  } else if (node.type === "freehand") {
+    innerObj = document.createElement("div");
+  } else {
+    KFK.debug(`${node.type} is not supported`);
+    return;
+  }
+  nodeDIV.appendChild(innerObj);
+
+  let jInner = $(innerObj);
+  let jInnerId = "inner_" + node.id;
+  jInner.css(cocoConfig.node[node.type].inner.style);
+  jInner.addClass("innerobj");
+  jInner.addClass("inner_" + node.type);
+  jInner.attr("id", jInnerId);
+  if (node.type !== "freehand") {
+    innerObj.innerHTML = node.attach
+      ? node.attach
+      : cocoConfig.node[node.type].inner.content;
+    if (node.attach2 === undefined) {
+      KFK.printCallStack("attach2 should not be undefined");
+    }
+    if (node.type === "text") {
+      jInner.attr("contenteditable", "true");
+      jInner.attr("spellcheck", "false");
+    } else if (node.type === "richtext") {
+      jInner.addClass("ql-viewer");
+      jInner.addClass("ql-editor");
+      //保证 ql-editor-pointer存在, 这个class用于覆盖ql-editor的text光标
+      jInner.addClass("ql-editor-pointer");
+    } else if (node.type === "md") {
+      let textAreaId = "ta_" + node.id;
+      let textAreaStyle = "width:100%; height:100%; resize:none;";
+      let tmp = $(
+        "<textarea id='" +
+          textAreaId +
+          "' style='" +
+          textAreaStyle +
+          "'>" +
+          "# header #" +
+          "</textarea>"
+      );
+      tmp.appendTo(jInner);
+    }
+  }
+
+  jqNodeDIV.css(cocoConfig.node[node.type].style);
+  jqNodeDIV.css("position", "absolute");
+  jqNodeDIV.css("top", KFK.px(KFK.ltPos(node).y));
+  jqNodeDIV.css("left", KFK.px(KFK.ltPos(node).x));
+  jqNodeDIV.css("width", KFK.px(node.width));
+  jqNodeDIV.css("height", KFK.px(node.height));
+  jqNodeDIV.css("z-index", `${nodeCount + 1}`);
+  jqNodeDIV.attr("cnwidth", KFK.dynamic.connect.width);
+  jqNodeDIV.attr("cncolor", KFK.dynamic.connect.color);
+  jqNodeDIV.attr("cnstyle", KFK.dynamic.connect.style);
+  //default padding for all
+  $(nodeDIV).attr("variant", "default");
+  //click时，切换selected状态
+  if (node.type === "yellowtip") {
+    //create tip
+    KFK._setTipBkgImage(
+      jqNodeDIV,
+      cocoConfig.node.yellowtip.defaultTip,
+      cocoConfig.node.yellowtip.defaultColor
+    );
+    jqNodeDIV.attr("variant", cocoConfig.node.yellowtip.defaultTip);
+    jqNodeDIV.addClass("yellowtip");
+  } else if (node.type === "comment") {
+    KFK._setTipBkgImage(
+      jqNodeDIV,
+      cocoConfig.node.comment.defaultTip,
+      cocoConfig.node.comment.defaultColor
+    );
+    jqNodeDIV.attr("variant", cocoConfig.node.comment.defaultTip);
+    // jqNodeDIV.css("width", rect.w);
+    // jqNodeDIV.css("height", rect.h);
+    jqNodeDIV.addClass("comment");
+  }
+
+  jqNodeDIV.addClass("kfknode");
+  jqNodeDIV.addClass("kfk_" + node.type);
+  if (node.attach2 !== "") {
+    let jBkg = $('<div class="ossimage">' + node.attach2 + "</div>");
+    jBkg.appendTo(jqNodeDIV);
+  }
+
+  //set editors
+  let allEditorDIV = document.createElement("div");
+  $(allEditorDIV).addClass("cocoeditors");
+  nodeDIV.appendChild(allEditorDIV);
+  let lastEditorDIV = document.createElement("div");
+  $(lastEditorDIV).addClass("lastcocoeditor");
+  nodeDIV.appendChild(lastEditorDIV);
+  if (KFK.APP.model.showEditor === "none") {
+    $(allEditorDIV).css("display", "none");
+    $(lastEditorDIV).css("display", "none");
+  } else if (KFK.APP.model.showEditor === "last") {
+    $(allEditorDIV).css("display", "none");
+    $(lastEditorDIV).css("display", "block");
+  } else if (KFK.APP.model.showEditor === "all") {
+    $(allEditorDIV).css("display", "block");
+    $(lastEditorDIV).css("display", "none");
+  }
+  jqNodeDIV.attr("nodetype", node.type);
+  jqNodeDIV.attr("creator", KFK.APP.model.cocouser.userid);
+  jqNodeDIV.attr(
+    "edittable",
+    cocoConfig.node[node.type].edittable ? true : false
+  );
+  if (node.type === "yellowtip") {
+    //设置图形的缺省颜色
+    KFK.setTipBkgColor(jqNodeDIV, cocoConfig.node.yellowtip.defaultColor);
+  } else if (node.type === "comment") {
+    KFK.setTipBkgColor(jqNodeDIV, cocoConfig.node.comment.defaultColor);
+  }
+
+  await KFK.setNodeEventHandler(jqNodeDIV);
+  console.log(
+    `div ll:${jqNodeDIV.css("left")}, tt:${jqNodeDIV.css(
+      "top"
+    )}, w:${jqNodeDIV.css("width")}, h:${jqNodeDIV.css("height")}`
+  );
+
+  console.log(`svg width: ${node.width}, height: ${node.height}`);
+  if (node.type === "freehand") {
+    let freehandId = "freehand_" + node.id;
+    let innCanvas = SVG()
+      .addTo("#" + jInnerId)
+      .size(node.width, node.height);
+
+    innCanvas
+      .polyline(node.attach)
+      .fill("none")
+      .stroke({
+        width: 1,
+        color: "#FF0000",
+      })
+      .attr("id", freehandId);
+
+    jqNodeDIV.css("width", KFK.px(node.width) * 5);
+    jqNodeDIV.css("height", KFK.px(node.height) * 5);
+  }
+
+  return nodeDIV;
+};
+
+KFK.findFreehandSvg = function(jqDiv) {
+  let freehandId = "freehand_" + jqDiv.attr("id");
+  return $("#" + freehandId);
 };
 
 //删除添加eventHandler带来的额外的、会引起复制节点event响应不正常的内容
@@ -6252,6 +6585,7 @@ KFK.checkSession = async function(isOpenAnn) {
   } else {
     userMode = "ANNONYMOUS";
   }
+  console.log(userMode);
   if (userMode === "NORMAL") {
     //匿名用户获得临时身份后,会重新进入CheckSession,就也会运行到这里
     //这时,WS.ws已经是处于连接状态的,再次调用WS.start时, ws.js中会重用之前的连接,
@@ -6350,6 +6684,7 @@ KFK.onWsConnected = function() {
   //第一次连接，这条消息会被kj迎回来覆盖，正常
   if (KFK.isTryingToReconnect === undefined) {
     if (KFK.column !== "no") {
+      KFK.debug(`refreshColumn ${KFK.column}`);
       KFK.refreshColumn();
     } else {
       //The first time
@@ -6358,8 +6693,10 @@ KFK.onWsConnected = function() {
       //如果URL中没有ShareCodeInURL
       //正常情况下，会进入到浏览器界面
       if (KFK.cocouser && KFK.cocouser.sessionToken) {
+        KFK.debug(`cocouser: ${KFK.cocouser.name}`);
         KFK.sendCmd("UPDMYORG", {});
         if (KFK.shareCode === null) {
+          KFK.debug(`refreshProjectList`);
           KFK.refreshProjectList();
         } else {
           //URL中有shareCode或者ivtCode
@@ -7719,12 +8056,15 @@ KFK._onDocFullyLoaded = async function() {
     KFK.gotoAnyPage(0);
     KFK.zoomInOut("page");
   }
+  let title = `WeTeam.WORK-${KFK.APP.model.cocodoc.name}`;
+  document.title = title;
 };
 
 KFK.checkLoading = async function(num) {};
 
 KFK.cleanupJC3 = async function() {
   await KFK.JC3.empty();
+  await KFK.JC9.empty();
   KFK.addSvgLayer();
 };
 
@@ -8525,6 +8865,9 @@ KFK.isDocOwner = function() {
   }
 };
 
+/**
+ * Node Permission control
+ */
 KFK.pmsOk = function(action, jdiv) {
   if (KFK.APP.model.cocodoc.pms === 0) return true;
   if (KFK.isDocOwner()) return true;
@@ -9732,17 +10075,32 @@ KFK.addDocumentEventHandler = function() {
   $(document).on("mousedown", function(evt) {
     if (KFK.inDesigner() === false) return;
     if (KFK.mode === "pointer" && KFK.docIsReadOnly() === false) {
-      if (evt.shiftKey) {
-        KFK.kuangXuanMouseIsDown = true;
-        KFK.kuangXuanStartPoint = {
-          x: KFK.scrXToJc3X(evt.clientX),
-          y: KFK.scrYToJc3Y(evt.clientY),
-        };
+      if (KFK.ctrlMouseToPan === true) {
+        if (evt.shiftKey) {
+          KFK.panStartAt = {
+            x: evt.clientX,
+            y: evt.clientY,
+          };
+        } else {
+          KFK.kuangXuanMouseIsDown = true;
+          KFK.kuangXuanStartPoint = {
+            x: KFK.scrXToJc3X(evt.clientX),
+            y: KFK.scrYToJc3Y(evt.clientY),
+          };
+        }
       } else {
-        KFK.panStartAt = {
-          x: evt.clientX,
-          y: evt.clientY,
-        };
+        if (evt.shiftKey) {
+          KFK.kuangXuanMouseIsDown = true;
+          KFK.kuangXuanStartPoint = {
+            x: KFK.scrXToJc3X(evt.clientX),
+            y: KFK.scrYToJc3Y(evt.clientY),
+          };
+        } else {
+          KFK.panStartAt = {
+            x: evt.clientX,
+            y: evt.clientY,
+          };
+        }
       }
     }
   });
@@ -12305,6 +12663,15 @@ KFK.addSvgLayer = function() {
     .size(KFK._width, KFK._height);
   KFK.svgDraw.attr("id", "D3");
   KFK.svgDraw.addClass("svgcanvas");
+
+  KFK.freeDraw && delete KFK.freeDraw;
+  KFK.freeDraw = SVG()
+    .addTo("#C9")
+    .size(KFK._width, KFK._height);
+  console.log("Add D9");
+  KFK.freeDraw.attr("id", "D9");
+  KFK.freeDraw.addClass("freecanvas");
+
   KFK.debug("svg layer initialized");
   KFK.pageBounding = {
     Pages: [],
@@ -13386,9 +13753,9 @@ KFK.onDropImage = async function(imageFile) {
     onProgress: onProgress,
   };
   try {
-    const compressedImage = await imageCompression(imageFile, options);
-
-    KFK.fileToUpload = compressedImage;
+    //const compressedImage = await imageCompression(imageFile, options);
+    //KFK.fileToUpload = compressedImage;
+    KFK.fileToUpload = imageFile;
     await KFK.sendCmd("GETSTS", {
       stsFor: "drop",
     });

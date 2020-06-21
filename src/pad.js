@@ -700,6 +700,7 @@ const app = new Vue({
         showEditor: "last",
         nodemessage: true,
         autoFollow: true,
+        autoRight: false,
         hideRight: true,
         docAcl: 0,
         drawOnTop: true,

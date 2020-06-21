@@ -1944,8 +1944,16 @@ KFK.scrollToPos = function(pos) {
 KFK.initC3 = function() {
   KFK.debug("...initC3");
   KFK.JC3 = $("#C3");
+  KFK.JC9 = $("#C9");
   KFK.C3 = el(KFK.JC3);
+  KFK.C9 = el(KFK.JC9);
   KFK.JC3.css({
+    width: KFK.px(KFK.PageWidth * KFK.PageNumberHori),
+    height: KFK.px(KFK.PageHeight * KFK.PageNumberVert),
+    left: KFK.px(KFK.LeftB),
+    top: KFK.px(KFK.TopB),
+  });
+  KFK.JC9.css({
     width: KFK.px(KFK.PageWidth * KFK.PageNumberHori),
     height: KFK.px(KFK.PageHeight * KFK.PageNumberVert),
     left: KFK.px(KFK.LeftB),

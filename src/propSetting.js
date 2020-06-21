@@ -53,21 +53,52 @@ PropSetting.initPropertyForm = function() {
     step: 1,
     start: 1,
     spin: async function(evt, ui) {
-      if (KFK.selectedShapes.length === 0) {
-        let theShape = KFK.getPropertyApplyToShape();
-        KFK.selectShape(theShape);
-      }
+      let foundFreehand = false;
 
-      await KFK.updateMultiShapes(KFK.selectedShapes, async function(theShape) {
-        KFK.setShapeLineModel(theShape.attr("shapetype"), {
-          width: ui.value,
+      if (KFK.lastFocusOnJqNode) {
+        try {
+          if (KFK.lastFocusOnJqNode.attr("nodetype") === "freehand") {
+            console.log("Found freehand div");
+            let fromJQ = KFK.lastFocusOnJqNode.clone();
+            let freehandSvg = KFK.findFreehandSvg(KFK.lastFocusOnJqNode);
+            freehandSvg.attr({
+              "stroke-width": ui.value,
+              "origin-width": ui.value,
+            });
+            foundFreehand = true;
+            await KFK.syncNodePut(
+              "U",
+              KFK.lastFocusOnJqNode.clone(),
+              "change color",
+              fromJQ,
+              false,
+              0,
+              1
+            );
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      if (foundFreehand === false) {
+        if (KFK.selectedShapes.length === 0) {
+          let theShape = KFK.getPropertyApplyToShape();
+          KFK.selectShape(theShape);
+        }
+
+        await KFK.updateMultiShapes(KFK.selectedShapes, async function(
+          theShape
+        ) {
+          KFK.setShapeLineModel(theShape.attr("shapetype"), {
+            width: ui.value,
+          });
+          theShape.attr({
+            "stroke-width": ui.value,
+            "origin-width": ui.value,
+          });
+          return theShape;
         });
-        theShape.attr({
-          "stroke-width": ui.value,
-          "origin-width": ui.value,
-        });
-        return theShape;
-      });
+      }
     },
   });
   spinnerLineWidth.spinner("value", 1);
@@ -241,6 +272,7 @@ PropSetting.initPropertyForm = function() {
       });
     },
   });
+
   $("#lineColor").spectrum({
     color: "#f00",
     type: "color",
@@ -249,22 +281,53 @@ PropSetting.initPropertyForm = function() {
     cancelText: "放弃",
     change: async function(color) {
       var hex = color.toHexString();
-      if (KFK.selectedShapes.length === 0) {
-        let theShape = KFK.getPropertyApplyToShape();
-        KFK.selectShape(theShape);
+      let foundFreehand = false;
+      if (KFK.lastFocusOnJqNode) {
+        try {
+          if (KFK.lastFocusOnJqNode.attr("nodetype") === "freehand") {
+            console.log("Found freehand div");
+            let fromJQ = KFK.lastFocusOnJqNode.clone();
+            let freehandSvg = KFK.findFreehandSvg(KFK.lastFocusOnJqNode);
+            freehandSvg.attr({
+              stroke: hex,
+              "origin-color": hex,
+            });
+            foundFreehand = true;
+            await KFK.syncNodePut(
+              "U",
+              KFK.lastFocusOnJqNode.clone(),
+              "change color",
+              fromJQ,
+              false,
+              0,
+              1
+            );
+          }
+        } catch (error) {
+          console.log(error);
+        }
       }
-      KFK.dynamicLineStroke = hex;
+      if (foundFreehand === false) {
+        if (KFK.selectedShapes.length === 0) {
+          let theShape = KFK.getPropertyApplyToShape();
+          KFK.selectShape(theShape);
+        }
+        KFK.dynamicLineStroke = hex;
 
-      await KFK.updateMultiShapes(KFK.selectedShapes, async function(theShape) {
-        theShape.attr("stroke", hex);
-        theShape.attr("origin-color", hex);
-        KFK.setShapeLineModel(theShape.attr("shapetype"), {
-          color: hex,
+        await KFK.updateMultiShapes(KFK.selectedShapes, async function(
+          theShape
+        ) {
+          theShape.attr("stroke", hex);
+          theShape.attr("origin-color", hex);
+          KFK.setShapeLineModel(theShape.attr("shapetype"), {
+            color: hex,
+          });
+          return theShape;
         });
-        return theShape;
-      });
+      }
     },
   });
+
   $("#fontColor").spectrum({
     color: "#f00",
     type: "color",

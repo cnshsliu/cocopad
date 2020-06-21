@@ -161,8 +161,8 @@ const config = {
       minHeight: 30,
       customshape: true,
       style: {
-        width: "160",
-        height: "160",
+        width: "240",
+        height: "40",
         display: "flex",
         padding: "2px",
         margin: "0px",
@@ -171,7 +171,7 @@ const config = {
         "border-color": "#333333",
         "border-width": "1px",
         "border-style": "solid",
-        "border-radius": "0px",
+        "border-radius": "5px",
         position: "absolute",
       },
       inner: {
@@ -252,7 +252,7 @@ const config = {
         },
       },
     },
-    svg: {
+    freehand: {
       edittable: false,
       resizable: false,
       droppable: false,
@@ -267,8 +267,8 @@ const config = {
         overflow: "show",
         "background-color": "transparent",
         "border-color": "#000000",
-        "border-width": "1px",
-        "border-style": "solid",
+        "border-width": "0px",
+        "border-style": "none",
         "border-radius": "0px",
         position: "absolute",
       },
@@ -309,7 +309,7 @@ const config = {
       tip_circle3: { width: 50, height: 50 },
     },
     textblock: {
-      default: { width: 160, height: 100 },
+      default: { width: 240, height: 40 },
     },
     text: {
       default: { width: 30, height: 30 },
