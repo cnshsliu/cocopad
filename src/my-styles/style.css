@@ -5,6 +5,7 @@
 html {
   overscroll-behavior-x: none;
   overscroll-behavior-y: none;
+  touch-action: manipulation;
 }
 ::-webkit-scrollbar {
   width: 0px; /* Remove scrollbar space */
@@ -22,6 +23,7 @@ body {
   overflow: hidden;
   background-color: #f0f0f0;
   overscroll-behavior-x: none;
+  touch-action: manipulation;
 }
 #coco_todo {
   padding: 0;
@@ -425,7 +427,45 @@ input::placeholder {
   color: #20201fc9;
 }
 
-#toplogo {
+.toplogo {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  padding-right: 10px;
+  cursor: pointer;
+}
+.leftSwitch {
+  z-index: 10000000;
+  position: absolute;
+  top: 55px;
+  left: -20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background-color: #656bff;
+}
+.rightSwitch {
+  z-index: 10000000;
+  position: absolute;
+  top: 55px;
+  right: -20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background-color: #656bff;
+}
+.minimapSwitch {
+  z-index: 10000001;
+  position: absolute;
+  bottom: -20px;
+  right: -20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  background-color: #656bff;
+}
+
+.toplogo-mobile {
   position: absolute;
   top: 15px;
   left: 15px;
@@ -441,7 +481,7 @@ input::placeholder {
   padding-right: 10px;
 }
 
-#left {
+#leftPanel {
   position: absolute;
   top: 100px;
   left: 10px;
@@ -461,7 +501,7 @@ input::placeholder {
   width: 28px;
 }
 
-#right {
+#rightPanel {
   padding: 0px;
   background: #ffffff;
   box-shadow: 0 4px 8px 0 #000000cc, 0 6px 20px 0 #000000cc;
@@ -473,7 +513,7 @@ input::placeholder {
   border: 1px solid #0000004c;
 }
 
-#right .tab-content {
+#rightPanel .tab-content {
   position: absolute;
   height: calc(100% - 60px);
   overflow-y: scroll;
@@ -538,6 +578,9 @@ input::placeholder {
 
 .logo {
   height: 60px;
+}
+.logo-mobile {
+  height: 30px;
 }
 
 .cocologo {
@@ -945,7 +988,7 @@ input#regUserCode {
   top: 0px;
   left: 0px;
   width: 100vw;
-  height: 100vh;
+  /* height: 100vh; */
   display: flex;
 }
 
@@ -961,10 +1004,14 @@ input#regUserCode {
   transform: translate(-50%, 0%);
   background-color: #ffffff;
   /*最大1000px, 窗口宽度的90%*/
-  width: min(90vw, 1000px);
-  height: calc(100vh - 120px);
-  padding: 20px;
-  border-radius: 10px;
+  width: min(99vw, 1000px);
+  /* height: calc(100vh - 120px); */
+  /* padding: 20px; */
+  border-radius: 5px;
+}
+
+.explorer .inner .tab-pane {
+  padding: 0px;
 }
 
 .explorer .inner .card {
@@ -1039,6 +1086,13 @@ input#regUserCode {
 select:focus {
   border: none !important;
   outline: none !important;
+}
+#mobile-docname {
+  position: absolute;
+  top: 0px;
+  left: 5px;
+  font-size: 12px;
+  z-index: 100000;
 }
 
 #docHeaderInfo {

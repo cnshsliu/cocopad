@@ -152,6 +152,7 @@ KFK.WS = null;
 KFK.C3 = null;
 KFK.JC3 = null;
 KFK.onC3 = false;
+KFK.tapped = false;
 KFK.docDuringLoading = null;
 KFK.inFullScreenMode = false;
 KFK.inPresentingMode = false;
@@ -709,11 +710,11 @@ KFK.onWsMsg = async function(response) {
           doc.readonly_variant = "outline-primary";
         }
         if (doc.acl === "S") {
-          doc.acl_desc = "仅发起人";
+          doc.acl_desc = "自己";
         } else if (doc.acl === "O") {
-          doc.acl_desc = "所在组织";
+          doc.acl_desc = "组织";
         } else if (doc.acl === "P") {
-          doc.acl_desc = "公开使用";
+          doc.acl_desc = "公开";
         }
         doc.thumbnail = "https://liuzijin.com/scr/" + doc._id + ".png";
         doc.bkgstyle = `background-image: url('${doc.thumbnail}'); background-repeat: no-repeat; background-size: 84px 60px;`;
@@ -971,8 +972,8 @@ KFK.onWsMsg = async function(response) {
       $(".kfknode").draggable("disabled");
       $(".kfknode").resizable("disabled");
       $(".kfknode").droppable("disabled");
-      KFK.hide("#right");
-      KFK.hide("#left");
+      KFK.hide("#rightPanel");
+      KFK.hide("#leftPanel");
       KFK.hide("#top");
       break;
     case "SCRLOG":
@@ -1985,8 +1986,6 @@ KFK.initC3 = function() {
     }
     if (KFK.isEditting || KFK.resizing || KFK.dragging) {
       return;
-    } else {
-      console.log("continue dbl click");
     }
     if (KFK.inOverviewMode === true) {
       KFK.toggleOverview({
@@ -2179,7 +2178,7 @@ KFK.initC3 = function() {
     evt.preventDefault();
   };
 
-  KFK.JC3.mousedown(async (evt) => {
+  KFK.procFreehandStart = async function(evt) {
     if (
       KFK.mode === "freehand" &&
       KFK.drawMode === "freehand" &&
@@ -2192,12 +2191,42 @@ KFK.initC3 = function() {
         "z-index": 10,
       });
     }
+  };
+  // KFK.JC3.on("touchstart", async (evt) => {
+  //   await KFK.procFreehandStart(evt);
+  // });
+  KFK.JC9.on("touchstart", async (evt) => {
+    evt.preventDefault();
+    await KFK.procFreehandStart(evt);
   });
-  KFK.JC9.on("mousemove", function(evt) {
-    KFK.upateUserMousePos(KFK.APP.model.cocouser, evt.clientX, evt.clientY);
 
-    KFK.currentMousePos.x = evt.clientX;
-    KFK.currentMousePos.y = evt.clientY;
+  KFK.JC3.mousedown(async (evt) => {
+    await KFK.procFreehandStart(evt);
+  });
+  KFK.JC9.mousedown(async (evt) => {
+    await KFK.procFreehandStart(evt);
+  });
+  KFK.JC9.on("mousemove", async function(evt) {
+    await KFK.procFreehandMove(evt, "mouse");
+  });
+  KFK.JC9.on("touchmove", async function(evt) {
+    evt.preventDefault();
+    await KFK.procFreehandMove(evt, "touch");
+  });
+  KFK.procFreehandMove = async function(evt, evtType) {
+    let tmpX = 0;
+    let tmpY = 0;
+    if (evtType === "touch") {
+      tmpX = evt.touches[0].pageX;
+      tmpY = evt.touches[0].pageY;
+    } else {
+      tmpX = evt.clientX;
+      tmpY = evt.clientY;
+    }
+    KFK.upateUserMousePos(KFK.APP.model.cocouser, tmpX, tmpY);
+
+    KFK.currentMousePos.x = tmpX;
+    KFK.currentMousePos.y = tmpY;
 
     let indicatorX = KFK.scrXToJc1X(KFK.currentMousePos.x);
     let indicatorY = KFK.scrYToJc1Y(KFK.currentMousePos.y);
@@ -2219,9 +2248,17 @@ KFK.initC3 = function() {
       KFK.addFreeHandPoint(tmpPoint);
       return;
     }
+  };
+
+  KFK.JC9.on("touchend", async (evt) => {
+    await KFK.procFreehandEnd(evt);
   });
 
   KFK.JC9.mouseup(async (evt) => {
+    await KFK.procFreehandEnd(evt);
+  });
+
+  KFK.procFreehandEnd = async function(evt) {
     if (
       KFK.mode === "freehand" &&
       KFK.drawMode === "freehand" &&
@@ -2253,7 +2290,6 @@ KFK.initC3 = function() {
         KFK.freeHandDrawing.attr("creator", KFK.APP.model.cocouser.userid);
         if (KFK.APP.model.viewConfig.drawOnTop) {
           let tmpRect = KFK.getShapeRect(KFK.freeHandDrawing);
-          console.log(tmpRect);
           let ll = KFK.freeHandPoints[0].x;
           let tt = KFK.freeHandPoints[0].y;
           let rr = KFK.freeHandPoints[0].x;
@@ -2287,9 +2323,6 @@ KFK.initC3 = function() {
             ]);
           }
           let myid = KFK.myuid();
-          console.log(
-            `freehand ll:${ll}, tt:${tt}, w:${rr - ll}, h:${bb - tt}`
-          );
           let freeHandNode = await KFK.placeNode(
             false,
             myid,
@@ -2321,7 +2354,8 @@ KFK.initC3 = function() {
       evt.preventDefault();
       KFK.ignoreClick = true;
     }
-  });
+  };
+
   KFK.JC3.mouseup(async (evt) => {
     if (KFK.inDesigner() === false) return;
     KFK.panStartAt = undefined;
@@ -3361,8 +3395,6 @@ KFK.placeNode = async function(
   KFK.lastCreatedJqNode = jqDIV;
   if (type === "md") {
     KFK.setMarkdownWithPreview(jqDIV);
-  } else {
-    console.log("Cretaed node is not a MD");
   }
 
   //如果在脑图模式下，则自动建立脑图链接
@@ -3692,13 +3724,7 @@ KFK._createNode = async function(node) {
   }
 
   await KFK.setNodeEventHandler(jqNodeDIV);
-  console.log(
-    `div ll:${jqNodeDIV.css("left")}, tt:${jqNodeDIV.css(
-      "top"
-    )}, w:${jqNodeDIV.css("width")}, h:${jqNodeDIV.css("height")}`
-  );
 
-  console.log(`svg width: ${node.width}, height: ${node.height}`);
   if (node.type === "freehand") {
     let freehandId = "freehand_" + node.id;
     let innCanvas = SVG()
@@ -4414,6 +4440,44 @@ KFK.updateable = function(jqNode) {
     return false;
   }
 };
+
+KFK.procNodeDoubleClick = async function(evt, jqNodeDIV) {
+  evt.stopPropagation();
+  evt.preventDefault();
+  //Don't edit todolist direclty, show edit dialog instead.
+  //double click to edit
+  if (jqNodeDIV.hasClass("noedit")) {
+    if (jqNodeDIV.attr("id") === "coco_todo") {
+      KFK.toggleInputFor("todo");
+      await KFK.showMsgInputDlg();
+    } else if (jqNodeDIV.attr("id") === "coco_chat") {
+      KFK.toggleInputFor("chat");
+      await KFK.showMsgInputDlg();
+    }
+    return;
+  }
+  if (KFK.anyLocked(jqNodeDIV)) return;
+  //下面这句判断其实没用，因为在演示模式和概览模式下，都加了遮罩，点不到nodeDIV上
+  if (KFK.inPresentingMode === true || KFK.inOverviewMode) return;
+
+  //如果正在quill编辑的话
+  if (KFK.isEditting && KFK.quillEdittingNode) {
+    //看是否是当前节点, 如果是，正在编辑的节点，返回
+    if (KFK.quillEdittingNode === jqNodeDIV) {
+      return;
+    } else {
+      //否则的话， 就把前一个Quill编辑结束
+      await KFK.finishQuillEditting();
+      //然后启动，当前节点的Quill编辑
+      // console.log("Then start my quilling");
+      KFK.startNodeEditing(jqNodeDIV);
+    }
+  } else {
+    // console.log("Not quilling");
+    KFK.startNodeEditing(jqNodeDIV);
+  }
+};
+
 KFK.setNodeEventHandler = async function(jqNodeDIV, callback) {
   let jqNodeType = jqNodeDIV.attr("nodetype");
   if (jqNodeType === undefined) {
@@ -4974,44 +5038,60 @@ KFK.setNodeEventHandler = async function(jqNodeDIV, callback) {
   try {
     //dblclick to edit
     jqNodeDIV.dblclick(async function(evt) {
-      evt.stopPropagation();
-      evt.preventDefault();
-      //Don't edit todolist direclty, show edit dialog instead.
-      //double click to edit
-      if (jqNodeDIV.hasClass("noedit")) {
-        if (jqNodeDIV.attr("id") === "coco_todo") {
-          KFK.toggleInputFor("todo");
-          await KFK.showMsgInputDlg();
-        } else if (jqNodeDIV.attr("id") === "coco_chat") {
-          KFK.toggleInputFor("chat");
-          await KFK.showMsgInputDlg();
-        }
-        return;
-      }
-      if (KFK.anyLocked(jqNodeDIV)) return;
-      //下面这句判断其实没用，因为在演示模式和概览模式下，都加了遮罩，点不到nodeDIV上
-      if (KFK.inPresentingMode === true || KFK.inOverviewMode) return;
-
-      //如果正在quill编辑的话
-      if (KFK.isEditting && KFK.quillEdittingNode) {
-        //看是否是当前节点, 如果是，正在编辑的节点，返回
-        if (KFK.quillEdittingNode === jqNodeDIV) {
-          return;
-        } else {
-          //否则的话， 就把前一个Quill编辑结束
-          await KFK.finishQuillEditting();
-          //然后启动，当前节点的Quill编辑
-          // console.log("Then start my quilling");
-          KFK.startNodeEditing(jqNodeDIV);
-        }
-      } else {
-        // console.log("Not quilling");
-        KFK.startNodeEditing(jqNodeDIV);
-      }
+      await KFK.procNodeDoubleClick(evt, jqNodeDIV);
     });
   } catch (error) {
     console.error(error);
   }
+
+  jqNodeDIV.on("touchstart", async function(e) {
+    if (KFK.inPresentingMode || KFK.inOverviewMode) return;
+    KFK.jqBeforeTouchMove = jqNodeDIV.clone();
+    KFK.touchStartX = e.touches[0].pageX;
+    KFK.touchStartY = e.touches[0].pageY;
+    KFK.jqLeftOnTouch = KFK.divLeft(jqNodeDIV);
+    KFK.jqTopOnTouch = KFK.divTop(jqNodeDIV);
+    if (!KFK.tapped) {
+      KFK.tapped = setTimeout(function() {
+        KFK.tapped = null;
+      }, 300);
+    } else {
+      clearTimeout(KFK.tapped);
+      KFK.tapped = null;
+      await KFK.procNodeDoubleClick(e, jqNodeDIV);
+    }
+  });
+
+  jqNodeDIV.on("touchmove", function(e) {
+    if (KFK.inPresentingMode || KFK.inOverviewMode) return;
+    KFK.touchMoveX = e.touches[0].pageX;
+    KFK.touchMoveY = e.touches[0].pageY;
+    let deltaX = KFK.touchMoveX - KFK.touchStartX;
+    let deltaY = KFK.touchMoveY - KFK.touchStartY;
+    jqNodeDIV.css("left", KFK.jqLeftOnTouch + deltaX);
+    jqNodeDIV.css("top", KFK.jqTopOnTouch + deltaY);
+  });
+
+  jqNodeDIV.on("touchend", async function(e) {
+    if (KFK.inPresentingMode || KFK.inOverviewMode) return;
+    KFK.touchEndX = e.changedTouches[0].pageX;
+    KFK.touchEndY = e.changedTouches[0].pageY;
+    if (
+      Math.abs(KFK.touchEndX - KFK.touchStartX) > 5 ||
+      Math.abs(KFK.touchEndY - KFK.touchStartY) > 5
+    ) {
+      await KFK.syncNodePut(
+        "U",
+        jqNodeDIV.clone(),
+        "touchMove",
+        KFK.jqBeforeTouchMove,
+        false,
+        0,
+        1
+      );
+    }
+  });
+
   if (callback) await callback();
 };
 
@@ -6366,6 +6446,23 @@ KFK.init = async function() {
     }, 10000);
   }
   $(".showAfterInit").removeClass("showAfterInit");
+  $("input,textarea").on("focus", function() {
+    KFK.windowTop = $(window).scrollTop();
+  });
+  $("input,textarea").on("blur", function() {
+    //window.scroll(0, 0);
+    $(window).scrollTop(KFK.windowTop);
+  });
+  try {
+    window.addEventListener("gesturestart", (e) => e.preventDefault());
+    window.addEventListener("gesturechange", (e) => e.preventDefault());
+    window.addEventListener("gestureend", (e) => e.preventDefault());
+  } catch (error) {
+    console.log(error);
+  }
+  // $("select").on("change", function() {
+  //   window.scroll(0, 0);
+  // });
 };
 
 KFK.initExplorer = function() {
@@ -6406,7 +6503,7 @@ KFK.initDesigner = async function() {
           KFK.initPropertySvgGroup = pack.PropSetting.initPropertySvgGroup;
           KFK.initPropertySvgGroup();
         });
-    //$("#right").draggable();
+    //$("#rightPanel").draggable();
     await KFK.initCocoChat();
     await KFK.initVideoRoom();
     KFK.designerInitialized = true;
@@ -6419,16 +6516,16 @@ KFK.initDesigner = async function() {
 };
 
 KFK.initLeftRightPanelEventHandler = function() {
-  $("#left").on("click", function(evt) {
+  $("#leftPanel").on("click", function(evt) {
     evt.stopPropagation();
   });
-  $("#right").on("click", function(evt) {
+  $("#rightPanel").on("click", function(evt) {
     evt.stopPropagation();
   });
-  $("#left").on("mousedown", function(evt) {
+  $("#leftPanel").on("mousedown", function(evt) {
     evt.stopPropagation();
   });
-  $("#right").on("mousedown", function(evt) {
+  $("#rightPanel").on("mousedown", function(evt) {
     evt.stopPropagation();
   });
 };
@@ -6585,7 +6682,6 @@ KFK.checkSession = async function(isOpenAnn) {
   } else {
     userMode = "ANNONYMOUS";
   }
-  console.log(userMode);
   if (userMode === "NORMAL") {
     //匿名用户获得临时身份后,会重新进入CheckSession,就也会运行到这里
     //这时,WS.ws已经是处于连接状态的,再次调用WS.start时, ws.js中会重用之前的连接,
@@ -6680,7 +6776,6 @@ KFK.onWsConnected = function() {
   KFK.hide("#waiting");
   $(".reconnect-mask").addClass("nodisplay");
   KFK.APP.setData("show", "wsready", true);
-  //console.log("KFK.urlMode=", KFK.urlMode);
   //第一次连接，这条消息会被kj迎回来覆盖，正常
   if (KFK.isTryingToReconnect === undefined) {
     if (KFK.column !== "no") {
@@ -6777,8 +6872,8 @@ KFK.rememberLayoutDisplay = function() {
     toplogo: $("#toplogo").hasClass("noshow"),
     docHeaderInfo: $("#docHeaderInfo").hasClass("noshow"),
     rtcontrol: $("#rtcontrol").hasClass("noshow"),
-    left: $("#left").hasClass("noshow"),
-    right: $("#right").hasClass("noshow"),
+    left: $("#leftPanel").hasClass("noshow"),
+    right: $("#rightPanel").hasClass("noshow"),
   };
 };
 KFK.restoreLayoutDisplay = async function() {
@@ -6803,11 +6898,11 @@ KFK.restoreLayoutDisplay = async function() {
     ? $("#rtcontrol").addClass("noshow")
     : $("#rtcontrol").removeClass("noshow");
   KFK.layoutRemembered.left
-    ? $("#left").addClass("noshow")
-    : $("#left").removeClass("noshow");
+    ? $("#leftPanel").addClass("noshow")
+    : $("#leftPanel").removeClass("noshow");
   KFK.layoutRemembered.right
-    ? $("#right").addClass("noshow")
-    : $("#right").removeClass("noshow");
+    ? $("#rightPanel").addClass("noshow")
+    : $("#rightPanel").removeClass("noshow");
 };
 KFK.setLayoutDisplay = async function(config) {
   KFK.debug("setlayoutdisplay", JSON.stringify(config));
@@ -6840,11 +6935,11 @@ KFK.setLayoutDisplay = async function(config) {
     ? $("#rtcontrol").removeClass("noshow")
     : $("#rtcontrol").addClass("noshow");
   config.left
-    ? $("#left").removeClass("noshow")
-    : $("#left").addClass("noshow");
+    ? $("#leftPanel").removeClass("noshow")
+    : $("#leftPanel").addClass("noshow");
   config.right
-    ? $("#right").removeClass("noshow")
-    : $("#right").addClass("noshow");
+    ? $("#rightPanel").removeClass("noshow")
+    : $("#rightPanel").addClass("noshow");
 };
 
 KFK.showSection = async function(options) {
@@ -6976,7 +7071,7 @@ KFK.refreshDesignerWithDoc = async function(
   KFK.currentView = "designer";
   if (doc_id !== null)
     await KFK.loadDoc(doc_id, docpwd, quickGlance, forceReadonly);
-  if (KFK.APP.model.viewConfig.hideRight) KFK.hide("#right");
+  if (KFK.APP.model.viewConfig.hideRight) KFK.hide("#rightPanel");
 };
 
 KFK.loadDoc = async function(
@@ -7840,7 +7935,7 @@ KFK.modalShown = () => {
   KFK.hideDIVsWithStatus([
     ".msgInputWindow",
     "#system_message",
-    "#right",
+    "#rightPanel",
     "#minimap",
   ]);
 };
@@ -7849,7 +7944,7 @@ KFK.modalHidden = () => {
   KFK.restoreDIVsWithStatus([
     ".msgInputWindow",
     "#system_message",
-    "#right",
+    "#rightPanel",
     "#minimap",
   ]);
 };
@@ -7962,11 +8057,11 @@ KFK._onDocFullyLoaded = async function() {
   KFK.APP.setData("model", "docLoaded", true);
   if (KFK.APP.model.cocodoc.readonly) {
     $("#linetransformer").draggable("disable");
-    $("#right").toggle("slide", {
+    $("#rightPanel").toggle("slide", {
       duration: 100,
       direction: "right",
     });
-    $("#left").toggle("slide", {
+    $("#leftPanel").toggle("slide", {
       duration: 100,
       direction: "left",
     });
@@ -8709,6 +8804,15 @@ KFK.setMode = function(mode, event) {
   if (KFK.docIsReadOnly()) mode = "pointer";
 
   let shiftKey = event ? event.shiftKey : false;
+  if (mode === "freehand") {
+    KFK.JC9.css({
+      "z-index": 10,
+    });
+  } else {
+    KFK.JC9.css({
+      "z-index": -1,
+    });
+  }
 
   let oldMode = KFK.mode;
   KFK.mode = mode;
@@ -8849,10 +8953,19 @@ KFK.pickMaterial = function(matid, url) {
 };
 
 KFK.clearFreeHand = function() {
-  KFK.JC3.find(".kfkfreehand").each(async (index, shape) => {
-    shape = SVG(shape);
-    if (shape.attr("lasteditorid") === KFK.APP.model.cocouser.userid) {
-      await KFK._deleteShape(shape);
+  // KFK.JC3.find(".kfkfreehand").each(async (index, shape) => {
+  //   shape = SVG(shape);
+  //   if (shape.attr("lasteditorid") === KFK.APP.model.cocouser.userid) {
+  //     await KFK._deleteShape(shape);
+  //   }
+  // });
+  KFK.JC3.find(".kfk_freehand").each(async (index, div) => {
+    let jqDIV = $(div);
+    if (
+      jqDIV.attr("creator") === KFK.APP.model.cocouser.userid ||
+      KFK.isDocOwner()
+    ) {
+      await KFK.deleteNode_request(jqDIV);
     }
   });
 };
@@ -9255,8 +9368,6 @@ KFK.addDocumentEventHandler = function() {
             let parent = parents[parents.length - 1];
             KFK.scrollToNode(parent);
             KFK.focusOnNode(parent);
-          } else {
-            console.log("parent not found");
           }
           KFK.keypool = "";
           return;
@@ -11137,18 +11248,18 @@ KFK.toggleRightPanel = function(tab = -1, flag = false) {
     return;
   }
   if (flag === false) {
-    if ($("#right").hasClass("noshow")) {
-      KFK.show($("#right"));
+    if ($("#rightPanel").hasClass("noshow")) {
+      KFK.show($("#rightPanel"));
       KFK.APP.model.viewConfig.hideRight = false;
       KFK.saveLocalViewConfig();
     } else {
-      KFK.hide($("#right"));
+      KFK.hide($("#rightPanel"));
       KFK.APP.model.viewConfig.hideRight = true;
       KFK.saveLocalViewConfig();
     }
     return;
   } else {
-    KFK.show($("#right"));
+    KFK.show($("#rightPanel"));
     KFK.APP.model.viewConfig.hideRight = false;
     KFK.saveLocalViewConfig();
   }
@@ -11205,11 +11316,11 @@ KFK.toggleTopAndLeftOnly = async function(evt) {
   });
   //左侧和右侧的工具栏，可进行切换
   if (KFK.topAndLeftOnly) {
-    KFK.hide("#left");
-    KFK.hide("#right");
+    KFK.hide("#leftPanel");
+    KFK.hide("#rightPanel");
   } else {
-    KFK.show("#left");
-    KFK.show("#right");
+    KFK.show("#leftPanel");
+    KFK.show("#rightPanel");
   }
   KFK.APP.setData("show", "actionlog", false);
   KFK.keypool = "";
@@ -11230,20 +11341,39 @@ KFK.toggleControlButtonOnly = async function(evt) {
     minimap: !KFK.controlButtonsOnly,
   });
   if (KFK.controlButtonsOnly) {
-    KFK.hide("#left");
-    KFK.hide("#right");
+    KFK.hide("#leftPanel");
+    KFK.hide("#rightPanel");
     KFK.hide("#docHeaderInfo");
     KFK.hide("#toplogo");
     KFK.hideDIVsWithStatus([".msgInputWindow", "#coco_chat"]);
   } else {
-    KFK.show("#left");
-    KFK.show("#right");
+    KFK.show("#leftPanel");
+    KFK.show("#rightPanel");
     KFK.show("#docHeaderInfo");
     KFK.show("#toplogo");
     KFK.restoreDIVsWithStatus([".msgInputWindow", "#coco_chat"]);
   }
   KFK.keypool = "";
   //add a mask layer
+};
+
+KFK.leftSwitch = async function(evt) {
+  if ($("#leftPanel").hasClass("noshow")) {
+    KFK.show("#leftPanel");
+  } else {
+    KFK.hide("#leftPanel");
+  }
+};
+
+KFK.rightSwitch = async function(evt) {
+  if ($("#rightPanel").hasClass("noshow")) {
+    KFK.show("#rightPanel");
+  } else {
+    KFK.hide("#rightPanel");
+  }
+};
+KFK.minimapSwitch = async function(evt) {
+  KFK.toggleMinimap();
 };
 
 KFK.toggleNoControls = async function(evt) {
@@ -11254,15 +11384,15 @@ KFK.toggleNoControls = async function(evt) {
     minimap: false,
   });
   if (KFK.controlNoControl) {
-    KFK.hide("#left");
-    KFK.hide("#right");
+    KFK.hide("#leftPanel");
+    KFK.hide("#rightPanel");
     KFK.hide("#docHeaderInfo");
     KFK.hide("#toplogo");
     KFK.hide("#rtcontrol");
     KFK.hideDIVsWithStatus([".msgInputWindow", "#coco_chat"]);
   } else {
-    KFK.show("#left");
-    KFK.show("#right");
+    KFK.show("#leftPanel");
+    KFK.show("#rightPanel");
     KFK.show("#docHeaderInfo");
     KFK.show("#toplogo");
     KFK.show("#rtcontrol");
@@ -11303,11 +11433,11 @@ KFK.showHidePanel = function(flag) {
     KFK.inFullScreenMode === false &&
     KFK.controlButtonsOnly === false
   ) {
-    KFK.show("#left");
-    KFK.show("#right");
+    KFK.show("#leftPanel");
+    KFK.show("#rightPanel");
   } else {
-    KFK.hide("#left");
-    KFK.hide("#right");
+    KFK.hide("#leftPanel");
+    KFK.hide("#rightPanel");
   }
 };
 
@@ -12668,7 +12798,6 @@ KFK.addSvgLayer = function() {
   KFK.freeDraw = SVG()
     .addTo("#C9")
     .size(KFK._width, KFK._height);
-  console.log("Add D9");
   KFK.freeDraw.attr("id", "D9");
   KFK.freeDraw.addClass("freecanvas");
 
@@ -13679,6 +13808,14 @@ KFK.checkBrowser = function() {
   KFK.setAppData("model", "isNotValidBrowser", !isValidBrowser);
   KFK.APP.model.osName = browser.getOSName(true);
   KFK.debug("isValidBrowser", isValidBrowser);
+  KFK.debug("osName", KFK.APP.model.osName);
+  if (["ios", "android"].indexOf(KFK.APP.model.osName) >= 0) {
+    KFK.APP.model.isMobile = true;
+    KFK.APP.model.isPC = false;
+  } else {
+    KFK.APP.model.isMobile = false;
+    KFK.APP.model.isPC = true;
+  }
 };
 
 KFK.exportPDF = function() {

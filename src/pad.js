@@ -298,6 +298,8 @@ const app = new Vue({
         },
       },
       osName: "",
+      isMobile: false,
+      isPC: true,
       endpoint: "",
       publish: {
         name: "",
@@ -532,7 +534,7 @@ const app = new Vue({
         },
         {
           key: "acl",
-          label: "权限范围",
+          label: "权限",
         },
         {
           key: "operations",

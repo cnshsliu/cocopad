@@ -4,7 +4,7 @@
 <head>
     <title>WeTeam.WORK-即时协作-白板-脑图-演示-音视频</title>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no maximum-scale=1.0, user-scalable=no"">
     <link rel="stylesheet" href="/my-styles/room.css">
     <link rel="shortcut icon" href="./favicon.png" />
     <link type="text/css" rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
@@ -241,11 +241,14 @@
                         <img id="linetransformer" class="noshow" :src="getImageSrc('linetransformer')">
                     </div>
                 </div>
-                <div id="toplogo" class="padlayout spaceToHide" @click="KFK.gotoExplorer">
-                    <img src="./cocopad2.svg" class="logo d-inline-block align-top" alt="COLOBOD">
+                <div class="toplogo padlayout spaceToHide"  @click="KFK.gotoExplorer">
+                    <img src="./cocopad2.svg" :class="model.isPC?'logo d-inline-block align-top':'logo-mobile d-inline-block align-top'" alt="COLOBOD">
                 </div>
+                <div class="leftSwitch" @click="KFK.leftSwitch" v-if="model.isMobile"></div>
+                <div class="rightSwitch" @click="KFK.rightSwitch" v-if="model.isMobile"></div>
+                <div class="minimapSwitch" @click="KFK.minimapSwitch" v-if="model.isMobile"></div>
                 <!-- left tool left menu toolbox left panel-->
-                <div id="left" class="bg-white padlayout spaceToHide" v-on:click="KFK.clickOnLeftPanel">
+                <div id="leftPanel" class="bg-white padlayout spaceToHide" v-on:click="KFK.clickOnLeftPanel">
                     <b-list-group>
                         <b-list-group-item href="#" class="d-flex align-items-center toolbox" v-on:mouseover="KFK.AI('tb_arrow')" v-on:click="setMode('pointer', $event);" @mouseover.native="KFK.overTool($event, 'pointer');" v-b-popover.hover.right title="点选" :active="toolActiveState['pointer']">
                             <b-img :src="getImageSrc('pointer')" fluid alt="" scale="2" class="cocotool"></b-img>
@@ -330,7 +333,7 @@
                     </b-list-group>
                 </div>
                 <!-- right panel -->
-                <div id="right" class="padlayout noshow spaceToHide" v-on:click="KFK.clickOnRightPanel">
+                <div id="rightPanel" class="padlayout noshow spaceToHide" v-on:click="KFK.clickOnRightPanel">
                     <b-tabs v-model="model.rightTabIndex" content-class="mt-1 w-100" justified>
                         <b-tab title="样式" class='cocoproperty'>
                             <b-container v-show="show.customfont" class='border-top no-padding'>
@@ -636,7 +639,7 @@
             <template v-slot:button-content><b-icon icon="cloud-download"></b-icon>导出</template>
             <b-dropdown-item href="#" id="toggle_all" variant="success" @click="KFK.exportPDF"> 导出PDF </b-dropdown-item>
           </b-dropdown> -->
-                        <b-dropdown right variant="primary" class="m-2" id='dropdown_help'>
+                        <b-dropdown right variant="primary" class="m-2" id='dropdown_help' v-if="model.isPC">
                             <template v-slot:button-content>使用说明</template>
                             <b-dropdown-item href="#" id="toggle_all" variant="success" v-b-modal.modal-key-shortcut>
                                 <img :src="getImageSrc('keyboard')" class="toolbar" style="width:24px; height:24px;"></img>&nbsp;快捷键
@@ -645,19 +648,19 @@
                                 <img :src="getImageSrc('manual')" class="toolbar" style="width:24px; height:24px;"></img>&nbsp;帮助文档
                             </b-dropdown-item>
                         </b-dropdown>
-                        <b-dropdown right text="显示设置" variant="primary" class="m-2">
-                            <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle_all" variant="success" @click="KFK.toggleFullScreen">
+                        <b-dropdown right :text="model.isPC?'显示设置':'显示'" variant="primary" class="m-2">
+                            <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle_all" variant="success" @click="KFK.toggleFullScreen" v-if="model.isPC">
                                 <b-icon icon="arrows-fullscreen"></b-icon>&nbsp;全屏(fs)
                             </b-dropdown-item>
                             <b-dropdown-item id="onepage" variant="success" @click="KFK.toggleOverview">
                                 <b-icon icon="grid3x2" shift-h="-1.2" shift-v="1.1"></b-icon>&nbsp;全局概览
                             </b-dropdown-item>
-                            <b-dropdown-item href="#" id="toggle_cbonly" variant="success" @click="KFK.toggleControlButtonOnly">
+                            <b-dropdown-item href="#" id="toggle_cbonly" variant="success" @click="KFK.toggleControlButtonOnly" v-if="model.isPC">
                                 <b-icon v-if="KFK.controlButtonsOnly===false" icon="layout-sidebar-reverse" rotate="270">
                                 </b-icon>
                                 <b-icon v-else icon="layout-sidebar-inset-reverse" rotate="270"></b-icon>&nbsp;切换工具栏
                             </b-dropdown-item>
-                            <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle-right" variant="success" @click="KFK.toggleRightPanel(-1, false)">
+                            <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle-right" variant="success" @click="KFK.toggleRightPanel(-1, false)" v-if="model.isPC">
                                 <b-icon v-if="KFK.showRightTools===false" icon="layout-sidebar-reverse"></b-icon>
                                 <b-icon v-else icon="layout-sidebar-inset-reverse"></b-icon>&nbsp;切换属性栏
                             </b-dropdown-item>
@@ -666,10 +669,10 @@
                             </b-dropdown-item>
                         </b-dropdown>
                     </div>
-                    <div class="showFirstTimeHelp" v-show="model.firstTime">请在这里查看相关使用说明</div>
+                    <div class="showFirstTimeHelp" v-show="model.firstTime" v-if="model.isPC">请在这里查看相关使用说明</div>
                 </div>
                 <!-- rtcontrol -->
-                <div id="actionloglist" v-show="show.actionlog" style="overflow-y:scroll" class="p-3 spaceToHide">
+                <div id="actionloglist" v-show="show.actionlog" style="overflow-y:scroll" class="p-3 spaceToHide" v-if="model.isPC">
                     协作参与者
                     <div id='actionlog-refresh'>
                         <b-button @click="KFK.getActionLog" variant="link" class="m-0 p-0">刷新</b-button>
@@ -708,13 +711,16 @@
                         </b-list-group-item>
                     </b-list-group>
                 </div>
-                <div id='docHeaderInfo' class="padlayout spaceToHide">
+                <div id="mobile-docname" v-if="model.isMobile">
+                        {{model.cocodoc.name}}
+                </div>
+                <div id='docHeaderInfo' class="padlayout spaceToHide" v-if="model.isPC">
                     <div class="docname" v-if="show.section.designer" @click="KFK.gotoExplorer">
                         <b-icon v-if="model.cocodoc.readonly" icon="lock"></b-icon>
                         <b-icon v-else icon="book"></b-icon>
                         {{model.cocodoc.name}}
                     </div>
-                    <div class="docpeople padlayout" v-if="show.section.designer">
+                    <div class="docpeople padlayout" v-if="show.section.designer && model.isPC" >
                         <b-img v-if="model.cocodoc.owner !== model.cocouser.userid && model.cocodoc.ownerAvatar_src" :src="model.cocodoc.ownerAvatar_src" title="共创发起人"></b-img>
                         <span v-if="model.cocodoc.owner !== model.cocouser.userid">发起人:{{model.cocodoc.ownerName}}</span>
                         <b-img v-if="model.cocouser.avatar_src" :src="model.cocouser.avatar_src" title="当前用户">
@@ -747,7 +753,7 @@
                         </b-button>
                     </div>
                 </div>
-                <div id="readonlyDesc" v-show="show.section.designer" class="padlayout spaceToHide">
+                <div id="readonlyDesc" v-show="show.section.designer && model.isPC" class="padlayout spaceToHide">
                     {{model.readonlyDesc}}
                 </div>
 
@@ -778,12 +784,12 @@
                         <b-navbar-nav class="mr-auto myhovered bigger">
                             <b-nav-item @click="KFK.showCreateNewDoc">新建白板</b-nav-item>
                         </b-navbar-nav>
-                        <b-navbar-nav class="ml-auto">
+                        <b-navbar-nav class="ml-auto" v-if="model.isPC">
                             <b-nav-item right class="ml-auto">
                                 <img v-if="model.cocouser.avatar_src" :src="model.cocouser.avatar_src" class="explorer-user-avatar"></img>
                             </b-nav-item>
                         </b-navbar-nav>
-                        <b-navbar-nav>
+                        <b-navbar-nav v-if="model.isPC">
                             <b-nav-item-dropdown variant="outline-none" right :text="model.cocouser.name">
                                 <b-dropdown-item-button v-if="!model.isDemoEnv" @click="KFK.showIvtCodeDialog">邀请获奖励
                                 </b-dropdown-item-button>
@@ -798,9 +804,9 @@
                         </b-navbar-nav>
                     </b-navbar>
                     <div class="explorer-content" v-show="show.form.newdoc || show.form.newprj || show.form.doclist || show.form.prjlist">
-                        <b-tabs card id="tabs-main" v-model="show.form.explorerTabIndex" vertical active-nav-item-class="font-weight-bold text-uppercase text-danger myhovered" active-tab-class="">
+                        <b-tabs card id="tabs-main" v-model="show.form.explorerTabIndex" :vertical="false" active-nav-item-class="font-weight-bold text-uppercase text-danger myhovered" active-tab-class="">
 
-                            <b-tab title="我的项目" @click="KFK.gotoPrjList">
+                            <b-tab :title="model.isPC?'我的项目':'项目'" @click="KFK.gotoPrjList">
                                 <div v-show="show.form.newprj">
                                     <b-card title="新建项目">
                                         <b-form>
@@ -853,7 +859,7 @@
 
 
 
-                            <b-tab title="我的白板" @click="KFK.gotoDocs">
+                            <b-tab :title="model.isPC?'我的白板':'白板'" @click="KFK.gotoDocs">
                                 <div v-show="show.form.newdoc">
                                     <!-- FORM new doc new board create new-->
                                     <b-card title="新建白板, 发起协作">
@@ -889,11 +895,11 @@
                                     <b-tabs v-model="docNavTabIndex" active-nav-item-class="text-danger" active-tab-class="text-success">
                                         <b-tab title="我发起的" @click="KFK.gotoPrj('mine', '所有我发起的协作文档')">
                                         </b-tab>
-                                        <b-tab title="他人分享的" @click="KFK.gotoPrj('others', '所有他人分享给我的协作文档')">
+                                        <b-tab title="他人分享" @click="KFK.gotoPrj('others', '所有他人分享给我的协作文档')">
                                         </b-tab>
-                                        <b-tab title="最近访问的" @click="KFK.gotoPrj('all', '所有最近使用过的协作文档')">
+                                        <b-tab title="最近使用" @click="KFK.gotoPrj('all', '所有最近使用过的协作文档')">
                                         </b-tab>
-                                        <b-tab title="最近项目的" @click="KFK.gotoLastRealProject">
+                                        <b-tab title="相关项目" @click="KFK.gotoLastRealProject">
                                         </b-tab>
                                     </b-tabs>
 
@@ -1017,7 +1023,7 @@
                                 </div>
                             </b-tab>
 
-                            <b-tab title="我的发表" @click="KFK.gotoPubs">
+                            <b-tab title="我的发表" @click="KFK.gotoPubs" v-if="model.isPC">
                                 <div style="overflow-y:scroll">
                                     <div class="w-100 d-flex justify-content-center cocohighlight-3">
                                         <span class="page-title">
@@ -1060,7 +1066,7 @@
 
 
 
-                            <b-tab title="我的订阅" @click="KFK.gotoSub">
+                            <b-tab title="我的订阅" @click="KFK.gotoSub" v-if="model.isPC">
                                 <div style="overflow-y:scroll">
                                     <!-- subs list -->
                                     <b-button @click="KFK.refreshSub">刷新订阅</b-button>
@@ -1106,7 +1112,7 @@
                             </b-tab>
 
 
-                            <b-tab title="白板市场" @click="KFK.gotoMarket">
+                            <b-tab title="白板市场" @click="KFK.gotoMarket" v-if="model.isPC">
                                 <div style="overflow-y:scroll">
                                     <div class="w-100 d-flex justify-content-center cocohighlight-3">
                                         <b-input-group prepend="搜索">
@@ -1183,10 +1189,10 @@
                             </b-tab>
 
 
-                            <b-tab title-link-class="tab-space" disabled>
+                            <b-tab title-link-class="tab-space" disabled v-if="model.isPC">
                             </b-tab>
 
-                            <b-tab title="我的团队" @click="KFK.onClickOrgTab">
+                            <b-tab :title="model.isPC?'我的团队':'团队'" @click="KFK.onClickOrgTab">
                                 <!-- org list -->
                                 <!-- https://bootstrap-vue.js.org/docs/components/collapse/#accordion-support -->
                                 <div role="tablist">
@@ -1320,7 +1326,7 @@
                             </b-tab>
 
 
-                            <b-tab title="我的素材" @click="KFK.onClickMatTab">
+                            <b-tab :title="model.isPC?'我的素材':'素材'" @click="KFK.onClickMatTab">
                                 <!-- materail list -->
                                 <div style="width:100%; display: flex; overflow-x: auto; overflow-y: scroll;">
                                     <b-row>
@@ -1705,7 +1711,7 @@
                             <b-form-textarea v-model="model.importbrtext" id="textarea-importbr" placeholder="请把文本录入或粘贴到这里" rows="8" v-on:keydown="KFK.onImportBrKeyDown($event)"> ></b-form-textarea>
                         </div>
                     </b-modal>
-                    <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" v-model="model.isNotValidBrowser" title="友情提醒" centered>
+                    <b-modal @shown="KFK.modalShown" @hidden="KFK.modalHidden" v-model="model.isNotValidBrowser" title="友情提醒" centered v-if="model.isPC">
                         我们尚没有对您当前使用的浏览进行完整的兼容性匹配，<BR>
                         使用中可能会遇到不正常的情况，<BR>
                         推荐您使用 <BR>
@@ -1720,8 +1726,6 @@
                         / <a href="https://pc.qq.com/search.html#!keyword=edge" target="_blank">
                             腾讯软件中心下载</a>
                         )
-                        <BR>
-                        相信彩板带给您的精彩和高效，值得您为它使用新版浏览器
                     </b-modal>
                 </div>
                 <!-- explorer inner -->
