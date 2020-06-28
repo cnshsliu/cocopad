@@ -1,4 +1,4 @@
-# COLOBODO - A Collaboration Design Pad
+# COLOBODO - A Whiteboard for collaboration
 
 A Pad for Collaborated drawing, brain storming, design thinking and more
 
