@@ -12,13 +12,29 @@ const router = new VueRouter({
   ],
 });
 
+
 const app = new Vue({
   router: router,
   data: {
     FP: FP,
+    docName: 'aaa',
     show: {
       reseller: true,
     },
+  },
+  components: {
+    'editable': {
+      template: `<div contenteditable="true" @input="$emit('update:content', $event.target.innerText)">{{content}}</div>`,
+      props: ['content'],
+      mounted: function () {
+          this.$el.innerText = this.content;
+      },
+      watch: {
+          content: function () {
+              this.$el.innerText = this.content;
+          }
+      }
+    }
   },
   computed: {},
   methods: {

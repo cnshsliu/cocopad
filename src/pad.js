@@ -1,6 +1,7 @@
 //import events from "events";
 import "../scss/custom.scss";
 import KFK from "./console";
+import messages from "./lang";
 import ACM from "./accountmanage";
 import EXP from "./explorermanage";
 import SHARE from "./sharemanage";
@@ -15,6 +16,7 @@ const Foo = {
 const Bar = {
   template: "<div>bar</div>",
 };
+
 const router = new VueRouter({
   mode: "history",
   routes: [
@@ -32,7 +34,19 @@ const router = new VueRouter({
     },
   ],
 });
+let locale = navigator.language || navigator.userLanguage;
+if (["zh-CN"].indexOf(locale) < 0) {
+  locale = locale.split("-")[0];
+}
+console.log(locale);
+
+const i18n = new VueI18n({
+  locale: locale,
+  messages,
+});
+
 const app = new Vue({
+  i18n: i18n,
   router: router,
   data: {
     goodsSearchQ: "",
@@ -282,6 +296,11 @@ const app = new Vue({
         buy1Dialog: false,
         buy2Dialog: false,
         prjToColumnDialog: false,
+      },
+      panel: {
+        rightPanel: false,
+        leftPanel: true,
+        minimap: true,
       },
     },
     model: {

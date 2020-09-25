@@ -27,7 +27,7 @@
                         <b-form-input id="regUserPwd" tabindex="3" trim :type="model.hidepassword?'password':'text'"
                                                        autocomplete = "new-password"
                             v-model="model.register.pwd" :state="state.reg.pwd" class="no-right-border" required
-                            placeholder="8个以上字母数字特殊字符">
+                            placeholder="6个以上字母数字特殊字符">
                         </b-form-input>
                         <span class="right-eye">
                             <b-button href="#" tabindex="-1" class="show-password" @click="toggleHidePassword"

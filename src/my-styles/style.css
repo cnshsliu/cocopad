@@ -359,12 +359,6 @@ input::placeholder {
   background-color: #c2eebfd9;
 }
 
-.register-button-tr {
-  position: absolute;
-  top: 10px;
-  right: 80px;
-  z-index: 100;
-}
 .signinform input::-webkit-input-placeholder {
   /* Edge */
   color: #b8b3d3c9;
@@ -443,6 +437,8 @@ input::placeholder {
   height: 40px;
   border-radius: 20px;
   background-color: #656bff;
+  display: flex;
+  justify-content: flex-end;
 }
 .rightSwitch {
   z-index: 10000000;
@@ -457,7 +453,7 @@ input::placeholder {
 .minimapSwitch {
   z-index: 10000001;
   position: absolute;
-  bottom: -20px;
+  bottom: 55px;
   right: -20px;
   width: 40px;
   height: 40px;
@@ -536,6 +532,10 @@ input::placeholder {
   position: absolute;
   top: 5px;
   right: 5px;
+}
+#rtcontrol img {
+  width: 18px;
+  height: 18px;
 }
 
 #actionlog_button {
@@ -1098,29 +1098,16 @@ select:focus {
 #docHeaderInfo {
   position: absolute;
   top: 5px;
-  left: 84px;
+  left: 5px;
   border-radius: 10px;
-  background-color: #eeeeee;
-  border: 1px solid #aaa;
 }
 
-.loading.yiq-black,
-#docHeaderInfo.yiq-black .docteam,
-#docHeaderInfo.yiq-black .userinfo button {
+.loading.yiq-black {
   color: #333333 !important;
 }
 
-.loading.yiq-white,
-#docHeaderInfo.yiq-white .docteam,
-#docHeaderInfo.yiq-white .userinfo button {
-  color: aquamarine !important;
-}
-
-#docHeaderInfo.yiq-white {
-  background-color: #333333 !important;
-}
-#docHeaderInfo.yiq-black {
-  background-color: aquamarine !important;
+.loading.yiq-white {
+  color: white !important;
 }
 
 .docname {
@@ -1221,84 +1208,84 @@ select:focus {
 
 .userbadge {
   font-family: "monospace";
-  font-size: 10px;
+  font-size: 18px;
   position: absolute;
   white-space: nowrap;
   width: fit-content;
   z-index: 99999998;
-  background-color: #e5dbff;
-  border-radius: 5px;
-  padding: 0px;
+  border: 1px solid #ffffff;
+  border-radius: 20px;
+  padding: 5px;
 }
 
 .userbadge_0 {
-  color: #ffaaaa;
-  background-color: #aa3939;
+  color: #ffffff;
+  background-color: #3f6c45;
 }
 
 .userbadge_1 {
-  color: #669999;
-  background-color: #226666;
+  color: #ffffff;
+  background-color: #cb0000;
 }
 
 .userbadge_2 {
-  color: #d6dbe8;
-  background-color: #7887ab;
+  color: #ffffff;
+  background-color: #6e6702;
 }
 
 .userbadge_3 {
-  color: #554700;
-  background-color: #aa9738;
+  color: #ffffff;
+  background-color: #db9501;
 }
 
 .userbadge_4 {
-  color: #ffe3a9;
-  background-color: #aa8538;
+  color: #ffffff;
+  background-color: #2d4262;
 }
 
 .userbadge_5 {
-  color: #cdc0f8;
+  color: #ffffff;
   background-color: #aa8538;
 }
 
 .userbadge_6 {
-  color: #cdc0f8;
-  background-color: #691b6f;
+  color: #ffffff;
+  background-color: #4b7447;
 }
 
 .userbadge_7 {
-  color: #fff4be;
-  background-color: #a99328;
+  color: #ffffff;
+  background-color: #4f6457;
 }
 
 .userbadge_8 {
-  color: #0a0c00;
-  background-color: #91a426;
+  color: #ffffff;
+  background-color: #063852;
 }
 
 .userbadge_9 {
-  color: #0a0c00;
-  background-color: #cbb80c;
+  color: #ffffff;
+  background-color: #5d535e;
 }
 
 .userbadge_10 {
-  color: #fff4be;
-  background-color: #7887ab;
+  color: #ffffff;
+  background-color: #1995ad;
 }
 
 .userbadge_11 {
-  color: #d6dde8;
-  background-color: #aa3939;
+  color: #ffffff;
+  background-color: #9b4f0f;
 }
 
 .userbadge_12 {
-  color: #0a0c00;
-  background-color: #669999;
+  color: #ffffff;
+  background-color: #8d230f;
 }
 
 .userbadge_13 {
-  color: #fff4be;
-  background-color: #226666;
+  color: #ffffff;
+  background-color: #324851;
 }
 
 .locklabel {
@@ -1453,7 +1440,7 @@ select:focus {
   top: 0px;
   width: 6720px;
   height: 4800px;
-  background-color: #00000000;
+  background-color: #00000022;
   overflow: auto;
   margin: 0px;
   position: absolute;
@@ -1488,7 +1475,6 @@ select:focus {
   outline: none;
   overflow: hidden;
   position: absolute;
-  background-color: #e0e0e0;
 }
 
 #C3 {
@@ -1967,7 +1953,7 @@ table.quick-help-table td:first-of-type {
 .msgInputWindow {
   position: absolute;
   z-index: 10000020;
-  width: 50%;
+  width: 100%;
   height: 30px;
   left: 50%;
   bottom: 30px;
@@ -2203,4 +2189,13 @@ a:hover {
 }
 .clickable {
   cursor: pointer;
+}
+
+.custom_header {
+  background-color: #ff000022;
+  width: 100vw;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  z-index: 9999999999999999;
 }
