@@ -1,5 +1,6 @@
 const AdvOps = {};
 AdvOps.styleCache = {};
+import { merge } from "jquery";
 import KFK from "./console";
 
 /* 获得一个DIV位于哪个页面上 */
@@ -226,4 +227,40 @@ AdvOps.moveAllElements = async function (pindex) {
   else if (shape) KFK.scrollToShape(shape);
 };
 
+AdvOps.getChildren = async function (jqNode) {
+  let children = [];
+  let childrenIds = KFK.getNodeLinkIds(jqNode, "linkto");
+  console.log("getChilden, ids: ", childrenIds);
+  for(let i=0; i<childrenIds.length; i++){
+    let jqChild = $(`#${childrenIds[i]}`);
+    children.push(jqChild);
+  }
+  return children;
+}
+
+AdvOps.existsInGroup = function(group, div){
+  for(let i=0; i<group.length; i++){
+    if(group[i].attr("id") === div.attr("id")){
+      return true;
+    }
+  }
+  return false;
+}
+
+AdvOps.getChildrenRecursively = async function (root, aParent, ret) {
+  let directChildren = await AdvOps.getChildren(aParent);
+  let clearedDirectChildren = [];
+  console.log("directChildren", directChildren);
+  for(let i=0; i<directChildren.length; i++){
+    if(AdvOps.existsInGroup(ret, directChildren[i]) ===false && root.attr("id") !== directChildren[i].attr("id")){
+      clearedDirectChildren.push(directChildren[i]);
+      ret.push(directChildren[i]);
+    }
+  }
+  console.log("clearedDirectChildren", clearedDirectChildren);
+
+  for (let i = 0; i < clearedDirectChildren.length; i++) {
+    await AdvOps.getChildrenRecursively(root, clearedDirectChildren[i], ret);
+  }
+}
 module.exports.AdvOps = AdvOps;

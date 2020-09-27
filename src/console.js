@@ -148,6 +148,7 @@ KFK.state = {
 KFK.CONST = {
   THIS_IS_A_UNDOREDO: true,
   THIS_IS_NOT_A_UNDOREDO: false,
+  MAX_SHAPE_WIDTH: 6,
 }
 KFK.opArray = [];
 KFK.opstack = []; //Operation Stack, 数组中记录操作记录，用于undo/redo
@@ -212,8 +213,8 @@ KFK.badgeIdMap = {};
 //上面是A4的真实大小,但因为网格线是20位单位,所以近似看下面两个值
 KFK.PageWidth = 840 * 2;
 KFK.PageHeight = 600 * 2;
-KFK.PageNumberHori = 6;
-KFK.PageNumberVert = 6;
+KFK.PageNumberHori = 7;
+KFK.PageNumberVert = 7;
 KFK.LeftB = KFK.PageWidth;
 KFK.TopB = KFK.PageHeight;
 KFK._width = KFK.PageWidth * KFK.PageNumberHori;
@@ -2938,7 +2939,7 @@ KFK.selectShape = function (theShape) {
   KFK.shapeOriginColor = color;
   let color1 = KFK.reverseColor(color);
   let originWidth = theShape.attr("origin-width");
-  let newWidth = originWidth * 2 > 6 ? originWidth : 6;
+  let newWidth = originWidth * 2 > KFK.CONST.MAX_SHAPE_WIDTH ? originWidth : KFK.CONST.MAX_SHAPE_WIDTH;
   theShape.stroke({
     width: newWidth,
     color: "#0000FF",
@@ -4401,9 +4402,9 @@ KFK.redrawLinkLines = function (
   bothside = true,
   allowConnectPoints = [
     [0, 1, 2, 3],
+    [0, 2],
     [0, 1, 2, 3],
-    [0, 1, 2, 3],
-    [0, 1, 2, 3],
+    [0, 2],
   ]
 ) {
   // KFK.debug('Redrawlinks', reason, 'bothside', bothside);
@@ -4414,16 +4415,22 @@ KFK.redrawLinkLines = function (
     return;
   }
   let myId = jqNode.attr("id");
+  //得到当前节点连接到的节点id列表
   let toIds = KFK.getNodeLinkIds(jqNode, "linkto");
+  //找出所有svg连接线条
   let list = KFK.svgDraw.find(".connect");
   list.each((connect) => {
+    //如果这根连接线条的fid属性是当前node的id
     if (connect.attr("fid") === myId) {
       let connect_id = connect.attr("id");
+      //移除线条
       connect.remove();
+      //移除三角
       let triangle_id = connect_id + "_triangle";
       KFK.svgDraw.find(`.${triangle_id}`).remove();
     }
   });
+  //画出从当前node:jqNode到所有"连接到"节点的连接线
   toIds.forEach((toId, index) => {
     if (toId !== myId) {
       let jqTo = $(`#${toId}`);
@@ -4435,6 +4442,7 @@ KFK.redrawLinkLines = function (
       );
     }
   });
+  //如果是双边画线,则需要找出那些父节点
   if (bothside) {
     KFK.JC3.find(".kfknode").each((index, aNode) => {
       let jqConnectFrom = $(aNode);
@@ -4451,6 +4459,7 @@ KFK.redrawLinkLines = function (
     });
   }
 };
+
 
 //resize node时，记下当前shape variant的size，下次创建同样shape时，使用这个size
 KFK.setNodeDynamicDefaultSize = function (nodeType, variant, width, height) {
@@ -4774,6 +4783,9 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
           jqNodeDIV.css("left", newLeft);
           jqNodeDIV.css("top", newTop); */
         }
+        if (KFK.AdvOps.existsInGroup(KFK.selectedDIVs, jqNodeDIV) === false) {
+          KFK.cancelAlreadySelected();
+        }
         KFK.startTrx();
         try {
           //如果按住了shiftkey, 则只移动当前node, 不移动其他被选定Node
@@ -4781,57 +4793,49 @@ KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
           // dragend drag end
           if (!evt.shiftKey) {
             //拖动其它被同时选中的对象
-            let index = -1;
+            KFK.shouldMovedInParalles = [];
+            console.log("selected: ", KFK.selectedDIVs.length);
             for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-              if (KFK.selectedDIVs[i].attr("id") === jqNodeDIV.attr("id")) {
-                index = i;
-                break;
+              if (KFK.selectedDIVs[i].attr("id") !== jqNodeDIV.attr("id")) {
+                KFK.shouldMovedInParalles.push(KFK.selectedDIVs[i]);
               }
             }
+            console.log("should move in parallels before get recurs children", KFK.shouldMovedInParalles.length);
 
-            if (KFK.selectedDIVs.length > 1 && index >= 0) {
+            for (let i = 0; i < KFK.selectedDIVs.length; i++) {
+              await KFK.AdvOps.getChildrenRecursively(KFK.selectedDIVs[i], KFK.selectedDIVs[i], KFK.shouldMovedInParalles)
+            }
+            console.log("should move in parallels after get recurs children", KFK.shouldMovedInParalles.length);
+
+            if (KFK.shouldMovedInParalles.length > 0) {
               KFK.debug("others should be moved");
               //要移动的个数是被选中的全部
               let delta = {
                 x: KFK.divLeft(jqNodeDIV) - KFK.positionBeforeDrag.x,
                 y: KFK.divTop(jqNodeDIV) - KFK.positionBeforeDrag.y,
               };
-              for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-                let tmpFromJQ = KFK.selectedDIVs[i].clone();
-                if (i === index) continue;
+              for (let i = 0; i < KFK.shouldMovedInParalles.length; i++) {
+                let tmpFromJQ = KFK.shouldMovedInParalles[i].clone();
                 //虽然这出跳过了被拖动的节点，但在后面这个节点一样要被移动
                 //因此，所有被移动的节点数量就是所有被选中的节点数量
-                KFK.DivStyler.moveDivByDelta(KFK.selectedDIVs[i], delta.x, delta.y)
-                /*KFK.selectedDIVs[i].css(
-                  "left",
-                  KFK.divLeft(KFK.selectedDIVs[i]) + delta.x
-                );
-                KFK.selectedDIVs[i].css(
-                  "top",
-                  KFK.divTop(KFK.selectedDIVs[i]) + delta.y
-                );*/
-                if (KFK.updateable(KFK.selectedDIVs[i])) {
+                KFK.DivStyler.moveDivByDelta(KFK.shouldMovedInParalles[i], delta.x, delta.y)
+                if (KFK.updateable(KFK.shouldMovedInParalles[i])) {
                   await KFK.syncNodePut(
                     "U",
-                    KFK.selectedDIVs[i].clone(),
+                    KFK.shouldMovedInParalles[i].clone(),
                     "move following selected",
                     tmpFromJQ,
                     false,
                   );
                 }
               }
-              for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-                KFK.redrawLinkLines(KFK.selectedDIVs[i], "codrag", true);
+              for (let i = 0; i < KFK.shouldMovedInParalles.length; i++) {
+                KFK.redrawLinkLines(KFK.shouldMovedInParalles[i], "codrag", true);
               }
-
-
-
             } else {
               KFK.debug(
                 "will not move other nodes, selectedDIVs",
                 KFK.selectedDIVs.length,
-                " first index",
-                index
               );
             }
           }
@@ -9353,6 +9357,12 @@ KFK.addDocumentEventHandler = function () {
       KFK.DivStyler = pack.DivStyler;
       console.log("DivStyler just loaded");
     });
+  KFK.AdvOps
+    ? console.log("AdvOps already loaded")
+    : import("./advOps").then((pack) => {
+      KFK.AdvOps = pack.AdvOps;
+      console.log("AdvOps just loaded");
+    });
   //document keydown
   $(document).keydown(async function (evt) {
     if (KFK.isShowingModal === true) return;
@@ -9837,7 +9847,13 @@ KFK.addDocumentEventHandler = function () {
 
     //Special keys
     if (KFK.inPresentingMode === true) {
-      if (evt.keyCode === 33) {
+      if (evt.keyCode === 27) {
+        console.log("ESC in presentation")
+        evt.preventDefault();
+        evt.stopPropagation();
+        KFK.presentNoneMask();
+        KFK.endPresentation();
+      } else if (evt.keyCode === 33) {
         //Page Up
         KFK.presentPrevPage();
         evt.preventDefault();
@@ -9877,7 +9893,11 @@ KFK.addDocumentEventHandler = function () {
         KFK.presentLowerPage();
         evt.preventDefault();
         evt.stopPropagation();
+      } else if (evt.keyCode === 67) {
+        KFK.presentCenterPage();
       }
+      evt.preventDefault();
+      evt.stopPropagation();
       // in presentation mode
     } else {
       // not in presentation mode
@@ -10057,17 +10077,21 @@ KFK.addDocumentEventHandler = function () {
                 tmpHeight += sameSideChildren.length * divSpacing;
                 //脑图中心节点的中心高度
                 let brPosY = KFK.divMiddle(parent);
+                let firstChildPosY = KFK.divTop(sameSideChildren[0]);
                 let accumulatedHeight = 0;
                 //移动所有已存在节点
 
-                if (evt.ctrlKey === true) {
+                if (evt.ctrlKey === true || evt.ctrlKey === false) {
                   for (let i = 0; i < sameSideChildren.length; i++) {
-                    let newY = brPosY - tmpHeight * 0.5 + accumulatedHeight;
+                    let newY = firstChildPosY + accumulatedHeight;
                     let old = sameSideChildren[i].clone();
                     sameSideChildren[i].css("top", newY);
                     accumulatedHeight +=
                       KFK.divHeight(sameSideChildren[i]) + divSpacing;
                     if (i === myIndex) {
+                      if(evt.ctrlKey === true){
+                        sameSideChildren[i].css("top", firstChildPosY + accumulatedHeight);
+                      }
                       accumulatedHeight +=
                         KFK.divHeight(sameSideChildren[i]) + divSpacing;
                     }
@@ -10097,6 +10121,10 @@ KFK.addDocumentEventHandler = function () {
                   theDIV.attr("nodetype"),
                   "default",
                   KFK.divCenter(sameSideChildren[myIndex]),
+                  evt.ctrlKey === true?
+                  KFK.divMiddle(sameSideChildren[myIndex]) -
+                  divSpacing -
+                  KFK.divHeight(sameSideChildren[myIndex]):
                   KFK.divMiddle(sameSideChildren[myIndex]) +
                   divSpacing +
                   KFK.divHeight(sameSideChildren[myIndex]),
@@ -10106,26 +10134,32 @@ KFK.addDocumentEventHandler = function () {
                   ""
                 );
 
-                if (KFK.hasConnection(parent, newNode) === false) {
-                  let tmp = parent.clone();
-                  KFK.drawConnect(parent, newNode);
-                  KFK.buildConnectionBetween(parent, newNode);
-                  await KFK.syncNodePut(
-                    "U",
-                    parent.clone(),
-                    "new child",
-                    tmp,
-                    false,
-                    0,
-                    1
-                  );
-                }
+                let oldParent = parent.clone();
+                parent.css("top", firstChildPosY + accumulatedHeight * 0.5);
+                KFK.redrawLinkLines(parent, "shiftreturn", true, [
+                  [0, 2],
+                  [0, 2],
+                  [0, 1, 2, 3],
+                  [0, 2],
+                ]);
+                KFK.drawConnect(parent, newNode);
+                KFK.buildConnectionBetween(parent, newNode);
+                await KFK.syncNodePut(
+                  "U",
+                  parent.clone(),
+                  "new child",
+                  oldParent,
+                  false,
+                  0,
+                  1
+                );
                 KFK.redrawLinkLines(newNode, "shiftreturn", true, [
                   [0, 2],
                   [0, 2],
                   [0, 1, 2, 3],
                   [0, 2],
                 ]);
+
                 await KFK.syncNodePut(
                   "C",
                   newNode,
@@ -12191,21 +12225,21 @@ KFK.gotoAnyPage = function (pageIndex) {
   }
 };
 KFK.gotoUpperPage = function () {
-  let pidx = KFK.currentPage - KFK.PageNumberHori;
-  if (pidx < 0) {
+  let pageIndex = KFK.currentPage - KFK.PageNumberHori;
+  if (pageIndex < 0) {
     KFK.scrLog("已经在最顶部了", 1000);
     return;
   }
-  KFK.currentPage = pidx;
+  KFK.currentPage = pageIndex;
   KFK.___gotoPage(KFK.currentPage);
 };
 KFK.gotoLowerPage = function () {
-  let pidx = KFK.currentPage + KFK.PageNumberHori;
-  if (pidx > KFK.pageBounding.Pages.length - 1) {
+  let pageIndex = KFK.currentPage + KFK.PageNumberHori;
+  if (pageIndex > KFK.pageBounding.Pages.length - 1) {
     KFK.scrLog("已经在最底部了", 1000);
     return;
   }
-  KFK.currentPage = pidx;
+  KFK.currentPage = pageIndex;
   KFK.___gotoPage(KFK.currentPage);
 };
 KFK.gotoLeftPage = function () {
@@ -12216,8 +12250,8 @@ KFK.gotoLeftPage = function () {
     KFK.scrLog("已经在最左边了", 1000);
     return;
   }
-  let pidx = rowIdx * KFK.PageNumberHori + nextColumIdx;
-  KFK.currentPage = pidx;
+  let pageIndex = rowIdx * KFK.PageNumberHori + nextColumIdx;
+  KFK.currentPage = pageIndex;
   KFK.___gotoPage(KFK.currentPage);
 };
 KFK.gotoRightPage = function () {
@@ -12228,8 +12262,8 @@ KFK.gotoRightPage = function () {
     KFK.scrLog("已经在最右边了", 1000);
     return;
   }
-  let pidx = rowIdx * KFK.PageNumberHori + nextColumIdx;
-  KFK.currentPage = pidx;
+  let pageIndex = rowIdx * KFK.PageNumberHori + nextColumIdx;
+  KFK.currentPage = pageIndex;
   KFK.___gotoPage(KFK.currentPage);
 };
 KFK.___gotoPage = function (pageIndex) {
@@ -12395,8 +12429,8 @@ KFK.presentLeftPage = function () {
     KFK.scrLog("已经在最左边了", 1000);
     return;
   }
-  let pidx = rowIdx * KFK.PageNumberHori + nextColumIdx;
-  KFK.currentPage = pidx;
+  let pageIndex = rowIdx * KFK.PageNumberHori + nextColumIdx;
+  KFK.currentPage = pageIndex;
   KFK.___presentPage(KFK.currentPage);
 };
 KFK.presentRightPage = function () {
@@ -12407,29 +12441,36 @@ KFK.presentRightPage = function () {
     KFK.scrLog("已经在最右边了", 1000);
     return;
   }
-  let pidx = rowIdx * KFK.PageNumberHori + nextColumIdx;
-  KFK.currentPage = pidx;
+  let pageIndex = rowIdx * KFK.PageNumberHori + nextColumIdx;
+  KFK.currentPage = pageIndex;
   KFK.___presentPage(KFK.currentPage);
 };
 
 KFK.presentUpperPage = function () {
-  let pidx = KFK.currentPage - KFK.PageNumberHori;
-  if (pidx < 0) {
+  let pageIndex = KFK.currentPage - KFK.PageNumberHori;
+  if (pageIndex < 0) {
     KFK.scrLog("已经在最顶部了", 1000);
     return;
   }
-  KFK.currentPage = pidx;
+  KFK.currentPage = pageIndex;
   KFK.___presentPage(KFK.currentPage);
 };
 KFK.presentLowerPage = function () {
-  let pidx = KFK.currentPage + KFK.PageNumberHori;
-  if (pidx > KFK.pageBounding.Pages.length - 1) {
+  let pageIndex = KFK.currentPage + KFK.PageNumberHori;
+  if (pageIndex > KFK.pageBounding.Pages.length - 1) {
     KFK.scrLog("已经在最底部了", 1000);
     return;
   }
-  KFK.currentPage = pidx;
+  KFK.currentPage = pageIndex;
   KFK.___presentPage(KFK.currentPage);
 };
+KFK.presentCenterPage = function () {
+  let pageIndex = Math.floor(KFK.PageNumberHori / 2) * KFK.PageNumberVert +
+    Math.floor(KFK.PageNumberVert / 2);
+  KFK.currentPage = pageIndex;
+  KFK.___presentPage(KFK.currentPage);
+};
+
 KFK.___presentPage = function (pageIndex) {
   KFK.hide(".panelSwitch");
   KFK.inPresentingMode = true;
@@ -13372,7 +13413,7 @@ KFK.addShapeEventListner = function (theShape) {
     KFK.onC3 = true;
     KFK.AI("hover_line");
     let originWidth = theShape.attr("origin-width");
-    let newWidth = originWidth * 2 > 6 ? originWidth : 6;
+    let newWidth = originWidth * 2 > KFK.CONST.MAX_SHAPE_WIDTH ? originWidth : KFK.CONST.MAX_SHAPE_WIDTH;
     if (theShape.hasClass("selected") === false) {
       theShape.stroke({
         width: newWidth,
