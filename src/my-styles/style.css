@@ -886,7 +886,7 @@ svg path {
 }
 
 .nodisplay {
-  display: none;
+  display: none !important;
 }
 
 .displayblock {
@@ -2198,4 +2198,36 @@ a:hover {
   top: 0px;
   left: 0px;
   z-index: 9999999999999999;
+}
+
+.ec_button {
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+}
+
+.ec_expanded {
+  background-color: green;
+  background-color: blue;
+  background-image: url("https://mlib.liuzijin.com/frontend/assets/minus.svg");
+}
+.ec_collapsed {
+  background-color: blue;
+  background-image: url("https://mlib.liuzijin.com/frontend/assets/add.svg");
+}
+.ecpos0 {
+  left: -26px;
+  top: calc(50% - 12px);
+}
+.ecpos1 {
+  left: calc(50% - 12px);
+  top: -26px;
+}
+.ecpos2 {
+  right: -26px;
+  top: calc(50% - 12px);
+}
+.ecpos3 {
+  left: calc(50% - 12px);
+  bottom: -26px;
 }
