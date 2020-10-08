@@ -81,20 +81,26 @@ const IsFalse = function(val) {
 KFK.dynamic = {
   connect: {
     width: 2,
-    color: "#0000ff",
+    color: "#4B92DB93",
     style: "solid",
   },
 };
 KFK.version = "1.0";
 KFK.MDEs = {};
+KFK.inMDEditor = false;
 KFK.MDEIntervals = {};
 KFK.config = cocoConfig;
 KFK.duringVideo = false;
+KFK.HSpace = 80;
+KFK.VSpace = 20;
 KFK.pct = 1; //Peers count;
+KFK.mdNoteEditorEventListener = true;
 KFK.typewriting = false;
 KFK.column = "no";
 KFK.accordion = {};
 KFK.rtcUsers = {};
+KFK.mdnotes = null;
+KFK.mdnoteUpdateTimers = new Map();
 KFK.noCopyPaste = false;
 KFK.touchChatTodo = false;
 KFK.todoShown = true;
@@ -533,6 +539,11 @@ KFK.onWsMsg = async function(response) {
         KFK.APP.setData("model", "isDemoEnv", true);
       } else {
         KFK.APP.setData("model", "isDemoEnv", false);
+      }
+      if (KFK.mdnotes) {
+        KFK.mdnotes.clear();
+      } else {
+        KFK.mdnotes = new Map();
       }
       KFK.recreateFullDoc(response.doc, KFK.checkLoading);
       break;
@@ -1050,10 +1061,120 @@ KFK.regRtcUser = (res) => {
 
 KFK.focusOnNode = function(jqNodeDIV) {
   KFK.lastFocusOnJqNode = jqNodeDIV;
+  KFK.lastSetNoteJq = jqNodeDIV;
   KFK.justCreatedJqNode = null;
   KFK.justCreatedShape = null;
 
-  if (jqNodeDIV !== null) KFK.updatePropertyFormWithNode(jqNodeDIV);
+  if (jqNodeDIV !== null) {
+    KFK.updatePropertyFormWithNode(jqNodeDIV);
+    KFK.setMdNoteHeader(jqNodeDIV, jqNodeDIV.find(".innerobj").text());
+    KFK.updateMDNoteEditorValue(jqNodeDIV);
+  } else {
+    KFK.MDEs["ta_mdnote"] && KFK.MDEs["ta_mdnote"].value("");
+  }
+};
+
+KFK.updateMDNoteEditorValue = function(jq) {
+  if (KFK.MDEs["ta_mdnote"]) {
+    KFK.setMDNoteEditorContentToNodeNote(jq);
+  } else {
+    KFK.addEasyMDE
+      ? KFK.addEasyMDE("ta_mdnote") && KFK.setMDNoteEditorContentToNodeNote(jq)
+      : import("./easyMDE").then((pack) => {
+          KFK.myMDE = pack.MyMDE;
+          KFK.addEasyMDE = pack.MyMDE.addEasyMDE;
+          KFK.addEasyMDE("ta_mdnote");
+          KFK.setMDNoteEditorContentToNodeNote(jq);
+        });
+  }
+};
+
+/**
+ * 切换备注编辑器全屏显示状态时顶部菜单栏的显示,编辑器全屏,隐藏菜单栏,编辑器复原,恢复菜单栏
+ */
+KFK.onToggleMDEFullScreen = function(flag) {
+  console.log(flag);
+  if (flag) {
+    $(".custom_header").addClass("noshow");
+  } else {
+    $(".custom_header").removeClass("noshow");
+  }
+};
+
+/**
+ * 切换备注编辑器显示与否
+ *
+ */
+KFK.toggleMDEditor = function() {
+  if ($("#mdNote").hasClass("noshow")) {
+    $("#mdNote").removeClass("noshow");
+  } else {
+    $("#mdNote").addClass("noshow");
+  }
+  if (!KFK.MDEs["ta_mdnote"]) {
+    KFK.updateMDNoteEditorValue(null);
+  }
+};
+
+/**
+ * 把备注编辑器的内容设置为节点的备注
+ *
+ */
+KFK.setMDNoteEditorContentToNodeNote = function(jq) {
+  //jq=null,对应在toggle note  editor显示时, 调用setMDNoteEditorContentToNodeNote.
+  if (jq === null) {
+    KFK.MDEs["ta_mdnote"].value("");
+  } else {
+    //选择一个节点时,需要将editor的编辑窗设置为节点的note
+    let divId = jq.attr("id");
+    let theNote = KFK.mdnotes.has(divId) ? KFK.mdnotes.get(divId) : `# #`;
+    if (KFK.MDEs["ta_mdnote"].value() !== theNote) {
+      KFK.MDEs["ta_mdnote"].value(theNote);
+    }
+  }
+  if (KFK.mdNoteEditorEventListener === true) {
+    KFK.MDEs["ta_mdnote"].codemirror.on("focus", function() {
+      //因为代码中侦测了document.onMouseMove, 导致在markdown编辑窗中滑动鼠标选择文字时,会拖动节点. 这里设置inMDEditor = true, 然后在document.onmousemove 中进行判断,放置节点被拖动
+      KFK.inMDEditor = true;
+    });
+    KFK.MDEs["ta_mdnote"].codemirror.on("blur", function() {
+      KFK.inMDEditor = false;
+    });
+    KFK.MDEs["ta_mdnote"].codemirror.on("change", function() {
+      if (KFK.lastSetNoteJq === null) {
+        return;
+      }
+      let divId = KFK.lastSetNoteJq.attr("id");
+      if (KFK.mdnotes.get(divId) !== KFK.MDEs["ta_mdnote"].value()) {
+        //切换节点,也会导致"change"事件激发.通过上面的判断,可以避免切换节点时引起下方语句的执行
+        console.log("ta_mdnote changed, postpone updater");
+        KFK.mdnotes.set(divId, KFK.MDEs["ta_mdnote"].value());
+        //下面的代码, 在3秒内多次change,只有最后一次需要上传改动
+        //每个timer放在map中,可避免不同节点的混乱
+        if (KFK.mdnoteUpdateTimers.has(divId)) {
+          clearTimeout(KFK.mdnoteUpdateTimers.get(divId));
+          KFK.mdnoteUpdateTimers.delete(divId);
+        }
+        KFK.mdnoteUpdateTimers.set(
+          divId,
+          setTimeout(async function() {
+            let theDiv = KFK.getNodeById(divId);
+            console.log("Update after 3000");
+            await KFK.syncNodePut(
+              "U",
+              theDiv.clone(),
+              "edit note",
+              theDiv.clone(),
+              false,
+              0,
+              1
+            );
+          }, 3000)
+        );
+      }
+    });
+    KFK.mdNoteEditorEventListener = false;
+  }
 };
 
 KFK.setRightTabIndex = function(tabIndex) {
@@ -1266,6 +1387,25 @@ KFK.replaceNodeInSelectedDIVs = function(jqDIV) {
   }
 };
 
+/**
+ * 计算节点对象的五点坐标
+ *
+ * jqDIV {jquery node object}- 被计算五点坐标的对象
+ *
+ * @returns {JSON} A JSON object describing the 5 key points of an object like:
+ *      {
+ *         center: {x: 100, y: 100},
+ *         points: [
+ *          {x: 90,  y: 100},
+ *          {x: 100, y: 90},
+ *          {x: 110, y: 100},
+ *          {x: 100, y: 110}
+ *          ]
+ *      }
+ *
+ *      the above returned value describes an object which is centered at (100,00),
+ *      and has a width of 20 and a height of 20, thus, it's left-middle point (points[0]) is (90,110), it's top-center point (points[1]) is (100, 90), it's right-middle point(points[2]) is (110, 100), it's bottom-center point (points[3]) is (100, 110)
+ */
 KFK.calculateNodeConnectPoints = function(jqDIV) {
   let divLeft = KFK.unpx(jqDIV.css("left"));
   let divTop = KFK.unpx(jqDIV.css("top"));
@@ -1298,6 +1438,15 @@ KFK.calculateNodeConnectPoints = function(jqDIV) {
   return pos;
 };
 
+/**
+ * Draw connect between two nodes, and make sure the connect is the shorttest one among all possible links between connect points from two nodes.
+ *
+ * @param {jqNode} A - The beginning node
+ * @param {jqNode} B - The endding node
+ * @param {Array} posLimitA - Allowed connect points of A
+ * @param {Array} posLimitB - Allowed connect points ofB
+ * @param {boolean} drawLine - Whether draw the line or not
+ */
 KFK.drawConnect = function(
   A,
   B,
@@ -1311,6 +1460,7 @@ KFK.drawConnect = function(
   let toPoint = null;
   let AIndex = 0;
   let BIndex = 0;
+  /*
   let shortestDistance = KFK.distance(APos.points[0], BPos.points[0]);
   for (let i = 0; i < APos.points.length; i++) {
     if (posLimitA.indexOf(i) < 0) continue;
@@ -1326,8 +1476,52 @@ KFK.drawConnect = function(
       }
     }
   }
+  */
 
-  if (drawLine) {
+  if (APos.points[0].x > BPos.points[2].x) {
+    AIndex = 0;
+    BIndex = 2;
+  } else if (APos.points[2].x < BPos.points[0].x) {
+    AIndex = 2;
+    BIndex = 0;
+  } else if (APos.points[1].y > BPos.points[3].y) {
+    /*
+    if (APos.points[2].x < BPos.points[1].x) {
+      AIndex = 2;
+      BIndex = 3;
+    } else if (APos.points[0].x > BPos.points[1].x) {
+      AIndex = 0;
+      BIndex = 3;
+    } else {
+      AIndex = 1;
+      BIndex = 3;
+    }
+    */
+    AIndex = 1;
+    BIndex = 3;
+  } else if (APos.points[3].y < BPos.points[1].y) {
+    /*
+    if (APos.points[2].x < BPos.points[1].x) {
+      AIndex = 2;
+      BIndex = 1;
+    } else if (APos.points[0].x > BPos.points[1].x) {
+      AIndex = 0;
+      BIndex = 1;
+    } else {
+      AIndex = 3;
+      BIndex = 1;
+    }
+    */
+    AIndex = 3;
+    BIndex = 1;
+  } else {
+    // 不画线
+    AIndex = 0;
+    BIndex = -1;
+  }
+
+  if (drawLine && BIndex >= 0) {
+    //只有当BIndex>=0时画线
     KFK.svgConnectNode(
       A.attr("id"),
       B.attr("id"),
@@ -3200,6 +3394,43 @@ KFK.setNodeTextAlignment = function(jqElem, theType, align) {
   }
 };
 
+KFK.setTextValueAfterEdit = async function(jq, innerNode, text) {
+  KFK.lastSetNoteJq = jq;
+  let oldText = innerNode.innerText;
+  if (oldText !== text) {
+    innerNode.innerText = text;
+    await KFK.setMdNoteHeader(jq, text);
+  }
+};
+
+KFK.setMdNoteHeader = async function(jq, text) {
+  let myId = jq.attr("id");
+  let oldMdNote = KFK.mdnotes.get(myId);
+  let noteArr = oldMdNote ? oldMdNote.split(/\r?\n/g) : [];
+  let textArr = text.split(/\r?\n/g);
+  let newMdNote = `# ${textArr[0]} #\n`;
+  for (let i = 1; i < noteArr.length; i++) {
+    newMdNote += noteArr[i] + "\n";
+  }
+  let correctHeader = `# ${textArr[0]} #`;
+  if (correctHeader !== noteArr[0]) {
+    //console.log("---> setMdNoteHeader", noteArr[0], correctHeader);
+    KFK.mdnotes.set(myId, newMdNote);
+    KFK.MDEs["ta_mdnote"] && KFK.MDEs["ta_mdnote"].value(newMdNote);
+    /*
+    await KFK.syncNodePut(
+      "U",
+      jq.clone(),
+      "set md header",
+      jq.clone(),
+      false,
+      0,
+      1
+    );
+    */
+  }
+};
+
 KFK.editTextNodeWithTextArea = function(
   innerNode,
   theDIV,
@@ -3234,8 +3465,8 @@ KFK.editTextNodeWithTextArea = function(
     textarea.style.left = KFK.px(KFK.unpx(theDIV.style.left) + 15);
     textarea.style.width = KFK.px(KFK.unpx(theDIV.style.width) - 15);
   } else {
-    textarea.style.left = theDIV.style.left;
-    textarea.style.width = theDIV.style.width;
+    textarea.style.left = KFK.px(KFK.unpx(theDIV.style.left) + 5);
+    textarea.style.width = KFK.px(KFK.unpx(theDIV.style.width) - 10);
   }
   textarea.style.height = theDIV.style.height;
   textarea.style.borderRadius = theDIV.style.borderRadius;
@@ -3247,7 +3478,7 @@ KFK.editTextNodeWithTextArea = function(
   textarea.style.fontSize = innerNode.style.fontSize;
   textarea.style.fontFamily = innerNode.style.fontFamily;
   textarea.style.borderColor = "#000";
-  textarea.style.borderWidth = innerNode.style.borderWidth;
+  textarea.style.borderWidth = 0;
 
   textarea.style.padding = innerNode.style.padding;
   textarea.style.margin = innerNode.style.margin;
@@ -3279,7 +3510,7 @@ KFK.editTextNodeWithTextArea = function(
       await KFK.syncNodePut(
         "U",
         $(theDIV).clone(),
-        "change text",
+        "on removeTextarea",
         KFK.fromJQ,
         false,
         0,
@@ -3317,7 +3548,7 @@ KFK.editTextNodeWithTextArea = function(
     evt.stopPropagation();
   };
 
-  textarea.addEventListener("keydown", function(evt) {
+  textarea.addEventListener("keydown", async function(evt) {
     if (evt.keyCode === 13) {
       let finishEdit = false;
       if (
@@ -3332,7 +3563,7 @@ KFK.editTextNodeWithTextArea = function(
         finishEdit = true;
       }
       if (finishEdit) {
-        innerNode.innerText = textarea.value;
+        await KFK.setTextValueAfterEdit(jDIV, innerNode, textarea.value);
         if (jDIV.attr("nodetype") === "comment") {
           innerNode.innerHTML =
             textarea.value + "<BR>---" + KFK.APP.model.cocouser.name;
@@ -3362,9 +3593,9 @@ KFK.editTextNodeWithTextArea = function(
     evt.stopPropagation();
   });
 
-  function handleOutsideClick(evt) {
+  async function handleOutsideClick(evt) {
     if (evt.target !== textarea) {
-      innerNode.innerText = textarea.value;
+      await KFK.setTextValueAfterEdit(jDIV, innerNode, textarea.value);
       if (jDIV.attr("nodetype") === "comment") {
         innerNode.innerHTML =
           textarea.value + "<BR>---" + KFK.APP.model.cocouser.name;
@@ -3377,9 +3608,10 @@ KFK.editTextNodeWithTextArea = function(
         $(window).scrollTop(KFK.windowLeft);
       }
       removeTextarea(textarea.value !== oldText);
-      KFK.focusOnC3();
+      //KFK.focusOnC3();
     }
   }
+
   setTimeout(() => {
     window.addEventListener("click", handleOutsideClick);
   });
@@ -3548,13 +3780,14 @@ KFK.placeNode = async function(
   let jqDIV = $(nodeDIV);
   jqDIV.attr("creator", KFK.APP.model.cocouser.userid);
   KFK.justCreatedJqNode = jqDIV;
-  KFK.lastCreatedJqNode = jqDIV;
+  KFK.lastCreatedJqNode = jqDIV; //如果在脑图模式下，则自动建立脑图链接
+  /*
   if (type === "md") {
     KFK.setMarkdownWithPreview(jqDIV);
   }
-
-  //如果在脑图模式下，则自动建立脑图链接
-  if (KFK.duplicateBrNode === false)
+  */ if (
+    KFK.duplicateBrNode === false
+  )
     await KFK.LinkFromBrainCenter(KFK.justCreatedJqNode);
 
   return jqDIV;
@@ -3709,13 +3942,13 @@ KFK.___createNode = async function(node) {
   let lastEditorDIV = document.createElement("div");
   $(lastEditorDIV).addClass("lastcocoeditor");
   nodeDIV.appendChild(lastEditorDIV);
-  if (KFK.APP.model.showEditor === "none") {
+  if (KFK.APP.model.viewConfig.showEditor === "none") {
     $(allEditorDIV).css("display", "none");
     $(lastEditorDIV).css("display", "none");
-  } else if (KFK.APP.model.showEditor === "last") {
+  } else if (KFK.APP.model.viewConfig.showEditor === "last") {
     $(allEditorDIV).css("display", "none");
     $(lastEditorDIV).css("display", "block");
-  } else if (KFK.APP.model.showEditor === "all") {
+  } else if (KFK.APP.model.viewConfig.showEditor === "all") {
     $(allEditorDIV).css("display", "block");
     $(lastEditorDIV).css("display", "none");
   }
@@ -3856,15 +4089,18 @@ KFK._createNode = async function(node) {
   let lastEditorDIV = document.createElement("div");
   $(lastEditorDIV).addClass("lastcocoeditor");
   nodeDIV.appendChild(lastEditorDIV);
-  if (KFK.APP.model.showEditor === "none") {
+  if (KFK.APP.model.viewConfig.showEditor === "none") {
     $(allEditorDIV).css("display", "none");
     $(lastEditorDIV).css("display", "none");
-  } else if (KFK.APP.model.showEditor === "last") {
+    console.log("here1");
+  } else if (KFK.APP.model.viewConfig.showEditor === "last") {
     $(allEditorDIV).css("display", "none");
     $(lastEditorDIV).css("display", "block");
-  } else if (KFK.APP.model.showEditor === "all") {
+    console.log("here2");
+  } else if (KFK.APP.model.viewConfig.showEditor === "all") {
     $(allEditorDIV).css("display", "block");
     $(lastEditorDIV).css("display", "none");
+    console.log("here3");
   }
   jqNodeDIV.attr("nodetype", node.type);
   jqNodeDIV.attr("creator", KFK.APP.model.cocouser.userid);
@@ -4010,15 +4246,23 @@ KFK.syncNodePut = async function(
 
     let htmlContent = tobeSync.prop("outerHTML");
     let gzipped = await gzip(htmlContent);
+    let gzippedMdnote = "";
+    if (KFK.mdnotes.has(jqDIV.attr("id"))) {
+      gzippedMdnote = await gzip(KFK.mdnotes.get(jqDIV.attr("id")));
+    } else {
+      gzippedMdnote = await gzip("# Header1 #");
+    }
     //组织payload内容,
     let payload = {
       doc_id: KFK.APP.model.cocodoc.doc_id,
       etype: "DIV",
       nodeid: nodeID,
       content: cmd === "D" ? nodeID : gzipped,
+      mdnote: cmd === "D" ? nodeID : gzippedMdnote,
       offline: isOffline,
       lastupdate: tobeSync.attr("lastupdate"),
     };
+    //console.log("cmd", cmd, "reason:", reason, "payload:", payload);
     //undo redo操作不能再次放入opentry
     //todo, chat不支持undo / redo
     if (
@@ -4290,7 +4534,6 @@ KFK.memLogOperationHistroyArray = function() {
     KFK.opz = KFK.opz - 1;
     if (KFK.opz < -1) KFK.opz = -1;
   }
-  console.log("log op array length", KFK.opArray.length);
   KFK.opstack.push(KFK.opArray);
   KFK.opz = KFK.opz + 1;
 };
@@ -4506,9 +4749,9 @@ KFK.redrawLinkLines = function(
   bothside = true,
   allowConnectPoints = [
     [0, 1, 2, 3],
-    [0, 2],
     [0, 1, 2, 3],
-    [0, 2],
+    [0, 1, 2, 3],
+    [0, 1, 2, 3],
   ]
 ) {
   // KFK.debug('Redrawlinks', reason, 'bothside', bothside);
@@ -4546,46 +4789,40 @@ KFK.redrawLinkLines = function(
         allowConnectPoints[1]
       );
       //anchorPair返回一个包含两个数字的数组,第一个数字标识父节点的锚点位置,第二个数字标识子节点的锚点位置
-      console.log(anchorPair);
       anchorPositions.push(anchorPair[0]);
     }
   });
-  console.log("===================");
-  console.log(anchorPositions);
   if (anchorPositions.length > 0) {
     // If there are children
     //place expand/collapse button at the most connected anchor
     let theMost = KFK.AdvOps.findMost3(anchorPositions);
-    console.log("THEMOST", theMost);
-    console.log(theMost.elem);
     let jEcButton = jqNode.find(".ec_button");
-    console.log("find ecbutton, got");
-    console.log(jEcButton);
     if (jEcButton.length === 0) {
-      console.log("not found, create a new one");
       jEcButton = $("<div></div>");
       jEcButton.addClass("ec_button");
       jEcButton.addClass("ec_expanded");
       jEcButton.css("position", "absolute");
       jEcButton.addClass("ecpos" + theMost.elem);
       jEcButton.on("click", async function(evt) {
+        evt.stopImmediatePropagation();
         evt.stopPropagation();
-        console.log("click on ec_button");
-        let ALOE = KFK.APP.model.cocouser.config.aloe;
+        evt.preventDefault();
         if (jEcButton.hasClass("ec_expanded")) {
-          console.log("change expanded to collapsed");
           jEcButton.removeClass("ec_expanded").addClass("ec_collapsed");
           await KFK.AdvOps.collapseDescendants(jqNode);
         } else {
-          console.log("change collapsed to expanded");
           jEcButton.removeClass("ec_collapsed").addClass("ec_expanded");
           if (evt.shiftKey) await KFK.AdvOps.autoLayoutDescendants(jqNode);
           else await KFK.AdvOps.expandDescendants(jqNode);
         }
       });
+      jEcButton.dblclick(async function(evt) {
+        evt.stopImmediatePropagation();
+        evt.stopPropagation();
+        evt.preventDefault();
+      });
       jqNode.append(jEcButton);
     } else {
-      console.log("found, use existing one");
       jEcButton
         .removeClass("ecpos0 ecpos1 ecpos2 ecpos3")
         .addClass("ecpos" + theMost.elem);
@@ -4744,7 +4981,6 @@ KFK.updateable = function(jqNode) {
 };
 
 KFK.procNodeDoubleClick = async function(evt, jqNodeDIV) {
-  console.log("Entering procNodeDoubleClick");
   evt.stopPropagation();
   evt.preventDefault();
   //Don't edit todolist direclty, show edit dialog instead.
@@ -4976,16 +5212,11 @@ KFK.setNodeEventHandler = async function(jqNodeDIV, callback) {
             //拖动其它被同时选中的对象
             KFK.shouldMovedInParalles = [];
             let treeMap = new Map();
-            console.log("selected: ", KFK.selectedDIVs.length);
             for (let i = 0; i < KFK.selectedDIVs.length; i++) {
               if (KFK.selectedDIVs[i].attr("id") !== jqNodeDIV.attr("id")) {
                 KFK.shouldMovedInParalles.push(KFK.selectedDIVs[i]);
               }
             }
-            console.log(
-              "should move in parallels before get recurs children",
-              KFK.shouldMovedInParalles.length
-            );
 
             for (let i = 0; i < KFK.selectedDIVs.length; i++) {
               await KFK.AdvOps.getDescendants(
@@ -4995,10 +5226,6 @@ KFK.setNodeEventHandler = async function(jqNodeDIV, callback) {
                 treeMap
               );
             }
-            console.log(
-              "should move in parallels after get recurs children",
-              KFK.shouldMovedInParalles.length
-            );
 
             if (KFK.shouldMovedInParalles.length > 0) {
               KFK.debug("others should be moved");
@@ -5370,7 +5597,6 @@ KFK.setNodeEventHandler = async function(jqNodeDIV, callback) {
     KFK.touchStartY = e.touches[0].pageY;
     KFK.jqLeftOnTouch = KFK.divLeft(jqNodeDIV);
     KFK.jqTopOnTouch = KFK.divTop(jqNodeDIV);
-    console.log("tap...");
     if (!KFK.tapped) {
       KFK.tapped = setTimeout(async function() {
         KFK.tapped = null;
@@ -5410,7 +5636,6 @@ KFK.setNodeEventHandler = async function(jqNodeDIV, callback) {
       Math.abs(KFK.touchEndX - KFK.touchStartX) > 5 ||
       Math.abs(KFK.touchEndY - KFK.touchStartY) > 5
     ) {
-      console.log("end touch move");
       KFK.redrawLinkLines(jqNodeDIV, "after moving");
       await KFK.syncNodePut(
         "U",
@@ -6745,6 +6970,12 @@ KFK.toggleNodeMessage = function(checked) {
   KFK.saveLocalViewConfig();
 };
 KFK.toggleAutoFollow = function(checked) {
+  KFK.saveLocalViewConfig();
+};
+KFK.toggleAutoLayout = function(checked) {
+  KFK.saveLocalViewConfig();
+};
+KFK.toggleLineMode = function(checked) {
   KFK.saveLocalViewConfig();
 };
 
@@ -8303,7 +8534,6 @@ KFK.sendCmd = async function(cmd, payload = {}) {
   if (KFK.WS === null) {
     KFK.warn("sendCmd when KFK.WS is null. cmd is", cmd, "payload is", payload);
   } else {
-    KFK.debug("sendCmd", cmd, payload);
     await KFK.WS.put(cmd, payload);
   }
 };
@@ -8761,6 +8991,12 @@ KFK.recreateNode = async function(obj, callback) {
             });
       }
     }
+    if (obj.mdnote) {
+      let tmp = await KFK.gzippedContentToString(obj.mdnote);
+      KFK.mdnotes.set(jqDIV.attr("id"), tmp);
+    } else {
+      KFK.mdnotes.set(jqDIV.attr("id"), "# Recreate empty note #");
+    }
   } catch (error) {
     KFK.error(error);
   } finally {
@@ -9061,7 +9297,7 @@ KFK.onShowEditorChanged = async function(show_editor, isInit = false) {
 };
 
 KFK.setNodeShowEditor = function(jqNode) {
-  let show_editor = KFK.APP.model.showEditor;
+  let show_editor = KFK.APP.model.viewConfig.showEditor;
   if (show_editor === "none") {
     jqNode.find(".cocoeditors").css("display", "none");
     jqNode.find(".lastcocoeditor").css("display", "none");
@@ -9885,6 +10121,10 @@ KFK.addDocumentEventHandler = function() {
           await KFK.moveTodoByProgress(progress);
           KFK.keypool = "";
           return;
+        } else if (KFK.keypool.endsWith("nt")) {
+          KFK.toggleMDEditor();
+          KFK.keypool = "";
+          return;
         } else if (KFK.keypool.endsWith("fs")) {
           KFK.toggleFullScreen();
           KFK.keypool = "";
@@ -10247,6 +10487,7 @@ KFK.addDocumentEventHandler = function() {
 
     switch (evt.keyCode) {
       case 13:
+        //create a sibling node
         KFK.startTrx();
         try {
           //回车进入编辑 回车编辑
@@ -10324,12 +10565,7 @@ KFK.addDocumentEventHandler = function() {
                     }
                     //作为父节点，可连接左右中点，其子节点可连接打开左右中点；
                     //作为子节点，父节点可任意中点，但自身只能连接到左右中点；
-                    KFK.redrawLinkLines(sameSideChildren[i], "move", true, [
-                      [0, 2],
-                      [0, 2],
-                      [0, 1, 2, 3],
-                      [0, 2],
-                    ]);
+                    KFK.redrawLinkLines(sameSideChildren[i], "move", true);
                     KFK.syncNodePut(
                       "U",
                       sameSideChildren[i].clone(),
@@ -10362,14 +10598,9 @@ KFK.addDocumentEventHandler = function() {
                 );
 
                 let oldParent = parent.clone();
-                parent.css("top", firstChildPosY + accumulatedHeight * 0.5);
+                //parent.css("top", firstChildPosY + accumulatedHeight * 0.5);
                 KFK.buildConnectionBetween(parent, newNode);
-                KFK.redrawLinkLines(parent, "shiftreturn", true, [
-                  [0, 2],
-                  [0, 2],
-                  [0, 1, 2, 3],
-                  [0, 2],
-                ]);
+                KFK.redrawLinkLines(parent, "shiftreturn", true);
                 //KFK.drawConnect(parent);
                 await KFK.syncNodePut(
                   "U",
@@ -10390,6 +10621,8 @@ KFK.addDocumentEventHandler = function() {
                   0,
                   1
                 );
+                if (KFK.APP.model.viewConfig.autoLayout)
+                  await KFK.AdvOps.autoLayoutOnNewNode(newNode, parent);
                 KFK.jumpToNode(newNode);
                 if (KFK.duplicateBrNode) {
                   KFK.startBrainstorm(newNode);
@@ -10589,6 +10822,7 @@ KFK.addDocumentEventHandler = function() {
     KFK.globalMouseX = evt.clientX;
     KFK.globalMouseY = evt.clientY;
     if (KFK.inPresentingMode || KFK.inOverviewMode) return;
+    if (KFK.inMDEditor) return;
     let tmp = {
       x: KFK.scrXToJc3X(evt.clientX),
       y: KFK.scrYToJc3Y(evt.clientY),
@@ -12279,7 +12513,7 @@ KFK.placePastedContent = async function() {
 };
 
 KFK.onCut = async function(evt) {
-  if (KFK.isShowingModal) return;
+  if (KFK.isShowingModal || KFK.inMDEditor) return;
   KFK.deleteObjects(evt, true);
 };
 
@@ -12290,6 +12524,7 @@ KFK.onCopy = async function(evt) {
   if (KFK.APP.show.dialog.ivtCodeDialog) {
     return;
   }
+  if (KFK.inMDEditor) return;
   let someDIVcopyed = await KFK.duplicateHoverObject(evt, "copy");
   if (someDIVcopyed) {
     evt.clipboardData.setData("text/plain", "usediv");
@@ -12301,6 +12536,7 @@ KFK.onCopy = async function(evt) {
 };
 
 KFK.onPaste = async function(evt) {
+  if (KFK.inMDEditor) return;
   if (KFK.isShowingModal) {
     console.log("paste ignored since isShowingModal");
     return;
@@ -12374,13 +12610,13 @@ KFK.addEditorToNode = function(jqNode, editor) {
       $(lastEditorDIV).addClass("lastcocoeditor");
       el(jqNode).appendChild(lastEditorDIV);
       el(jqNode).appendChild(allEditorDIV);
-      if (KFK.APP.model.showEditor === "none") {
+      if (KFK.APP.model.viewConfig.showEditor === "none") {
         $(allEditorDIV).css("display", "none");
         $(lastEditorDIV).css("display", "none");
-      } else if (KFK.APP.model.showEditor === "last") {
+      } else if (KFK.APP.model.viewConfig.showEditor === "last") {
         $(allEditorDIV).css("display", "none");
         $(lastEditorDIV).css("display", "block");
-      } else if (KFK.APP.model.showEditor === "all") {
+      } else if (KFK.APP.model.viewConfig.showEditor === "all") {
         $(allEditorDIV).css("display", "block");
         $(lastEditorDIV).css("display", "none");
       }
@@ -13345,15 +13581,28 @@ KFK.makePath = function(p1, p2) {
   return pStr;
 };
 
+/**
+ * 画两个节点之间的连接线
+ *
+ * fid - 起始节点的ID
+ * tid - 终点节点的ID
+ * lineClass - 事实上是这条线的ID, 用于查找正向线(svgjs用class查找对象)
+ * lineCLassReverse - 反向线的class, 用于查找反向线
+ * pstr - 连接线的plot string
+ * triangle - 三角形的顶点坐标
+ */
 KFK._svgDrawNodesConnect = function(
   fid,
   tid,
   lineClass,
   lineClassReverse,
   pstr,
-  triangle
+  lstr,
+  triangle,
+  simpleLineMode = false
 ) {
   try {
+    let drawPstr = !simpleLineMode;
     let theConnect = null;
     let theTriangle = null;
     let fromDIV = $(`#${fid}`);
@@ -13365,28 +13614,32 @@ KFK._svgDrawNodesConnect = function(
     let oldLine = KFK.svgDraw.findOne(`.${lineClass}`);
     let reverseTriangle = KFK.svgDraw.findOne(`.${lineClassReverse}_triangle`);
     let oldTriangle = KFK.svgDraw.findOne(`.${lineClass}_triangle`);
+    //如果存在同一ID的线,则重画这条线及其三角
     if (oldLine) {
-      oldLine.plot(pstr);
+      oldLine.plot(drawPstr ? pstr : lstr);
       oldTriangle && oldTriangle.plot(triangle);
       theConnect = oldLine;
       theTriangle = oldTriangle;
     } else {
+      //如果不同在同一ID的线, then
       if (reverseLine) {
+        //如果存在反向线,则重画这条反向线为正向线
         reverseLine.removeClass(lineClassReverse);
         reverseLine.addClass(lineClass);
-        reverseLine.plot(pstr);
+        reverseLine.plot(drawPstr ? pstr : lstr);
         reverseTriangle.removeClass(lineClassReverse + "_triangle");
         reverseTriangle.addClass(lineClass + "_triangle");
         reverseTriangle.plot(triangle);
         theConnect = reverseLine;
         theTriangle = reverseTriangle;
       } else {
-        theConnect = KFK.svgDraw.path(pstr);
+        //如果同向线和反向线都不存在,则画新线条及其三角. 反向线是指与从fromNode指向toNode的线反向相反的线,也就是从toNode指向fromNode的线
+        theConnect = KFK.svgDraw.path(drawPstr ? pstr : lstr);
         theConnect
           .addClass(lineClass)
           .addClass("connect")
           .attr("styleid", "style1")
-          .fill("none")
+          .fill(drawPstr ? cnColor : "none")
           .stroke({
             width: cnWidth || KFK.config.connect.styles.style1.normal.width,
             color:
@@ -13394,11 +13647,18 @@ KFK._svgDrawNodesConnect = function(
               KFK.YIQColorAux ||
               KFK.config.connect.styles.style1.normal.color,
           });
-        if (cnStyle === "solid") {
-          theConnect.css("stroke-dasharray", "");
-        } else {
-          theConnect.css("stroke-dasharray", `${cnWidth * 3} ${cnWidth}`);
+        if (drawPstr === false) {
+          //填充时,边线为虚线可能会导致颜色溢出,待验证
+          if (cnStyle === "solid") {
+            theConnect.css("stroke-dasharray", "");
+          } else {
+            theConnect.css("stroke-dasharray", `${cnWidth * 3} ${cnWidth}`);
+          }
         }
+        theConnect.attr({
+          id: lineClass,
+          "origin-width": KFK.APP.model.svg.connect.width,
+        });
         theTriangle = KFK.svgDraw
           .polygon(triangle)
           .addClass(lineClass + "_triangle")
@@ -13409,10 +13669,6 @@ KFK._svgDrawNodesConnect = function(
                   color: cnColor || KFK.APP.model.svg.connect.triangle.color,
                 });
                 */
-        theConnect.attr({
-          id: lineClass,
-          "origin-width": KFK.APP.model.svg.connect.width,
-        });
       }
     }
     if (toDIV.hasClass("nodisplay")) {
@@ -13925,6 +14181,18 @@ KFK.svgDrawTmpLine = function(fx, fy, tx, ty, option) {
   }
 };
 
+/**
+ * 画线
+ *
+ * @param {string} fid - 起始节点的ID
+ * @param {string} tid - 终点节点的ID
+ * @param {number} fbp - 起始节点上的连接点的编号,从0-3
+ * @param {number} tbp - 终点节点上的连接点的编号,从0-3
+ * @param {number} fx - 连接点1的x坐标
+ * @param {number} fy - 连接点1的y坐标
+ * @param {number} tx - 连接点2的x坐标
+ * @param {number} ty - 连接点2的y坐标
+ */
 KFK.svgConnectNode = function(fid, tid, fbp, tbp, fx, fy, tx, ty) {
   if (!(fid && tid)) {
     return;
@@ -13933,8 +14201,13 @@ KFK.svgConnectNode = function(fid, tid, fbp, tbp, fx, fy, tx, ty) {
   let lineClass = `connect_${fid}_${tid}`;
   let lineClassReverse = `connect_${tid}_${fid}`;
   let pstr = "";
+  let lstr = "";
+  let x = [0, 0, 0, 0];
+  let y = [0, 0, 0, 0];
+  let ctrls = [0.4, 0.5, 0.5, 0.6];
   let triangle = [];
   let rad = 20;
+  let ww = 10;
   let tri = 10;
   if (fromDIV.attr("cnwidth"))
     tri = Math.max(parseInt(fromDIV.attr("cnwidth")) * 2, 10);
@@ -13978,6 +14251,7 @@ KFK.svgConnectNode = function(fid, tid, fbp, tbp, fx, fy, tx, ty) {
       ty = ty + tri_height;
       break;
   }
+  let dis = 0;
   switch (fbp) {
     case 0:
       switch (tbp) {
@@ -13989,7 +14263,22 @@ KFK.svgConnectNode = function(fid, tid, fbp, tbp, fx, fy, tx, ty) {
           pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
           break;
         case 2:
-          pstr = `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`;
+          lstr = `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`;
+          dis = Math.abs(tx - fx);
+          if (ty >= fy) {
+            x = [3, 2, 0, 1].map((x) => fx - dis * ctrls[x]);
+          } else {
+            x = [0, 1, 3, 2].map((x) => fx - dis * ctrls[x]);
+          }
+          pstr =
+            `M${fx},${fy + ww} ` +
+            `L${fx},${fy - ww} ` +
+            `C${x[0]},${fy - ww} ` +
+            `${x[1]},${ty} ` +
+            `${tx},${ty} ` +
+            `C${x[2]},${ty} ` +
+            `${x[3]},${fy + ww} ` +
+            `${fx},${fy + ww} z`;
           break;
         case 3:
           pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
@@ -14009,21 +14298,81 @@ KFK.svgConnectNode = function(fid, tid, fbp, tbp, fx, fy, tx, ty) {
           pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
           break;
         case 3:
-          pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${fy} ${tx} ${ty}`;
+          lstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${fy} ${tx} ${ty}`;
+          dis = Math.abs(ty - fy);
+          if (tx >= fx) {
+            y = [3, 2, 0, 1].map((x) => fy - dis * ctrls[x]);
+          } else {
+            y = [0, 1, 3, 2].map((x) => fy - dis * ctrls[x]);
+          }
+          pstr =
+            `M${fx + ww},${fy} ` +
+            `L${fx - ww},${fy} ` +
+            `C${fx - ww}, ${y[0]} ` +
+            `${tx}, ${y[1]} ` +
+            `${tx},${ty} ` +
+            `C${tx}, ${y[2]} ` +
+            `${fx + ww}, ${y[3]} ` +
+            `${fx + ww},${fy} z`;
           break;
       }
       break;
     case 2:
       switch (tbp) {
         case 0:
-          pstr = `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`;
+          dis = Math.abs(tx - fx);
+          lstr = `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`;
+          if (ty >= fy) {
+            x = [3, 2, 0, 1].map((x) => fx + dis * ctrls[x]);
+          } else {
+            x = [0, 1, 3, 2].map((x) => fx + dis * ctrls[x]);
+          }
+          pstr =
+            `M${fx},${fy + ww} ` +
+            `L${fx},${fy - ww} ` +
+            `C${x[0]},${fy - ww} ` +
+            `${x[1]},${ty} ` +
+            `${tx},${ty} ` +
+            `C${x[2]},${ty} ` +
+            `${x[3]},${fy + ww} ` +
+            `${fx},${fy + ww} z`;
           break;
         case 1:
-          pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
+          lstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
+          dis = Math.abs(tx - fx);
+          if (ty >= fy) {
+            x = [3, 2, 0, 1].map((x) => fx + dis * ctrls[x]);
+          } else {
+            x = [0, 1, 3, 2].map((x) => fx + dis * ctrls[x]);
+          }
+          pstr =
+            `M${fx},${fy + ww} ` +
+            `L${fx},${fy - ww} ` +
+            `C${x[0]},${fy - ww} ` +
+            `${tx},${ty} ` +
+            `${tx},${ty} ` +
+            `C${tx},${ty} ` +
+            `${x[3]},${fy + ww} ` +
+            `${fx},${fy + ww} z`;
           break;
         case 2:
-          pstr = `M${fx} ${fy} C${fx + rad} ${fy} ${tx +
+          dis = Math.abs(tx - fx);
+          lstr = `M${fx} ${fy} C${fx + rad} ${fy} ${tx +
             rad} ${ty} ${tx} ${ty}`;
+          if (ty >= fy) {
+            x = [3, 2, 0, 1].map((x) => fx + dis * ctrls[x]);
+          } else {
+            x = [0, 1, 3, 2].map((x) => fx + dis * ctrls[x]);
+          }
+          pstr =
+            `M${fx},${fy + ww} ` +
+            `L${fx},${fy - ww} ` +
+            `C${tx + rad},${fy - ww} ` +
+            `${tx + rad},${ty} ` +
+            `${tx},${ty} ` +
+            `C${tx + rad},${ty} ` +
+            `${tx + rad},${fy + ww} ` +
+            `${fx},${fy + ww} z`;
           break;
         case 3:
           pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
@@ -14036,7 +14385,22 @@ KFK.svgConnectNode = function(fid, tid, fbp, tbp, fx, fy, tx, ty) {
           pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
           break;
         case 1:
-          pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${fy} ${tx} ${ty}`;
+          lstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${fy} ${tx} ${ty}`;
+          dis = Math.abs(ty - fy);
+          if (tx >= fx) {
+            y = [3, 2, 0, 1].map((x) => fy + dis * ctrls[x]);
+          } else {
+            y = [0, 1, 3, 2].map((x) => fy + dis * ctrls[x]);
+          }
+          pstr =
+            `M${fx + ww},${fy} ` +
+            `L${fx - ww},${fy} ` +
+            `C${fx - ww}, ${y[0]} ` +
+            `${tx}, ${y[1]} ` +
+            `${tx},${ty} ` +
+            `C${tx}, ${y[2]} ` +
+            `${fx + ww}, ${y[3]} ` +
+            `${fx + ww},${fy} z`;
           break;
         case 2:
           pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
@@ -14054,7 +14418,9 @@ KFK.svgConnectNode = function(fid, tid, fbp, tbp, fx, fy, tx, ty) {
     lineClass,
     lineClassReverse,
     pstr,
-    triangle
+    lstr,
+    triangle,
+    KFK.APP.model.viewConfig.simpleLineMode
   );
 };
 
@@ -14576,7 +14942,7 @@ KFK.placeFollowerNode = async (jdiv, direction) => {
   newDIV.appendTo(KFK.C3);
   await KFK.setNodeEventHandler(newDIV, async function() {
     newDIV.attr("creator", KFK.APP.model.cocouser.userid);
-    await KFK.syncNodePut("C", newDIV, "new node", null, false, 0, 1);
+    await KFK.syncNodePut("C", newDIV, "placeFollowerNode", null, false, 0, 1);
     await KFK.LinkFromBrainCenter(newDIV);
   });
   KFK.justCreatedJqNode = newDIV;
@@ -14811,12 +15177,7 @@ KFK.__childrenToMySide = async (theDIV, side) => {
       }
       //作为父节点，可连接左右中点，其子节点可连接打开左右中点；
       //作为子节点，父节点可任意中点，但自身只能连接到左右中点；
-      KFK.redrawLinkLines(sameSideChildren[i], "move", true, [
-        [0, 2],
-        [0, 2],
-        [0, 1, 2, 3],
-        [0, 2],
-      ]);
+      KFK.redrawLinkLines(sameSideChildren[i], "move", true);
       KFK.syncNodePut(
         "U",
         sameSideChildren[i].clone(),

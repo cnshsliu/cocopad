@@ -5,8 +5,11 @@ import KFK from "./console";
 
 AdvOps.treeMap = new Map();
 AdvOps.spaceMap = new Map();
-AdvOps.HSpace = 40;
-AdvOps.VSpace = 20;
+AdvOps.globalTreeMap = new Map();
+AdvOps.globalNodeMap = new Map();
+AdvOps.allRelayouted = new Set();
+AdvOps.RIGHT_SIDE = 1;
+AdvOps.LEFT_SIDE = -1;
 
 /* 获得一个DIV位于哪个页面上 */
 AdvOps.getDivPage = function(div) {
@@ -47,7 +50,6 @@ AdvOps.getShapePage = function(shape) {
 
 /* 移动单个对象到指定的页面 */
 AdvOps.moveSingleElement = async function(pindex) {
-  console.log("moveSingleElement");
   let div = KFK.hoverJqDiv();
   if (div) {
     AdvOps.moveSingleDiv(div, pindex);
@@ -247,9 +249,6 @@ AdvOps.uniquefyKfkObjectArray = function(array) {
   for (let i = 0; i < array.length; i++) {
     let found = false;
     for (let j = 0; j < tmp.length; j++) {
-      console.log("j=", j);
-      console.log(typeof tmp);
-      console.log(typeof tmp[j]);
       if (tmp[j].id === array[i].id) {
         found = true;
         break;
@@ -297,7 +296,6 @@ AdvOps.existsInGroup = function(group, div) {
 AdvOps.getDescendants = async function(root, aParent, descendants) {
   let directChildren = await AdvOps.getChildren(aParent);
   let clearedDirectChildren = [];
-  console.log("directChildren", directChildren);
   for (let i = 0; i < directChildren.length; i++) {
     //保证返回的 descendants 集合中不包含重复项
     if (
@@ -308,7 +306,6 @@ AdvOps.getDescendants = async function(root, aParent, descendants) {
       descendants.push(directChildren[i]);
     }
   }
-  console.log("clearedDirectChildren", clearedDirectChildren);
 
   for (let i = 0; i < clearedDirectChildren.length; i++) {
     await AdvOps.getDescendants(root, clearedDirectChildren[i], descendants);
@@ -318,9 +315,7 @@ AdvOps.getDescendants = async function(root, aParent, descendants) {
 AdvOps.collapseDescendants = async function(jqNode) {
   let descendants = [];
   await AdvOps.getDescendants(jqNode, jqNode, descendants);
-  console.log(descendants.length);
   for (let i = 0; i < descendants.length; i++) {
-    console.log("collapse", descendants[i].attr("id"));
     descendants[i].addClass("nodisplay");
     await AdvOps.hideConnection(descendants[i]);
   }
@@ -337,7 +332,6 @@ AdvOps.expandDescendants = async function(jqNode) {
   let descendants = [];
   await AdvOps.getDescendants(jqNode, jqNode, descendants);
   for (let i = 0; i < descendants.length; i++) {
-    console.log("expand", descendants[i].attr("id"));
     descendants[i].removeClass("nodisplay");
     descendants[i]
       .find(".ec_button")
@@ -349,73 +343,271 @@ AdvOps.expandDescendants = async function(jqNode) {
 };
 
 /**
- * 遍历脑图树
- *
+ * 遍历脑图树, 设置每个节点与其父节点的映射关系，并计算得到
+ * 每个节点的占用高度
+ * *
  *  jqNode - 从这个节点开始遍历
  */
-AdvOps.traverseTree = async function(jqNode) {
+AdvOps.traverseTree = async function(jqNode, rootId) {
   let myId = jqNode.attr("id");
+  AdvOps.traverseLog.add(myId);
   let children = await AdvOps.getChildren(jqNode);
+  let realChildrenNumber = 0;
+  for (let i = 0; i < children.length; i++) {
+    if (AdvOps.traverseLog.has(children[i].attr("id")) === false) {
+      realChildrenNumber++;
+    }
+  }
   if (children.length > 0) {
+    //如果当前节点有子节点
+    //设置其高度为0，其高度通过其descendants的高度累加而来
     AdvOps.spaceMap.set(myId, 0);
+    //通过循环，设置其每个子节点到当前节点的 子-> 父 映射关系
     for (let i = 0; i < children.length; i++) {
       let childId = children[i].attr("id");
-      if (AdvOps.treeMap.has(childId) === false) {
+      if (
+        AdvOps.treeMap.has(childId) === false &&
+        AdvOps.traverseLog.has(childId) === false
+      ) {
         //第一个父节点为真正父节点，其它为参考父节点
+        //设置从节点到其父节点的映射
         AdvOps.treeMap.set(childId, myId);
       }
-      await AdvOps.traverseTree(children[i]);
+      if (AdvOps.traverseLog.has(childId) === false)
+        await AdvOps.traverseTree(children[i]);
     }
-  } else {
+  }
+
+  if (realChildrenNumber === 0) {
+    //如果这是一个叶节点
     let myHeight = KFK.divHeight(jqNode);
+    //记录当前节点的高度
     AdvOps.spaceMap.set(myId, myHeight);
-    await AdvOps.reverseAddSpace(myId, myHeight);
+    //把当前节点的高度添加到其父节点、祖父节点。。上
+    await AdvOps.reverseAddSpace(rootId, myId, myHeight);
   }
 };
 
-AdvOps.reverseAddSpace = async function(myId, myHeight) {
+KFK.text = function(jq) {
+  return jq.find(".innerobj").text();
+};
+
+/**
+ * 把节点的占用高度添加到其父节点，祖父节点。。。的占用高度上
+ *
+ * myId - 当前节点的ID
+ * myHeight - 我的高度
+ */
+AdvOps.reverseAddSpace = async function(rootId, myId, myHeight) {
   if (AdvOps.treeMap.has(myId)) {
     let parentId = AdvOps.treeMap.get(myId);
     let tmp1 = AdvOps.spaceMap.get(parentId);
     if (tmp1 == 0) {
       tmp1 += myHeight;
     } else {
-      tmp1 += AdvOps.VSpace + myHeight; //If this is not the first descendant, add one VSpace beforehead;
+      tmp1 += KFK.VSpace + myHeight; //If this is not the first descendant, add one VSpace beforehead;
     }
     AdvOps.spaceMap.set(parentId, tmp1);
-    await AdvOps.reverseAddSpace(parentId, myHeight);
+    await AdvOps.reverseAddSpace(rootId, parentId, myHeight);
   }
 };
 
-AdvOps.placeChildrenAuto = async function(jqNode) {
-  let tmp =
-    KFK.divTop(jqNode) +
-    KFK.divHeight(jqNode) * 0.5 -
-    AdvOps.spaceMap.get(jqNode.attr("id")) * 0.5;
+/**
+ * 自动放置每个子节点的位置
+ *
+ */
+AdvOps.placeChildrenAuto = async function(
+  jqNode,
+  nodeSpace,
+  whichSide,
+  children,
+  childIndexStart,
+  childIndexEnd
+) {
+  let myId = jqNode.attr("id");
+  if (AdvOps.autoPlaced.has(myId)) return;
+  AdvOps.autoPlaced.add(myId);
+  let tmp = KFK.divTop(jqNode) + KFK.divHeight(jqNode) * 0.5 - nodeSpace * 0.5;
   jqNode.removeClass("nodisplay");
   jqNode
     .find(".ec_button")
     .removeClass("ec_collapsed")
     .addClass("ec_expanded");
   await AdvOps.showConnection(jqNode);
-  let children = await AdvOps.getChildren(jqNode);
-  let childLeft = KFK.divLeft(jqNode) + KFK.divWidth(jqNode) + AdvOps.HSpace;
-  for (let i = 0; i < children.length; i++) {
-    let childSpace = AdvOps.spaceMap.get(children[i].attr("id"));
+  for (let i = childIndexStart; i < childIndexEnd; i++) {
+    let childId = children[i].attr("id");
+    if (AdvOps.autoPlaced.has(childId)) continue;
+    let childSpace = AdvOps.spaceMap.get(childId);
+    let childLeft = KFK.divLeft(jqNode) + KFK.divWidth(jqNode) + KFK.HSpace;
+    if (whichSide === AdvOps.LEFT_SIDE) {
+      childLeft = KFK.divLeft(jqNode) - KFK.HSpace - KFK.divWidth(children[i]);
+    }
     let childTop = tmp + childSpace * 0.5 - KFK.divHeight(children[i]) * 0.5;
-    children[i].css("left", childLeft);
-    children[i].css("top", childTop);
-    await AdvOps.placeChildrenAuto(children[i]);
-    tmp = tmp + childSpace + AdvOps.VSpace;
+    if (
+      childLeft !== KFK.divLeft(children[i]) ||
+      childTop !== KFK.divTop(children[i])
+    ) {
+      children[i].css("left", childLeft);
+      children[i].css("top", childTop);
+      AdvOps.allRelayouted.add(childId);
+    }
+    let subChildren = await AdvOps.getChildren(children[i]);
+    await AdvOps.placeChildrenAuto(
+      children[i],
+      childSpace,
+      whichSide,
+      subChildren,
+      0,
+      subChildren.length
+    );
+    tmp = tmp + childSpace + KFK.VSpace;
   }
   KFK.redrawLinkLines(jqNode);
 };
 
-AdvOps.autoLayoutDescendants = async function(jqNode) {
+AdvOps.buildGlobalTreeMap = async function() {
+  AdvOps.globalTreeMap.clear();
+  AdvOps.globalNodeMap.clear();
+  let tmp = new Set();
+  KFK.JC3.find(".kfknode").each((index, aNode) => {
+    let jqNode = $(aNode);
+    let jqNodeId = jqNode.attr("id");
+    AdvOps.globalNodeMap.set(jqNodeId, jqNode);
+    let arr = KFK.stringToArray(jqNode.attr("linkto"));
+    for (let i = 0; i < arr.length; i++) {
+      if (
+        AdvOps.globalTreeMap.has(arr[i]) === false &&
+        tmp.has(arr[i]) === false
+      ) {
+        AdvOps.globalTreeMap.set(arr[i], jqNodeId);
+        tmp.add(jqNodeId);
+        //如果存在，就不再设置，意味着，第一次设置的父为其真父
+      }
+    }
+  });
+};
+
+AdvOps.getRootId = function(nodeId) {
+  if (AdvOps.globalTreeMap.has(nodeId)) {
+    return AdvOps.getRootId(AdvOps.globalTreeMap.get(nodeId));
+  } else {
+    return nodeId;
+  }
+};
+
+/**
+ * 自动布局所有下属节点
+ *
+ * jqNode - 该节点的下属节点要被自动布局
+ * rootId - jqNode所在的数的根节点，可能是jqNode自身，也可能是jqNode的祖先节点
+ * rebuildGlobalTreeMap - 是否重建全局节点-父节点映射表。画板没有变化时，全局映射表只需要建立一次，不需要多次建立，因为每一次构建都需要扫描所有节点，是一个浪费时间的计算过程。同时，意味着，在调用本方法时，至少需要构建一次GTM，要么在调用本方法之前，预先调用AdvOps.buildGlobalTreeMap一次，要么在第一次调用本方法时，本参数为true
+ */
+AdvOps.autoLayoutDescendants = async function(
+  jqNode,
+  rootId = "UNSET",
+  rebuildGlobalTreeMap = true
+) {
   AdvOps.treeMap.clear();
   AdvOps.spaceMap.clear();
-  await AdvOps.traverseTree(jqNode);
-  await AdvOps.placeChildrenAuto(jqNode);
+  AdvOps.allRelayouted.clear();
+  AdvOps.autoPlaced = new Set();
+  let myId = jqNode.attr("id");
+  if (rebuildGlobalTreeMap) await AdvOps.buildGlobalTreeMap();
+
+  rootId = rootId === "UNSET" ? AdvOps.getRootId(myId) : rootId;
+  let jqRoot = AdvOps.globalNodeMap.get(rootId);
+  AdvOps.traverseLog = new Set();
+  await AdvOps.traverseTree(jqNode, rootId);
+  let children = await AdvOps.getChildren(jqNode);
+  //如果当前节点是一个根节点
+  if (rootId === myId) {
+    let leftSideChildrenSpace = 0;
+    //累加要拿到左边去的节点的高度
+    for (let i = Math.ceil(children.length / 2); i < children.length; i++) {
+      leftSideChildrenSpace += AdvOps.spaceMap.get(children[i].attr("id"));
+    }
+    //算出右侧的所有节点的占高
+    let rightSideChildrenSpace =
+      AdvOps.spaceMap.get(myId) - leftSideChildrenSpace - KFK.VSpace;
+    //放置右侧的节点
+    await AdvOps.placeChildrenAuto(
+      jqNode,
+      rightSideChildrenSpace,
+      AdvOps.RIGHT_SIDE,
+      children,
+      0,
+      Math.ceil(children.length / 2)
+    );
+    //放置左侧的节点
+    AdvOps.autoPlaced.clear();
+    if (children.length > Math.ceil(children.length / 2)) {
+      await AdvOps.placeChildrenAuto(
+        jqNode,
+        leftSideChildrenSpace,
+        AdvOps.LEFT_SIDE,
+        children,
+        Math.ceil(children.length / 2),
+        children.length
+      );
+    }
+  } else {
+    //如果当前节点不是一个子节点,
+    //那么,它要么位于当前节点的根节点的右侧,要么位于左侧
+    if (KFK.divCenter(jqNode) >= KFK.divCenter(jqRoot)) {
+      //如果在右侧
+      AdvOps.autoPlaced.clear();
+      await AdvOps.placeChildrenAuto(
+        jqNode,
+        AdvOps.spaceMap.get(myId),
+        AdvOps.RIGHT_SIDE,
+        children,
+        0,
+        children.length
+      );
+    } else {
+      //如果在左侧
+      AdvOps.autoPlaced.clear();
+      await AdvOps.placeChildrenAuto(
+        jqNode,
+        AdvOps.spaceMap.get(myId),
+        AdvOps.LEFT_SIDE,
+        children,
+        0,
+        children.length
+      );
+    }
+  }
+  if (AdvOps.allRelayouted.size > 0) {
+    KFK.startTrx();
+    try {
+      for (let divId of AdvOps.allRelayouted.keys()) {
+        console.log(divId);
+        let jqTmp = KFK.getNodeById(divId);
+        await KFK.syncNodePut(
+          "U",
+          jqTmp.clone(),
+          "auto layout",
+          jqTmp.clone(),
+          false
+        );
+      }
+    } finally {
+      KFK.endTrx();
+    }
+  }
+};
+
+AdvOps.autoLayoutOnNewNode = async function(newNode, parentNode) {
+  let myId = newNode.attr("id");
+  let parentId = parentNode.attr("id");
+  if (AdvOps.globalTreeMap.size < 1) {
+    await AdvOps.buildGlobalTreeMap();
+  } else if (AdvOps.globalTreeMap.has(newNode) === false) {
+    AdvOps.globalTreeMap.set(myId, parentId);
+  }
+  let rootId = AdvOps.getRootId(myId);
+  let rootNode = KFK.getNodeById(rootId);
+  await AdvOps.autoLayoutDescendants(rootNode, rootId, false);
 };
 
 /**

@@ -28,6 +28,9 @@ MyMDE.addEasyMDE = function(textAreaId) {
       toggleSideBySide: null,
       toggleFullScreen: null,
     },
+    onToggleFullScreen: function(flag) {
+      KFK.onToggleMDEFullScreen(flag);
+    },
   });
 };
 MyMDE.finishMdEditting = function(cancelAll, divId) {

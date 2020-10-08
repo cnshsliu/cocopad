@@ -497,6 +497,19 @@ input::placeholder {
   width: 28px;
 }
 
+#mdNote {
+  padding: 0px;
+  background: #ffffff;
+  box-shadow: 0 4px 8px 0 #000000cc, 0 6px 20px 0 #000000cc;
+  position: absolute;
+  top: 70px;
+  right: 0px;
+  width: 30vw;
+  height: 100vh;
+  border: 1px solid #0000004c;
+  z-index: 999999999;
+}
+
 #rightPanel {
   padding: 0px;
   background: #ffffff;
@@ -795,7 +808,7 @@ svg path {
 .selected {
   -webkit-box-shadow: -1px 2px 5px 10px #3e3ecc;
   -moz-box-shadow: -1px 2px 5px 10px #8e8eff;
-  box-shadow: 0px 1px 20px 2px #3e3ecc;
+  box-shadow: 0 0 10px 5px blue;
 }
 
 .hover {

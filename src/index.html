@@ -9,7 +9,7 @@
     <link rel=" stylesheet" href="/my-styles/room.css">
     <link rel="shortcut icon" href="./favicon.png" />
     <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap@4.4.1/dist/css/bootstrap.min.css" />
-    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@2.12.0/dist/bootstrap-vue.min.css" />
+    <link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@2.17.3/dist/bootstrap-vue.min.css" />
     <!-- Load Vue followed by BootstrapVue, and BootstrapVueIcons -->
     <link rel="stylesheet" href="/my-styles/style.css">
     <link rel="stylesheet" href="/my-styles/firstpage.css">
@@ -18,8 +18,8 @@
     <script src="https://unpkg.com/vue@2.6.11/dist/vue.min.js"></script>
     <script src="https://unpkg.com/vue-i18n/dist/vue-i18n.js"></script>
     <script src="https://unpkg.com/vue-router@3.2.0/dist/vue-router.min.js"></script>
-    <script src="https://unpkg.com/bootstrap-vue@2.12.0/dist/bootstrap-vue.min.js"></script>
-    <script src="https://unpkg.com/bootstrap-vue@2.12.0/dist/bootstrap-vue-icons.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-vue@2.17.3/dist/bootstrap-vue.min.js"></script>
+    <script src="https://unpkg.com/bootstrap-vue@2.17.3/dist/bootstrap-vue-icons.min.js"></script>
     <script src="https://unpkg.com/jquery@3.5.0/dist/jquery.min.js"></script>
     <script src="https://unpkg.com/jquery-ui-dist@1.12.1/jquery-ui.min.js"></script>
     <!-- <script src="https://liuzijin.com/jslib/jquery-minimap.js"></script> -->
@@ -332,8 +332,11 @@
                                         variant="success" @click="KFK.toggleMinimap">
                                         <b-icon icon="map"></b-icon>切换小地图
                                     </b-dropdown-item>
-                                    <b-dropdown-item variant="success" @click="KFK.showActionLog">
+                                    <!-- b-dropdown-item variant="success" @click="KFK.showActionLog">
                                         <b-icon icon="people"></b-icon>{{model.actionlog.length}} 协作人员
+                                    </b-dropdown-item -->
+                                    <b-dropdown-item variant="success" @click="KFK.toggleMDEditor">
+                                        <b-icon icon="markdown"></b-icon>切换备注编辑
                                     </b-dropdown-item>
                                     <b-dropdown-item href="#" id="toggle_all" variant="success"
                                         v-b-modal.modal-key-shortcut>
@@ -377,7 +380,7 @@
 
                 </div>
 
-                <div class="leftSwitch panelSwitch" @click="KFK.leftSwitch">
+                <!-- div class="leftSwitch panelSwitch" @click="KFK.leftSwitch">
                     <div>
                         <b-icon icon="chevron-left" variant="light" scale="1.5" shift-h="-4" shift-v="-8"
                             v-if="show.panel.leftPanel"></b-icon>
@@ -394,7 +397,7 @@
                     <b-icon icon="chevron-right" variant="light" scale="1.5" shift-h="4" shift-v="-8"
                         v-if="show.section.minimap"></b-icon>
                     <b-icon icon="chevron-left" variant="light" scale="1.5" shift-h="4" shift-v="-8" v-else></b-icon>
-                </div>
+                </div -->
                 <!-- left tool left menu toolbox left panel-->
                 <div id="leftPanel" class="bg-white padlayout spaceToHide" v-on:click="KFK.clickOnLeftPanel">
                     <b-list-group>
@@ -405,7 +408,7 @@
                             <b-img :src="getImageSrc('pointer')" fluid alt="" scale="2" class="cocotool"></b-img>
                             <div class="shortcutkey">ESC</div>
                         </b-list-group-item>
-                        <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                        <!-- b-list-group-item href="#" class="d-flex align-items-center toolbox"
                             @mouseover.native="KFK.overTool($event, 'text');"
                             v-on:mousedown="KFK.onToolboxMouseDown('text', $event)"
                             v-on:mouseup="KFK.onToolboxMouseUp('text', $event)" v-on:mouseover="KFK.AI('tb_text')"
@@ -413,7 +416,7 @@
                             :active="toolActiveState['text']">
                             <b-img :src="getImageSrc('text')" fluid alt="" scale="2" class="cocotool"></b-img>
                             <div class="shortcutkey">0</div>
-                        </b-list-group-item>
+                        </b-list-group-item -->
                         <b-list-group-item href="#" class="d-flex align-items-center toolbox"
                             @mouseover.native="KFK.overTool($event, 'textblock');"
                             v-on:mouseover="KFK.AI('tb_textblock')" v-on:click="setMode('textblock', $event);"
@@ -432,7 +435,7 @@
                             <b-img :src="getImageSrc('tipbtn')" fluid alt="" scale="2" class="cocotool"></b-img>
                             <div class="shortcutkey">2</div>
                         </b-list-group-item>
-                        <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                        <!-- b-list-group-item href="#" class="d-flex align-items-center toolbox"
                             @mouseover.native="KFK.overTool($event, 'richtext');"
                             v-on:click="setMode('richtext', $event);" v-b-popover.hover.right title="格式文本-可拖放"
                             v-on:mousedown="KFK.onToolboxMouseDown('richtext', $event)"
@@ -460,25 +463,7 @@
                                 id='tool_comment'>
                             </b-img>
                             <div class="shortcutkey">5</div>
-                        </b-list-group-item>
-                        <b-list-group-item href="#" class="d-flex align-items-center toolbox"
-                            @mouseover.native="KFK.overTool($event, 'jump');" v-on:mouseover="KFK.AI('tb_jump')"
-                            v-on:click="setMode('jump', $event);" placeable="none" v-b-popover.hover.right title="节点间跳转"
-                            :active="toolActiveState['jump']">
-                            <b-img :src="getImageSrc('jump')" fluid alt="" scale="2" class="cocotool" id='tool_jump'>
-                            </b-img>
-                            <div class="shortcutkey">6</div>
-                        </b-list-group-item>
-                        <b-list-group-item href="#" class="d-flex align-items-center toolbox"
-                            @mouseover.native="KFK.overTool($event, 'interlink');"
-                            v-on:mouseover="KFK.AI('tb_interlink')" v-on:click="setMode('interlink', $event);"
-                            placeable="none" v-b-popover.hover.right title="白板间跳转"
-                            :active="toolActiveState['interlink']">
-                            <b-img :src="getImageSrc('interlink')" fluid alt="" scale="2" class="cocotool"
-                                id='tool_interlink'>
-                            </b-img>
-                            <div class="shortcutkey">7</div>
-                        </b-list-group-item>
+                        </b-list-group-item -->
                         <b-list-group-item href="#" class="d-flex align-items-center toolbox"
                             v-on:mouseover="KFK.AI('tb_material')" v-on:click="setMode('material', $event);"
                             @mouseover.native="KFK.overTool($event, 'material');" placeable="none"
@@ -514,6 +499,9 @@
                                 id='tool_clearfreehand'></b-img>
                             <div class="shortcutkey">Q</div>
                         </b-list-group-item>
+                        <b-list-group-item class="m-0 p-0">
+                            <b-icon icon="blank" scale="0.2"></b-icon>
+                        </b-list-group-item>
                         <b-list-group-item href="#" class="d-flex align-items-center toolbox"
                             v-on:mouseover="KFK.AI('tb_connect')" v-on:click="setMode('connect', $event);"
                             @mouseover.native="KFK.overTool($event, 'connect');" placeable="none"
@@ -523,6 +511,14 @@
                             </b-img>
                             <div class="shortcutkey">J</div>
                         </b-list-group-item>
+                        <!-- b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                            @mouseover.native="KFK.overTool($event, 'brain');" v-on:mouseover="KFK.AI('tb_brain')"
+                            v-on:click="setMode('brain', $event);" placeable="none" v-b-popover.hover.right title="脑图"
+                            :active="toolActiveState['brain']">
+                            <b-img :src="getImageSrc('brain')" fluid alt="" scale="2" class="cocotool" id='tool_brain'>
+                            </b-img>
+                            <div class="shortcutkey">N</div>
+                        </b-list-group-item -->
                         <b-list-group-item href="#" class="d-flex align-items-center toolbox"
                             @mouseover.native="KFK.overTool($event, 'lock');" v-on:mouseover="KFK.AI('tb_lock')"
                             v-on:click="setMode('lock', $event);" v-b-popover.hover.right placeable="none" title="锁定"
@@ -532,15 +528,25 @@
                             <div class="shortcutkey">L</div>
                         </b-list-group-item>
                         <b-list-group-item href="#" class="d-flex align-items-center toolbox"
-                            @mouseover.native="KFK.overTool($event, 'brain');" v-on:mouseover="KFK.AI('tb_brain')"
-                            v-on:click="setMode('brain', $event);" placeable="none" v-b-popover.hover.right title="脑图"
-                            :active="toolActiveState['brain']">
-                            <b-img :src="getImageSrc('brain')" fluid alt="" scale="2" class="cocotool" id='tool_brain'>
+                            @mouseover.native="KFK.overTool($event, 'jump');" v-on:mouseover="KFK.AI('tb_jump')"
+                            v-on:click="setMode('jump', $event);" placeable="none" v-b-popover.hover.right title="节点间跳转"
+                            :active="toolActiveState['jump']">
+                            <b-img :src="getImageSrc('jump')" fluid alt="" scale="2" class="cocotool" id='tool_jump'>
                             </b-img>
-                            <div class="shortcutkey">N</div>
+                            <div class="shortcutkey">6</div>
+                        </b-list-group-item>
+                        <b-list-group-item href="#" class="d-flex align-items-center toolbox"
+                            @mouseover.native="KFK.overTool($event, 'interlink');"
+                            v-on:mouseover="KFK.AI('tb_interlink')" v-on:click="setMode('interlink', $event);"
+                            placeable="none" v-b-popover.hover.right title="白板间跳转"
+                            :active="toolActiveState['interlink']">
+                            <b-img :src="getImageSrc('interlink')" fluid alt="" scale="2" class="cocotool"
+                                id='tool_interlink'>
+                            </b-img>
+                            <div class="shortcutkey">7</div>
                         </b-list-group-item>
                         <b-list-group-item class="m-0 p-0">
-                            <b-icon icon="blank" scale="0.3"></b-icon>
+                            <b-icon icon="blank" scale="0.2"></b-icon>
                         </b-list-group-item>
                         <b-list-group-item href="#" v-on:mouseover="KFK.AI('tb_eraser')" v-if="model.docLoaded"
                             @mouseover.native="KFK.overTool($event, 'eraser');"
@@ -822,7 +828,6 @@
                         </b-tab>
                         <b-tab title="通用" active class='cocoproperty'>
                             <b-container class="property-content">
-                                <p>We Team Work</p>
                                 <b-checkbox id="cb-showgrid" v-model="model.viewConfig.showgrid" name="cb-showgrid"
                                     switch @input="KFK.toggleShowGrid">
                                     显示网格线
@@ -854,6 +859,12 @@
                                 </b-checkbox>
                                 <b-checkbox v-model="model.viewConfig.autoFollow" switch @input="KFK.toggleAutoFollow">
                                     自动聚焦到新建节点
+                                </b-checkbox>
+                                <b-checkbox v-model="model.viewConfig.autoLayout" switch @input="KFK.toggleAutoLayout">
+                                    自动布局脑图
+                                </b-checkbox>
+                                <b-checkbox v-model="model.viewConfig.simpleLineMode" switch @input="KFK.toggleLineMode">
+                                    简约连接线
                                 </b-checkbox>
                                 <p> </p>
                                 <b-row class="mx-auto my-1">
@@ -905,6 +916,9 @@
                     </b-tabs>
                     <b-icon icon="x" style="position:absolute; left:0px; top:0px;" class="myhovered"
                         @click="KFK.toggleRightPanel"></b-icon>
+                </div>
+                <div id="mdNote" class="noshow">
+                    <textarea id='ta_mdnote' style='width:100%; height:100%; resize:none;'></textarea>
                 </div>
 
 
