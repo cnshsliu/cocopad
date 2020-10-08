@@ -33,7 +33,7 @@
     "filepond-plugin-image-transform": "^3.7.2",
     "filepond-plugin-image-validate-size": "^1.2.3",
     "fs-es6": "0.0.2",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "jquery-ui-dist": "^1.12.1",
     "navigo": "^7.1.2",
     "parcel-bundler": "^1.12.4",
