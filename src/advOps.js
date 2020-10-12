@@ -29,6 +29,35 @@ AdvOps.getDivPage = function(div) {
   return onPage;
 };
 
+AdvOps.onPage1 = function(jq, delta={x:0,y:0}) {
+  let p1Rect = {
+    left: 0,
+    top: 0,
+    right: KFK.PageWidth,
+    bottom: KFK.PageHeight,
+  };
+  let onP1Before = false;
+  let onP1New = false;
+  let newRect = KFK.divRect(jq);
+  if (
+    p1Rect.left < newRect.right &&
+    p1Rect.right > newRect.left &&
+    p1Rect.top < newRect.bottom &&
+    p1Rect.bottom > newRect.top
+  ) {
+    onP1New = true;
+  }
+  if (
+    p1Rect.left < newRect.right - delta.x &&
+    p1Rect.right > newRect.left - delta.x &&
+    p1Rect.top < newRect.bottom - delta.y &&
+    p1Rect.bottom > newRect.top - delta.y
+  ) {
+    onP1Before = true;
+  }
+  return onP1Before || onP1New;
+};
+
 /* 获得一个图形处于哪个页面上 */
 AdvOps.getShapePage = function(shape) {
   let onPage = -1;
