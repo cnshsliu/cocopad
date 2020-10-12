@@ -8,8 +8,6 @@ import "regenerator-runtime/runtime";
 // import COS from "cos-js-sdk-v5";
 import suuid from "short-uuid";
 import Bowser from "../lib/bowser/bowser";
-// import Quill from 'quill';
-// import { QuillDeltaToHtmlConverter } from '../lib/quill/quill2html/quill2html';
 import { gzip, ungzip } from "../lib/gzip";
 import AIXJ from "./aixj";
 import assetIcons from "./assetIcons";
@@ -26,9 +24,6 @@ import Validator from "./validator";
 // import { BIconFileEarmarkBreak } from "bootstrap-vue";
 import WS from "./ws";
 
-Quill.prototype.getHtml = function() {
-  return this.container.querySelector(".ql-editor").innerHTML;
-};
 Array.prototype.clear = function() {
   this.splice(0, this.length);
 };
