@@ -1109,10 +1109,6 @@ select:focus {
 }
 
 #docHeaderInfo {
-  position: absolute;
-  top: 5px;
-  left: 5px;
-  border-radius: 10px;
 }
 
 .loading.yiq-black {
@@ -2209,11 +2205,17 @@ a:hover {
 }
 
 .custom_header {
-  background-color: #ff000022;
   width: 100vw;
   position: fixed;
   top: 0px;
   left: 0px;
+  z-index: 9999999999999999;
+}
+.custom_header_small {
+  width: 40px;
+  position: fixed;
+  top: 0px;
+  right: 0px;
   z-index: 9999999999999999;
 }
 
@@ -2247,4 +2249,11 @@ a:hover {
 .ecpos3 {
   left: calc(50% - 12px);
   bottom: -26px;
+}
+.textblock {
+  display: flex;
+  justify-content: center;
+  align-items: left;
+  flex-direction: column;
+  font-size: 24px;
 }

@@ -264,113 +264,91 @@
                 <!--div class="toplogo padlayout spaceToHide"  @click="KFK.gotoExplorer">
                     <img src="./cocopad2.svg" :class="model.isPC?'logo d-inline-block align-top':'logo-mobile d-inline-block align-top'" alt="COLOBOD">
                 </div -->
-                <div class="custom_header padlayout">
-                    <b-navbar toggleable="lg" type="dark" variant="info">
-                        <b-navbar-brand href="#">{{model.cocodoc.name}} <editable :content.sync="docName"></editable></b-navbar-brand>
-                        <b-nav-item><editable :content.sync="docName"></editable></b-nav-item>
+                <div class="custom_header padlayout" id="docHeaderInfo">
+                    <div id="chevronbtn" class="nodisplay">
+                        <b-button variant="info" @click="KFK.showMenu(true)">
+                        <b-icon  icon="chevron-bar-down"></b-icon>
+                        </b-button>
+                    </div>
+                    <b-navbar id="navbar" toggleable="lg" type="dark" variant="info" @mousemove.native="KFK.overNavbar();">
+                       <b-navbar-brand href="#">
+                            <div contenteditable="true">{{model.cocodoc.name}}</div>
+                        </b-navbar-brand>
 
-                        <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
+                       <!-- Right aligned nav items -->
+                       <b-navbar-nav class="ml-auto">
+                           <b-nav-item href="#" id="goto_explorer" @click="KFK.gotoExplorer">
+                               <b-icon icon="house" font-scale="2"></b-icon>
+                           </b-nav-item>
+                           <b-nav-item href="#" id="sharethisbutton" variant="success" @click="SHARE.shareThisDoc">
+                               <b-icon icon="box-arrow-up" font-scale="2"></b-icon>
+                           </b-nav-item>
 
-                        <b-collapse id="nav-collapse" is-nav>
-                            <b-navbar-nav>
-                                <b-nav-item v-if="model.cocodoc.readonly">
-                                    <b-icon icon="eye"></b-icon>
-                                </b-nav-item>
-                               
-                                <!-- <b-dropdown right variant="success" class="m-2">
-            <template v-slot:button-content><b-icon icon="cloud-download"></b-icon>导出</template>
-            <b-dropdown-item href="#" id="toggle_all" variant="success" @click="KFK.exportPDF"> 导出PDF </b-dropdown-item>
-          </b-dropdown> -->
-                                <div id="readonlyDesc" v-show="show.section.designer"
-                                    class="padlayout spaceToHide">
-                                    {{model.readonlyDesc}} 
-                                </div>
-                            </b-navbar-nav>
-                            <b-navbar-nav>
-                                <editable :content.sync="docName"></editable>
-                                abcd
-                                <editable content="my content"></editable>
-                            </b-navbar-nav>
+                           <b-dropdown right text="菜单" variant="primary">
+                               <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle_all"
+                                   variant="success" @click="KFK.toggleFullScreen" v-if="model.isPC">
+                                   <b-icon icon="arrows-fullscreen"></b-icon>&nbsp;全屏(fs)
+                               </b-dropdown-item>
+                               <b-dropdown-item id="onepage" variant="success" @click="KFK.toggleOverview">
+                                   <b-icon icon="grid3x2" shift-h="-1.2" shift-v="1.1"></b-icon>&nbsp;全局概览
+                               </b-dropdown-item>
+                               <b-dropdown-item href="#" id="toggle_cbonly" variant="success"
+                                   @click="KFK.toggleControlButtonOnly" v-if="model.isPC">
+                                   <b-icon v-if="KFK.controlButtonsOnly===false" icon="layout-sidebar-reverse"
+                                       rotate="270">
+                                   </b-icon>
+                                   <b-icon v-else icon="layout-sidebar-inset-reverse" rotate="270"></b-icon>
+                                   &nbsp;切换工具栏
+                               </b-dropdown-item>
+                               <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle-right"
+                                   variant="success" @click="KFK.toggleRightPanel(-1, false)" v-if="model.isPC">
+                                   <b-icon v-if="KFK.showRightTools===false" icon="layout-sidebar-reverse">
+                                   </b-icon>
+                                   <b-icon v-else icon="layout-sidebar-inset-reverse"></b-icon>&nbsp;切换属性栏
+                               </b-dropdown-item>
+                               <b-dropdown-item disable="model.cocodoc.readonly" id="toggle-minimap"
+                                   variant="success" @click="KFK.toggleMinimap">
+                                   <b-icon icon="map"></b-icon>切换小地图
+                               </b-dropdown-item>
+                               <!-- b-dropdown-item variant="success" @click="KFK.showActionLog">
+                                   <b-icon icon="people"></b-icon>{{model.actionlog.length}} 协作人员
+                               </b-dropdown-item -->
+                               <b-dropdown-item variant="success" @click="KFK.toggleNoteEditor">
+                                   <b-icon icon="markdown"></b-icon>切换备注编辑
+                               </b-dropdown-item>
+                               <b-dropdown-item href="#" id="toggle_all" variant="success"
+                                   v-b-modal.modal-key-shortcut>
+                                   <img :src="getImageSrc('keyboard')" class="toolbar"
+                                       style="width:24px; height:24px;"></img>&nbsp;快捷键
+                               </b-dropdown-item>
+                           </b-dropdown>
 
-                            <!-- Right aligned nav items -->
-                            <b-navbar-nav class="ml-auto">
-                                <b-nav-item href="#" id="goto_explorer" @click="KFK.gotoExplorer">
-                                    <b-icon icon="house" font-scale="2"></b-icon>
-                                </b-nav-item>
-                                <b-nav-item href="#" id="sharethisbutton" variant="success" @click="SHARE.shareThisDoc">
-                                    <b-icon icon="box-arrow-up" font-scale="2"></b-icon>
-                                </b-nav-item>
+                           <b-nav-item-dropdown right size="sm" variant="link"
+                               class="m-0 p-0 userinfo simplehover">
+                               <template v-slot:button-content>
+                                   <b-img v-if="model.cocouser.avatar_src" :src="model.cocouser.avatar_src"
+                                       title="当前用户" width="24px" height="24px" fluid rounded="circle">
+                                   </b-img>
+                               </template>
+                               <b-dropdown-item>用户：{{model.cocouser.name}}</b-dropdown-item>
+                               <b-dropdown-item>组织：{{model.cocouser.orgname}}</b-dropdown-item>
 
-                                <b-dropdown right text="视图" variant="primary">
-                                    <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle_all"
-                                        variant="success" @click="KFK.toggleFullScreen" v-if="model.isPC">
-                                        <b-icon icon="arrows-fullscreen"></b-icon>&nbsp;全屏(fs)
-                                    </b-dropdown-item>
-                                    <b-dropdown-item id="onepage" variant="success" @click="KFK.toggleOverview">
-                                        <b-icon icon="grid3x2" shift-h="-1.2" shift-v="1.1"></b-icon>&nbsp;全局概览
-                                    </b-dropdown-item>
-                                    <b-dropdown-item href="#" id="toggle_cbonly" variant="success"
-                                        @click="KFK.toggleControlButtonOnly" v-if="model.isPC">
-                                        <b-icon v-if="KFK.controlButtonsOnly===false" icon="layout-sidebar-reverse"
-                                            rotate="270">
-                                        </b-icon>
-                                        <b-icon v-else icon="layout-sidebar-inset-reverse" rotate="270"></b-icon>
-                                        &nbsp;切换工具栏
-                                    </b-dropdown-item>
-                                    <b-dropdown-item href="#" disable="model.cocodoc.readonly" id="toggle-right"
-                                        variant="success" @click="KFK.toggleRightPanel(-1, false)" v-if="model.isPC">
-                                        <b-icon v-if="KFK.showRightTools===false" icon="layout-sidebar-reverse">
-                                        </b-icon>
-                                        <b-icon v-else icon="layout-sidebar-inset-reverse"></b-icon>&nbsp;切换属性栏
-                                    </b-dropdown-item>
-                                    <b-dropdown-item disable="model.cocodoc.readonly" id="toggle-minimap"
-                                        variant="success" @click="KFK.toggleMinimap">
-                                        <b-icon icon="map"></b-icon>切换小地图
-                                    </b-dropdown-item>
-                                    <!-- b-dropdown-item variant="success" @click="KFK.showActionLog">
-                                        <b-icon icon="people"></b-icon>{{model.actionlog.length}} 协作人员
-                                    </b-dropdown-item -->
-                                    <b-dropdown-item variant="success" @click="KFK.toggleMDEditor">
-                                        <b-icon icon="markdown"></b-icon>切换备注编辑
-                                    </b-dropdown-item>
-                                    <b-dropdown-item href="#" id="toggle_all" variant="success"
-                                        v-b-modal.modal-key-shortcut>
-                                        <img :src="getImageSrc('keyboard')" class="toolbar"
-                                            style="width:24px; height:24px;"></img>&nbsp;快捷键
-                                    </b-dropdown-item>
-                                </b-dropdown>
-                                <b-nav-form>
-                                    <b-form-input size="sm" class="mr-sm-2" placeholder="Search"></b-form-input>
-                                    <b-button size="sm" class="my-2 my-sm-0" type="submit">Search</b-button>
-                                </b-nav-form>
-
-                                <b-nav-item-dropdown right size="sm" variant="link"
-                                    class="m-0 p-0 userinfo simplehover">
-                                    <template v-slot:button-content>
-                                        <b-img v-if="model.cocouser.avatar_src" :src="model.cocouser.avatar_src"
-                                            title="当前用户" width="24px" height="24px" fluid rounded="circle">
-                                        </b-img>
-                                    </template>
-                                    <b-dropdown-item>用户：{{model.cocouser.name}}</b-dropdown-item>
-                                    <b-dropdown-item>组织：{{model.cocouser.orgname}}</b-dropdown-item>
-
-                                    <b-dropdown-item-button v-if="!model.isDemoEnv" @click="KFK.showIvtCodeDialog">
-                                        邀请获奖励
-                                    </b-dropdown-item-button>
-                                    <b-dropdown-item-button v-if="!model.isDemoEnv" @click="KFK.showSetProfileDialog()">
-                                        账户信息
-                                    </b-dropdown-item-button>
-                                    <b-dropdown-divider></b-dropdown-divider>
-                                    <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.upgradeToStartAccount">
-                                        注册为正式用户
-                                    </b-dropdown-item-button>
-                                    <b-dropdown-item-button v-else @click="KFK.signout">退出登录状态
-                                    </b-dropdown-item-button>
-                                    <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.gotoSignin">登录已有账号
-                                    </b-dropdown-item-button>
-                                </b-nav-item-dropdown>
-                            </b-navbar-nav>
-                        </b-collapse>
+                               <b-dropdown-item-button v-if="!model.isDemoEnv" @click="KFK.showIvtCodeDialog">
+                                   邀请获奖励
+                               </b-dropdown-item-button>
+                               <b-dropdown-item-button v-if="!model.isDemoEnv" @click="KFK.showSetProfileDialog()">
+                                   账户信息
+                               </b-dropdown-item-button>
+                               <b-dropdown-divider></b-dropdown-divider>
+                               <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.upgradeToStartAccount">
+                                   注册为正式用户
+                               </b-dropdown-item-button>
+                               <b-dropdown-item-button v-else @click="KFK.signout">退出登录状态
+                               </b-dropdown-item-button>
+                               <b-dropdown-item-button v-if="model.isDemoEnv" @click="KFK.gotoSignin">登录已有账号
+                               </b-dropdown-item-button>
+                           </b-nav-item-dropdown>
+                       </b-navbar-nav>
                     </b-navbar>
 
                 </div>
@@ -888,22 +866,6 @@
                                         @change="KFK.onShowEditorChanged('last')">最近</b-form-radio>
                                     <b-form-radio v-model="model.viewConfig.showEditor" name="some-radios" value="all"
                                         @change="KFK.onShowEditorChanged('all')">全部</b-form-radio>
-                                </b-row>
-                                <b-row class="mx-auto my-1">
-                                    <b-col>摄像头选择</b-col>
-                                </b-row>
-                                <b-row class="mx-auto my-1">
-                                    <b-col>
-                                        <div id='camera-option'></div>
-                                    </b-col>
-                                </b-row>
-                                <b-row class="mx-auto my-1">
-                                    <b-col>麦克风选择</b-col>
-                                </b-row>
-                                <b-row class="mx-auto my-1">
-                                    <b-col>
-                                        <div id='mic-option'></div>
-                                    </b-col>
                                 </b-row>
                             </b-container>
                         </b-tab>

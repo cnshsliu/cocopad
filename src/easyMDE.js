@@ -3,7 +3,9 @@ import KFK from "./console";
 import EasyMDE from "easymde";
 
 MyMDE.addEasyMDE = function(textAreaId) {
-  console.log("create new EasyMDE");
+  //因异步处理，本函数对同一个textAreaId可能会被调用多次，
+  //下面语句做判断，如有重复，不重新创建
+  if (KFK.MDEs[textAreaId]) return;
   KFK.MDEs[textAreaId] = new EasyMDE({
     element: $("#" + textAreaId)[0],
     forceSync: true,
